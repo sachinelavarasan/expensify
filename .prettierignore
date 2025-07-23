@@ -1,0 +1,39 @@
+# Node modules and build
+node_modules
+dist
+build
+android
+ios
+web-build
+
+# Expo specific
+.expo
+.expo-shared
+
+# Asset folders
+assets
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.gif
+*.mp4
+
+# OS/System files
+.DS_Store
+
+# JSON config files
+app.config.js
+app.config.json
+babel.config.js
+metro.config.js
+package-lock.json
+yarn.lock
+*.plist
+
+# Environment
+.env
+.env.*
+
+# Ignore already formatted/prebuilt files
+*.min.js

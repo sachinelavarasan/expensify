@@ -1,29 +1,86 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { LogBox } from 'react-native';
+import { Slot } from 'expo-router';
+import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar as ExpoStatus } from 'expo-status-bar';
+import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import { tokenCache } from '@clerk/clerk-expo/token-cache';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+if (!EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env',
+  );
+}
+
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false,
+});
+
+LogBox.ignoreLogs(['Warning: ...']);
+LogBox.ignoreAllLogs();
+const error = console.error;
+console.error = (...args: any) => {
+  if (/defaultProps/.test(args[0])) return;
+  error(...args);
+};
+
+SplashScreen.preventAutoHideAsync();
+
+SplashScreen.setOptions({
+  duration: 0,
+  fade: false,
+});
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  return (
+    <ClerkProvider publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+      <LayoutBuilder />
+    </ClerkProvider>
+  );
+}
+
+function LayoutBuilder() {
+  const { isLoaded: authLoaded } = useAuth();
+
+  const [fontsLoaded] = useFonts({
+    'Inter-100': require('../assets/fonts/Inter-Thin.ttf'),
+    'Inter-200': require('../assets/fonts/Inter-ExtraLight.ttf'),
+    'Inter-300': require('../assets/fonts/Inter-Light.ttf'),
+    'Inter-400': require('../assets/fonts/Inter-Regular.ttf'),
+    'Inter-500': require('../assets/fonts/Inter-Medium.ttf'),
+    'Inter-600': require('../assets/fonts/Inter-SemiBold.ttf'),
+    'Inter-700': require('../assets/fonts/Inter-Bold.ttf'),
+    'Inter-800': require('../assets/fonts/Inter-ExtraBold.ttf'),
+    'Inter-900': require('../assets/fonts/Inter-Black.ttf'),
   });
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+  useEffect(() => {
+    const prepare = async () => {
+      if (fontsLoaded && authLoaded) {
+        await SplashScreen.hideAsync();
+      }
+    };
+    prepare();
+  }, [fontsLoaded, authLoaded]);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={DarkTheme}>
+          <ExpoStatus />
+          <Slot />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }
