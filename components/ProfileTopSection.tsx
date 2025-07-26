@@ -4,11 +4,14 @@ import Animated, {
   Extrapolate,
   interpolate,
   useAnimatedRef,
+  useAnimatedScrollHandler,
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
 import { ThemedView } from './ThemedView';
 import { deviceWidth } from '@/utils/functions';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import UpdateProfile from './UpdateProfile';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
@@ -19,7 +22,6 @@ type Props = {
   subtitle?: string;
   avatar: any;
   backgroundImage?: any;
-  onActionPress?: () => void;
   actionLabel?: string;
   children: ReactElement;
 };
@@ -29,8 +31,6 @@ export default function AnimatedTopSection({
   subtitle,
   avatar,
   backgroundImage,
-  onActionPress,
-  actionLabel = 'Edit Profile',
   children,
 }: Props) {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -39,8 +39,8 @@ export default function AnimatedTopSection({
   const bgStyle = useAnimatedStyle(() => {
     const height = interpolate(
       scrollOffset.value,
-      [-100, 0, 100],
-      [HEADER_MAX_HEIGHT + 120, HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
+      [-100, 0, 120],
+      [HEADER_MAX_HEIGHT + 180, HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
       Extrapolate.CLAMP,
     );
 
@@ -53,12 +53,12 @@ export default function AnimatedTopSection({
   });
 
   const avatarStyle = useAnimatedStyle(() => {
-    const scale = interpolate(scrollOffset.value, [0, 100], [1, 0.35], Extrapolate.CLAMP);
+    const scale = interpolate(scrollOffset.value, [0, 100, 200], [1, 0.5, 0.35], Extrapolate.CLAMP);
     const translateX = interpolate(scrollOffset.value, [0, 100], [0, -220], Extrapolate.CLAMP);
     const translateY = interpolate(
       scrollOffset.value,
       [0, 100],
-      [0, -HEADER_MAX_HEIGHT + (HEADER_MIN_HEIGHT - 140) / 2],
+      [0, -HEADER_MAX_HEIGHT + (HEADER_MIN_HEIGHT - 200) / 2],
       Extrapolate.CLAMP,
     );
     const opacity = interpolate(scrollOffset.value, [0, 60, 100], [1, 0.7, 0], Extrapolate.CLAMP);
@@ -76,7 +76,6 @@ export default function AnimatedTopSection({
 
   const titleColor = '#FFF';
   const subtitleColor = '#CCC';
-  const actionTextColor = '#FFF';
 
   return (
     <ThemedView style={styles.container}>
@@ -84,7 +83,7 @@ export default function AnimatedTopSection({
         ref={scrollRef}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT - 140 }}>
+        contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT - 180 }}>
         <View style={styles.content}>{children}</View>
       </Animated.ScrollView>
 
@@ -95,19 +94,21 @@ export default function AnimatedTopSection({
             style={[
               styles.backgroundImage,
               {
-                marginTop: -120,
+                marginTop: -180,
               },
             ]}
-            resizeMode="cover"
           />
         )}
       </Animated.View>
 
       <Animated.View style={[styles.avatarContainer, avatarStyle]}>
         <Image source={avatar} style={styles.avatarFull} />
-        <View style={styles.headerTextOverlay}>
-          <Text style={styles.titleTextInHeader}>{title}</Text>
-          {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' ,alignItems:'center' }}>
+          <View style={styles.headerTextOverlay}>
+            <Text style={styles.titleTextInHeader}>{title}</Text>
+            {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
+          </View>
+          <UpdateProfile />
         </View>
       </Animated.View>
 
@@ -127,11 +128,7 @@ export default function AnimatedTopSection({
           )}
         </View>
 
-        {!!onActionPress && (
-          <Pressable onPress={onActionPress} style={styles.actionButton}>
-            <Text style={[styles.actionText, { color: actionTextColor }]}>{actionLabel}</Text>
-          </Pressable>
-        )}
+        <UpdateProfile />
       </Animated.View>
     </ThemedView>
   );
@@ -143,12 +140,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     width: '100%',
-    zIndex: 1,
+    zIndex: -2,
     overflow: 'hidden',
   },
   backgroundImage: {
-    width: '100%',
-    height: '100%',
+    // width: '100%',
+    // height: '100%',
   },
   avatar: {
     width: '100%',
@@ -182,7 +179,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,
-    backgroundColor: '#6900FF',
   },
   actionText: {
     fontWeight: '600',
@@ -204,7 +200,7 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: 'absolute',
-    top: HEADER_MAX_HEIGHT - (AVATAR_SIZE + 340) / 2,
+    top: HEADER_MAX_HEIGHT - (AVATAR_SIZE + 460) / 2,
     left: 35,
     zIndex: 3,
     borderRadius: AVATAR_SIZE / 2,

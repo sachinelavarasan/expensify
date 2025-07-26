@@ -97,7 +97,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
             </Animated.View>
             <Text
               style={{
-                color: !isFocused ? '#8880A0' : '#6900FF',
+                color: !isFocused ? '#8880A0' : '#FFF',
                 fontFamily: 'Inter-500',
                 fontSize: 12,
               }}>

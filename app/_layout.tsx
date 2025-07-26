@@ -1,15 +1,16 @@
 import { LogBox } from 'react-native';
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar as ExpoStatus } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import ProfileHeader from '@/components/ProfileHeader';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -35,8 +36,8 @@ console.error = (...args: any) => {
 SplashScreen.preventAutoHideAsync();
 
 SplashScreen.setOptions({
-  duration: 0,
-  fade: false,
+  duration: 200,
+  fade: true,
 });
 
 const queryClient = new QueryClient();
@@ -78,7 +79,18 @@ function LayoutBuilder() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider value={DarkTheme}>
           <ExpoStatus />
-          <Slot />
+          {authLoaded && fontsLoaded ? (
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(root)/(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(root)/dashboard" options={{ headerShown: false }} />
+              <Stack.Screen name="(root)/transaction" options={{ headerShown: false }} />
+
+              <Stack.Screen name="(root)/settings" />
+              <Stack.Screen name="(root)/category" />
+              <Stack.Screen name="(root)/starred" />
+              <Stack.Screen name="(root)/export-data" />
+            </Stack>
+          ) : null}
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

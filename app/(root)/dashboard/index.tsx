@@ -13,11 +13,14 @@ import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
+import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 
 export default function Index() {
   const router = useRouter();
   const { transactions, currentMonth, loading, goToPreviousMonth, goToNextMonth, refetch } =
     useMonthlyTransactions();
+    const { data: accounts, isLoading } = useBankAccounts();
+
 
   const [refreshing, setRefreshing] = useState(false);
 

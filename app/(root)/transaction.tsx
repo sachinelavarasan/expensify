@@ -195,7 +195,7 @@ export default function Transaction() {
                   <>
                     <TouchableOpacity onPress={handleDelete}>
                       {isLoading ? (
-                        <ActivityIndicator animating color={'#fff'} style={styles.loader} />
+                        <ActivityIndicator animating color={'#6900FF'} style={styles.loader} />
                       ) : null}
                       <FontAwesome5 name="trash" size={20} color="#D9363E" />
                     </TouchableOpacity>
