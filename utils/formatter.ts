@@ -6,6 +6,6 @@ export const formattedAmount = (amount: number) => {
   } else if (amount >= 1000) {
     return `${amount.toLocaleString('en-IN')}`;
   } else {
-    return `${amount}`;
+    return `${amount.toFixed(2)}`;
   }
 };

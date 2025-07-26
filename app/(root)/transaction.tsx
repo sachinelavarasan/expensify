@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#463e75',
     borderRadius: 8,
     paddingVertical: Platform.OS === 'android' ? 12 : 16,
     width: '100%',

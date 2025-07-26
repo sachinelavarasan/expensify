@@ -30,7 +30,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             if (onBlur) onBlur(); // handle blur manually
           }}
           style={{
-            backgroundColor: '#6900FF',
+            backgroundColor: '#463e75',
             borderWidth: 1,
             paddingHorizontal: 12,
             paddingVertical: 5,
@@ -57,7 +57,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             onChange(formatted);
           }}
           onCancel={() => setOpen(false)}
-          buttonColor="#6900FF"
+          buttonColor="#ffffff"
           title="Choose date"
           confirmText="Select"
           cancelText="Cancel"

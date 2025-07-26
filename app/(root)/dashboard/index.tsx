@@ -19,8 +19,7 @@ export default function Index() {
   const router = useRouter();
   const { transactions, currentMonth, loading, goToPreviousMonth, goToNextMonth, refetch } =
     useMonthlyTransactions();
-    const { data: accounts, isLoading } = useBankAccounts();
-
+  const { data: accounts, isLoading } = useBankAccounts();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -75,7 +74,7 @@ export default function Index() {
           contentContainerStyle={{ paddingBottom: 20, flex: 1 }}
           stickyHeaderIndices={[0]}
           ListHeaderComponent={() => (
-            <View style={{ backgroundColor: '#0E0E10', paddingBottom: 10 }}>
+            <View style={{ backgroundColor: '#0F0E17', paddingBottom: 10 }}>
               <View
                 style={{
                   paddingVertical: 10,
@@ -101,13 +100,12 @@ export default function Index() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           renderItem={({ item }) => {
             return (
-              <View>
+              <View style={{ paddingVertical: 10, paddingHorizontal: 5 }}>
                 <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginTop: 6,
                   }}>
                   <Text style={styles.dateHeader}>
                     {format(new Date(item.date), 'dd MMMM yyyy')}
@@ -160,17 +158,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   totalAmount: {
-    color: '#717171',
+    color: '#D5D5D5',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   dateHeader: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Inter-500',
-    color: '#717171',
+    color: '#a19bca',
   },
   floatingButton: {
-    backgroundColor: '#6900FF', // Replace with your primary color
+    backgroundColor: '#5a4f96', // Replace with your primary color
     width: 50,
     height: 50,
     borderRadius: 25,

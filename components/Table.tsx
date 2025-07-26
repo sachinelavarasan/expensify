@@ -26,7 +26,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
           <Text
             style={[
               styles.cell,
-              { width: columnWidth, color: '#8880A0', fontFamily: 'Inter-600' },
+              { width: columnWidth, color: '#a19bca', fontFamily: 'Inter-500' },
             ]}>
             Income
           </Text>
@@ -39,7 +39,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
           <Text
             style={[
               styles.cell,
-              { width: columnWidth, color: '#8880A0', fontFamily: 'Inter-600' },
+              { width: columnWidth, color: '#a19bca', fontFamily: 'Inter-500' },
             ]}>
             Expense
           </Text>
@@ -52,7 +52,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
           <Text
             style={[
               styles.cell,
-              { width: columnWidth, color: '#8880A0', fontFamily: 'Inter-600' },
+              { width: columnWidth, color: '#ffffff', fontFamily: 'Inter-500' },
             ]}>
             Overall
           </Text>
@@ -69,30 +69,30 @@ export default function TableView({ transactions }: { transactions: Itransaction
 const styles = StyleSheet.create({
   table: {
     borderWidth: 1,
-    borderColor: '#3A3A50',
+    borderColor: '#1e1a32',
     borderRadius: 4,
     overflow: 'hidden',
     margin: 16,
     height: 'auto',
     maxHeight: 174,
     borderBottomWidth: 0,
-    backgroundColor: '#1C1C20',
+    backgroundColor: '#0a0911',
   },
   row: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#3A3A50',
-    backgroundColor: '#1C1C20',
+    borderBottomColor: '#1e1a32',
+    backgroundColor: '#0a0911',
   },
   cell: {
     flex: 1,
     padding: 12,
     fontSize: 14,
-    color: '#D0CDE1',
+    color: '#B3B1C4',
     textAlign: 'left',
   },
   header: {
-    backgroundColor: '#2A2A35',
+    backgroundColor: '#1e1a32',
   },
   headerText: {
     fontWeight: '600',

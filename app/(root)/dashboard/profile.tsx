@@ -69,7 +69,6 @@ const Profile = () => {
       avatar={require('@/assets/images/user-default.png')}
       backgroundImage={require('@/assets/images/profile.png')}>
       <>
-      
         {/* <View style={styles.infoCard}>
           <Text style={styles.label}>Name</Text>
           <Text style={styles.infoText}>{user?.firstName}</Text>
@@ -90,7 +89,7 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#1F1F23', padding: 5, borderRadius: 5 }}>
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="category" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -107,13 +106,12 @@ const Profile = () => {
             </View>
           </Pressable>
         </Link>
-      
 
         <Link href={'/(root)/starred'} asChild>
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#1F1F23', padding: 5, borderRadius: 5 }}>
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="star" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -130,11 +128,11 @@ const Profile = () => {
             </View>
           </Pressable>
         </Link>
-          <Link href={'/(root)/export-data'} asChild>
+        <Link href={'/(root)/export-data'} asChild>
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#1F1F23', padding: 5, borderRadius: 5 }}>
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialCommunityIcons name="file-export" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -155,7 +153,7 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#1F1F23', padding: 5, borderRadius: 5 }}>
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="settings" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -216,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#6900FF',
     borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 12 : 16,
+    paddingVertical: Platform.OS === 'android' ? 10 : 16,
     width: '100%',
   },
   loader: {
@@ -282,12 +280,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   option: {
-    color: '#FFFFFF',
+    color: '#F1F1F6',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#717171',
+    color: '#B3B1C4',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
@@ -298,10 +296,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   logoutText: {
-    color: '#EF4444',
+    color: '#f1f1f6',
   },
   logoutBg: {
-    backgroundColor: '#1F1F23',
+    backgroundColor: '#282343',
   },
 });
 

@@ -10,7 +10,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         justifyContent: 'space-between',
         alignItems: 'center',
         elevation: 10,
-        backgroundColor: '#1A1A24',
+        // backgroundColor: '#1A1A24',
         paddingBottom: Platform.OS === 'ios' ? 10 : 0,
         paddingTop: 5,
         position: 'static',
@@ -47,7 +47,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         const background = useSharedValue('transparent');
 
         if (isFocused) {
-          background.value = withSpring('#6900FF', {
+          background.value = withSpring('#463e75', {
             duration: 0,
           }); // animate when focused
         } else {
@@ -97,7 +97,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
             </Animated.View>
             <Text
               style={{
-                color: !isFocused ? '#8880A0' : '#FFF',
+                color: !isFocused ? '#B3B1C4' : '#FFF',
                 fontFamily: 'Inter-500',
                 fontSize: 12,
               }}>

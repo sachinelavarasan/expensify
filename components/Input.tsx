@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#7A7A8C',
+    color: '#B3B1C4',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },

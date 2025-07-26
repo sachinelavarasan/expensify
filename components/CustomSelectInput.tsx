@@ -50,7 +50,7 @@ export const CustomSelectInput = ({
         setSelected={setSelected}
         fontFamily="Inter-500"
         data={options}
-        arrowicon={<FontAwesome name="chevron-down" size={16} color={'#6E6E80'} />}
+        arrowicon={<FontAwesome name="chevron-down" size={16} color={'#B3B1C4'} />}
         search={false}
         boxStyles={styles.boxStyles} // Apply custom styles
         defaultOption={defaultOption} //default selected option
@@ -85,15 +85,15 @@ const styles = StyleSheet.create({
   },
   dropdownStyles: { backgroundColor: '#1C1C20', borderWidth: 0 },
   inputStyles: {
-    color: '#6E6E80',
+    color: '#ffffff',
     paddingVertical: Platform.OS === 'android' ? 1 : 6,
   },
   dropdownTextStyles: {
-    color: '#6E6E80',
+    color: '#B3B1C4',
   },
   labelStyles: {
     fontSize: 16,
-    color: '#7A7A8C',
+    color: '#B3B1C4',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },

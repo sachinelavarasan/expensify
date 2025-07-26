@@ -25,7 +25,7 @@ const CustomTimePicker: React.FC<Props> = ({ value, onChange, onBlur, placeholde
           onBlur?.();
         }}
         style={{
-          backgroundColor: '#6900FF',
+          backgroundColor: '#463e75',
           borderWidth: 1,
           paddingHorizontal: 12,
           paddingVertical: 5,
@@ -53,7 +53,7 @@ const CustomTimePicker: React.FC<Props> = ({ value, onChange, onBlur, placeholde
           onChange(formatted);
         }}
         onCancel={() => setOpen(false)}
-        buttonColor="#6900FF"
+        buttonColor="#ffffff"
         title="Choose time"
         confirmText="Select"
         cancelText="Cancel"

@@ -24,27 +24,35 @@ const TransactionCard = ({
         style={{
           width: '100%',
           borderRadius: 5,
-          padding: 10,
+          paddingVertical: 7,
         }}>
         <View style={styles.innerContainer}>
           <View style={styles.left}>
-            <View style={{ backgroundColor: '#F8ECFD', padding: 5, borderRadius: 5 }}>
-              <MaterialIcons name="category" size={24} color="#7173FF" />
+            <View style={{ backgroundColor: '#282343', padding: 5, borderRadius: 5 }}>
+              <MaterialIcons
+                name={exp_tt_id === 2 ? 'trending-up' : 'trending-down'}
+                size={24}
+                color="#e0deed"
+              />
             </View>
             <View>
               <View>
                 <Text style={styles.name}>{exp_ts_title}</Text>
               </View>
               <View style={styles.subTextContainer}>
-                <Text style={[styles.subText, { marginRight: 6 }]}>
-                  {exp_ts_category} <Text>{'\u2022'}</Text>
-                </Text>
-                <Text style={[styles.subText, { fontFamily: 'Inter-600' }]}>{exp_ts_time}</Text>
+                <Text style={[styles.subText, { marginRight: 6 }]}>{exp_ts_category}</Text>
+                <View
+                  style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+                  <Text>{'\u2022'}</Text>
+                  <Text style={[styles.subText, { fontFamily: 'Inter-600', color: '#efeef6' }]}>
+                    {exp_ts_time}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
           <View style={styles.right}>
-            <Text style={[styles.amount, { color: exp_tt_id === 2 ? '#00C896' : '#FF4D4F' }]}>
+            <Text style={[styles.amount, { color: exp_tt_id === 2 ? '#48BB78' : '#F56565' }]}>
               {exp_tt_id === 2 ? '+' : '-'}
               {exp_ts_amount}
             </Text>
@@ -63,18 +71,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#1A1A24',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    // backgroundColor: '#1e1a32',
+    // paddingHorizontal: 14,
+    // paddingVertical: 10,
     borderRadius: 5,
   },
   name: {
-    color: '#FFFFFF',
+    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   subText: {
-    color: '#8880A0',
+    color: '#B3B1C4',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },
@@ -101,7 +109,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   amount: {
-    color: '#000000',
     fontSize: 12,
     fontFamily: 'Inter-500',
   },

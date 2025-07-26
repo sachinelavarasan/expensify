@@ -104,12 +104,12 @@ export default function Stat() {
               />
             </View>
 
-            <View style={{ marginVertical: 10 }}>
+            <View>
               <TableView transactions={transactions} />
             </View>
 
             {transactions.length > 0 && (
-              <View style={{ marginVertical: 10 }}>
+              <View>
                 <IncomeExpenseTabs transactions={transactions} />
               </View>
             )}

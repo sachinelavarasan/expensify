@@ -94,7 +94,7 @@ export default function AnimatedTopSection({
             style={[
               styles.backgroundImage,
               {
-                marginTop: -180,
+                marginTop: -20,
               },
             ]}
           />
@@ -103,7 +103,8 @@ export default function AnimatedTopSection({
 
       <Animated.View style={[styles.avatarContainer, avatarStyle]}>
         <Image source={avatar} style={styles.avatarFull} />
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' ,alignItems:'center' }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={styles.headerTextOverlay}>
             <Text style={styles.titleTextInHeader}>{title}</Text>
             {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'absolute',
     top: HEADER_MAX_HEIGHT - (AVATAR_SIZE + 460) / 2,
-    left: 35,
+    left: 40,
     zIndex: 3,
     borderRadius: AVATAR_SIZE / 2,
     overflow: 'hidden',
@@ -209,9 +210,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: deviceWidth() * 0.8,
     height: AVATAR_SIZE,
-    backgroundColor: '#222',
+    backgroundColor: '#0F0E17',
     borderWidth: 3,
-    borderColor: '#6900FF',
+    borderColor: '#463e75',
   },
   avatarFull: {
     width: AVATAR_SIZE,

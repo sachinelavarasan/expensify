@@ -105,12 +105,19 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#0a0911',
+    padding: 12,
+    borderRadius: 8,
+    borderColor: '#1e1a32',
+    borderWidth: 1,
+    margin: 16,
   },
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    backgroundColor: '#292933',
+    backgroundColor: '#1e1a32',
     borderRadius: 8,
+    padding: 5,
   },
   tab: {
     flex: 1,
@@ -118,11 +125,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#6900FF',
+    backgroundColor: '#463e75',
     borderRadius: 8,
   },
   tabText: {
-    color: '#8880A0',
+    color: '#B3B1C4',
     fontWeight: '500',
   },
   activeTabText: {
@@ -131,7 +138,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 8,
     marginBottom: 12,
-    backgroundColor: '#1F1A29',
+    // backgroundColor: '#141221',
     borderRadius: 4,
     flexDirection: 'row',
     justifyContent: 'space-between',
