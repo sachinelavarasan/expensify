@@ -89,6 +89,7 @@ function LayoutBuilder() {
               <Stack.Screen name="(root)/category" />
               <Stack.Screen name="(root)/starred" />
               <Stack.Screen name="(root)/export-data" />
+              <Stack.Screen name="(root)/accounts/[id]" />
             </Stack>
           ) : null}
         </ThemeProvider>

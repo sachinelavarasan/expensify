@@ -72,3 +72,82 @@ export const genders = [
     label: 'Others',
   },
 ];
+
+
+export const accounts = [
+  {
+    "exp_ba_id": 1,
+    "exp_ba_user_id": 1,
+    "exp_ba_name": "HDFC Savingsssssddh jjj",
+    "exp_ba_balance": "12500.75",
+    "exp_ba_currency": "INR",
+    "exp_ba_type": "bank",
+    "exp_ba_icon": "bank",
+    "exp_ba_color": "#4A90E2",
+    "exp_ba_is_primary": true,
+    "exp_ba_is_active": 1,
+    "exp_ba_is_deleted": false,
+    "exp_ba_created_at": "2025-07-01T10:00:00Z",
+    "exp_ba_updated_at": "2025-07-23T12:30:00Z"
+  },
+  {
+    "exp_ba_id": 2,
+    "exp_ba_user_id": 1,
+    "exp_ba_name": "Paytm Wallet",
+    "exp_ba_balance": "850.50",
+    "exp_ba_currency": "INR",
+    "exp_ba_type": "wallet",
+    "exp_ba_icon": "wallet",
+    "exp_ba_color": "#00BFA5",
+    "exp_ba_is_primary": false,
+    "exp_ba_is_active": 1,
+    "exp_ba_is_deleted": false,
+    "exp_ba_created_at": "2025-06-15T09:30:00Z",
+    "exp_ba_updated_at": "2025-07-23T12:30:00Z"
+  },
+  {
+    "exp_ba_id": 3,
+    "exp_ba_user_id": 1,
+    "exp_ba_name": "Cash",
+    "exp_ba_balance": "2200",
+    "exp_ba_currency": "INR",
+    "exp_ba_type": "cash",
+    "exp_ba_icon": "cash",
+    "exp_ba_color": "#FF9800",
+    "exp_ba_is_primary": false,
+    "exp_ba_is_active": 1,
+    "exp_ba_is_deleted": false,
+    "exp_ba_created_at": "2025-07-01T08:00:00Z",
+    "exp_ba_updated_at": "2025-07-23T12:30:00Z"
+  },
+  {
+    "exp_ba_id": 4,
+    "exp_ba_user_id": 1,
+    "exp_ba_name": "ICICI Credit Card",
+    "exp_ba_balance": "-5200",
+    "exp_ba_currency": "INR",
+    "exp_ba_type": "credit",
+    "exp_ba_icon": "credit-card",
+    "exp_ba_color": "#E91E63",
+    "exp_ba_is_primary": false,
+    "exp_ba_is_active": 1,
+    "exp_ba_is_deleted": false,
+    "exp_ba_created_at": "2025-05-20T11:00:00Z",
+    "exp_ba_updated_at": "2025-07-23T12:30:00Z"
+  },
+  {
+    "exp_ba_id": 5,
+    "exp_ba_user_id": 2,
+    "exp_ba_name": "SBI Joint Account",
+    "exp_ba_balance": "18950.00",
+    "exp_ba_currency": "INR",
+    "exp_ba_type": "bank",
+    "exp_ba_icon": "bank",
+    "exp_ba_color": "#3F51B5",
+    "exp_ba_is_primary": true,
+    "exp_ba_is_active": 1,
+    "exp_ba_is_deleted": false,
+    "exp_ba_created_at": "2025-06-01T10:00:00Z",
+    "exp_ba_updated_at": "2025-07-23T12:30:00Z"
+  }
+]

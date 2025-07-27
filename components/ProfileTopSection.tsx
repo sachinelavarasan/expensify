@@ -1,16 +1,14 @@
 import React, { ReactElement } from 'react';
-import { Image, StyleSheet, Text, View, Pressable } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Extrapolate,
   interpolate,
   useAnimatedRef,
-  useAnimatedScrollHandler,
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
 import { ThemedView } from './ThemedView';
 import { deviceWidth } from '@/utils/functions';
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import UpdateProfile from './UpdateProfile';
 
 const HEADER_MAX_HEIGHT = 350;
@@ -39,7 +37,7 @@ export default function AnimatedTopSection({
   const bgStyle = useAnimatedStyle(() => {
     const height = interpolate(
       scrollOffset.value,
-      [-100, 0, 120],
+      [-100, 0, 70],
       [HEADER_MAX_HEIGHT + 180, HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
       Extrapolate.CLAMP,
     );

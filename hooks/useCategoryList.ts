@@ -8,37 +8,6 @@ export const queryKeys = {
   categories: ['categories'] as const,
 };
 
-//   const [categories, setCategories] = useState<Category[]>([]);
-//   const [loading, setLoading] = useState<boolean>(true);
-//   const [error, setError] = useState<string | null>(null);
-
-//   useEffect(() => {
-//     const fetchCategories = async () => {
-//       setLoading(true);
-//       setError(null);
-
-//     //   try {
-//     //     const querySnapshot = await firestore().collection('category').get();
-//     //     const categoryList: Category[] = querySnapshot.docs.map((doc) => ({
-//     //       id: doc.id,
-//     //       ...doc.data(),
-//     //     })) as Category[];
-//     // } catch (err) {
-//     //     setError('Failed to fetch categories');
-//     //     console.error(err);
-//     // } finally {
-//     // }
-//     setLoading(false);
-// };
-// setCategories([]);
-
-//     fetchCategories();
-//   }, []);
-
-//   return { categories, loading, error };
-// };
-
-// export default useCategoryList;
 
 const useCategoryList = () => {
   const { getToken, userId } = useAuth();

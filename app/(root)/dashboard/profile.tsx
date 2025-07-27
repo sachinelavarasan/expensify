@@ -1,13 +1,24 @@
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
 
-import { View, Text, StyleSheet, Platform, TouchableOpacity, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  TouchableOpacity,
+  Pressable,
+  FlatList,
+} from 'react-native';
 import { deviceWidth } from '@/utils/functions';
 
 import * as FileSystem from 'expo-file-system';
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { accounts } from '@/utils/common-data';
+
+const CARD_WIDTH = 150;
 
 const Profile = () => {
   const router = useRouter();
@@ -85,6 +96,68 @@ const Profile = () => {
             </TouchableOpacity>
           </View>
         </View> */}
+
+        <Pressable>
+          <View style={styles.card}>
+            <View style={styles.left}>
+              <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                <MaterialIcons name="account-balance" size={24} color="#FFF" />
+              </View>
+              <View>
+                <View>
+                  <Text style={styles.option}>Accounts</Text>
+                </View>
+                <View style={styles.subTextContainer}>
+                  <Text style={[styles.subText]}>Overall: 2000</Text>
+                </View>
+              </View>
+            </View>
+
+            <View>{/* <Text style={styles.amount}>%</Text> */}</View>
+          </View>
+        </Pressable>
+        <FlatList
+          contentContainerStyle={{
+            paddingHorizontal: 10,
+            marginTop: 5,
+            marginBottom: 10,
+            gap: 5,
+          }}
+          horizontal
+          data={accounts}
+          keyExtractor={(item) => item.exp_ba_name}
+          renderItem={({ item }) => (
+            <Link
+              href={{
+                pathname: '/accounts/[id]',
+                params: { id: item.exp_ba_id },
+              }}
+              asChild>
+              <TouchableOpacity
+                style={styles.accountCard}
+                onPress={() => {
+                  console.log('first');
+                }}>
+                <View
+                  style={[
+                    styles.left,
+                    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+                  ]}>
+                  <View>
+                    <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>
+                  </View>
+                  <View style={{ backgroundColor: '#282343', padding: 2, borderRadius: 2 }}>
+                    <MaterialIcons name="account-balance-wallet" size={16} color="#FFF" />
+                  </View>
+                </View>
+
+                <View>
+                  <Text style={styles.amount}>{item.exp_ba_balance}</Text>
+                </View>
+              </TouchableOpacity>
+            </Link>
+          )}
+        />
         <Link href={'/(root)/category'} asChild>
           <Pressable>
             <View style={styles.card}>
@@ -300,6 +373,19 @@ const styles = StyleSheet.create({
   },
   logoutBg: {
     backgroundColor: '#282343',
+  },
+  accountCard: {
+    borderWidth: 1,
+    borderColor: '#463e75',
+    padding: 5,
+    borderRadius: 4,
+    width: CARD_WIDTH,
+  },
+  accountlabel: {
+    color: '#B3B1C4',
+    fontSize: 13,
+    fontFamily: 'Inter-600',
+    width: CARD_WIDTH * 0.5,
   },
 });
 
