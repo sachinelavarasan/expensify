@@ -18,7 +18,9 @@ import AnimatedTopSection from '@/components/ProfileTopSection';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { accounts } from '@/utils/common-data';
 
-const CARD_WIDTH = 150;
+const deviceWidthAsNumber = deviceWidth() - 67
+
+const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const router = useRouter();
@@ -118,12 +120,14 @@ const Profile = () => {
         </Pressable>
         <FlatList
           contentContainerStyle={{
-            paddingHorizontal: 10,
             marginTop: 5,
-            marginBottom: 10,
+            marginBottom: 15,
             gap: 5,
+            padding: 5,
           }}
           horizontal
+          bounces={false}
+          showsHorizontalScrollIndicator={false}
           data={accounts}
           keyExtractor={(item) => item.exp_ba_name}
           renderItem={({ item }) => (
@@ -136,7 +140,7 @@ const Profile = () => {
               <TouchableOpacity
                 style={styles.accountCard}
                 onPress={() => {
-                  console.log('first');
+                  console.log('first, rrrr');
                 }}>
                 <View
                   style={[
@@ -158,7 +162,7 @@ const Profile = () => {
             </Link>
           )}
         />
-        <Link href={'/(root)/category'} asChild>
+        <Link href={'/(root)/categories'} asChild>
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
@@ -333,7 +337,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   card: {
-    padding: 8,
+    paddingVertical: 8,
     marginBottom: 12,
     borderRadius: 4,
     flexDirection: 'row',

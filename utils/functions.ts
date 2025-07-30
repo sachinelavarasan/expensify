@@ -7,6 +7,12 @@ export const deviceHeight = () => {
   return Dimensions.get('screen').height;
 };
 
+export const calcNumColumns = (itemWidth: number, minCols: number, padding?: number) => {
+    const screenWidth = deviceWidth() - (padding || 80);
+    const cols = screenWidth / itemWidth;
+    return Math.floor(cols) > minCols ? Math.floor(cols) : minCols;
+  };
+
 // export const getAsyncValue = async (key: string)=>{
 //   try {
 //     let value = await AsyncStorage.getItem(key)

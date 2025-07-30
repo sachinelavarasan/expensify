@@ -33,7 +33,7 @@ const toastConfig: ToastConfig = {
   // Customize more types if needed
 };
 
-const ToastMessage: React.FC = () => {
+const ToastMessage = () => {
   return <Toast config={toastConfig} />;
 };
 
@@ -43,8 +43,8 @@ export const showToast = ({
   text2,
   visibilityTime = 2000,
   position = 'top',
-  topOffset,
-  bottomOffset,
+  topOffset = 80,
+  bottomOffset = 80,
 }: {
   type: 'success' | 'error' | 'info';
   text1: string;
@@ -72,33 +72,32 @@ export default ToastMessage;
 // Custom styles for the toast messages
 const styles = StyleSheet.create({
   successToast: {
-    height: 40,
-    borderLeftColor: 'green',
-    borderLeftWidth: 5,
-    backgroundColor: '#B8D6B8',
+    height: 55,
+    backgroundColor: '#3EB489',
+    borderLeftWidth: 0,
+    paddingVertical: 15,
   },
   errorToast: {
-    height: 40,
-    borderLeftColor: '#A90303',
-    borderLeftWidth: 5,
-    backgroundColor: '#EEBDBD',
+    height: 55,
+    backgroundColor: '#EF4444',
+    borderLeftWidth: 0,
+    paddingVertical: 15,
   },
   infoToast: {
-    height: 40,
-    borderLeftColor: '#CFCFCF',
-    borderLeftWidth: 5,
-    backgroundColor: '#E7E7E7',
+    height: 55,
+    backgroundColor: '#FFBF00',
+    borderLeftWidth: 0,
+    paddingVertical: 15,
   },
   text1: {
     padding: 0,
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Inter-400',
-    fontWeight: 'bold',
-    color: '#000',
+    color: '#FFFFFF',
   },
   text2: {
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-    color: '#333',
+    fontSize: 12,
+    fontFamily: 'Inter-400',
+    color: '#f5f5f5',
   },
 });

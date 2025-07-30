@@ -88,6 +88,7 @@ export default function AnimatedTopSection({
       <Animated.View style={[styles.background, bgStyle]}>
         {backgroundImage && (
           <Image
+            resizeMode='cover'
             source={backgroundImage}
             style={[
               styles.backgroundImage,
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   backgroundImage: {
-    // width: '100%',
+    width: '100%',
     // height: '100%',
   },
   avatar: {

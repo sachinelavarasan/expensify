@@ -11,6 +11,7 @@ import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-rean
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ProfileHeader from '@/components/ProfileHeader';
+import ToastMessage from '@/components/ToastMessage';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -86,12 +87,14 @@ function LayoutBuilder() {
               <Stack.Screen name="(root)/transaction" options={{ headerShown: false }} />
 
               <Stack.Screen name="(root)/settings" />
-              <Stack.Screen name="(root)/category" />
+              <Stack.Screen name="(root)/categories/index" />
               <Stack.Screen name="(root)/starred" />
               <Stack.Screen name="(root)/export-data" />
               <Stack.Screen name="(root)/accounts/[id]" />
+              <Stack.Screen name="(root)/categories/[id]" />
             </Stack>
           ) : null}
+          <ToastMessage/>
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

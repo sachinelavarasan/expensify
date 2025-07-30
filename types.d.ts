@@ -38,5 +38,12 @@ export interface ICategory {
   exp_tc_id: number;
   exp_tc_label: string;
   exp_tc_icon: string;
-  exp_tc_user_id: number;
+  exp_tc_user_id: number | null;
+  exp_tc_icon_bg_color: string;
+  exp_tc_transaction_type: number;
+  exp_tc_sort_order: number;
+}
+
+export interface ICategoryWithCount extends ICategory{
+  transaction_count: string;
 }

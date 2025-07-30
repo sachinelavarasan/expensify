@@ -25,7 +25,7 @@ import CustomDatePicker from '@/components/CustomDatePicker';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
-import useCategoryList from '@/hooks/useCategoryList';
+import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import CustomTimePicker from '@/components/TimePicker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FontAwesome5 } from '@expo/vector-icons';
