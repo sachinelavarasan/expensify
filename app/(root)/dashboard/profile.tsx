@@ -16,14 +16,17 @@ import * as FileSystem from 'expo-file-system';
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { accounts } from '@/utils/common-data';
+import { useCategoryList } from '@/hooks/useCategoryListOperation';
+import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 
-const deviceWidthAsNumber = deviceWidth() - 67
+const deviceWidthAsNumber = deviceWidth() - 67;
 
 const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const router = useRouter();
+  const { data: accounts, isLoading } = useBankAccounts();
+  useCategoryList();
   const { user } = useUser();
   const { signOut } = useAuth();
 
@@ -193,7 +196,7 @@ const Profile = () => {
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Starred</Text>
+                    <Text style={styles.option}>Starred Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
                     <Text style={[styles.subText]}>Quick access to your starred transactions</Text>

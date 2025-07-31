@@ -32,6 +32,7 @@ export interface Itransaction {
   exp_ts_category: string;
   exp_tc_id: number;
   exp_tt_id: number;
+  exp_st_id?: number
 }
 
 export interface ICategory {

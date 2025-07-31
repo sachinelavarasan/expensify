@@ -7,7 +7,7 @@ import { useAuth } from '@clerk/clerk-expo';
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const queryKeys = {
-  transaction: ['transaction'] as const,
+  transactions: ['transactions'] as const,
 };
 
 const useMonthlyTransactions = (initialDate?: Date) => {
@@ -23,7 +23,7 @@ const useMonthlyTransactions = (initialDate?: Date) => {
     data: transactions,
     refetch,
   } = useQuery({
-    queryKey: [...queryKeys.transaction, currentMonth],
+    queryKey: [...queryKeys.transactions, currentMonth],
     queryFn: async ({ queryKey }): Promise<Itransaction[]> => {
       const token = await getToken();
       const queryDate = queryKey[1] as Date;

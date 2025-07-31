@@ -3,14 +3,16 @@ import { z } from 'zod';
 export const transactionSchema = z.object({
   exp_ts_title: z.string().trim().min(3, { message: 'Name should be minimum 3 characters' }),
   exp_ts_note: z.string().trim().nullable().optional(),
-  // lends details
-  exp_ts_amount: z.string().refine((val) => /^\d+$/.test(val) && Number(val) > 0, {
-    message: 'Please enter the valid amount',
-  }),
-  exp_tc_id: z.number().min(1, { message: 'Please choose category' }),
-  exp_ts_date: z.string().min(1, { message: 'Please choose date' }),
-  exp_ts_time: z.string().min(1, { message: 'Please choose time' }),
-  exp_tt_id: z.number().min(1, { message: 'Please choose transaction type' }),
+  exp_ts_amount: z
+    .string()
+    .refine((val) => /^(\d+)(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0, {
+      message: 'Please enter a valid amount',
+    }),
+  exp_tc_id: z.number({ message: 'Select category' }),
+  exp_ts_date: z.string().min(1, { message: 'Choose date' }),
+  exp_ts_time: z.string().min(1, { message: 'Choose time' }),
+  exp_tt_id: z.number({ message: 'Select transaction type' }),
+  exp_st_id: z.boolean().optional(),
 });
 
 export type transactionSchemaType = z.infer<typeof transactionSchema>;

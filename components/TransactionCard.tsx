@@ -15,9 +15,11 @@ const TransactionCard = ({
   exp_ts_transaction_type,
   exp_tt_id,
   exp_tc_id,
-}: Itransaction) => {
+  exp_st_id,
+  isStarred,
+}: Itransaction & { isStarred?: boolean }) => {
   return (
-    <Link href={`/transaction?exp_ts_id=${exp_ts_id}`} asChild>
+    <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild>
       <TouchableOpacity
         onPress={() => {}}
         activeOpacity={0.2}

@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { format } from 'date-fns';
 
@@ -9,16 +9,18 @@ interface Props {
   onChange: (time: string) => void;
   onBlur?: () => void;
   placeholder?: string;
+  error?: string;
+  isRequired?: boolean;
 }
 
-const CustomTimePicker: React.FC<Props> = ({ value, onChange, onBlur, placeholder }) => {
+const CustomTimePicker = ({ value, onChange, onBlur, error, placeholder, isRequired }: Props) => {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<Date>(new Date());
 
-  const formatDisplayTime = (date: Date) => format(date, 'hh:mm a'); // e.g., "10:30 AM"
+  const formatDisplayTime = (date: Date) => format(date, 'hh:mm a');
 
   return (
-    <>
+    <View>
       <TouchableOpacity
         onPress={() => {
           setOpen(true);
@@ -49,7 +51,7 @@ const CustomTimePicker: React.FC<Props> = ({ value, onChange, onBlur, placeholde
         onConfirm={(selectedTime) => {
           setOpen(false);
           setTime(selectedTime);
-          const formatted = formatDisplayTime(selectedTime); // "10:30 AM"
+          const formatted = formatDisplayTime(selectedTime);
           onChange(formatted);
         }}
         onCancel={() => setOpen(false)}
@@ -58,7 +60,20 @@ const CustomTimePicker: React.FC<Props> = ({ value, onChange, onBlur, placeholde
         confirmText="Select"
         cancelText="Cancel"
       />
-    </>
+      {!!error && (
+        <Text
+          style={{
+            fontSize: 12,
+            color: '#f02d3a',
+            marginTop: 4,
+            fontFamily: 'Inter-300',
+            maxWidth: 100,
+          }}
+          numberOfLines={1}>
+          {error}
+        </Text>
+      )}
+    </View>
   );
 };
 

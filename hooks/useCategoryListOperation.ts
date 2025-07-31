@@ -176,3 +176,12 @@ export const useDeleteCategory = () => {
     },
   });
 };
+
+
+export const useGetCategoryCache = () => {
+  const queryClient = useQueryClient();
+  const data = queryClient.getQueryData<ICategory[]>(['categories']);
+  return {
+    categories: data || []
+  }
+}

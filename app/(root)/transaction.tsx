@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
 
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
@@ -25,22 +25,29 @@ import CustomDatePicker from '@/components/CustomDatePicker';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
-import { useCategoryList } from '@/hooks/useCategoryListOperation';
+import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
 import CustomTimePicker from '@/components/TimePicker';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { FontAwesome5 } from '@expo/vector-icons';
+import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import OverlayLoader from '@/components/Overlay';
-import { useSaveTransaction } from '@/hooks/useSaveTransaction';
-import { Itransaction } from '@/types';
-import { useAuth } from '@clerk/clerk-expo';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+import {
+  useDeleteTransaction,
+  useFetchTransaction,
+  useSaveTransaction,
+} from '@/hooks/useTransaction';
+import { showToast } from '@/components/ToastMessage';
+import ProfileHeader from '@/components/ProfileHeader';
 
 export default function Transaction() {
-  const { categories, loading } = useCategoryList();
-  const { exp_ts_id } = useLocalSearchParams<{ exp_ts_id?: string }>();
+  const { categories } = useGetCategoryCache();
+  const { exp_ts_id, starred } = useLocalSearchParams() as {
+    exp_ts_id?: string;
+    starred?: boolean;
+  };
+  const { data, isLoading: isFetching } = useFetchTransaction(exp_ts_id);
+  const { mutateAsync: saveTransaction, isPending: isLoading } = useSaveTransaction(starred);
+  const { mutateAsync: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
+
   const router = useRouter();
-  const { getToken } = useAuth();
 
   const formattedCategory = useMemo(() => {
     return categories.map((category) => ({
@@ -52,8 +59,10 @@ export default function Transaction() {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isDirty },
+    watch,
     reset,
+    setValue,
   } = useForm({
     defaultValues: {
       exp_ts_title: '',
@@ -63,30 +72,16 @@ export default function Transaction() {
       exp_ts_amount: undefined,
       exp_tc_id: undefined,
       exp_tt_id: undefined,
+      exp_st_id: false,
     },
     resolver: zodResolver(transactionSchema),
   });
+  const exp_st_id = watch('exp_st_id');
 
   useEffect(() => {
-    const fetchTransaction = async () => {
-      if (!exp_ts_id) return;
-
-      try {
-        const token = await getToken();
-        const response = await fetch(`${API_URL}/expensify/transaction/${exp_ts_id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch transaction: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        reset({
+    if (data) {
+      reset(
+        {
           exp_ts_title: data.exp_ts_title || '',
           exp_ts_date: data.exp_ts_date || '',
           exp_ts_note: data.exp_ts_note || '',
@@ -94,18 +89,17 @@ export default function Transaction() {
           exp_ts_amount: data.exp_ts_amount?.toString() || '',
           exp_tc_id: data.exp_tc_id,
           exp_tt_id: data.exp_tt_id,
-        });
-      } catch (error) {
-        console.error('Failed to fetch transaction:', error);
-      }
-    };
+          exp_st_id: !!data.exp_st_id,
+        },
+        {
+          keepDirty: false,
+          keepIsValidating: true,
+        },
+      );
+    }
+  }, [data, reset]);
 
-    fetchTransaction();
-  }, [exp_ts_id]);
-
-  const { mutateAsync: saveTransaction, isPending: isLoading } = useSaveTransaction();
-
-  const onSubmit = async (data: transactionSchemaType & { exp_ts_id?: string }) => {
+  const onSubmit = (data: transactionSchemaType & { exp_ts_id?: string }) => {
     try {
       const formattedData = {
         ...data,
@@ -118,9 +112,24 @@ export default function Transaction() {
         formattedData.exp_ts_id = exp_ts_id;
       }
 
-      await saveTransaction(formattedData);
-
-      router.back();
+      saveTransaction(formattedData)
+        .then(() => {
+          showToast({
+            text1: exp_ts_id
+              ? 'Transaction updated successfully'
+              : 'Transaction added successfully',
+            type: 'success',
+            position: 'bottom',
+          });
+          router.back();
+        })
+        .catch(() => {
+          showToast({
+            text1: 'Server Error',
+            type: 'error',
+            position: 'bottom',
+          });
+        });
     } catch (error) {
       console.error('Error saving transaction:', error);
     }
@@ -130,28 +139,35 @@ export default function Transaction() {
     try {
       const confirm = await new Promise((resolve) =>
         Alert.alert(
-          'Confirm Delete',
+          'Delete this transaction?',
           'Are you sure you want to delete this transaction?',
           [
             { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
             { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
           ],
-          { cancelable: true },
         ),
       );
 
       if (!confirm) return;
 
-      // setIsLoading(true);
-      // const currentUser = auth().currentUser;
-      // if (!currentUser || !ts_id) throw new Error('Missing user or transaction ID');
-
-      // await firestore().collection(`users/${currentUser.uid}/transactions`).doc(ts_id).delete();
-
-      // setIsLoading(false);
-      router.back(); // navigate to previous screen
+      if (exp_ts_id)
+        deleteTransaction(Number(exp_ts_id))
+          .then(() => {
+            showToast({
+              text1: 'Transaction removed successfully',
+              type: 'success',
+              position: 'bottom',
+            });
+            router.back();
+          })
+          .catch(() => {
+            showToast({
+              text1: 'Server Error',
+              type: 'error',
+              position: 'bottom',
+            });
+          });
     } catch (error) {
-      // setIsLoading(false);
       console.error('Error deleting transaction:', error);
     }
   };
@@ -161,209 +177,235 @@ export default function Transaction() {
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
-        <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          <ThemedView
+        <View style={{ flex: 1 }}>
+          <ScrollView
             style={{
               flex: 1,
-              paddingHorizontal: 5,
-            }}>
-            {loading && <OverlayLoader />}
-            <View style={styles.formContainer}>
-              {/* {error && (
-                <View style={styles.errorContainer}>
-                  <Text style={styles.error}>{error}</Text>
-                </View>
-              )} */}
-              <View style={[styles.header, { justifyContent: 'space-between' }]}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}>
-                  <Pressable
-                    onPress={() => {
-                      router.back();
-                    }}>
-                    <Ionicons name="arrow-back" size={20} color="#FFF" />
-                  </Pressable>
-                  <Text style={styles.label}>
-                    {' '}
-                    {exp_ts_id ? 'Edit transaction' : 'Add transaction'}
-                  </Text>
-                </View>
-                {exp_ts_id && (
-                  <>
-                    <TouchableOpacity onPress={handleDelete}>
-                      {isLoading ? (
-                        <ActivityIndicator animating color={'#6900FF'} style={styles.loader} />
-                      ) : null}
-                      <FontAwesome5 name="trash" size={20} color="#D9363E" />
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-              <Spacer height={10} />
-              <View>
-                <View style={[styles.sectionContainer]}>
-                  <View
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      columnGap: 10,
-                    }}>
+            }}
+            bounces={false}
+            showsVerticalScrollIndicator={false}>
+            <ThemedView
+              style={{
+                flex: 1,
+                paddingHorizontal: 5,
+              }}>
+              {(isFetching || isDeleting || isLoading) && <OverlayLoader />}
+
+              <Spacer height={5} />
+              <ProfileHeader title={exp_ts_id ? 'Edit transaction' : 'Add transaction'} />
+
+              <View style={styles.formContainer}>
+                <View>
+                  <View style={[styles.sectionContainer]}>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        columnGap: 10,
+                      }}>
+                      <Controller
+                        control={control}
+                        render={({ field }) => (
+                          <CustomDatePicker
+                            {...field}
+                            onBlur={field.onBlur}
+                            onChange={(data) => field.onChange(data)}
+                            value={field.value}
+                            placeholder="Select Date"
+                            error={errors.exp_ts_date?.message}
+                            isRequired
+                          />
+                        )}
+                        name="exp_ts_date"
+                      />
+                      <Controller
+                        control={control}
+                        render={({ field }) => (
+                          <CustomTimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            placeholder="Select time"
+                            error={errors.exp_ts_time?.message}
+                            isRequired
+                          />
+                        )}
+                        name="exp_ts_time"
+                      />
+                    </View>
+                    <Spacer height={10} />
                     <Controller
                       control={control}
                       render={({ field }) => (
-                        <CustomDatePicker
-                          {...field}
-                          onBlur={field.onBlur}
-                          onChange={(data) => field.onChange(data)}
+                        <CustomRadioButton
+                          label="Transaction Type"
                           value={field.value}
-                          placeholder="Select Date"
-                          error={errors.exp_ts_date?.message}
+                          options={TransactionType}
+                          onChange={(data) => {
+                            field.onChange(data);
+                          }}
+                          disabled={field.disabled}
                           isRequired
                         />
                       )}
-                      name="exp_ts_date"
+                      name="exp_tt_id"
                     />
+                    {errors.exp_tt_id?.message ? (
+                      <Text style={styles.errorMessage}>{errors.exp_tt_id?.message}</Text>
+                    ) : null}
+                    <Spacer height={20} />
+
                     <Controller
                       control={control}
                       render={({ field }) => (
-                        <CustomTimePicker
-                          value={field.value}
-                          onChange={field.onChange}
+                        <Input
+                          {...field}
+                          placeholder="amount"
+                          label="Amount"
+                          keyboardType="numeric"
                           onBlur={field.onBlur}
-                          placeholder="Select time"
+                          onChangeText={field.onChange}
+                          error={errors.exp_ts_amount?.message}
+                          borderLess
+                          isRequired
                         />
                       )}
-                      name="exp_ts_time"
+                      name="exp_ts_amount"
+                    />
+                    <Spacer height={20} />
+                    <Controller
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          value={field.value ?? ''}
+                          placeholder="title"
+                          label="Title"
+                          keyboardType="default"
+                          autoCapitalize="none"
+                          autoComplete="off"
+                          onBlur={field.onBlur}
+                          onChangeText={field.onChange}
+                          error={errors.exp_ts_title?.message}
+                          borderLess
+                          isRequired
+                        />
+                      )}
+                      name="exp_ts_title"
                     />
                   </View>
-                  <Spacer height={10} />
-                  <Controller
-                    control={control}
-                    render={({ field }) => (
-                      <CustomRadioButton
-                        label="Transaction Type"
-                        value={field.value}
-                        options={TransactionType}
-                        onChange={(data) => {
-                          field.onChange(data);
-                        }}
-                        disabled={field.disabled}
-                        isRequired
-                      />
-                    )}
-                    name="exp_tt_id"
-                  />
-                  {errors.exp_tt_id?.message ? (
-                    <Text style={styles.errorMessage}>{errors.exp_tt_id?.message}</Text>
-                  ) : null}
-                  <Spacer height={20} />
-
-                  <Controller
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="amount"
-                        label="Amount"
-                        keyboardType="numeric"
-                        onBlur={field.onBlur}
-                        onChangeText={field.onChange}
-                        error={errors.exp_ts_amount?.message}
-                        borderLess
-                        isRequired
-                      />
-                    )}
-                    name="exp_ts_amount"
-                  />
-                  <Spacer height={20} />
+                  <View style={[styles.sectionContainer, { marginTop: 25 }]}>
+                    <Controller
+                      control={control}
+                      render={({ field }) => (
+                        <CustomSelectInput
+                          placeholder="Choose category"
+                          value={field.value}
+                          label="Category"
+                          onChange={(data) => {
+                            field.onChange(data);
+                          }}
+                          options={formattedCategory}
+                          isRequired
+                        />
+                      )}
+                      name="exp_tc_id"
+                    />
+                    {errors.exp_tc_id?.message ? (
+                      <Text style={styles.errorMessage}>{errors.exp_tc_id?.message}</Text>
+                    ) : null}
+                  </View>
+                  <Spacer height={25} />
                   <Controller
                     control={control}
                     render={({ field }) => (
                       <Input
                         {...field}
                         value={field.value ?? ''}
-                        placeholder="title"
-                        label="Title"
+                        placeholder="notes"
+                        label="Note"
                         keyboardType="default"
                         autoCapitalize="none"
                         autoComplete="off"
                         onBlur={field.onBlur}
                         onChangeText={field.onChange}
-                        error={errors.exp_ts_title?.message}
+                        error={errors.exp_ts_note?.message}
                         borderLess
-                        isRequired
+                        multiline={true}
+                        numberOfLines={4}
+                        isTextBox
                       />
                     )}
-                    name="exp_ts_title"
+                    name="exp_ts_note"
                   />
-                </View>
-                <View style={[styles.sectionContainer, { marginTop: 25 }]}>
-                  <Controller
-                    control={control}
-                    render={({ field }) => (
-                      <CustomSelectInput
-                        placeholder="Choose category"
-                        value={field.value}
-                        label="Category"
-                        onChange={(data) => {
-                          field.onChange(data);
-                        }}
-                        options={formattedCategory}
-                        isRequired
-                      />
+                  <View style={styles.subTextContainer}>
+                    {!!data?.exp_ts_created_at && (
+                      <Text style={styles.subText}>
+                        Created: {format(new Date(data.exp_ts_created_at), 'do MMMM yyyy HH:MM a')}
+                      </Text>
                     )}
-                    name="exp_tc_id"
-                  />
-                  {errors.exp_tc_id?.message ? (
-                    <Text style={styles.errorMessage}>{errors.exp_tc_id?.message}</Text>
-                  ) : null}
+                    {!!data?.exp_ts_updated_at && (
+                      <Text style={styles.subText}>
+                        Modified: {format(new Date(data.exp_ts_updated_at), 'do MMMM yyyy HH:MM a')}
+                      </Text>
+                    )}
+                  </View>
+                  <Spacer height={70} />
                 </View>
-                <Spacer height={25} />
-                <Controller
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      value={field.value ?? ''}
-                      placeholder="notes"
-                      label="Note"
-                      keyboardType="default"
-                      autoCapitalize="none"
-                      autoComplete="off"
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      error={errors.exp_ts_note?.message}
-                      borderLess
-                      multiline={true}
-                      numberOfLines={4}
-                      isTextBox
-                    />
-                  )}
-                  name="exp_ts_note"
-                />
-                <Spacer height={35} />
-                <View style={styles.btnContainer}>
-                  <TouchableOpacity
-                    style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
-                    disabled={!isValid || isLoading}
-                    onPress={handleSubmit(onSubmit)}>
-                    {isLoading ? (
-                      <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
-                    ) : null}
-                    <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
-                      {exp_ts_id ? 'Update' : 'Add'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <Spacer height={50} />
+              </View>
+            </ThemedView>
+          </ScrollView>
+          <View style={styles.footer}>
+            <View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 40,
+                }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setValue('exp_st_id', !exp_st_id, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}>
+                  <AntDesign name={exp_st_id ? 'star' : 'staro'} size={20} color="#FFF" />
+                </TouchableOpacity>
+
+                {exp_ts_id && (
+                  <>
+                    <TouchableOpacity onPress={handleDelete}>
+                      {isLoading ? (
+                        <ActivityIndicator animating color={'#6900FF'} style={styles.loader} />
+                      ) : null}
+                      <FontAwesome5 name="trash" size={20} color="#FFF" />
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             </View>
-          </ThemedView>
-        </ScrollView>
+
+            <View>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  !isValid || !isDirty || isFetching || isDeleting || isLoading
+                    ? styles.disable
+                    : {},
+                ]}
+                disabled={!isValid || !isDirty || isFetching || isDeleting || isLoading}
+                onPress={handleSubmit(onSubmit)}>
+                {isLoading ? (
+                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                ) : null}
+                <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
+                  {exp_ts_id ? 'Update' : 'Add'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
   );
@@ -382,22 +424,20 @@ const styles = StyleSheet.create({
   formContainer: {
     justifyContent: 'center',
     paddingHorizontal: 15,
-    marginTop: 10,
   },
   sectionContainer: {
     marginVertical: 10,
   },
-  btnContainer: {
-    alignItems: 'center',
-  },
+
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
     backgroundColor: '#463e75',
-    borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 12 : 16,
-    width: '100%',
+    borderRadius: 50,
+    paddingHorizontal: 20,
+    paddingVertical: 9,
+    width: 'auto',
   },
   loader: {
     position: 'absolute',
@@ -456,5 +496,28 @@ const styles = StyleSheet.create({
     color: '#c7c7c7',
     fontFamily: 'Inter-600',
     textAlign: 'center',
+  },
+  footer: {
+    // height: 50,
+    elevation: 10,
+    backgroundColor: '#1A1A24',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  footerText: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  subText: {
+    color: '#8880A0',
+    fontSize: 12,
+    fontFamily: 'Inter-500',
+  },
+  subTextContainer: {
+    paddingTop: 30,
+    paddingLeft: 10,
   },
 });

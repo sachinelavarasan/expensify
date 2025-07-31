@@ -10,7 +10,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         justifyContent: 'space-between',
         alignItems: 'center',
         elevation: 10,
-        // backgroundColor: '#1A1A24',
+        backgroundColor: '#1A1A24',
         paddingBottom: Platform.OS === 'ios' ? 10 : 0,
         paddingTop: 5,
         position: 'static',

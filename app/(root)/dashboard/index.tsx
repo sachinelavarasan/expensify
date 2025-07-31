@@ -14,12 +14,13 @@ import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+import { useCategoryList } from '@/hooks/useCategoryListOperation';
 
 export default function Index() {
   const router = useRouter();
   const { transactions, currentMonth, loading, goToPreviousMonth, goToNextMonth, refetch } =
     useMonthlyTransactions();
-  const { data: accounts, isLoading } = useBankAccounts();
+    useCategoryList();
 
   const [refreshing, setRefreshing] = useState(false);
 

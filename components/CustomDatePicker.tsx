@@ -1,6 +1,6 @@
 import { Entypo } from '@expo/vector-icons';
 import React, { forwardRef, useState } from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { format, parseISO } from 'date-fns';
 
@@ -23,7 +23,7 @@ const CustomDatePicker = forwardRef<any, Props>(
     const formatDateForStorage = (date: Date) => format(date, 'yyyy-MM-dd');
 
     return (
-      <>
+      <View>
         <TouchableOpacity
           onPress={() => {
             setOpen(true);
@@ -64,11 +64,11 @@ const CustomDatePicker = forwardRef<any, Props>(
         />
 
         {!!error && (
-          <Text style={{ fontSize: 12, color: '#f02d3a', marginTop: 4, fontFamily: 'Inter-300' }}>
+          <Text style={{ fontSize: 12, color: '#f02d3a', marginTop: 4, fontFamily: 'Inter-300', maxWidth: 100 }} numberOfLines={1}>
             {error}
           </Text>
         )}
-      </>
+      </View>
     );
   },
 );
