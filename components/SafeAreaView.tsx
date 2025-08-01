@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet, type ViewProps } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider, SafeAreaViewProps } from 'react-native-safe-area-context';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 
-type SafeAreaViewComponentProps = ViewProps & {
+type SafeAreaViewComponentProps = ViewProps & SafeAreaViewProps & {
   children: React.ReactElement;
   lightColor?: string;
   darkColor?: string;
@@ -18,9 +18,13 @@ const SafeAreaViewComponent = ({
   ...otherProps
 }: SafeAreaViewComponentProps) => {
   return (
-    <SafeAreaView style={[{ backgroundColor: '#0E0E10' }, styles.container, style]} {...otherProps}>
-      {children}
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView
+        style={[{ backgroundColor: '#0F0E17' }, styles.container, style]}
+        {...otherProps}>
+        {children}
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 export default SafeAreaViewComponent;

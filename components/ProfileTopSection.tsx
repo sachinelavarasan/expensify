@@ -51,8 +51,8 @@ export default function AnimatedTopSection({
   });
 
   const avatarStyle = useAnimatedStyle(() => {
-    const scale = interpolate(scrollOffset.value, [0, 100, 200], [1, 0.5, 0.35], Extrapolate.CLAMP);
-    const translateX = interpolate(scrollOffset.value, [0, 100], [0, -220], Extrapolate.CLAMP);
+    const scale = interpolate(scrollOffset.value, [0, 100, 200], [1, 0.9, 0.8], Extrapolate.CLAMP);
+    // const translateX = interpolate(scrollOffset.value, [0, 100], [0, -220], Extrapolate.CLAMP);
     const translateY = interpolate(
       scrollOffset.value,
       [0, 100],
@@ -62,7 +62,9 @@ export default function AnimatedTopSection({
     const opacity = interpolate(scrollOffset.value, [0, 60, 100], [1, 0.7, 0], Extrapolate.CLAMP);
 
     return {
-      transform: [{ scale }, { translateX }, { translateY }],
+      transform: [{ scale }, 
+        // { translateX }, 
+        { translateY }],
       opacity,
     };
   });
@@ -112,7 +114,7 @@ export default function AnimatedTopSection({
         </View>
       </Animated.View>
 
-      <Animated.View style={[styles.titleBar, titleBarOpacity, { backgroundColor: '#121212' }]}>
+      <Animated.View style={[styles.titleBar, titleBarOpacity, { backgroundColor: '#0F0E17' }]}>
         <Animated.View style={[styles.headerAvatarSmall]}>
           <Image source={avatar} style={styles.avatar} resizeMode="contain" />
         </Animated.View>

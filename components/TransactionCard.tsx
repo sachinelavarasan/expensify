@@ -16,6 +16,8 @@ const TransactionCard = ({
   exp_tt_id,
   exp_tc_id,
   exp_st_id,
+  exp_tc_icon,
+  exp_tc_icon_bg_color,
   isStarred,
 }: Itransaction & { isStarred?: boolean }) => {
   return (
@@ -30,9 +32,20 @@ const TransactionCard = ({
         }}>
         <View style={styles.innerContainer}>
           <View style={styles.left}>
-            <View style={{ backgroundColor: '#282343', padding: 5, borderRadius: 5 }}>
+            <View
+              style={{
+                backgroundColor: exp_tc_icon_bg_color ? exp_tc_icon_bg_color : '#282343',
+                padding: 5,
+                borderRadius: 5,
+              }}>
               <MaterialIcons
-                name={exp_tt_id === 2 ? 'trending-up' : 'trending-down'}
+                name={
+                  exp_tc_icon
+                    ? (exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name'])
+                    : exp_tt_id === 2
+                      ? 'trending-up'
+                      : 'trending-down'
+                }
                 size={24}
                 color="#e0deed"
               />

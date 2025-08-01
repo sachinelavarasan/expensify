@@ -16,8 +16,8 @@ import * as FileSystem from 'expo-file-system';
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+import AddAccount from '@/components/AddAccount';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -25,10 +25,14 @@ const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const router = useRouter();
-  const { data: accounts, isLoading } = useBankAccounts();
-  useCategoryList();
+  const { accounts, loading } = useBankAccounts();
   const { user } = useUser();
   const { signOut } = useAuth();
+
+  const overAllAmount = accounts.reduce(
+    (previous, current) => Number(previous) + Number(current.exp_ba_balance) || 0,
+    0,
+  );
 
   const onSubmit = () => {
     // signOut();
@@ -113,12 +117,12 @@ const Profile = () => {
                   <Text style={styles.option}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText]}>Overall: 2000</Text>
+                  <Text style={[styles.subText]}>Overall: {overAllAmount}</Text>
                 </View>
               </View>
             </View>
 
-            <View>{/* <Text style={styles.amount}>%</Text> */}</View>
+            <View style={{ marginRight: 10 }}>{<AddAccount />}</View>
           </View>
         </Pressable>
         <FlatList
@@ -127,6 +131,9 @@ const Profile = () => {
             marginBottom: 15,
             gap: 5,
             padding: 5,
+          }}
+          style={{
+            display: loading ? 'none' : 'flex',
           }}
           horizontal
           bounces={false}
@@ -140,15 +147,15 @@ const Profile = () => {
                 params: { id: item.exp_ba_id },
               }}
               asChild>
-              <TouchableOpacity
-                style={styles.accountCard}
-                onPress={() => {
-                  console.log('first, rrrr');
-                }}>
+              <TouchableOpacity style={styles.accountCard}>
                 <View
                   style={[
                     styles.left,
-                    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+                    {
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    },
                   ]}>
                   <View>
                     <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>

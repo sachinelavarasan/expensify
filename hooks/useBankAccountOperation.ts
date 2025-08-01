@@ -1,17 +1,8 @@
+import { BankAccount, CreateBankAccountDto, IAccountGroupedTransactions, UpdateBankAccountDto } from '@/types';
 import { useAuth } from '@clerk/clerk-expo';
 
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 
-export interface BankAccount {
-  exp_ba_id: number;
-  exp_ba_name: string;
-  exp_ba_type: string;
-  exp_ba_balance: number;
-  exp_ba_user_id: number;
-}
-
-export type CreateBankAccountDto = Omit<BankAccount, 'exp_ba_id'>;
-export type UpdateBankAccountDto = Partial<CreateBankAccountDto> & { exp_ba_id: number };
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -43,7 +34,7 @@ export const useAddBankAccount = () => {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transaction'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
     },
   });
 };
@@ -55,7 +46,6 @@ export const useUpdateBankAccount = () => {
   if (!userId) {
     throw new Error('User is not authenticated');
   }
-
   return useMutation({
     mutationFn: async (data: UpdateBankAccountDto) => {
       const token = await getToken();
@@ -71,8 +61,10 @@ export const useUpdateBankAccount = () => {
       if (!res.ok) throw new Error('Failed to update account');
       return await res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transaction'] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['accountDetail', String(variables.exp_ba_id)],
+      });
     },
   });
 };
@@ -109,7 +101,13 @@ export const useBankAccounts = () => {
   if (!userId) {
     throw new Error('User is not authenticated');
   }
-  return useQuery({
+   const {
+    data: accounts,
+    isLoading: loading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<BankAccount[], Error>({
     queryKey: queryKeys.bankAccounts,
     queryFn: async () => {
       const token = await getToken();
@@ -123,4 +121,51 @@ export const useBankAccounts = () => {
       return await res.json();
     },
   });
+  return {
+    accounts: accounts || [],
+    loading,
+    error: isError ? error?.message : null,
+    refetch,
+  };
+};
+
+export const useAccountGroupedTransactions = (accountId: number) => {
+  const { getToken, userId } = useAuth();
+
+  if (!userId) {
+    throw new Error('User is not authenticated');
+  }
+
+  const {
+    data: account,
+    isLoading: loading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<IAccountGroupedTransactions, Error>({
+    queryKey: ['accountDetail', accountId],
+    queryFn: async () => {
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/expensify/accounts/${accountId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch account transactions');
+      }
+
+      return res.json();
+    },
+    enabled: !!accountId,
+  });
+
+  return {
+    account: account || null,
+    loading,
+    error: isError ? error?.message : null,
+    refetch,
+  };
 };

@@ -2,10 +2,11 @@ import { Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import { formattedAmount } from '@/utils/formatter';
+import { deviceWidth } from '@/utils/functions';
 
 const CARDGAP = 10;
 
-const { width } = Dimensions.get('window');
+const width  = deviceWidth();
 
 const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
   const cardWidth = (width - CARDGAP * 3) / 2;
