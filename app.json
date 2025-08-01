@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "expensify",
+    "name": "Expensify",
     "slug": "expensify",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -29,8 +29,8 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/app-splash-screen.png",
-          "imageWidth": 300,
-          "backgroundColor": "#463E75"
+          "imageWidth": 250,
+          "backgroundColor": "#1A1A2E"
         }
       ],
       [
