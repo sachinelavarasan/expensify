@@ -1,5 +1,13 @@
 import { useState, useCallback } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import Emptystate from '@/components/Emptystate';
 import TransactionCard from '@/components/TransactionCard';
@@ -8,19 +16,23 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formattedAmount } from '@/utils/formatter';
-import { Entypo, Feather } from '@expo/vector-icons';
+import { Entypo, Feather, Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
-import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+// import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
+import { AnimatedFAB, Snackbar } from 'react-native-paper';
+import CustomSnackBar from '@/components/CustomSnackBar';
 
 export default function Index() {
+  const [isExtended, setIsExtended] = useState(true);
+
   const router = useRouter();
   const { transactions, currentMonth, loading, goToPreviousMonth, goToNextMonth, refetch } =
     useMonthlyTransactions();
-    useCategoryList();
+  useCategoryList();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -60,15 +72,26 @@ export default function Index() {
   }));
   const income = groupedDataArray.reduce((acc, item) => acc + item.credit, 0);
   const expense = groupedDataArray.reduce((acc, item) => acc + item.debit, 0);
-
+  const onScroll = ({ nativeEvent }: any) => {
+    const currentScrollPosition = Math.floor(nativeEvent?.contentOffset?.y) ?? 0;
+    setIsExtended(currentScrollPosition <= 0);
+  };
+  const fabStyle = { ['right']: 16 };
   return (
     <ThemedView style={{ flex: 1, paddingHorizontal: 10 }}>
       {loading && <OverlayLoader />}
-      <TouchableOpacity style={styles.floatingButton} onPress={handlePress}>
-        <Entypo name="plus" size={24} color="white" />
-      </TouchableOpacity>
+      <AnimatedFAB
+        icon={'plus'}
+        label={'Add Transaction'}
+        extended={isExtended}
+        onPress={handlePress}
+        animateFrom={'right'}
+        iconMode={'dynamic'}
+        style={[styles.floatingButton, fabStyle]}
+      />
       <View>
         <FlatList
+          onScroll={onScroll}
           bounces={false}
           showsVerticalScrollIndicator={false}
           data={groupedDataArray}
@@ -137,6 +160,7 @@ export default function Index() {
           keyExtractor={(item) => item.date}
         />
       </View>
+      <CustomSnackBar label="Added successfully" isVisible={true} />
     </ThemedView>
   );
 }
@@ -169,21 +193,10 @@ const styles = StyleSheet.create({
     color: '#a19bca',
   },
   floatingButton: {
-    backgroundColor: '#5a4f96', // Replace with your primary color
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#5a4f96',
     position: 'absolute',
-    bottom: 20,
-    right: 0,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
     zIndex: 2,
-    marginRight: 10,
+    bottom: 20,
+    right: 20,
   },
 });

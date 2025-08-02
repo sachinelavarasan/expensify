@@ -1,5 +1,6 @@
 import { LogBox } from 'react-native';
 import { Stack } from 'expo-router';
+import { PaperProvider } from 'react-native-paper';
 import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -9,7 +10,7 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
-import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+// import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ToastMessage from '@/components/ToastMessage';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -77,7 +78,8 @@ function LayoutBuilder() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider value={DarkTheme}>
+        <PaperProvider>
+          {/* <ThemeProvider value={DarkTheme}> */}
           <ExpoStatus />
           {authLoaded && fontsLoaded ? (
             <Stack screenOptions={{ headerShown: false }}>
@@ -93,8 +95,9 @@ function LayoutBuilder() {
               <Stack.Screen name="(root)/categories/[id]" />
             </Stack>
           ) : null}
-          <ToastMessage/>
-        </ThemeProvider>
+          <ToastMessage />
+          {/* </ThemeProvider> */}
+        </PaperProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
   );
