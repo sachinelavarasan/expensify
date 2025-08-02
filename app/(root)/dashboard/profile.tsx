@@ -35,8 +35,8 @@ const Profile = () => {
   );
 
   const onSubmit = () => {
-    // signOut();
-    // router.replace('/(root)/(auth)/login');
+    signOut();
+    router.replace('/(root)/(auth)/login');
   };
   async function download() {
     const filename = 'dummy.pdf';
