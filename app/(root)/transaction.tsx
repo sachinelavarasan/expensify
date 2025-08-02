@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -27,7 +28,7 @@ import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
 import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
 import CustomTimePicker from '@/components/TimePicker';
-import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
+import { AntDesign, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import OverlayLoader from '@/components/Overlay';
 import {
   useDeleteTransaction,
@@ -36,6 +37,7 @@ import {
 } from '@/hooks/useTransaction';
 import { showToast } from '@/components/ToastMessage';
 import ProfileHeader from '@/components/ProfileHeader';
+import CategorySelector from '@/components/CategorySelector';
 
 export default function Transaction() {
   const { categories } = useGetCategoryCache();
@@ -48,13 +50,6 @@ export default function Transaction() {
   const { mutateAsync: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
 
   const router = useRouter();
-
-  const formattedCategory = useMemo(() => {
-    return categories.map((category) => ({
-      key: category.exp_tc_id,
-      value: category.exp_tc_label,
-    }));
-  }, [categories]);
 
   const {
     control,
@@ -71,12 +66,14 @@ export default function Transaction() {
       exp_ts_time: '',
       exp_ts_amount: undefined,
       exp_tc_id: undefined,
-      exp_tt_id: undefined,
+      exp_tt_id: 1,
       exp_st_id: false,
     },
     resolver: zodResolver(transactionSchema),
   });
   const exp_st_id = watch('exp_st_id');
+  const exp_tc_id = watch('exp_tc_id');
+  const exp_tt_id = watch('exp_tt_id');
 
   useEffect(() => {
     if (data) {
@@ -88,7 +85,7 @@ export default function Transaction() {
           exp_ts_time: data.exp_ts_time || '',
           exp_ts_amount: data.exp_ts_amount?.toString() || '',
           exp_tc_id: data.exp_tc_id,
-          exp_tt_id: data.exp_tt_id,
+          exp_tt_id: data.exp_tt_id || 1,
           exp_st_id: !!data.exp_st_id,
         },
         {
@@ -104,7 +101,7 @@ export default function Transaction() {
       const formattedData = {
         ...data,
         exp_ts_amount: data.exp_ts_amount,
-        exp_ts_transaction_type: data.exp_tt_id,
+        exp_ts_transaction_type: data.exp_tt_id || 1,
         exp_ts_category: data.exp_tc_id,
       };
 
@@ -172,190 +169,289 @@ export default function Transaction() {
     }
   };
 
+  const redirectToCategory = () => {
+    router.push('/categories');
+  };
+
+  const categoriesList = useMemo(
+    () => categories.filter((cate) => cate.exp_tc_transaction_type === exp_tt_id) || [],
+    [categories, exp_tt_id],
+  );
+
+  const switchType = useCallback(
+    (data: number | string) => {
+      if (!data || !exp_ts_id) return;
+
+      const filtered = categories.filter((item) => item.exp_tc_transaction_type === data);
+
+      const othersCategory = filtered.find((item) => item.exp_tc_label.toLowerCase() === 'others');
+
+      if (othersCategory) {
+        setValue('exp_tc_id', othersCategory.exp_tc_id, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    },
+    [exp_ts_id, categories, setValue],
+  );
+
   return (
     <KeyboardAvoidingView
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
         <View style={{ flex: 1 }}>
-          <ScrollView
+          {(isFetching || isDeleting || isLoading) && <OverlayLoader />}
+          <ThemedView
             style={{
               flex: 1,
-            }}
-            bounces={false}
-            showsVerticalScrollIndicator={false}>
-            <ThemedView
-              style={{
-                flex: 1,
-                paddingHorizontal: 5,
-              }}>
-              {(isFetching || isDeleting || isLoading) && <OverlayLoader />}
-
-              <Spacer height={5} />
-              <ProfileHeader title={exp_ts_id ? 'Edit transaction' : 'Add transaction'} />
-
-              <View style={styles.formContainer}>
+              paddingHorizontal: 5,
+            }}>
+            <FlatList
+              bounces={false}
+              showsVerticalScrollIndicator={false}
+              data={[0]}
+              ListHeaderComponent={() => (
                 <View>
-                  <View style={[styles.sectionContainer]}>
-                    <View
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        columnGap: 10,
-                      }}>
-                      <Controller
-                        control={control}
-                        render={({ field }) => (
-                          <CustomDatePicker
-                            {...field}
-                            onBlur={field.onBlur}
-                            onChange={(data) => field.onChange(data)}
-                            value={field.value}
-                            placeholder="Select Date"
-                            error={errors.exp_ts_date?.message}
-                            isRequired
-                          />
-                        )}
-                        name="exp_ts_date"
-                      />
-                      <Controller
-                        control={control}
-                        render={({ field }) => (
-                          <CustomTimePicker
-                            value={field.value}
-                            onChange={field.onChange}
-                            onBlur={field.onBlur}
-                            placeholder="Select time"
-                            error={errors.exp_ts_time?.message}
-                            isRequired
-                          />
-                        )}
-                        name="exp_ts_time"
-                      />
-                    </View>
-                    <Spacer height={10} />
-                    <Controller
-                      control={control}
-                      render={({ field }) => (
-                        <CustomRadioButton
-                          label="Transaction Type"
-                          value={field.value}
-                          options={TransactionType}
-                          onChange={(data) => {
-                            field.onChange(data);
-                          }}
-                          disabled={field.disabled}
-                          isRequired
-                        />
-                      )}
-                      name="exp_tt_id"
-                    />
-                    {errors.exp_tt_id?.message ? (
-                      <Text style={styles.errorMessage}>{errors.exp_tt_id?.message}</Text>
-                    ) : null}
-                    <Spacer height={20} />
-
-                    <Controller
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="amount"
-                          label="Amount"
-                          keyboardType="numeric"
-                          onBlur={field.onBlur}
-                          onChangeText={field.onChange}
-                          error={errors.exp_ts_amount?.message}
-                          borderLess
-                          isRequired
-                        />
-                      )}
-                      name="exp_ts_amount"
-                    />
-                    <Spacer height={20} />
-                    <Controller
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          value={field.value ?? ''}
-                          placeholder="title"
-                          label="Title"
-                          keyboardType="default"
-                          autoCapitalize="none"
-                          autoComplete="off"
-                          onBlur={field.onBlur}
-                          onChangeText={field.onChange}
-                          error={errors.exp_ts_title?.message}
-                          borderLess
-                          isRequired
-                        />
-                      )}
-                      name="exp_ts_title"
-                    />
-                  </View>
-                  <View style={[styles.sectionContainer, { marginTop: 25 }]}>
-                    <Controller
-                      control={control}
-                      render={({ field }) => (
-                        <CustomSelectInput
-                          placeholder="Choose category"
-                          value={field.value}
-                          label="Category"
-                          onChange={(data) => {
-                            field.onChange(data);
-                          }}
-                          options={formattedCategory}
-                          isRequired
-                        />
-                      )}
-                      name="exp_tc_id"
-                    />
-                    {errors.exp_tc_id?.message ? (
-                      <Text style={styles.errorMessage}>{errors.exp_tc_id?.message}</Text>
-                    ) : null}
-                  </View>
-                  <Spacer height={25} />
-                  <Controller
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        value={field.value ?? ''}
-                        placeholder="notes"
-                        label="Note"
-                        keyboardType="default"
-                        autoCapitalize="none"
-                        autoComplete="off"
-                        onBlur={field.onBlur}
-                        onChangeText={field.onChange}
-                        error={errors.exp_ts_note?.message}
-                        borderLess
-                        multiline={true}
-                        numberOfLines={4}
-                        isTextBox
-                      />
-                    )}
-                    name="exp_ts_note"
-                  />
-                  <View style={styles.subTextContainer}>
-                    {!!data?.exp_ts_created_at && (
-                      <Text style={styles.subText}>
-                        Created: {format(new Date(data.exp_ts_created_at), 'do MMMM yyyy HH:MM a')}
-                      </Text>
-                    )}
-                    {!!data?.exp_ts_updated_at && (
-                      <Text style={styles.subText}>
-                        Modified: {format(new Date(data.exp_ts_updated_at), 'do MMMM yyyy HH:MM a')}
-                      </Text>
-                    )}
-                  </View>
-                  <Spacer height={70} />
+                  <Spacer height={5} />
+                  <ProfileHeader title={exp_ts_id ? 'Edit transaction' : 'Add transaction'} />
                 </View>
-              </View>
-            </ThemedView>
-          </ScrollView>
+              )}
+              renderItem={() => {
+                return (
+                  <View style={styles.formContainer}>
+                    <View>
+                      <View style={[styles.sectionContainer]}>
+                        <View
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            columnGap: 10,
+                          }}>
+                          <Controller
+                            control={control}
+                            render={({ field }) => (
+                              <CustomDatePicker
+                                {...field}
+                                onBlur={field.onBlur}
+                                onChange={(data) => field.onChange(data)}
+                                value={field.value}
+                                placeholder="Select Date"
+                                error={errors.exp_ts_date?.message}
+                                isRequired
+                              />
+                            )}
+                            name="exp_ts_date"
+                          />
+                          <Controller
+                            control={control}
+                            render={({ field }) => (
+                              <CustomTimePicker
+                                value={field.value}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                placeholder="Select time"
+                                error={errors.exp_ts_time?.message}
+                                isRequired
+                              />
+                            )}
+                            name="exp_ts_time"
+                          />
+                        </View>
+                        <Spacer height={10} />
+                        <Controller
+                          control={control}
+                          render={({ field }) => (
+                            <CustomRadioButton
+                              label="Transaction Type"
+                              value={field.value}
+                              options={TransactionType}
+                              onChange={(data) => {
+                                field.onChange(data);
+                                switchType(data);
+                              }}
+                              disabled={field.disabled}
+                              isRequired
+                            />
+                          )}
+                          name="exp_tt_id"
+                        />
+                        {errors.exp_tt_id?.message ? (
+                          <Text style={styles.errorMessage}>{errors.exp_tt_id?.message}</Text>
+                        ) : null}
+                        <Spacer height={20} />
+
+                        <Controller
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              placeholder="amount"
+                              label="Amount"
+                              keyboardType="numeric"
+                              onBlur={field.onBlur}
+                              onChangeText={field.onChange}
+                              error={errors.exp_ts_amount?.message}
+                              borderLess
+                              isRequired
+                            />
+                          )}
+                          name="exp_ts_amount"
+                        />
+                        <Spacer height={20} />
+                        <Controller
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              value={field.value ?? ''}
+                              placeholder="title"
+                              label="Title"
+                              keyboardType="default"
+                              autoCapitalize="none"
+                              autoComplete="off"
+                              onBlur={field.onBlur}
+                              onChangeText={field.onChange}
+                              error={errors.exp_ts_title?.message}
+                              borderLess
+                              isRequired
+                            />
+                          )}
+                          name="exp_ts_title"
+                        />
+                      </View>
+                      <View style={[styles.sectionContainer]}>
+                        <View
+                          style={{
+                            borderColor: '#5a4f96',
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            paddingVertical: 5,
+                            paddingHorizontal: 8,
+                          }}>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              paddingVertical: 10,
+                              paddingHorizontal: 5,
+                              flexWrap: 'wrap',
+                            }}>
+                            <Text
+                              style={[
+                                styles.categoryLabel,
+                                { flex: 1, flexWrap: 'wrap', lineHeight: 20 },
+                              ]}>
+                              Category :{' '}
+                              <Text
+                                style={{
+                                  fontFamily: 'Inter-500',
+                                  color: '#FFF',
+                                }}>
+                                Hospital Expense Hospital Expense
+                              </Text>{' '}
+                            </Text>
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: 10,
+                                marginLeft: 30,
+                              }}>
+                              <TouchableOpacity
+                                activeOpacity={0.2}
+                                style={{
+                                  paddingHorizontal: 10,
+                                }}
+                                onPress={redirectToCategory}>
+                                <MaterialIcons name="edit" size={22} color="#fff" />
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                activeOpacity={0.2}
+                                style={{
+                                  paddingHorizontal: 10,
+                                }}
+                                onPress={redirectToCategory}>
+                                <MaterialIcons name="add" size={22} color="#fff" />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+
+                          <CategorySelector
+                            categories={categoriesList}
+                            selected={exp_tc_id}
+                            setValue={setValue}
+                          />
+                        </View>
+
+                        {/* <Controller
+                          control={control}
+                          render={({ field }) => (
+                            <CustomSelectInput
+                              placeholder="Choose category"
+                              value={field.value}
+                              label="Category"
+                              onChange={(data) => {
+                                field.onChange(data);
+                              }}
+                              options={formattedCategory}
+                              isRequired
+                            />
+                          )}
+                          name="exp_tc_id"
+                        /> */}
+                        {errors.exp_tc_id?.message ? (
+                          <Text style={styles.errorMessage}>{errors.exp_tc_id?.message}</Text>
+                        ) : null}
+                      </View>
+                      <Spacer height={12} />
+                      <Controller
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            value={field.value ?? ''}
+                            placeholder="notes"
+                            label="Note"
+                            keyboardType="default"
+                            autoCapitalize="none"
+                            autoComplete="off"
+                            onBlur={field.onBlur}
+                            onChangeText={field.onChange}
+                            error={errors.exp_ts_note?.message}
+                            borderLess
+                            multiline={true}
+                            numberOfLines={4}
+                            isTextBox
+                          />
+                        )}
+                        name="exp_ts_note"
+                      />
+                      <View style={styles.subTextContainer}>
+                        {!!data?.exp_ts_created_at && (
+                          <Text style={styles.subText}>
+                            Created:{' '}
+                            {format(new Date(data.exp_ts_created_at), 'do MMMM yyyy HH:MM a')}
+                          </Text>
+                        )}
+                        {!!data?.exp_ts_updated_at && (
+                          <Text style={styles.subText}>
+                            Modified:{' '}
+                            {format(new Date(data.exp_ts_updated_at), 'do MMMM yyyy HH:MM a')}
+                          </Text>
+                        )}
+                      </View>
+                      <Spacer height={70} />
+                    </View>
+                  </View>
+                );
+              }}
+              keyExtractor={() => 'form-transaction'}
+            />
+          </ThemedView>
           <View style={styles.footer}>
             <View>
               <View
@@ -519,5 +615,14 @@ const styles = StyleSheet.create({
   subTextContainer: {
     paddingTop: 30,
     paddingLeft: 10,
+  },
+  iconBox: {
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  categoryLabel: {
+    fontSize: 14,
+    color: '#CCC',
+    fontFamily: 'Inter-500',
   },
 });
