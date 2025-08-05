@@ -17,6 +17,7 @@ import AnimatedTopSection from '@/components/ProfileTopSection';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
+import Spacer from '@/components/Spacer';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -71,14 +72,14 @@ const Profile = () => {
             gap: 5,
             padding: 5,
           }}
-          style={{
-            display: loading ? 'none' : 'flex',
-          }}
           horizontal
           bounces={false}
           showsHorizontalScrollIndicator={false}
           data={accounts}
           keyExtractor={(item) => item.exp_ba_name}
+          ListEmptyComponent={()=>(
+            <Spacer height={60}/>
+          )}
           renderItem={({ item }) => (
             <Link
               href={{

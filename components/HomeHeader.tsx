@@ -6,37 +6,45 @@ import { deviceWidth } from '@/utils/functions';
 
 const CARDGAP = 10;
 
-const width  = deviceWidth();
+const width = deviceWidth();
 
 const cardWidth = (width - CARDGAP * 3) / 2;
-const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
+const HomeHeader = ({ income, expense }: { income: number; expense: number}) => {
   return (
     <View>
       <View style={styles.topContainer}>
         <View style={[styles.card, { width: cardWidth }]}>
           <View>
             <Text style={styles.cardTitle}>Income</Text>
-            <Text style={styles.cardSubtitle} numberOfLines={2}>{formatToCurrency(income) }</Text>
+            <Text style={styles.cardSubtitle} numberOfLines={2}>
+              {formatToCurrency(income)}
+            </Text>
           </View>
           <View>
-            <Feather name="arrow-down-left" size={24} color="#00C896" />
+            <Feather name="arrow-down-left" size={20} color="#00C896" />
           </View>
         </View>
         <View style={[styles.card, { width: cardWidth }]}>
           <View>
             <Text style={styles.cardTitle}>Expense</Text>
-            <Text style={styles.cardSubtitle} numberOfLines={2}>{formatToCurrency(expense)}</Text>
+            <Text style={styles.cardSubtitle} numberOfLines={3}>
+              {formatToCurrency(expense)}
+            </Text>
           </View>
           <View>
-            <Feather name="arrow-up-right" size={24} color="#FF4D4F" />
+            <Feather name="arrow-up-right" size={20} color="#FF4D4F" />
           </View>
         </View>
       </View>
-      <View style={styles.balance}>
-        <Text style={[styles.balanceText, { color: '#EDEDED' }]}>Balance: {''}</Text>
-        <Text style={[styles.balanceText, { color: '#EDEDED', fontFamily: 'Inter-600' }]} numberOfLines={2}>
-           {formatToCurrency((income - expense))}
-        </Text>
+      <View>
+        <View style={styles.balance}>
+          <Text style={[styles.balanceText, { color: '#EDEDED' }]}>Balance: {''}</Text>
+          <Text
+            style={[styles.balanceText, { color: '#EDEDED', fontFamily: 'Inter-600' }]}
+            numberOfLines={2}>
+            {formatToCurrency(income - expense)}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -65,15 +73,15 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: '#F4F5F8',
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter-600',
     paddingBottom: 5,
   },
   cardSubtitle: {
     color: '#8F87F1',
-    fontSize: 14,
-    fontFamily: 'Inter-600',
-    maxWidth: cardWidth - 50
+    fontSize: 12,
+    fontFamily: 'Inter-700',
+    maxWidth: cardWidth - 50,
   },
   balance: {
     flexDirection: 'row',
@@ -82,15 +90,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#463e75',
     minWidth: cardWidth,
-    width:'auto',
+    width: 'auto',
     alignSelf: 'center',
     alignItems: 'center',
     marginVertical: 10,
   },
   balanceText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Inter-500',
-    maxWidth: cardWidth + 50
+    maxWidth: cardWidth + 50,
   },
 
   loader: {

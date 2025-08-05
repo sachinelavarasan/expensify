@@ -1,5 +1,13 @@
 import { useState, useCallback } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import Emptystate from '@/components/Emptystate';
 import TransactionCard from '@/components/TransactionCard';
@@ -8,18 +16,29 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Entypo, Feather } from '@expo/vector-icons';
+import { Entypo, Feather, FontAwesome6 } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
+import TransactionFilters from '@/components/TransactionsFilters';
 
 export default function Index() {
   const router = useRouter();
-  const { transactions, currentMonth, loading, goToPreviousMonth, goToNextMonth, refetch } =
-    useMonthlyTransactions();
-    useCategoryList();
+  const {
+    transactions,
+    currentMonth,
+    loading,
+    goToPreviousMonth,
+    goToNextMonth,
+    refetch,
+    updateSearch,
+    updateTransactionType,
+    search,
+    transactionType,
+  } = useMonthlyTransactions();
+  useCategoryList();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -33,6 +52,27 @@ export default function Index() {
 
   const handlePress = () => {
     router.push('/(root)/transaction');
+  };
+
+  const applyFilters = (search: string, transactionType: string) => {
+    updateSearch(search);
+    updateTransactionType(transactionType);
+  };
+  const removeFilter = (type: string) => {
+    switch (type) {
+      case 'search':
+        updateSearch('');
+        break;
+      case 't_type':
+        updateTransactionType('');
+        break;
+      case 'default':
+        updateTransactionType('');
+        updateSearch('');
+        break;
+      default:
+        break;
+    }
   };
 
   const groupedData: { [index: string]: Itransaction[] } = transactions.reduce(
@@ -87,8 +127,63 @@ export default function Index() {
                   prevMonth={goToPreviousMonth}
                   currentMonth={currentMonth}
                 />
+                <TransactionFilters
+                  applyFilters={applyFilters}
+                  searchText={search}
+                  selectedTransaction={transactionType}
+                />
               </View>
               <HomeHeader income={income} expense={expense} />
+              <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                {!!search && (
+                  <Pressable
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#5a4f96',
+                      paddingVertical: 4,
+                      paddingHorizontal: 10,
+                      borderRadius: 50,
+                      flexDirection: 'row',
+                      gap: 5,
+                    }}
+                    onPress={() => removeFilter('search')}>
+                    <Text style={{ textTransform: 'capitalize' }}>{search}</Text>
+                    <Entypo name="cross" size={18} color="#5a4f96" />
+                  </Pressable>
+                )}
+                {!!transactionType && (
+                  <Pressable
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#5a4f96',
+                      paddingVertical: 4,
+                      paddingHorizontal: 10,
+                      borderRadius: 50,
+                      flexDirection: 'row',
+                      gap: 5,
+                    }}
+                    onPress={() => removeFilter('t_type')}>
+                    <Text style={{ textTransform: 'capitalize' }}>{transactionType}</Text>
+                    <Entypo name="cross" size={18} color="#5a4f96" />
+                  </Pressable>
+                )}
+                {!!search && !!transactionType && (
+                  <Pressable
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#5a4f96',
+                      paddingVertical: 4,
+                      paddingHorizontal: 10,
+                      borderRadius: 50,
+                      flexDirection: 'row',
+                      gap: 5,
+                    }}
+                    onPress={() => removeFilter('default')}>
+                    <Text style={{ textTransform: 'capitalize' }}>Clear All</Text>
+                    <Entypo name="cross" size={18} color="#5a4f96" />
+                  </Pressable>
+                )}
+              </View>
             </View>
           )}
           ListEmptyComponent={
@@ -121,7 +216,7 @@ export default function Index() {
                     {!!item.credit && (
                       <Text style={styles.totalAmount}>
                         <Feather name="arrow-down-left" size={12} color="#00C896" />
-                         {formatToCurrency(item.credit)}
+                        {formatToCurrency(item.credit)}
                       </Text>
                     )}
                   </View>
