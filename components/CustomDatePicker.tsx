@@ -1,5 +1,5 @@
 import { Entypo } from '@expo/vector-icons';
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { format, parseISO } from 'date-fns';
@@ -11,19 +11,51 @@ interface Props {
   error?: string;
   placeholder?: string;
   isRequired?: boolean;
+  label?: string;
+  minimumDate?: string;
 }
 
 const CustomDatePicker = forwardRef<any, Props>(
-  ({ value, onChange, onBlur, error, placeholder, isRequired }, ref) => {
+  ({ value, onChange, onBlur, error, placeholder, isRequired, label, minimumDate }, ref) => {
     const [open, setOpen] = useState(false);
+    const [date, setDate] = useState<Date>(new Date());
+    const [minimum, setMinimumDate] = useState<Date>(new Date());
 
-    const date = value ? parseISO(value) : new Date();
+    useEffect(() => {
+      const date = value ? parseISO(value) : new Date();
+      if (date) {
+        setDate(date);
+        onChange(formatDateForStorage(date));
+      }
+    }, [value]);
 
-    const formatDateForDisplay = (date: Date) => format(date, 'EEE, MMM d, yyyy'); // e.g., Mon, Mar 17, 2025
+    useEffect(() => {
+      if (minimumDate) {
+        const date = new Date(minimumDate);
+        setMinimumDate(date);
+        setDate(date);
+        onChange(formatDateForStorage(date));
+      }
+    }, [minimumDate]);
+
+    const formatDateForDisplay = (date: Date) => format(date, 'EEE, MMM d, yyyy');
     const formatDateForStorage = (date: Date) => format(date, 'yyyy-MM-dd');
 
     return (
       <View>
+        {label ? (
+          <View style={{ display: 'flex', flexDirection: 'row' }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#B3B1C4',
+                marginBottom: 6,
+                fontFamily: 'Inter-400',
+              }}>
+              {label}
+            </Text>
+          </View>
+        ) : null}
         <TouchableOpacity
           onPress={() => {
             setOpen(true);
@@ -38,10 +70,11 @@ const CustomDatePicker = forwardRef<any, Props>(
             borderColor: 'transparent',
             flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'center',
           }}>
           <Entypo name="calendar" size={14} color="#FFF" style={{ marginRight: 5 }} />
           <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
-            {value ? formatDateForDisplay(date) : placeholder || 'Pick a date'}
+            {date ? formatDateForDisplay(date) : placeholder || 'Pick a date'}
           </Text>
         </TouchableOpacity>
 
@@ -51,9 +84,11 @@ const CustomDatePicker = forwardRef<any, Props>(
           date={date}
           mode="date"
           theme="dark"
+          minimumDate={minimum}
           onConfirm={(selectedDate) => {
             setOpen(false);
             const formatted = formatDateForStorage(selectedDate);
+            setDate(new Date(formatted));
             onChange(formatted);
           }}
           onCancel={() => setOpen(false)}
@@ -64,7 +99,15 @@ const CustomDatePicker = forwardRef<any, Props>(
         />
 
         {!!error && (
-          <Text style={{ fontSize: 12, color: '#f02d3a', marginTop: 4, fontFamily: 'Inter-300', maxWidth: 100 }} numberOfLines={1}>
+          <Text
+            style={{
+              fontSize: 12,
+              color: '#f02d3a',
+              marginTop: 4,
+              fontFamily: 'Inter-300',
+              maxWidth: 100,
+            }}
+            numberOfLines={1}>
             {error}
           </Text>
         )}

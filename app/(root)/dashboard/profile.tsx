@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { deviceWidth } from '@/utils/functions';
 
-import * as FileSystem from 'expo-file-system';
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
@@ -38,50 +37,7 @@ const Profile = () => {
     signOut();
     router.replace('/(root)/(auth)/login');
   };
-  async function download() {
-    const filename = 'dummy.pdf';
-    const result = await FileSystem.downloadAsync(
-      'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-      FileSystem.documentDirectory + filename,
-    );
-
-    // Log the download result
-    // console.log(result);
-
-    // Save the downloaded file
-    saveFile(result.uri, filename, result.headers['Content-Type']);
-  }
-
-  async function saveFile(uri: string, filename: string, mimetype: string) {
-    if (Platform.OS === 'android') {
-      const permissions =
-        await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-
-      if (permissions.granted) {
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        console.log(permissions.directoryUri, filename, 'application/pdf');
-        await FileSystem.StorageAccessFramework.createFileAsync(
-          permissions.directoryUri,
-          filename,
-          'application/pdf',
-        )
-          .then(async (url) => {
-            await FileSystem.writeAsStringAsync(url, base64, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-            alert('Success');
-          })
-          .catch((e) => console.log(e, 'sss'));
-      } else {
-        console.log('first');
-        //  FileSystem.shareAsync(uri);
-      }
-    } else {
-      // FileSystem.shareAsync(uri);
-    }
-  }
+ 
   return (
     <AnimatedTopSection
       title={user?.firstName || ''}
@@ -89,23 +45,6 @@ const Profile = () => {
       avatar={require('@/assets/images/user-default.png')}
       backgroundImage={require('@/assets/images/profile.png')}>
       <>
-        {/* <View style={styles.infoCard}>
-          <Text style={styles.label}>Name</Text>
-          <Text style={styles.infoText}>{user?.firstName}</Text>
-
-          <Text style={styles.label}>Email</Text>
-
-          <Text style={styles.infoText}>{user?.primaryEmailAddress?.emailAddress || '-'}</Text>
-
-          <Text style={styles.label}>Phone</Text>
-          <Text style={styles.infoText}>{user?.primaryPhoneNumber?.phoneNumber || '-'}</Text>
-          <View style={styles.btnContainer}>
-            <TouchableOpacity style={[styles.button]} onPress={onSubmit}>
-              <Text style={[styles.title]}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-        </View> */}
-
         <Pressable>
           <View style={styles.card}>
             <View style={styles.left}>
@@ -117,7 +56,7 @@ const Profile = () => {
                   <Text style={styles.option}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText]}>Overall: {overAllAmount}</Text>
+                  <Text style={[styles.subText]}>OverAll : {overAllAmount}</Text>
                 </View>
               </View>
             </View>
@@ -184,7 +123,7 @@ const Profile = () => {
                     <Text style={styles.option}>Categories</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>You can manage transaction categories</Text>
+                    <Text style={[styles.subText]}>Keep your spending neatly sorted</Text>
                   </View>
                 </View>
               </View>
@@ -206,7 +145,7 @@ const Profile = () => {
                     <Text style={styles.option}>Starred Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Quick access to your starred transactions</Text>
+                    <Text style={[styles.subText]}>Access your favorite transactions quickly</Text>
                   </View>
                 </View>
               </View>
@@ -215,7 +154,7 @@ const Profile = () => {
             </View>
           </Pressable>
         </Link>
-        <Link href={'/(root)/export-data'} asChild>
+        <Link href={'/(root)/export-transactions'} asChild>
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
@@ -227,7 +166,7 @@ const Profile = () => {
                     <Text style={styles.option}>Export Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>You can export trasanctions</Text>
+                    <Text style={[styles.subText]}>Download and share your transaction history</Text>
                   </View>
                 </View>
               </View>
@@ -248,7 +187,7 @@ const Profile = () => {
                     <Text style={styles.option}>Settings</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>You can manage preference</Text>
+                    <Text style={[styles.subText]}>Customize your app preferences and controls</Text>
                   </View>
                 </View>
               </View>
@@ -372,9 +311,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#B3B1C4',
+    color: '#6F6D85',
     fontSize: 14,
     fontFamily: 'Inter-500',
+    wordWrap:'wrap',
+    maxWidth: deviceWidth() - 80
   },
   subTextContainer: {
     display: 'flex',

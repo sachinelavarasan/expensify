@@ -7,13 +7,12 @@ import MonthSwitcher from '@/components/MonthSwitch';
 import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
-import { formattedAmount } from '@/utils/formatter';
+import { formatToCurrency } from '@/utils/formatter';
 import { Entypo, Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
-import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
 
 export default function Index() {
@@ -116,13 +115,13 @@ export default function Index() {
                     {!!item.debit && (
                       <Text style={styles.totalAmount}>
                         <Feather name="arrow-up-right" size={12} color="#FF4D4F" />
-                        {formattedAmount(item.debit)}
+                        {formatToCurrency(item.debit)}
                       </Text>
                     )}
                     {!!item.credit && (
                       <Text style={styles.totalAmount}>
                         <Feather name="arrow-down-left" size={12} color="#00C896" />
-                        {formattedAmount(item.credit)}
+                         {formatToCurrency(item.credit)}
                       </Text>
                     )}
                   </View>

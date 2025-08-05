@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Link } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Itransaction } from '@/types';
+import { formatToCurrency } from '@/utils/formatter';
 
 const TransactionCard = ({
   exp_ts_title,
@@ -69,7 +70,7 @@ const TransactionCard = ({
           <View style={styles.right}>
             <Text style={[styles.amount, { color: exp_tt_id === 2 ? '#48BB78' : '#F56565' }]}>
               {exp_tt_id === 2 ? '+' : '-'}
-              {exp_ts_amount}
+              {formatToCurrency(exp_ts_amount)}              
             </Text>
           </View>
         </View>

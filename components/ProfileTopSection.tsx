@@ -52,7 +52,6 @@ export default function AnimatedTopSection({
 
   const avatarStyle = useAnimatedStyle(() => {
     const scale = interpolate(scrollOffset.value, [0, 100, 200], [1, 0.9, 0.8], Extrapolate.CLAMP);
-    // const translateX = interpolate(scrollOffset.value, [0, 100], [0, -220], Extrapolate.CLAMP);
     const translateY = interpolate(
       scrollOffset.value,
       [0, 100],
@@ -63,7 +62,6 @@ export default function AnimatedTopSection({
 
     return {
       transform: [{ scale }, 
-        // { translateX }, 
         { translateY }],
       opacity,
     };
