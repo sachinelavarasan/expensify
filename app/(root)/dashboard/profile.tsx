@@ -57,7 +57,7 @@ const Profile = () => {
                   <Text style={styles.option}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText]}>OverAll : {overAllAmount}</Text>
+                  <Text style={[styles.subText]}>Over All : {overAllAmount}</Text>
                 </View>
               </View>
             </View>
@@ -262,18 +262,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  infoCard: {
-    backgroundColor: '#1A1A24', // slightly elevated from main bg
-    marginVertical: 20,
-    padding: 20,
-    borderRadius: 12,
-
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   label: {
     color: '#8880A0',
     fontSize: 14,
@@ -308,7 +296,7 @@ const styles = StyleSheet.create({
   },
   option: {
     color: '#F1F1F6',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
