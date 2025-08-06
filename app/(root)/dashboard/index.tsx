@@ -8,15 +8,15 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Entypo, Feather, FontAwesome6 } from '@expo/vector-icons';
+import { Entypo, Feather, FontAwesome6, Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
-import { AnimatedFAB } from 'react-native-paper';
-import CustomSnackBar from '@/components/CustomSnackBar';
+import { AnimatedFAB, Chip } from 'react-native-paper';
+// import CustomSnackBar from '@/components/CustomSnackBar';
 
 export default function Index() {
   const [isExtended, setIsExtended] = useState(true);
@@ -143,52 +143,123 @@ export default function Index() {
               <HomeHeader income={income} expense={expense} />
               <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
                 {!!search && (
-                  <Pressable
+                  // <Pressable
+                  //   style={{
+                  //     borderWidth: 1,
+                  //     borderColor: '#5a4f96',
+                  //     paddingVertical: 4,
+                  //     paddingHorizontal: 10,
+                  //     borderRadius: 50,
+                  //     flexDirection: 'row',
+                  //     gap: 5,
+                  //   }}
+                  //   onPress={() => removeFilter('search')}>
+                  //   <Text style={{ textTransform: 'capitalize' }}>{search}</Text>
+                  //   <Entypo name="cross" size={18} color="#5a4f96" />
+                  // </Pressable>
+                  <Chip
+                    mode="flat"
+                    compact={true}
+                    icon={() => (
+                      <Ionicons name={'search'} size={14} color="#FFF" style={{ marginRight: 4 }} />
+                    )}
                     style={{
-                      borderWidth: 1,
                       borderColor: '#5a4f96',
-                      paddingVertical: 4,
-                      paddingHorizontal: 10,
-                      borderRadius: 50,
-                      flexDirection: 'row',
-                      gap: 5,
+                      backgroundColor: 'transparent',
                     }}
-                    onPress={() => removeFilter('search')}>
-                    <Text style={{ textTransform: 'capitalize' }}>{search}</Text>
-                    <Entypo name="cross" size={18} color="#5a4f96" />
-                  </Pressable>
+                    textStyle={{
+                      color: '#b7b6c1',
+                      textTransform: 'capitalize',
+                    }}
+                    onClose={() => removeFilter('search')}
+                    closeIcon={() => <Ionicons name="close" size={14} color="#FFF" />}>
+                    {search}
+                  </Chip>
                 )}
                 {!!transactionType && (
-                  <Pressable
+                  // <Pressable
+                  //   style={{
+                  //     borderWidth: 1,
+                  //     borderColor: '#5a4f96',
+                  //     paddingVertical: 4,
+                  //     paddingHorizontal: 10,
+                  //     borderRadius: 50,
+                  //     flexDirection: 'row',
+                  //     gap: 5,
+                  //   }}
+                  //   onPress={() => removeFilter('t_type')}>
+                  //   <Text style={{ textTransform: 'capitalize' }}>{transactionType}</Text>
+                  //   <Entypo name="cross" size={18} color="#5a4f96" />
+                  // </Pressable>
+                  <Chip
+                    mode="flat"
+                    compact={true}
+                    icon={() => (
+                      <Ionicons
+                        name={
+                          transactionType === 'income'
+                            ? 'trending-up'
+                            : transactionType === 'expense'
+                              ? 'trending-down'
+                              : 'list-outline'
+                        }
+                        size={14}
+                        color="#FFF"
+                        style={{ marginRight: 4 }}
+                      />
+                    )}
                     style={{
-                      borderWidth: 1,
                       borderColor: '#5a4f96',
-                      paddingVertical: 4,
-                      paddingHorizontal: 10,
-                      borderRadius: 50,
-                      flexDirection: 'row',
-                      gap: 5,
+                      backgroundColor: 'transparent',
                     }}
-                    onPress={() => removeFilter('t_type')}>
-                    <Text style={{ textTransform: 'capitalize' }}>{transactionType}</Text>
-                    <Entypo name="cross" size={18} color="#5a4f96" />
-                  </Pressable>
+                    textStyle={{
+                      color: '#b7b6c1',
+                      textTransform: 'capitalize',
+                    }}
+                    onClose={() => removeFilter('t_type')}
+                    closeIcon={() => <Ionicons name="close" size={14} color="#FFF" />}>
+                    {transactionType}
+                  </Chip>
                 )}
                 {!!search && !!transactionType && (
-                  <Pressable
+                  // <Pressable
+                  //   style={{
+                  //     borderWidth: 1,
+                  //     borderColor: '#5a4f96',
+                  //     paddingVertical: 4,
+                  //     paddingHorizontal: 10,
+                  //     borderRadius: 50,
+                  //     flexDirection: 'row',
+                  //     gap: 5,
+                  //   }}
+                  //   onPress={() => removeFilter('default')}>
+                  //   <Text style={{ textTransform: 'capitalize' }}>Clear All</Text>
+                  //   <Entypo name="cross" size={18} color="#5a4f96" />
+                  // </Pressable>
+
+                  <Chip
+                    mode="flat"
+                    compact={true}
+                    icon={() => (
+                      <Ionicons
+                        name={'refresh-outline'}
+                        size={14}
+                        color="#FFF"
+                        style={{ marginRight: 4 }}
+                      />
+                    )}
                     style={{
-                      borderWidth: 1,
                       borderColor: '#5a4f96',
-                      paddingVertical: 4,
-                      paddingHorizontal: 10,
-                      borderRadius: 50,
-                      flexDirection: 'row',
-                      gap: 5,
+                      backgroundColor: 'transparent',
                     }}
-                    onPress={() => removeFilter('default')}>
-                    <Text style={{ textTransform: 'capitalize' }}>Clear All</Text>
-                    <Entypo name="cross" size={18} color="#5a4f96" />
-                  </Pressable>
+                    textStyle={{
+                      color: '#b7b6c1',
+                      textTransform: 'capitalize',
+                    }}
+                    onClose={() => removeFilter('t_type')}
+                    closeIcon={() => <Ionicons name="close" size={14} color="#FFF" />}>
+                    Clear All
+                  </Chip>
                 )}
               </View>
             </View>
@@ -238,7 +309,7 @@ export default function Index() {
           keyExtractor={(item) => item.date}
         />
       </View>
-      <CustomSnackBar label="Added successfully" isVisible={true} />
+      {/* <CustomSnackBar label="Added successfully" isVisible={true} /> */}
     </ThemedView>
   );
 }

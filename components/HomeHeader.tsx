@@ -9,7 +9,7 @@ const CARDGAP = 10;
 const width = deviceWidth();
 
 const cardWidth = (width - CARDGAP * 3) / 2;
-const HomeHeader = ({ income, expense }: { income: number; expense: number}) => {
+const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
   return (
     <View>
       <View style={styles.topContainer}>

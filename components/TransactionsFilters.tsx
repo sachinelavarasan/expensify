@@ -1,23 +1,24 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 import Spacer from './Spacer';
-import Modal from 'react-native-modal';
+// import Modal from 'react-native-modal';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import { transactionExportType } from '@/utils/common-data';
 import SearchBar from './SearchBar';
 import CustomRadioButton from './CustomRadioButton';
+import { Modal, Portal, RadioButton, Searchbar } from 'react-native-paper';
 
-const width = deviceWidth();
-const height = deviceHeight();
+// const width = deviceWidth();
+// const height = deviceHeight();
 
 const TransactionFilters = ({
   selectedTransaction,
   searchText,
   applyFilters,
 }: {
-  selectedTransaction: string,
-  searchText: string,
+  selectedTransaction: string;
+  searchText: string;
   applyFilters: (search: string, transactionType: string) => void;
 }) => {
   const [show, setShow] = useState(false);
@@ -47,66 +48,87 @@ const TransactionFilters = ({
           paddingVertical: 5,
           paddingHorizontal: 10,
         }}>
-        <FontAwesome6 name="filter" size={20} color="#5a4f96" />
+        <FontAwesome6 name="filter" size={20} color="#8F87F1" />
       </TouchableOpacity>
 
-      <Modal
-        backdropColor="rgba(0, 0, 0, 0.5)"
-        style={{ flex: 1 }}
-        isVisible={show}
-        hasBackdrop={true}
-        deviceHeight={height}
-        deviceWidth={width}
-        animationIn={'bounceIn'}
-        coverScreen={true}>
-        <View
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+      <Portal>
+        <Modal
+          visible={show}
+          overlayAccessibilityLabel="Close modal"
+          onDismiss={() => setShow(false)}
+          contentContainerStyle={{
+            flex: 1,
+            padding: 20,
+            width: '100%',
+            height: '100%',
           }}>
-          <View style={styles.modal}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text style={styles.title}>Apply Filters</Text>
+          <View
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <View style={styles.modal}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                <Text style={styles.title}>Apply Filters</Text>
 
-              <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color="#fff" size={20} />
-              </TouchableOpacity>
-            </View>
-            <Spacer height={20} />
-            <SearchBar
-              searchPhrase={search}
-              onChange={(e: any) => {
-                setSearch(e);
-              }}
-            />
-            <Spacer height={20} />
-
-            <View style={styles.card}>
-              <CustomRadioButton
-                label="Transaction Type"
-                value={transactionType}
-                options={transactionExportType}
-                onChange={(data) => {
-                  setTransactionType(data as 'income' | 'expense' | 'all');
+                <TouchableOpacity onPress={toggleModal}>
+                  <Ionicons name="close" color="#fff" size={20} />
+                </TouchableOpacity>
+              </View>
+              <Spacer height={20} />
+              <Searchbar
+                placeholder="Search"
+                onChangeText={setSearch}
+                value={search}
+                style={{
+                  backgroundColor: '#282343',
+                  height: 36,
+                  paddingHorizontal: 0,
+                  paddingVertical: 0,
                 }}
+                inputStyle={{
+                  padding: 0,
+                  margin: 0,
+                  fontSize: 14,
+                  minHeight: 0,
+                }}
+                inputMode="text"
+                mode="bar"
+                icon={() => <Ionicons name="search" size={16} color="#B3B1C4" />}
+                clearIcon={() => <Ionicons name="close" size={16} color="#B3B1C4" />}
               />
+
+              <Spacer height={20} />
+
+              <View style={styles.card}>
+                <CustomRadioButton
+                  label="Transaction Type"
+                  value={transactionType}
+                  options={transactionExportType}
+                  onChange={(data) => {
+                    setTransactionType(data as 'income' | 'expense' | 'all');
+                  }}
+                />
+              </View>
+              <Spacer height={30} />
+              <View>
+                <TouchableOpacity style={[styles.button]} onPress={handlePress}>
+                  <Text style={[styles.btntitle]}>Apply</Text>
+                </TouchableOpacity>
+              </View>
+              <Spacer height={20} />
             </View>
-            <Spacer height={30} />
-            <View>
-              <TouchableOpacity style={[styles.button]} onPress={handlePress}>
-                <Text style={[styles.btntitle]}>Apply</Text>
-              </TouchableOpacity>
-            </View>
-            <Spacer height={20} />
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      </Portal>
     </>
   );
 };
@@ -115,7 +137,7 @@ export default TransactionFilters;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
+    backgroundColor: '#0F0E17',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,
