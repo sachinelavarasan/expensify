@@ -90,7 +90,7 @@ function LayoutBuilder() {
               <Stack.Screen name="(root)/settings" />
               <Stack.Screen name="(root)/categories/index" />
               <Stack.Screen name="(root)/starred" />
-              <Stack.Screen name="(root)/export-data" />
+              <Stack.Screen name="(root)/export-transactions" />
               <Stack.Screen name="(root)/accounts/[id]" />
               <Stack.Screen name="(root)/categories/[id]" />
             </Stack>

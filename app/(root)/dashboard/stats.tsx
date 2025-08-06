@@ -104,7 +104,7 @@ export default function Stat() {
               />
             </View>
 
-            <View>
+            <View style={{flex: 1}}>
               <TableView transactions={transactions} />
             </View>
 

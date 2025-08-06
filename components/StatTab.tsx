@@ -1,5 +1,5 @@
 import { Itransaction } from '@/types';
-import { formattedAmount } from '@/utils/formatter';
+import { formatToCurrency } from '@/utils/formatter';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 
@@ -24,29 +24,34 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
   const incomeByCategory = groupByCategory(incomeTransactions);
   const expenseByCategory = groupByCategory(expenseTransactions);
 
-  const calculateCategoryMetrics = (
-    categoryData: { [key: string]: Itransaction[] },
-    totalAmount: number,
-  ) => {
-    return Object.entries(categoryData).map(([category, transaction]) => {
-      const totalCategoryAmount = transaction.reduce(
-        (sum, tx) => sum + Number(tx.exp_ts_amount),
-        0,
-      );
+ const calculateCategoryMetrics = (
+  categoryData: { [key: string]: Itransaction[] },
+  totalAmount: number
+) => {
+  return Object.entries(categoryData).map(([category, transactions]) => {
+    const totalCategoryAmount = transactions.reduce((sum, tx) => {
+      return sum + Number(tx.exp_ts_amount);
+    }, 0);
 
-      return {
-        category,
-        totalAmount: totalCategoryAmount,
-        transactionCount: transaction.length,
-        percentage: totalAmount > 0 ? ((totalCategoryAmount / totalAmount) * 100).toFixed(2) : 0,
-      };
-    });
-  };
+
+    const percentage =
+      totalAmount > 0 ? ((totalCategoryAmount / totalAmount) * 100).toFixed(2) : '0.00';
+
+    return {
+      category,
+      totalAmount: totalCategoryAmount,
+      transactionCount: transactions.length,
+      percentage: parseFloat(percentage),
+    };
+  });
+};
+
 
   const totalIncome = incomeTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
+  const totalExpense = expenseTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
 
   const incomeMetrics = calculateCategoryMetrics(incomeByCategory, totalIncome);
-  const expenseMetrics = calculateCategoryMetrics(expenseByCategory, totalIncome);
+  const expenseMetrics = calculateCategoryMetrics(expenseByCategory, totalExpense);
 
   const data = activeTab === 'income' ? incomeMetrics : expenseMetrics;
 
@@ -82,7 +87,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
                 </View>
                 <View style={styles.subTextContainer}>
                   <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-600' }]}>
-                    {formattedAmount(item.totalAmount)} <Text>{'\u2022'}</Text>
+                    {formatToCurrency(item.totalAmount)} <Text>{'\u2022'}</Text>
                   </Text>
                   <Text style={[styles.subText]}>
                     {item.transactionCount}{' '}

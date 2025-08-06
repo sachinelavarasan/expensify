@@ -143,9 +143,14 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
         ) : (
           <Text
             style={{
-              color: '#6900FF',
+              color: '#B388FF',
               fontFamily: 'Inter-500',
-              fontSize: 16,
+              fontSize: 14,
+              borderWidth: 1,
+              borderColor: '#B388FF',
+              paddingVertical: 4,
+              paddingHorizontal: 6,
+              borderRadius: 40
             }}>
             Add New
           </Text>

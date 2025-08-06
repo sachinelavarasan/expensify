@@ -12,6 +12,8 @@ export const queryKeys = {
 
 const useMonthlyTransactions = (initialDate?: Date) => {
   const [currentMonth, setCurrentMonth] = useState(initialDate || new Date());
+   const [search, setSearch] = useState('');
+  const [transactionType, setTransactionType] = useState<string>('');
   const { getToken, userId } = useAuth();
 
   if (!userId) {
@@ -23,19 +25,25 @@ const useMonthlyTransactions = (initialDate?: Date) => {
     data: transactions,
     refetch,
   } = useQuery({
-    queryKey: [...queryKeys.transactions, currentMonth],
+    queryKey: [...queryKeys.transactions, currentMonth, search, transactionType],
     queryFn: async ({ queryKey }): Promise<Itransaction[]> => {
       const token = await getToken();
       const queryDate = queryKey[1] as Date;
+      const searchText = queryKey[2] as string;
+      const txType = queryKey[3] as string;
 
       const start = startOfMonth(queryDate);
       const end = addMonths(start, 1);
 
       const startDate = format(start, 'yyyy-MM-dd');
       const endDate = format(end, 'yyyy-MM-dd');
+      let url = `${API_URL}/expensify/transactions?startDate=${startDate}&endDate=${endDate}`;
+
+      if (searchText) url+=`&search=${searchText}`;
+      if (txType) url+=`&transaction_type=${txType}`;
 
       const response = await fetch(
-        `${API_URL}/expensify/transactions?startDate=${startDate}&endDate=${endDate}`,
+        url,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -64,6 +72,9 @@ const useMonthlyTransactions = (initialDate?: Date) => {
     setCurrentMonth((prev) => addMonths(prev, 1));
   };
 
+   const updateSearch = (newSearch: string) => setSearch(newSearch);
+    const updateTransactionType = (type: string) => setTransactionType(type);
+
   const refetchData = (customDate?: Date) => {
     if (customDate) {
       setCurrentMonth(customDate);
@@ -77,9 +88,14 @@ const useMonthlyTransactions = (initialDate?: Date) => {
     loading: isLoading,
     currentMonth: format(currentMonth, 'MMMM yyyy'),
     currentDate: currentMonth,
+    search,
+    transactionType,
     goToPreviousMonth,
     goToNextMonth,
+    updateSearch,
+    updateTransactionType,
     refetch: refetchData,
+    refetchManual: refetch
   };
 };
 

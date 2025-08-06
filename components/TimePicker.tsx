@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
-import { format } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 
 interface Props {
   value: string;
@@ -11,16 +11,50 @@ interface Props {
   placeholder?: string;
   error?: string;
   isRequired?: boolean;
+  label?: string;
 }
 
-const CustomTimePicker = ({ value, onChange, onBlur, error, placeholder, isRequired }: Props) => {
+const CustomTimePicker = ({
+  value,
+  onChange,
+  onBlur,
+  error,
+  placeholder,
+  isRequired,
+  label,
+}: Props) => {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<Date>(new Date());
+
+  useEffect(() => {
+    if (!value) {
+      const now = new Date();
+      const formatted = formatDisplayTime(now);
+      setTime(now);
+      onChange(formatted);
+    } else {
+      const parsedTime = parse(value, 'hh:mm a', new Date());
+      setTime(parsedTime);
+    }
+  }, [onChange, value]);
 
   const formatDisplayTime = (date: Date) => format(date, 'hh:mm a');
 
   return (
     <View>
+      {label ? (
+        <View style={{ display: 'flex', flexDirection: 'row' }}>
+          <Text
+            style={{
+              fontSize: 14,
+              color: '#B3B1C4',
+              marginBottom: 6,
+              fontFamily: 'Inter-400',
+            }}>
+            {label}
+          </Text>
+        </View>
+      ) : null}
       <TouchableOpacity
         onPress={() => {
           setOpen(true);
