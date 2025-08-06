@@ -13,7 +13,6 @@ import React, { useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import ProfileHeader from '@/components/ProfileHeader';
-import CustomDatePicker from '@/components/CustomDatePicker';
 import Spacer from '@/components/Spacer';
 import {
   useExportExcelTransactions,
@@ -21,6 +20,7 @@ import {
 } from '@/hooks/useExportTransactions';
 import CustomRadioButton from '@/components/CustomRadioButton';
 import { exportType, transactionExportType } from '@/utils/common-data';
+import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
 
 export default function ExportData() {
   const { mutateAsync: exportExcelMutation, isPending } = useExportExcelTransactions();
@@ -76,21 +76,19 @@ export default function ExportData() {
             <Spacer height={10} />
             <View style={{ alignItems: 'flex-start' }}>
               <View style={{ width: 220 }}>
-                <CustomDatePicker
+                <DatePickerWithOutValue
                   label="From Date"
-                  onChange={(data) => setStart(data)}
+                  onChange={(data: string) => setStart(data)}
                   value={start}
-                  placeholder="From Date"
-                  isRequired
+                  placeholder="Choose Date"
                 />
                 <Spacer height={15} />
-                <CustomDatePicker
+                <DatePickerWithOutValue
                   label="To Date"
-                  onChange={(data) => setSecond(data)}
+                  onChange={(data: string) => setSecond(data)}
                   value={second}
-                  placeholder="To Date"
+                  placeholder="Choose Date"
                   minimumDate={start}
-                  isRequired
                 />
               </View>
             </View>
@@ -117,9 +115,15 @@ export default function ExportData() {
               />
             </View>
             <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
-              <TouchableOpacity style={[styles.button, styles.logoutBg]} onPress={download}>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.logoutBg,
+                  isPdfLoading || isPending ? styles.disable : '',
+                ]}
+                onPress={download}>
                 {isPdfLoading || isPending ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.title, isPdfLoading || isPending ? styles.textDisable : {}]}>
                   Export Now
@@ -163,7 +167,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   disable: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   textDisable: { opacity: 0 },
   loader: {

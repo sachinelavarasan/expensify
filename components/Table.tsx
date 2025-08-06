@@ -14,8 +14,8 @@ export default function TableView({ transactions }: { transactions: Itransaction
   const expense = transactions
     .filter((tx) => tx.exp_tt_id === 1)
     .reduce((acc, tx) => acc + Number(tx.exp_ts_amount), 0);
-  const firstColumnWidth = Math.round(tableWidth * 0.25);
-  const secondColumnWidth = Math.round(tableWidth * 0.5);
+  const firstColumnWidth = Math.round(tableWidth * 0.30);
+  const secondColumnWidth = Math.round(tableWidth * 0.45);
   const thirdColumnWidth = Math.round(tableWidth * 0.25);
 
 
@@ -73,7 +73,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
         <View key={'overall'} style={styles.row}>
           <View style={{ width: firstColumnWidth }}>
             <Text style={[styles.cell, { color: '#ffffff', fontFamily: 'Inter-500' }]}>
-              OverAll
+              Over All
             </Text>
           </View>
           <View style={{ width: secondColumnWidth }}>
