@@ -1,26 +1,25 @@
 // SearchBar.js
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, View, Keyboard } from 'react-native';
+import { StyleSheet, TextInput, View, Keyboard, Platform } from 'react-native';
 import { Feather, Entypo } from '@expo/vector-icons';
 
 interface Props {
   searchPhrase: string;
   onChange: (e: any) => void;
-  onClick: (searchPhrase: string) => void;
-  onClose: () => void;
+  onClick?: (searchPhrase: string) => void;
+  onClose?: () => void;
+  actionsNeeded?: boolean
 }
 
-const SearchBar = ({ searchPhrase, onChange, onClick, onClose }: Props) => {
+const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded= false }: Props) => {
   const [clicked, setIsClicked] = useState(false);
   return (
     <View style={styles.container}>
       <View style={clicked ? styles.searchBar__clicked : styles.searchBar__unclicked}>
-        {/* search Icon */}
-        <Feather name="search" size={20} color="#C7C7C7" style={{ marginLeft: 10 }} />
-        {/* Input field */}
+        <Feather name="search" size={18} color="#C7C7C7" style={{ marginLeft: 10 }} />
         <TextInput
           style={styles.input}
-          placeholder="Search by borrower name"
+          placeholder="Search"
           value={searchPhrase}
           onChangeText={onChange}
           autoCorrect={false}
@@ -32,13 +31,16 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose }: Props) => {
           }}
           onSubmitEditing={() => {
             Keyboard.dismiss();
-            onClick(searchPhrase);
+            onClick?.(searchPhrase);
             setIsClicked(false);
           }}
-          placeholderTextColor={'#C7C7C7'}
+          placeholderTextColor={'#6E6E80'}
+          selectionColor="#fdfdfd"
+          cursorColor="#EDEDED"
         />
 
-        <View style={styles.actions}>
+        {actionsNeeded && (
+          <View style={styles.actions}>
           {clicked && (
             <>
               <View style={styles.check}>
@@ -49,13 +51,12 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose }: Props) => {
                   style={{ padding: 2 }}
                   onPress={() => {
                     Keyboard.dismiss();
-                    onClick(searchPhrase);
+                    onClick?.(searchPhrase);
                     setIsClicked(false);
                   }}
                 />
               </View>
               <View style={styles.close}>
-                {/* cross Icon, depending on whether the search bar is clicked or not */}
                 <Entypo
                   name="cross"
                   size={20}
@@ -63,7 +64,7 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose }: Props) => {
                   style={{ padding: 1.5 }}
                   onPress={() => {
                     Keyboard.dismiss();
-                    onClose();
+                    onClose?.();
                     setIsClicked(false);
                   }}
                 />
@@ -71,6 +72,7 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose }: Props) => {
             </>
           )}
         </View>
+        )}
       </View>
       {/* cancel button, depending on whether the search bar is clicked or not */}
       {/* {clicked && (
@@ -99,32 +101,34 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   searchBar__unclicked: {
-    paddingVertical: 12,
-    paddingHorizontal: 10,
+    // paddingVertical: 12,
+    // paddingHorizontal: 10,
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#1C1C29',
+    backgroundColor: '#1C1C20',
     borderRadius: 4,
     alignItems: 'center',
-    elevation: 3,
   },
   searchBar__clicked: {
-    paddingVertical: 12,
-    paddingHorizontal: 10,
+    // paddingVertical: 12,
+    // paddingHorizontal: 10,
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#1C1C29',
+    backgroundColor: '#1C1C20',
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    elevation: 3,
   },
   input: {
-    fontSize: 14,
-    marginLeft: 20,
-    width: '70%',
-    color: '#FFF',
+    flex: 1,
+    borderWidth: 0,
+    paddingVertical: Platform.OS === 'android' ? 8 : 16,
+    fontSize: 16,
     fontFamily: 'Inter-400',
+    color: '#FFFFFF',
+    paddingHorizontal: 10,
+    backgroundColor: '#1C1C20',
+    borderRadius: 6,
   },
   actions: {
     flexDirection: 'row',

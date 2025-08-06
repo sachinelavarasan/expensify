@@ -178,6 +178,10 @@ export default function Transaction() {
     [categories, exp_tt_id],
   );
 
+  const selectedCategory = () => {
+    return categories.find((item) => item.exp_tc_id === exp_tc_id)?.exp_tc_label || '';
+  };
+
   const switchType = useCallback(
     (data: number | string) => {
       if (!data || !exp_ts_id) return;
@@ -344,14 +348,15 @@ export default function Transaction() {
                                 styles.categoryLabel,
                                 { flex: 1, flexWrap: 'wrap', lineHeight: 20 },
                               ]}>
-                              Category :{' '}
+                              Category
+                              {!!selectedCategory() &&
                               <Text
                                 style={{
                                   fontFamily: 'Inter-500',
                                   color: '#FFF',
                                 }}>
-                                Hospital Expense Hospital Expense
-                              </Text>{' '}
+                                {' '}:{' '}{selectedCategory()}
+                              </Text>}
                             </Text>
                             <View
                               style={{
@@ -387,22 +392,6 @@ export default function Transaction() {
                           />
                         </View>
 
-                        {/* <Controller
-                          control={control}
-                          render={({ field }) => (
-                            <CustomSelectInput
-                              placeholder="Choose category"
-                              value={field.value}
-                              label="Category"
-                              onChange={(data) => {
-                                field.onChange(data);
-                              }}
-                              options={formattedCategory}
-                              isRequired
-                            />
-                          )}
-                          name="exp_tc_id"
-                        /> */}
                         {errors.exp_tc_id?.message ? (
                           <Text style={styles.errorMessage}>{errors.exp_tc_id?.message}</Text>
                         ) : null}

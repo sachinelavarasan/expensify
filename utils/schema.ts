@@ -5,8 +5,8 @@ export const transactionSchema = z.object({
   exp_ts_note: z.string().trim().nullable().optional(),
   exp_ts_amount: z
     .string()
-    .refine((val) => /^(\d+)(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0, {
-      message: 'Please enter a valid amount',
+    .refine((val) => /^(\d{1,13})(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0, {
+      message: 'Amount must be up to 15 digits total (13 before, 2 after decimal)',
     }),
   exp_tc_id: z.number({ message: 'Select category' }),
   exp_ts_date: z.string().min(1, { message: 'Choose date' }),

@@ -15,26 +15,17 @@ interface Props {
   minimumDate?: string;
 }
 
-const CustomDatePicker = forwardRef<any, Props>(
+const DatePickerWithOutValue = forwardRef<any, Props>(
   ({ value, onChange, onBlur, error, placeholder, isRequired, label, minimumDate }, ref) => {
     const [open, setOpen] = useState(false);
-    const [date, setDate] = useState<Date>(new Date());
     const [minimum, setMinimumDate] = useState<Date>();
-
-    useEffect(() => {
-      const date = value ? parseISO(value) : new Date();
-      if (date) {
-        setDate(date);
-        onChange(formatDateForStorage(date));
-      }
-    }, [value]);
+    const [pickerDate, setPickerDate] = useState<Date>(new Date());
 
     useEffect(() => {
       if (minimumDate) {
         const date = new Date(minimumDate);
         setMinimumDate(date);
-        setDate(date);
-        onChange(formatDateForStorage(date));
+        onChange('');
       }
     }, [minimumDate]);
 
@@ -59,7 +50,7 @@ const CustomDatePicker = forwardRef<any, Props>(
         <TouchableOpacity
           onPress={() => {
             setOpen(true);
-            if (onBlur) onBlur(); // handle blur manually
+            if (onBlur) onBlur();
           }}
           style={{
             backgroundColor: '#463e75',
@@ -70,29 +61,28 @@ const CustomDatePicker = forwardRef<any, Props>(
             borderColor: 'transparent',
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
           }}>
           <Entypo name="calendar" size={14} color="#FFF" style={{ marginRight: 5 }} />
           <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
-            {date ? formatDateForDisplay(date) : placeholder || 'Pick a date'}
+            {value ? formatDateForDisplay(parseISO(value)) : (placeholder || 'Pick a date')}
           </Text>
         </TouchableOpacity>
 
         <DatePicker
           modal
           open={open}
-          date={date}
+          date={pickerDate}
           mode="date"
           theme="dark"
-          minimumDate={minimum}
           onConfirm={(selectedDate) => {
             setOpen(false);
             const formatted = formatDateForStorage(selectedDate);
-            setDate(new Date(formatted));
+            setPickerDate(selectedDate);
             onChange(formatted);
           }}
           onCancel={() => setOpen(false)}
           buttonColor="#ffffff"
+          minimumDate={minimum}
           title="Choose date"
           confirmText="Select"
           cancelText="Cancel"
@@ -116,5 +106,5 @@ const CustomDatePicker = forwardRef<any, Props>(
   },
 );
 
-CustomDatePicker.displayName = 'CustomDatePicker';
-export default CustomDatePicker;
+DatePickerWithOutValue.displayName = 'DatePickerWithOutValue';
+export default DatePickerWithOutValue;

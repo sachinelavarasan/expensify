@@ -1,9 +1,11 @@
 import { Itransaction } from '@/types';
-import { formattedAmount } from '@/utils/formatter';
+import { formatToCurrency } from '@/utils/formatter';
+import { deviceWidth } from '@/utils/functions';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const width = deviceWidth();
+const tableWidth = width - 52;
 
 export default function TableView({ transactions }: { transactions: Itransaction[] }) {
   const income = transactions
@@ -12,54 +14,76 @@ export default function TableView({ transactions }: { transactions: Itransaction
   const expense = transactions
     .filter((tx) => tx.exp_tt_id === 1)
     .reduce((acc, tx) => acc + Number(tx.exp_ts_amount), 0);
-  const columnWidth = (width - 56) / 3;
+  const firstColumnWidth = Math.round(tableWidth * 0.30);
+  const secondColumnWidth = Math.round(tableWidth * 0.45);
+  const thirdColumnWidth = Math.round(tableWidth * 0.25);
+
+
   return (
-    <ScrollView horizontal>
+    <ScrollView
+      horizontal
+      style={{
+        flex: 1,
+      }}>
       <View style={styles.table}>
         <View style={[styles.row, styles.header]}>
+          <View style={{ width: firstColumnWidth }}>
           <Text style={[styles.cell, styles.headerText]}>Type</Text>
+          </View>
+          <View style={{ width: secondColumnWidth }}>
           <Text style={[styles.cell, styles.headerText]}>Amount</Text>
-          <Text style={[styles.cell, styles.headerText]}>Transactions</Text>
+          </View>
+          <View style={{ width: thirdColumnWidth }}>
+          <Text style={[styles.cell, styles.headerText]}>Count</Text>
+          </View>
         </View>
 
         <View key={'income'} style={styles.row}>
-          <Text
-            style={[
-              styles.cell,
-              { width: columnWidth, color: '#a19bca', fontFamily: 'Inter-500' },
-            ]}>
-            Income
-          </Text>
-          <Text style={[styles.cell, { width: columnWidth }]}>{formattedAmount(income)}</Text>
-          <Text style={[styles.cell, { width: columnWidth }]}>
-            {transactions.filter((tx) => tx.exp_tt_id === 2).length}
-          </Text>
+          <View style={{ width: firstColumnWidth }}>
+            <Text style={[styles.cell, { color: '#a19bca', fontFamily: 'Inter-500' }]}>Income</Text>
+          </View>
+          <View style={{ width: secondColumnWidth }}>
+            <Text style={[styles.cell]} numberOfLines={3}>
+              {formatToCurrency(income)}
+            </Text>
+          </View>
+          <View style={{ width: thirdColumnWidth }}>
+            <Text style={[styles.cell]}>
+              {transactions.filter((tx) => tx.exp_tt_id === 2).length}
+            </Text>
+          </View>
         </View>
         <View key={'expense'} style={styles.row}>
-          <Text
-            style={[
-              styles.cell,
-              { width: columnWidth, color: '#a19bca', fontFamily: 'Inter-500' },
-            ]}>
-            Expense
-          </Text>
-          <Text style={[styles.cell, { width: columnWidth }]}>{formattedAmount(expense)}</Text>
-          <Text style={[styles.cell, { width: columnWidth }]}>
-            {transactions.filter((tx) => tx.exp_tt_id === 1).length}
-          </Text>
+          <View style={{ width: firstColumnWidth }}>
+            <Text style={[styles.cell, { color: '#a19bca', fontFamily: 'Inter-500' }]}>
+              Expense
+            </Text>
+          </View>
+          <View style={{ width: secondColumnWidth }}>
+            <Text style={[styles.cell]} numberOfLines={3}>
+              {formatToCurrency(expense)}
+            </Text>
+          </View>
+          <View style={{ width: thirdColumnWidth }}>
+            <Text style={[styles.cell, { width: thirdColumnWidth }]}>
+              {transactions.filter((tx) => tx.exp_tt_id === 1).length}
+            </Text>
+          </View>
         </View>
         <View key={'overall'} style={styles.row}>
-          <Text
-            style={[
-              styles.cell,
-              { width: columnWidth, color: '#ffffff', fontFamily: 'Inter-500' },
-            ]}>
-            Overall
-          </Text>
-          <Text style={[styles.cell, { width: columnWidth }]}>
-            {formattedAmount(income - expense)}
-          </Text>
-          <Text style={[styles.cell, { width: columnWidth }]}>{transactions.length}</Text>
+          <View style={{ width: firstColumnWidth }}>
+            <Text style={[styles.cell, { color: '#ffffff', fontFamily: 'Inter-500' }]}>
+              Over All
+            </Text>
+          </View>
+          <View style={{ width: secondColumnWidth }}>
+            <Text style={[styles.cell]} numberOfLines={3}>
+              {formatToCurrency(income - expense)}
+            </Text>
+          </View>
+          <View style={{ width: thirdColumnWidth }}>
+            <Text style={[styles.cell]}>{transactions.length}</Text>
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -71,12 +95,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#1e1a32',
     borderRadius: 4,
-    overflow: 'hidden',
     margin: 16,
     height: 'auto',
-    maxHeight: 174,
+    // maxHeight: 174,
     borderBottomWidth: 0,
     backgroundColor: '#0a0911',
+    width: tableWidth,
   },
   row: {
     flexDirection: 'row',
@@ -89,7 +113,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 14,
     color: '#B3B1C4',
-    textAlign: 'left',
   },
   header: {
     backgroundColor: '#1e1a32',

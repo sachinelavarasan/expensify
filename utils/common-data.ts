@@ -656,3 +656,32 @@ export const accountIcon = [
   "wallet-giftcard",
   "payments"
 ]
+
+export const exportType = [
+  {
+    id: 'pdf',
+    label: 'pdf',
+  },
+  {
+    id: 'xlsx',
+    label: 'xlsx',
+  },
+  {
+    id: 'csv',
+    label: 'csv',
+  },
+];
+export const transactionExportType = [
+  {
+    id: 'all',
+    label: 'All',
+  },
+  {
+    id: 'income',
+    label: 'Income',
+  },
+  {
+    id: 'expense',
+    label: 'Expense',
+  },
+];
