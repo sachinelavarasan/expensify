@@ -5,7 +5,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,7 +20,7 @@ import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
-import { CustomSelectInput } from '@/components/CustomSelectInput';
+
 import CustomDatePicker from '@/components/CustomDatePicker';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
@@ -38,6 +37,7 @@ import {
 import { showToast } from '@/components/ToastMessage';
 import ProfileHeader from '@/components/ProfileHeader';
 import CategorySelector from '@/components/CategorySelector';
+import { Button } from 'react-native-paper';
 
 export default function Transaction() {
   const { categories } = useGetCategoryCache();
@@ -350,7 +350,7 @@ export default function Transaction() {
                                   fontFamily: 'Inter-500',
                                   color: '#FFF',
                                 }}>
-                                Hospital Expense Hospital Expense
+                                {exp_tc_id}
                               </Text>{' '}
                             </Text>
                             <View
@@ -481,24 +481,22 @@ export default function Transaction() {
                 )}
               </View>
             </View>
-
             <View>
-              <TouchableOpacity
+              <Button
                 style={[
                   styles.button,
                   !isValid || !isDirty || isFetching || isDeleting || isLoading
                     ? styles.disable
                     : {},
                 ]}
-                disabled={!isValid || !isDirty || isFetching || isDeleting || isLoading}
-                onPress={handleSubmit(onSubmit)}>
-                {isLoading ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
-                ) : null}
-                <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
-                  {exp_ts_id ? 'Update' : 'Add'}
-                </Text>
-              </TouchableOpacity>
+                loading={isLoading}
+                labelStyle={{ fontWeight: 600, color: '#fff' }}
+                icon={isLoading ? 'loading' : 'plus'}
+                mode="contained"
+                onPress={handleSubmit(onSubmit)}
+                disabled={!isValid || !isDirty || isFetching || isDeleting || isLoading}>
+                {exp_ts_id ? 'Update' : 'Add'}
+              </Button>
             </View>
           </View>
         </View>
@@ -526,14 +524,8 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
     backgroundColor: '#463e75',
-    borderRadius: 50,
-    paddingHorizontal: 20,
-    paddingVertical: 9,
-    width: 'auto',
+    borderRadius: 30,
   },
   loader: {
     position: 'absolute',

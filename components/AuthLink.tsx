@@ -30,13 +30,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   linkText: {
-    color: '#7A08FA',
+    color: '#463e75',
     fontSize: 16,
     textDecorationLine: 'underline',
     fontFamily: 'Inter-500',
   },
   description: {
-    color: '#7A7A8C',
+    color: '#D5D5D5',
     fontSize: 16,
     marginRight: 15,
     fontFamily: 'Inter-400',

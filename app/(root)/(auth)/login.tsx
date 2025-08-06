@@ -26,6 +26,7 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { phoneValidation } from '@/utils/Validation-custom';
 import AuthLink from '@/components/AuthLink';
 import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
+import { Button } from 'react-native-paper';
 
 const schema = z.object({
   phone: z
@@ -152,15 +153,16 @@ export default function SignIn() {
                 />
                 <Spacer height={35} />
                 <View style={styles.btnContainer}>
-                  <TouchableOpacity
+                  <Button
                     style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
-                    disabled={!isValid || isLoading}
-                    onPress={handleSubmit(onSubmit)}>
-                    {isLoading ? (
-                      <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
-                    ) : null}
-                    <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>Sign In</Text>
-                  </TouchableOpacity>
+                    loading={isLoading}
+                    labelStyle={[styles.title]}
+                    icon={isLoading ? 'loading' : ''}
+                    mode="contained"
+                    onPress={handleSubmit(onSubmit)}
+                    disabled={!isValid || isLoading}>
+                    Sign In
+                  </Button>
                 </View>
                 <Spacer height={50} />
                 <AuthLink
@@ -205,12 +207,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#463e75',
     borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
     width: '100%',
   },
   loader: {

@@ -1,13 +1,5 @@
 import { useState, useCallback } from 'react';
-import {
-  FlatList,
-  Platform,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import Emptystate from '@/components/Emptystate';
 import TransactionCard from '@/components/TransactionCard';
@@ -16,14 +8,13 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formattedAmount } from '@/utils/formatter';
-import { Entypo, Feather, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
-// import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
-import { AnimatedFAB, Snackbar } from 'react-native-paper';
+import { AnimatedFAB } from 'react-native-paper';
 import CustomSnackBar from '@/components/CustomSnackBar';
 
 export default function Index() {
