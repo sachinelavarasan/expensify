@@ -21,7 +21,6 @@ import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
-import { CustomSelectInput } from '@/components/CustomSelectInput';
 import CustomDatePicker from '@/components/CustomDatePicker';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
@@ -38,6 +37,8 @@ import {
 import { showToast } from '@/components/ToastMessage';
 import ProfileHeader from '@/components/ProfileHeader';
 import CategorySelector from '@/components/CategorySelector';
+import DatePickerPaper from '@/components/DatePickerPaper';
+import TimePickerPaper from '@/components/TimePickerPaper';
 
 export default function Transaction() {
   const { categories } = useGetCategoryCache();
@@ -237,7 +238,7 @@ export default function Transaction() {
                           <Controller
                             control={control}
                             render={({ field }) => (
-                              <CustomDatePicker
+                              <DatePickerPaper
                                 {...field}
                                 onBlur={field.onBlur}
                                 onChange={(data) => field.onChange(data)}
@@ -252,7 +253,7 @@ export default function Transaction() {
                           <Controller
                             control={control}
                             render={({ field }) => (
-                              <CustomTimePicker
+                              <TimePickerPaper
                                 value={field.value}
                                 onChange={field.onChange}
                                 onBlur={field.onBlur}

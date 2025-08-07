@@ -12,7 +12,7 @@ import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-rean
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ToastMessage from '@/components/ToastMessage';
-import { NotificationProvider } from '@/utils/NotificationContext';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
