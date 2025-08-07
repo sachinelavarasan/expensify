@@ -21,41 +21,51 @@ import {
 import CustomRadioButton from '@/components/CustomRadioButton';
 import { exportType, transactionExportType } from '@/utils/common-data';
 import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
+import { AntDesign, Entypo } from '@expo/vector-icons';
 
 export default function ExportData() {
   const { mutateAsync: exportExcelMutation, isPending } = useExportExcelTransactions();
   const { mutateAsync: exportPdfMutation, isPending: isPdfLoading } = useExportPdfTransactions();
   const [start, setStart] = useState('');
-  const [second, setSecond] = useState('');
+  const [end, setEnd] = useState('');
   const [docType, setDoctype] = useState<number | string>('pdf');
   const [tranType, setTranType] = useState<string>('all');
 
   async function download() {
-    if (!start || !second) {
+    if (!start || !end) {
       return;
     }
     switch (docType) {
       case 'xlsx':
         exportExcelMutation({
           startDate: start,
-          endDate: second,
+          endDate: end,
           fileType: 'xlsx',
           tranType,
+        }).then(() => {
+          setEnd('');
+          setStart('');
         });
         break;
       case 'csv':
         exportExcelMutation({
           startDate: start,
-          endDate: second,
+          endDate: end,
           fileType: 'csv',
           tranType,
+        }).then(() => {
+          setEnd('');
+          setStart('');
         });
         break;
       default:
         exportPdfMutation({
           startDate: start,
-          endDate: second,
+          endDate: end,
           tranType,
+        }).then(() => {
+          setEnd('');
+          setStart('');
         });
         break;
     }
@@ -73,26 +83,28 @@ export default function ExportData() {
               flex: 1,
               paddingHorizontal: 20,
             }}>
-            <Spacer height={10} />
+            <Spacer height={20} />
             <View style={{ alignItems: 'flex-start' }}>
-              <View style={{ width: 220 }}>
+              <View style={[styles.card, { width: '100%' }]}>
                 <DatePickerWithOutValue
-                  label="From Date"
+                  label="From:"
                   onChange={(data: string) => setStart(data)}
                   value={start}
-                  placeholder="Choose Date"
+                  placeholder="Start date"
                 />
-                <Spacer height={15} />
+                <Spacer height={5} />
+                <AntDesign name="arrowdown" size={24} color="#6900FF" />
+                <Spacer height={5} />
                 <DatePickerWithOutValue
-                  label="To Date"
-                  onChange={(data: string) => setSecond(data)}
-                  value={second}
-                  placeholder="Choose Date"
+                  label="To:"
+                  onChange={(data: string) => setEnd(data)}
+                  value={end}
+                  placeholder="End date"
                   minimumDate={start}
                 />
               </View>
             </View>
-            <Spacer height={30} />
+            <Spacer height={20} />
             <View style={styles.card}>
               <CustomRadioButton
                 label="Format"
@@ -103,7 +115,7 @@ export default function ExportData() {
                 }}
               />
             </View>
-            <Spacer height={15} />
+            <Spacer height={20} />
             <View style={styles.card}>
               <CustomRadioButton
                 label="Transaction Type"

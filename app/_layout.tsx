@@ -4,6 +4,7 @@ import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
 import { StatusBar as ExpoStatus } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,6 +12,7 @@ import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-rean
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ToastMessage from '@/components/ToastMessage';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -33,6 +35,20 @@ console.error = (...args: any) => {
   error(...args);
 };
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
+
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
+
 SplashScreen.preventAutoHideAsync();
 
 SplashScreen.setOptions({
@@ -44,9 +60,11 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
-    <ClerkProvider publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
-      <LayoutBuilder />
-    </ClerkProvider>
+    <NotificationProvider>
+      <ClerkProvider publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+        <LayoutBuilder />
+      </ClerkProvider>
+    </NotificationProvider>
   );
 }
 
@@ -93,7 +111,7 @@ function LayoutBuilder() {
               <Stack.Screen name="(root)/categories/[id]" />
             </Stack>
           ) : null}
-          <ToastMessage/>
+          <ToastMessage />
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

@@ -16,17 +16,18 @@ interface Props {
   minimumDate?: string;
 }
 
-const DatePickerWithOutValue = forwardRef<any, Props>(
+const DatePickerPaper = forwardRef<any, Props>(
   ({ value, onChange, onBlur, error, placeholder, isRequired, label, minimumDate }, ref) => {
     const [open, setOpen] = useState(false);
     const [minimum, setMinimumDate] = useState<Date>();
-    const [pickerDate, setPickerDate] = useState<Date>();
+    const [pickerDate, setPickerDate] = useState<Date>(new Date());
 
     useEffect(() => {
       if (minimumDate) {
         const date = new Date(minimumDate);
         setMinimumDate(date);
-        onChange('');
+        setPickerDate(date);
+        onChange(formatDateForStorage(date));
       }
     }, [minimumDate]);
 
@@ -45,8 +46,8 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
     );
 
     useEffect(() => {
-      if (value) {
-        const date = value ? parseISO(value) : new Date();
+      const date = value ? parseISO(value) : new Date();
+      if (date) {
         setPickerDate(date);
         onChange(formatDateForStorage(date));
       }
@@ -57,42 +58,39 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
 
     return (
       <View>
-        <View style={label? { flexDirection: 'row', alignItems: 'center', gap: 10 }: {}}>
-          <View>
-            {label ? (
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: '#B3B1C4',
-                  marginBottom: 6,
-                  fontFamily: 'Inter-400',
-                }}>
-                {label}
-              </Text>
-            ) : null}
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              setOpen(true);
-              if (onBlur) onBlur();
-            }}
-            style={{
-              borderWidth: 2,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 20,
-              borderColor: '#463e75',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 15,
-            }}>
-            <Entypo name="calendar" size={14} color="#FFF" />
-            <Text style={{ color: '#ccc', fontWeight: '500', fontFamily: 'Inter-500' }}>
-              {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
+        {label ? (
+          <View style={{ display: 'flex', flexDirection: 'row' }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#B3B1C4',
+                marginBottom: 6,
+                fontFamily: 'Inter-400',
+              }}>
+              {label}
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+        ) : null}
+        <TouchableOpacity
+          onPress={() => {
+            setOpen(true);
+            if (onBlur) onBlur();
+          }}
+          style={{
+            backgroundColor: '#463e75',
+            borderWidth: 1,
+            paddingHorizontal: 12,
+            paddingVertical: 5,
+            borderRadius: 20,
+            borderColor: 'transparent',
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+          <Entypo name="calendar" size={14} color="#FFF" style={{ marginRight: 5 }} />
+          <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
+            {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
+          </Text>
+        </TouchableOpacity>
 
         <DatePickerModal
           presentationStyle="pageSheet"
@@ -125,5 +123,5 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
   },
 );
 
-DatePickerWithOutValue.displayName = 'DatePickerWithOutValue';
-export default DatePickerWithOutValue;
+DatePickerPaper.displayName = 'DatePickerPaper';
+export default DatePickerPaper;
