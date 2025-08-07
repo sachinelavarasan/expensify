@@ -1,4 +1,4 @@
-{
+export default {
   "expo": {
     "name": "Expensify",
     "slug": "expensify",
@@ -17,7 +17,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "package": "com.sachinelavarasan.expensify",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": process.env.GOOGLE_SERVICES_JSON
     },
     "web": {
       "bundler": "metro",
