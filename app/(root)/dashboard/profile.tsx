@@ -15,7 +15,7 @@ import { deviceWidth } from '@/utils/functions';
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+import { useBankAccounts, useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
 
@@ -25,7 +25,7 @@ const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const router = useRouter();
-  const { accounts, loading } = useBankAccounts();
+  const { accounts } = useGetUserBankAccounts();
   const { user } = useUser();
   const { signOut } = useAuth();
 
@@ -38,7 +38,7 @@ const Profile = () => {
     signOut();
     router.replace('/(root)/(auth)/login');
   };
- 
+
   return (
     <AnimatedTopSection
       title={user?.firstName || ''}
@@ -77,9 +77,7 @@ const Profile = () => {
           showsHorizontalScrollIndicator={false}
           data={accounts}
           keyExtractor={(item) => item.exp_ba_name}
-          ListEmptyComponent={()=>(
-            <Spacer height={60}/>
-          )}
+          ListEmptyComponent={() => <Spacer height={60} />}
           renderItem={({ item }) => (
             <Link
               href={{
@@ -167,7 +165,9 @@ const Profile = () => {
                     <Text style={styles.option}>Export Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Download and share your transaction history</Text>
+                    <Text style={[styles.subText]}>
+                      Download and share your transaction history
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -188,7 +188,9 @@ const Profile = () => {
                     <Text style={styles.option}>Settings</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Customize your app preferences and controls</Text>
+                    <Text style={[styles.subText]}>
+                      Customize your app preferences and controls
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -303,8 +305,8 @@ const styles = StyleSheet.create({
     color: '#6F6D85',
     fontSize: 14,
     fontFamily: 'Inter-500',
-    wordWrap:'wrap',
-    maxWidth: deviceWidth() - 80
+    wordWrap: 'wrap',
+    maxWidth: deviceWidth() - 80,
   },
   subTextContainer: {
     display: 'flex',

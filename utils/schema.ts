@@ -13,6 +13,7 @@ export const transactionSchema = z.object({
   exp_ts_time: z.string().min(1, { message: 'Choose time' }),
   exp_tt_id: z.number({ message: 'Select transaction type' }),
   exp_st_id: z.boolean().optional(),
+  exp_ts_bank_account_id: z.number({ message: 'Select Account' }),
 });
 
 export type transactionSchemaType = z.infer<typeof transactionSchema>;

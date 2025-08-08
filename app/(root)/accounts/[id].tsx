@@ -6,7 +6,7 @@ import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
 import TransactionCard from '@/components/TransactionCard';
 import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
-import { formattedAmount } from '@/utils/formatter';
+import { formatToCurrency } from '@/utils/formatter';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -49,12 +49,20 @@ export default function AccountScreen() {
             <View style={[styles.card, { width: 'auto' }]}>
               <View>
                 <Text style={styles.cardTitle}>{account.exp_ba_balance}</Text>
-                <Text style={styles.cardSubtitle}>Account: <Text style={{color: '#D1CCFF'}}>{account.exp_ba_name}</Text> {account.exp_ba_is_primary && <Text style={styles.default}>Default</Text>}</Text>
+                <Text style={styles.cardSubtitle}>
+                  Account: <Text style={{ color: '#D1CCFF' }}>{account.exp_ba_name}</Text>{' '}
+                  {account.exp_ba_is_primary && <Text style={styles.default}>Default</Text>}
+                </Text>
               </View>
               <View>
-                {!!account.exp_ba_id && <AddAccount account={{
-                  ...account
-                }} exp_ba_id={account.exp_ba_id}/>}
+                {!!account.exp_ba_id && (
+                  <AddAccount
+                    account={{
+                      ...account,
+                    }}
+                    exp_ba_id={account.exp_ba_id}
+                  />
+                )}
               </View>
             </View>
             <SectionList
@@ -90,13 +98,13 @@ export default function AccountScreen() {
                     {!!expense && (
                       <Text style={styles.totalAmount}>
                         <Feather name="arrow-up-right" size={12} color="#FF4D4F" />
-                        {formattedAmount(expense)}
+                        {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
                       <Text style={styles.totalAmount}>
                         <Feather name="arrow-down-left" size={12} color="#00C896" />
-                        {formattedAmount(income)}
+                        {formatToCurrency(income)}
                       </Text>
                     )}
                   </View>
@@ -155,12 +163,11 @@ const styles = StyleSheet.create({
     color: '#CCC',
     fontSize: 14,
     fontFamily: 'Inter-500',
-    
   },
-  default:{
+  default: {
     color: '#8880A0',
     fontSize: 10,
     fontFamily: 'Inter-500',
-    verticalAlign:'middle'
-  }
+    verticalAlign: 'middle',
+  },
 });

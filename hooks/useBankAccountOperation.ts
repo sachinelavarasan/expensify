@@ -1,8 +1,12 @@
-import { BankAccount, CreateBankAccountDto, IAccountGroupedTransactions, UpdateBankAccountDto } from '@/types';
+import {
+  BankAccount,
+  CreateBankAccountDto,
+  IAccountGroupedTransactions,
+  UpdateBankAccountDto,
+} from '@/types';
 import { useAuth } from '@clerk/clerk-expo';
 
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -101,7 +105,7 @@ export const useBankAccounts = () => {
   if (!userId) {
     throw new Error('User is not authenticated');
   }
-   const {
+  const {
     data: accounts,
     isLoading: loading,
     isError,
@@ -167,5 +171,12 @@ export const useAccountGroupedTransactions = (accountId: number) => {
     loading,
     error: isError ? error?.message : null,
     refetch,
+  };
+};
+export const useGetUserBankAccounts = () => {
+  const queryClient = useQueryClient();
+  const data = queryClient.getQueryData<BankAccount[]>(queryKeys.bankAccounts);
+  return {
+    accounts: data || [],
   };
 };
