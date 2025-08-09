@@ -50,7 +50,7 @@ export const CustomSelectInput = ({
         setSelected={setSelected}
         fontFamily="Inter-500"
         data={options}
-        arrowicon={<FontAwesome name="chevron-down" size={16} color={'#B3B1C4'} />}
+        arrowicon={<FontAwesome name="chevron-down" size={16} color={'#282343'} />}
         search={false}
         boxStyles={styles.boxStyles} // Apply custom styles
         defaultOption={defaultOption} //default selected option
@@ -72,28 +72,52 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   boxStyles: {
-    borderWidth: 0,
-    borderRadius: 6,
     padding: 0,
-    backgroundColor: '#1C1C20',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     fontSize: 16,
     fontFamily: 'Inter-300',
     color: '#6E6E80',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E2EA',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.84,
+    elevation: 1,
+    backgroundColor: '#FFFFFF',
   },
-  dropdownStyles: { backgroundColor: '#1C1C20', borderWidth: 0 },
+  dropdownStyles: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E2EA',
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.84,
+    elevation: 1,
+  },
   inputStyles: {
-    color: '#ffffff',
+    color: '#1E1E1E',
     paddingVertical: Platform.OS === 'android' ? 1 : 6,
   },
   dropdownTextStyles: {
-    color: '#B3B1C4',
+    color: '#1E1E1E',
   },
   labelStyles: {
     fontSize: 16,
-    color: '#B3B1C4',
+    color: '#282343',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },

@@ -76,13 +76,9 @@ export default function ExportData() {
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
-        <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          <ProfileHeader title="Export Transactions" />
-          <ThemedView
-            style={{
-              flex: 1,
-              paddingHorizontal: 20,
-            }}>
+        <ThemedView style={{ flex: 1, paddingHorizontal: 10 }}>
+          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+            <ProfileHeader title="Export Transactions" />
             <Spacer height={20} />
             <View style={{ alignItems: 'flex-start' }}>
               <View style={[styles.card, { width: '100%' }]}>
@@ -93,7 +89,7 @@ export default function ExportData() {
                   placeholder="Start date"
                 />
                 <Spacer height={5} />
-                <AntDesign name="arrowdown" size={24} color="#6900FF" />
+                <AntDesign name="arrowdown" size={24} color="#6B5DE6" />
                 <Spacer height={5} />
                 <DatePickerWithOutValue
                   label="To:"
@@ -135,15 +131,16 @@ export default function ExportData() {
                 ]}
                 onPress={download}>
                 {isPdfLoading || isPending ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#1E1E1E'} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.title, isPdfLoading || isPending ? styles.textDisable : {}]}>
+                <Text
+                  style={[styles.exportBtn, isPdfLoading || isPending ? styles.textDisable : {}]}>
                   Export Now
                 </Text>
               </TouchableOpacity>
             </View>
-          </ThemedView>
-        </ScrollView>
+          </ScrollView>
+        </ThemedView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
   );
@@ -158,25 +155,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: Platform.OS === 'android' ? 10 : 16,
     width: '100%',
   },
   title: {
-    color: '#FFF',
+    color: '#1E1E1E',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   logoutBg: {
-    backgroundColor: '#282343',
+    backgroundColor: '#6B5DE6',
   },
   card: {
-    borderColor: '#5a4f96',
+    borderColor: '#E2E2EA',
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 10,
+    backgroundColor: '#FFFFFF',
   },
   disable: {
     opacity: 0.6,
@@ -186,5 +184,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  exportBtn: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Inter-600',
   },
 });

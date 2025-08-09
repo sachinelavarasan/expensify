@@ -28,9 +28,9 @@ const MonthSwitcher = ({
 
 const styles = StyleSheet.create({
   month: {
-    color: '#F4F5F8',
+    color: '#1a1a1a',
     fontSize: 18,
-    fontFamily: 'Inter-600',
+    fontFamily: 'Inter-500',
   },
   monthSwitch: {
     display: 'flex',

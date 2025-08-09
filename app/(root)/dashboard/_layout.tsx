@@ -17,27 +17,27 @@ const ROUTES: {
   {
     name: 'index',
     title: 'Transactions',
-    icon: <Entypo name="home" size={24} color="#B3B1C4" />,
+    icon: <Entypo name="home" size={24} color="#282343" />,
     activeIcon: <Entypo name="home" size={24} color="#FFFFFF" />,
   },
   // {
   //   name: 'budget',
   //   title: 'Budget',
-  //   icon: <MaterialIcons name="savings" size={24} color="#B3B1C4" />,
+  //   icon: <MaterialIcons name="savings" size={24} color="#282343" />,
   //   activeIcon: <MaterialIcons name="savings" size={24} color="#FFFFFF" />,
   // },
   {
     name: 'stats',
     title: 'Stats',
-    icon: <Ionicons name="stats-chart" size={24} color="#B3B1C4" />,
+    icon: <Ionicons name="stats-chart" size={24} color="#282343" />,
     activeIcon: <Ionicons name="stats-chart" size={24} color="#FFFFFF" />,
   },
   {
     name: 'profile',
     title: 'Profile',
-    icon: <Feather name="user" size={24} color="#B3B1C4" />,
+    icon: <Feather name="user" size={24} color="#282343" />,
     activeIcon: <Feather name="user" size={24} color="#FFFFFF" />,
-    // icon: <Feather name="menu" size={24} color="#B3B1C4" />,
+    // icon: <Feather name="menu" size={24} color="#282343" />,
     // activeIcon: <Feather name="menu" size={24} color="#FFFFFF" />,
   },
   // {

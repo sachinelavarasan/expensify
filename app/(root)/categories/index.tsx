@@ -82,35 +82,35 @@ export default function Category() {
     setDataList(data);
   };
   const handlePress = () => {
-    router.push('/(root)/categories/add',);
+    router.push('/(root)/categories/add');
   };
 
   const scrollY = useSharedValue(0);
-    const buttonVisible = useSharedValue(1);
-  
-    const scrollHandler = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const { contentOffset } = event.nativeEvent;
-      const currentY = contentOffset.y;
-  
-      if ((currentY + 200) > scrollY.value) {
-        buttonVisible.value = withTiming(0);
-      } else {
-        buttonVisible.value = withTiming(1);
-      }
-  
-      scrollY.value = currentY;
+  const buttonVisible = useSharedValue(1);
+
+  const scrollHandler = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset } = event.nativeEvent;
+    const currentY = contentOffset.y;
+
+    if (currentY + 200 > scrollY.value) {
+      buttonVisible.value = withTiming(0);
+    } else {
+      buttonVisible.value = withTiming(1);
+    }
+
+    scrollY.value = currentY;
+  };
+
+  const animatedButtonStyle = useAnimatedStyle(() => {
+    return {
+      opacity: buttonVisible.value,
+      transform: [
+        {
+          translateX: withTiming(buttonVisible.value ? 0 : 150, { duration: 200 }),
+        },
+      ],
     };
-  
-    const animatedButtonStyle = useAnimatedStyle(() => {
-      return {
-        opacity: buttonVisible.value,
-        transform: [
-          {
-            translateX: withTiming(buttonVisible.value ? 0 : 150, { duration: 200 }),
-          },
-        ],
-      };
-    });
+  });
 
   return (
     <SafeAreaViewComponent>
@@ -121,7 +121,14 @@ export default function Category() {
         }}>
         {(loading || isLoading) && <OverlayLoader />}
         <Animated.View style={[styles.floatingButton, animatedButtonStyle]}>
-          <TouchableOpacity style={{width: '100%', height: '100%', alignItems:'center',justifyContent: 'center' }} onPress={handlePress}>
+          <TouchableOpacity
+            style={{
+              width: '100%',
+              height: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPress={handlePress}>
             <Entypo name="plus" size={24} color="white" />
           </TouchableOpacity>
         </Animated.View>
@@ -283,7 +290,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    backgroundColor: '#1e1a32',
+    backgroundColor: '#E2E2EA',
     borderRadius: 8,
     padding: 5,
     marginHorizontal: 10,
@@ -294,15 +301,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 8,
   },
   tabText: {
-    color: '#B3B1C4',
+    color: '#282343',
     fontWeight: '500',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   card: {
     padding: 10,
@@ -324,23 +331,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: '#F1F1F6',
+    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
-  subText: {
-    color: '#B3B1C4',
-    fontSize: 12,
-    fontFamily: 'Inter-400',
-  },
-  subTextContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
   floatingButton: {
-    backgroundColor: '#5a4f96', // Replace with your primary color
+    backgroundColor: '#6B5DE6',
     width: 50,
     height: 50,
     borderRadius: 25,

@@ -45,7 +45,6 @@ export const CustomColorSwatches = ({
     );
   }
 
-
   const colorColumns = chunkArray(customColors, 4);
 
   return (
@@ -56,8 +55,12 @@ export const CustomColorSwatches = ({
         marginBottom: 30,
       }}>
       <View>
-        <Text style={styles.dateHeader}>Color  <Text style={styles.subText}><Text>{'\u2022'}</Text> Swipe right for more colors</Text></Text>
-        
+        <Text style={styles.dateHeader}>
+          Color{' '}
+          <Text style={styles.subText}>
+            <Text>{'\u2022'}</Text> Swipe right for more colors
+          </Text>
+        </Text>
       </View>
       {/* <FlatList
         data={customColors}
@@ -113,11 +116,11 @@ const styles = StyleSheet.create({
   dateHeader: {
     fontSize: 14,
     fontFamily: 'Inter-600',
-    color: '#FFF',
+    color: '#1E1E1E',
     marginBottom: 5,
   },
   subText: {
-    color: '#B3B1C4',
+    color: '#282343',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },

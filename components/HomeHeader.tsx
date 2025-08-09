@@ -1,18 +1,19 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const CARDGAP = 10;
 
 const width = deviceWidth();
 
 const cardWidth = (width - CARDGAP * 3) / 2;
-const HomeHeader = ({ income, expense }: { income: number; expense: number}) => {
+const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
   return (
     <View>
-      <View style={styles.topContainer}>
+      {/* <View style={styles.topContainer}>
         <View style={[styles.card, { width: cardWidth }]}>
           <View>
             <Text style={styles.cardTitle}>Income</Text>
@@ -21,7 +22,7 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number}) => 
             </Text>
           </View>
           <View>
-            <Feather name="arrow-down-left" size={20} color="#00C896" />
+            <Feather name="arrow-down-left" size={20} color="#F3F2F8" />
           </View>
         </View>
         <View style={[styles.card, { width: cardWidth }]}>
@@ -45,7 +46,58 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number}) => 
             {formatToCurrency(income - expense)}
           </Text>
         </View>
-      </View>
+      </View> */}
+      <LinearGradient
+        colors={['#463E75', '#6B5DE6', '#9C27B0']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.linearGradientContainer}>
+        <View style={{ flexDirection: 'column', justifyContent: 'center' }}>
+          {/* Title & Balance */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={styles.totalBalanceTitle}>Total Balance</Text>
+            <Text
+              style={{
+                color: '#FFFFFF',
+                fontFamily: 'Inter-700',
+                fontSize: 28,
+                marginTop: 4,
+              }}
+              numberOfLines={2}>
+              {formatToCurrency(income - expense)}
+            </Text>
+          </View>
+
+          {/* Income & Expense Row */}
+          <View style={styles.detailsContainer}>
+            {/* Income */}
+            <View style={{ alignItems: 'flex-start' }}>
+              <View style={{ gap: 4, flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="arrow-down-circle" size={20} color="#ffffff" />
+                <Text style={styles.title}>Income</Text>
+              </View>
+
+              <Text style={styles.subTitle} numberOfLines={2}>
+                {formatToCurrency(income)}
+              </Text>
+            </View>
+
+            {/* Divider */}
+            <View style={styles.divider} />
+
+            {/* Expense */}
+            <View style={{ alignItems: 'flex-end' }}>
+              <View style={{ gap: 4, flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="arrow-up-circle" size={20} color="#ffffff" />
+                <Text style={styles.title}>Expense</Text>
+              </View>
+              <Text style={styles.subTitle} numberOfLines={2}>
+                {formatToCurrency(expense)}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
     </View>
   );
 };
@@ -53,57 +105,39 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number}) => 
 export default HomeHeader;
 
 const styles = StyleSheet.create({
-  topContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
+  linearGradientContainer: {
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
+    margin: 16,
   },
-  btnContainer: {
-    alignItems: 'center',
-  },
-  card: {
-    backgroundColor: '#282343',
-    padding: 15,
-    borderRadius: 10,
-    flexDirection: 'row',
-    columnGap: 10,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  cardTitle: {
-    color: '#F4F5F8',
+  title: {
+    color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     fontFamily: 'Inter-600',
-    paddingBottom: 5,
   },
-  cardSubtitle: {
-    color: '#8F87F1',
-    fontSize: 12,
-    fontFamily: 'Inter-700',
-    maxWidth: cardWidth - 50,
+  subTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Inter-600',
+    marginTop: 2,
   },
-  balance: {
+  totalBalanceTitle: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 15,
+    fontFamily: 'Inter-600',
+  },
+  divider: {
+    borderColor: 'rgba(255,255,255,0.4)',
+    borderWidth: 0.5,
+    height: 30,
+  },
+  detailsContainer: {
     flexDirection: 'row',
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: '#463e75',
-    minWidth: cardWidth,
-    width: 'auto',
-    alignSelf: 'center',
     alignItems: 'center',
-    marginVertical: 10,
-  },
-  balanceText: {
-    fontSize: 12,
-    fontFamily: 'Inter-500',
-    maxWidth: cardWidth + 50,
-  },
-
-  loader: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });

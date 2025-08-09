@@ -8,15 +8,15 @@ interface Props {
   onChange: (e: any) => void;
   onClick?: (searchPhrase: string) => void;
   onClose?: () => void;
-  actionsNeeded?: boolean
+  actionsNeeded?: boolean;
 }
 
-const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded= false }: Props) => {
+const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = false }: Props) => {
   const [clicked, setIsClicked] = useState(false);
   return (
     <View style={styles.container}>
       <View style={clicked ? styles.searchBar__clicked : styles.searchBar__unclicked}>
-        <Feather name="search" size={18} color="#C7C7C7" style={{ marginLeft: 10 }} />
+        <Feather name="search" size={18} color="#999999" style={{ marginLeft: 10 }} />
         <TextInput
           style={styles.input}
           placeholder="Search"
@@ -35,43 +35,43 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded= fa
             setIsClicked(false);
           }}
           placeholderTextColor={'#6E6E80'}
-          selectionColor="#fdfdfd"
-          cursorColor="#EDEDED"
+          selectionColor="#999999"
+          cursorColor="#999999"
         />
 
         {actionsNeeded && (
           <View style={styles.actions}>
-          {clicked && (
-            <>
-              <View style={styles.check}>
-                <Entypo
-                  name="check"
-                  size={20}
-                  color="#b7b6c1"
-                  style={{ padding: 2 }}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    onClick?.(searchPhrase);
-                    setIsClicked(false);
-                  }}
-                />
-              </View>
-              <View style={styles.close}>
-                <Entypo
-                  name="cross"
-                  size={20}
-                  color="#b7b6c1"
-                  style={{ padding: 1.5 }}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    onClose?.();
-                    setIsClicked(false);
-                  }}
-                />
-              </View>
-            </>
-          )}
-        </View>
+            {clicked && (
+              <>
+                <View style={styles.check}>
+                  <Entypo
+                    name="check"
+                    size={20}
+                    color="#1E1E1E"
+                    style={{ padding: 2 }}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      onClick?.(searchPhrase);
+                      setIsClicked(false);
+                    }}
+                  />
+                </View>
+                <View style={styles.close}>
+                  <Entypo
+                    name="cross"
+                    size={20}
+                    color="#1E1E1E"
+                    style={{ padding: 1.5 }}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      onClose?.();
+                      setIsClicked(false);
+                    }}
+                  />
+                </View>
+              </>
+            )}
+          </View>
         )}
       </View>
       {/* cancel button, depending on whether the search bar is clicked or not */}
@@ -99,13 +99,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     width: '100%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E2EA',
+    paddingHorizontal: 2,
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.84,
+    elevation: 1,
+    backgroundColor: '#FFFFFF',
   },
   searchBar__unclicked: {
     // paddingVertical: 12,
     // paddingHorizontal: 10,
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#1C1C20',
+    backgroundColor: '#FFFFFF',
     borderRadius: 4,
     alignItems: 'center',
   },
@@ -114,7 +127,7 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 10,
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#1C1C20',
+    backgroundColor: '#FFFFFF',
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'space-evenly',
@@ -124,10 +137,10 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     paddingVertical: Platform.OS === 'android' ? 8 : 16,
     fontSize: 16,
-    fontFamily: 'Inter-400',
-    color: '#FFFFFF',
+    fontFamily: 'Inter-500',
+    color: '#1E1E1E',
     paddingHorizontal: 10,
-    backgroundColor: '#1C1C20',
+    backgroundColor: '#FFFFFF',
     borderRadius: 6,
   },
   actions: {

@@ -10,11 +10,13 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         justifyContent: 'space-between',
         alignItems: 'center',
         elevation: 10,
-        backgroundColor: '#1A1A24',
+        backgroundColor: '#FFFFFF',
         paddingBottom: Platform.OS === 'ios' ? 10 : 0,
         paddingTop: 5,
         position: 'static',
         bottom: 0,
+        borderTopColor: '#E2E2EA',
+        borderTopWidth: 0.5,
       }}>
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
@@ -47,7 +49,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         const background = useSharedValue('transparent');
 
         if (isFocused) {
-          background.value = withSpring('#463e75', {
+          background.value = withSpring('#6B5DE6', {
             duration: 0,
           }); // animate when focused
         } else {
@@ -97,7 +99,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
             </Animated.View>
             <Text
               style={{
-                color: !isFocused ? '#B3B1C4' : '#FFF',
+                color: !isFocused ? '#282343' : '#1E1E1E',
                 fontFamily: 'Inter-500',
                 fontSize: 12,
               }}>

@@ -48,7 +48,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             <Text
               style={{
                 fontSize: 14,
-                color: '#B3B1C4',
+                color: '#282343',
                 marginBottom: 6,
                 fontFamily: 'Inter-400',
               }}>
@@ -62,7 +62,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             if (onBlur) onBlur(); // handle blur manually
           }}
           style={{
-            backgroundColor: '#463e75',
+            backgroundColor: '#6B5DE6',
             borderWidth: 1,
             paddingHorizontal: 12,
             paddingVertical: 5,
@@ -72,7 +72,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Entypo name="calendar" size={14} color="#FFF" style={{ marginRight: 5 }} />
+          <Entypo name="calendar" size={14} color="#1E1E1E" style={{ marginRight: 5 }} />
           <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
             {date ? formatDateForDisplay(date) : placeholder || 'Pick a date'}
           </Text>

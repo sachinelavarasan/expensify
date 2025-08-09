@@ -79,7 +79,7 @@ export default function Stat() {
                 donut
                 isAnimated
                 animationDuration={500}
-                innerCircleColor="#1F1A29"
+                innerCircleColor="#FFFFFF"
                 innerRadius={80}
                 labelsPosition="mid"
                 textColor="#6900FF"
@@ -89,7 +89,7 @@ export default function Stat() {
                       <Text
                         key={index}
                         style={{
-                          fontSize: 14,
+                          fontSize: 16,
                           marginBottom: 5,
                           color: item.color,
                           fontFamily: 'Inter-600',
@@ -98,13 +98,13 @@ export default function Stat() {
                       </Text>
                     ))
                   ) : (
-                    <Text style={{ fontSize: 16, color: '#333' }}>No data</Text>
+                    <Text style={{ fontSize: 16, color: '#1E1E1E' }}>No data</Text>
                   )
                 }
               />
             </View>
 
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <TableView transactions={transactions} />
             </View>
 

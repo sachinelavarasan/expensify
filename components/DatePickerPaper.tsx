@@ -63,7 +63,7 @@ const DatePickerPaper = forwardRef<any, Props>(
             <Text
               style={{
                 fontSize: 14,
-                color: '#B3B1C4',
+                color: '#282343',
                 marginBottom: 6,
                 fontFamily: 'Inter-400',
               }}>
@@ -77,7 +77,7 @@ const DatePickerPaper = forwardRef<any, Props>(
             if (onBlur) onBlur();
           }}
           style={{
-            backgroundColor: '#463e75',
+            backgroundColor: '#6B5DE6',
             borderWidth: 1,
             paddingHorizontal: 12,
             paddingVertical: 5,
@@ -86,7 +86,7 @@ const DatePickerPaper = forwardRef<any, Props>(
             flexDirection: 'row',
             alignItems: 'center',
           }}>
-          <Entypo name="calendar" size={14} color="#FFF" style={{ marginRight: 5 }} />
+          <Entypo name="calendar" size={14} color="#ffffff" style={{ marginRight: 5 }} />
           <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
             {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
           </Text>

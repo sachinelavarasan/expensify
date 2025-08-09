@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: '#D1CCFF',
+    color: '#1E1E1E',
     fontSize: 20,
     fontFamily: 'Inter-600',
     textAlign: 'center',

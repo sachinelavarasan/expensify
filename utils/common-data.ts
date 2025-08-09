@@ -342,7 +342,7 @@ export const customColors = [
   { name: 'Yellow', hex: '#FBBF24' },
   { name: 'Rose normal', hex: '#F472B6' },
   { name: 'Green light', hex: '#22C55E' },
-    { name: 'Electric Indigo', hex: '#6F00FF' },
+  { name: 'Electric Indigo', hex: '#6F00FF' },
   { name: 'Flamingo Pink', hex: '#FC6C85' },
   { name: 'Lime Green', hex: '#32CD32' },
   { name: 'Cyber Yellow', hex: '#FFD300' },
@@ -497,7 +497,7 @@ export const transactionTesting = [
       },
     ],
   },
-   {
+  {
     title: 'July 2025',
     data: [
       {
@@ -642,20 +642,20 @@ export const transactionTesting = [
       },
     ],
   },
-]
+];
 
 export const accountIcon = [
-  "attach-money",
-  "account-balance",
-  "account-balance-wallet",
-  "account-circle",
-  "person",
-  "person-outline",
-  "credit-card",
-  "savings",
-  "wallet-giftcard",
-  "payments"
-]
+  'attach-money',
+  'account-balance',
+  'account-balance-wallet',
+  'account-circle',
+  'person',
+  'person-outline',
+  'credit-card',
+  'savings',
+  'wallet-giftcard',
+  'payments',
+];
 
 export const exportType = [
   {

@@ -33,6 +33,7 @@ export default function Setting() {
             style={{
               flex: 1,
               paddingHorizontal: 10,
+              backgroundColor: '#0F0E17',
             }}>
             <Spacer height={20} />
             <View style={{ gap: 20 }}>

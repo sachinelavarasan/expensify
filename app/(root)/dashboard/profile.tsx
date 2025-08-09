@@ -49,15 +49,18 @@ const Profile = () => {
         <Pressable>
           <View style={styles.card}>
             <View style={styles.left}>
-              <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
-                <MaterialIcons name="account-balance" size={24} color="#FFF" />
+              <View style={{ backgroundColor: '#6B5DE6', padding: 8, borderRadius: 5 }}>
+                <MaterialIcons name="account-balance" size={24} color="#FFFFFF" />
               </View>
               <View>
                 <View>
                   <Text style={styles.option}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText]}>Over All : {overAllAmount}</Text>
+                  <Text style={[styles.subText]}>Over All : </Text>
+                  <Text style={[styles.subText, { color: '#1E1E1E', fontFamily: 'Inter-600' }]}>
+                    {overAllAmount}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -98,8 +101,8 @@ const Profile = () => {
                   <View>
                     <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>
                   </View>
-                  <View style={{ backgroundColor: '#282343', padding: 2, borderRadius: 2 }}>
-                    <MaterialIcons name="account-balance-wallet" size={16} color="#FFF" />
+                  <View style={{ backgroundColor: '#6B5DE6', padding: 2, borderRadius: 2 }}>
+                    <MaterialIcons name="account-balance-wallet" size={16} color="#FFFFFF" />
                   </View>
                 </View>
 
@@ -114,8 +117,8 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
-                  <MaterialIcons name="category" size={24} color="#FFF" />
+                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="category" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
@@ -136,8 +139,8 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
-                  <MaterialIcons name="star" size={24} color="#FFF" />
+                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="star" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
@@ -157,8 +160,8 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
-                  <MaterialCommunityIcons name="file-export" size={24} color="#FFF" />
+                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                  <MaterialCommunityIcons name="file-export" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
@@ -180,8 +183,8 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
-                  <MaterialIcons name="settings" size={24} color="#FFF" />
+                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="settings" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
@@ -241,7 +244,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: Platform.OS === 'android' ? 10 : 16,
     width: '100%',
@@ -252,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
+    color: '#1E1E1E',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -285,7 +288,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   amount: {
-    color: '#A0A0A0',
+    color: '#5a4f96',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
@@ -297,12 +300,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   option: {
-    color: '#F1F1F6',
+    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#6F6D85',
+    color: '#7A7A8C',
     fontSize: 14,
     fontFamily: 'Inter-500',
     wordWrap: 'wrap',
@@ -315,20 +318,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   logoutText: {
-    color: '#f1f1f6',
+    color: '#FFFFFF',
   },
   logoutBg: {
-    backgroundColor: '#282343',
+    backgroundColor: '#6B5DE6',
   },
   accountCard: {
     borderWidth: 1,
-    borderColor: '#463e75',
-    padding: 5,
+    borderColor: '#E2E2EA',
+    backgroundColor: '#EBE9FC',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: 4,
     width: CARD_WIDTH,
   },
   accountlabel: {
-    color: '#B3B1C4',
+    color: '#282343',
     fontSize: 13,
     fontFamily: 'Inter-600',
     width: CARD_WIDTH * 0.5,
