@@ -20,6 +20,21 @@ export interface User {
   toJSON(): object;
 }
 
+export interface IExpUser {
+  exp_us_id: number;
+  exp_us_clerk_id: string;
+  exp_us_name: string;
+  exp_us_email: string;
+  exp_us_phone_no: string;
+  exp_us_is_deleted: boolean;
+  exp_us_currency: string;
+  exp_us_default_transaction: number;
+  exp_us_default_grouping: string;
+  exp_us_profile_url: string;
+  exp_us_created_at: string;
+  exp_us_updated_at: string;
+}
+
 export interface Itransaction {
   exp_ts_id: number;
   exp_ts_user_id: number;

@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { setAsyncValue } from "./functions";
 
 export async function registerForPushNotificationsAsync() {
   if (Platform.OS === "android") {
@@ -38,6 +39,7 @@ export async function registerForPushNotificationsAsync() {
           projectId,
         })
       ).data;
+      await setAsyncValue('@fcm_token', pushTokenString);
       return pushTokenString;
     } catch (e: unknown) {
         console.log(e)

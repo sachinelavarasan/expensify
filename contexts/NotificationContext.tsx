@@ -36,9 +36,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     registerForPushNotificationsAsync().then(
       (token) => {
         setExpoPushToken(token)
-        if(token) {
-          setAsyncValue('@fcm_token', token);
-        }
       },
       (error) => setError(error),
     );

@@ -6,7 +6,7 @@ import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
 import TransactionCard from '@/components/TransactionCard';
 import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
-import { formattedAmount } from '@/utils/formatter';
+import { formatToCurrency } from '@/utils/formatter';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -90,13 +90,13 @@ export default function AccountScreen() {
                     {!!expense && (
                       <Text style={styles.totalAmount}>
                         <Feather name="arrow-up-right" size={12} color="#FF4D4F" />
-                        {formattedAmount(expense)}
+                        {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
                       <Text style={styles.totalAmount}>
                         <Feather name="arrow-down-left" size={12} color="#00C896" />
-                        {formattedAmount(income)}
+                        {formatToCurrency(income)}
                       </Text>
                     )}
                   </View>

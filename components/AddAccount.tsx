@@ -163,7 +163,8 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
         hasBackdrop={true}
         deviceHeight={height}
         deviceWidth={width}
-        animationIn={'bounceIn'}
+        animationIn={'fadeIn'}
+        animationOut={'fadeOut'}
         coverScreen={true}>
         <View
           style={{
