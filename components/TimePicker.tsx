@@ -47,7 +47,7 @@ const CustomTimePicker = ({
           <Text
             style={{
               fontSize: 14,
-              color: '#B3B1C4',
+              color: '#282343',
               marginBottom: 6,
               fontFamily: 'Inter-400',
             }}>

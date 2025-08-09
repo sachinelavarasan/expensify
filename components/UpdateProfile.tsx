@@ -46,7 +46,7 @@ const UpdateProfile = () => {
   return (
     <>
       <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
-        <AntDesign name="edit" size={24} color="#CCC" />
+        <AntDesign name="edit" size={24} color="#7A7A8C" />
       </Pressable>
 
       <Modal
@@ -63,10 +63,17 @@ const UpdateProfile = () => {
             alignItems: 'center',
           }}>
           <View style={styles.modal}>
-          <TouchableOpacity onPress={() => setShow(!show)} style={{alignItems:'flex-end'}}>
-            <Ionicons name='close' color="#fff" size={20}/>
-          </TouchableOpacity>
-            <Text style={styles.title}>Edit Details</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <Text style={styles.title}>Edit Details</Text>
+              <TouchableOpacity onPress={() => setShow(!show)} style={{ alignItems: 'flex-end' }}>
+                <Ionicons name="close" color="#5A5A6E" size={20} />
+              </TouchableOpacity>
+            </View>
             <Spacer height={15} />
             <Controller
               control={control}
@@ -93,7 +100,7 @@ const UpdateProfile = () => {
                 // onPress={handleSubmit(register)}
                 disabled={!isValid || isLoading}>
                 {isLoading ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.btntitle, isLoading ? styles.textDisable : {}]}>Update</Text>
               </TouchableOpacity>
@@ -109,16 +116,16 @@ export default UpdateProfile;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
+    backgroundColor: '#FFFFFF',
     width: deviceWidth() - 60,
     borderRadius: 10,
-    paddingVertical: 30,
+    paddingVertical: 20,
     paddingHorizontal: 15,
   },
   title: {
     textAlign: 'center',
     fontSize: 20,
-    color: '#FFFFFF',
+    color: '#1E1E1E',
     marginBottom: 2,
     fontFamily: 'Inter-800',
   },
@@ -129,11 +136,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: Platform.OS === 'android' ? 10 : 16,
-    // width: '100%',
-    paddingHorizontal: 30
+    width: '100%',
+    paddingHorizontal: 30,
   },
   loader: {
     position: 'absolute',
@@ -141,12 +148,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   textDisable: { opacity: 0 },
 });

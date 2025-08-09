@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
+    color: '#1E1E1E',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },

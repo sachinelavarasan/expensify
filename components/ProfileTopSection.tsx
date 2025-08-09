@@ -61,8 +61,7 @@ export default function AnimatedTopSection({
     const opacity = interpolate(scrollOffset.value, [0, 60, 100], [1, 0.7, 0], Extrapolate.CLAMP);
 
     return {
-      transform: [{ scale }, 
-        { translateY }],
+      transform: [{ scale }, { translateY }],
       opacity,
     };
   });
@@ -72,8 +71,8 @@ export default function AnimatedTopSection({
     return { opacity };
   });
 
-  const titleColor = '#FFF';
-  const subtitleColor = '#CCC';
+  const titleColor = '#1E1E1E';
+  const subtitleColor = '#7A7A8C';
 
   return (
     <ThemedView style={styles.container}>
@@ -88,7 +87,7 @@ export default function AnimatedTopSection({
       <Animated.View style={[styles.background, bgStyle]}>
         {backgroundImage && (
           <Image
-            resizeMode='cover'
+            resizeMode="cover"
             source={backgroundImage}
             style={[
               styles.backgroundImage,
@@ -161,7 +160,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#7A7A8C',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   titleTextContainer: {
@@ -196,7 +195,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#6900FF',
+    borderColor: '#E2E2EA',
   },
   avatarContainer: {
     position: 'absolute',
@@ -209,9 +208,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: deviceWidth() * 0.8,
     height: AVATAR_SIZE,
-    backgroundColor: '#0F0E17',
+    backgroundColor: '#FFFFFF',
     borderWidth: 3,
-    borderColor: '#463e75',
+    borderColor: '#E2E2EA',
   },
   avatarFull: {
     width: AVATAR_SIZE,
@@ -227,12 +226,12 @@ const styles = StyleSheet.create({
   titleTextInHeader: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFF',
+    color: '#1E1E1E',
   },
 
   subtitleTextInHeader: {
     fontSize: 14,
-    color: '#CCC',
+    color: '#282343',
     marginTop: 4,
   },
 });

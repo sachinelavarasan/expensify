@@ -57,13 +57,13 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
 
     return (
       <View>
-        <View style={label? { flexDirection: 'row', alignItems: 'center', gap: 10 }: {}}>
+        <View style={label ? { flexDirection: 'row', alignItems: 'center', gap: 10 } : {}}>
           <View>
             {label ? (
               <Text
                 style={{
                   fontSize: 14,
-                  color: '#B3B1C4',
+                  color: '#282343',
                   marginBottom: 6,
                   fontFamily: 'Inter-400',
                 }}>
@@ -77,18 +77,19 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
               if (onBlur) onBlur();
             }}
             style={{
-              borderWidth: 2,
+              borderWidth: 1,
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 20,
-              borderColor: '#463e75',
+              borderColor: '#c7c7c7',
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
+              backgroundColor: '#EBE9FC',
               gap: 15,
             }}>
-            <Entypo name="calendar" size={14} color="#FFF" />
-            <Text style={{ color: '#ccc', fontWeight: '500', fontFamily: 'Inter-500' }}>
+            <Entypo name="calendar" size={14} color="#1E1E1E" />
+            <Text style={{ color: '#1E1E1E', fontWeight: '500', fontFamily: 'Inter-500' }}>
               {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
             </Text>
           </TouchableOpacity>

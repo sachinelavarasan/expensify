@@ -6,11 +6,11 @@ import { useRouter } from 'expo-router';
 export default function ProfileHeader({
   title,
   deleteAction,
-  subtitle
+  subtitle,
 }: {
   title: string;
   deleteAction?: () => void;
-  subtitle?: string
+  subtitle?: string;
 }) {
   const router = useRouter();
   return (
@@ -23,28 +23,30 @@ export default function ProfileHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Pressable onPress={router.back} style={{ marginRight: 10 }}>
-          <MaterialIcons name="arrow-back" size={24} color="#FFF" />
+          <MaterialIcons name="arrow-back" size={24} color="#1E1E1E" />
         </Pressable>
         <View>
           <Text
             style={{
               fontSize: 18,
-              color: '#FFF',
+              color: '#1E1E1E',
               fontFamily: 'Inter-600',
             }}>
             {title}
           </Text>
-          {!!subtitle && <Text
-            style={{
-              fontSize: 14,
-              color: '#CCC',
-              fontFamily: 'Inter-400',
-              textTransform:'uppercase'
-            }}>
-            {subtitle}
-          </Text>}
+          {!!subtitle && (
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#CCC',
+                fontFamily: 'Inter-400',
+                textTransform: 'uppercase',
+              }}>
+              {subtitle}
+            </Text>
+          )}
         </View>
       </View>
       <View>

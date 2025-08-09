@@ -24,28 +24,26 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
   const incomeByCategory = groupByCategory(incomeTransactions);
   const expenseByCategory = groupByCategory(expenseTransactions);
 
- const calculateCategoryMetrics = (
-  categoryData: { [key: string]: Itransaction[] },
-  totalAmount: number
-) => {
-  return Object.entries(categoryData).map(([category, transactions]) => {
-    const totalCategoryAmount = transactions.reduce((sum, tx) => {
-      return sum + Number(tx.exp_ts_amount);
-    }, 0);
+  const calculateCategoryMetrics = (
+    categoryData: { [key: string]: Itransaction[] },
+    totalAmount: number,
+  ) => {
+    return Object.entries(categoryData).map(([category, transactions]) => {
+      const totalCategoryAmount = transactions.reduce((sum, tx) => {
+        return sum + Number(tx.exp_ts_amount);
+      }, 0);
 
+      const percentage =
+        totalAmount > 0 ? ((totalCategoryAmount / totalAmount) * 100).toFixed(2) : '0.00';
 
-    const percentage =
-      totalAmount > 0 ? ((totalCategoryAmount / totalAmount) * 100).toFixed(2) : '0.00';
-
-    return {
-      category,
-      totalAmount: totalCategoryAmount,
-      transactionCount: transactions.length,
-      percentage: parseFloat(percentage),
-    };
-  });
-};
-
+      return {
+        category,
+        totalAmount: totalCategoryAmount,
+        transactionCount: transactions.length,
+        percentage: parseFloat(percentage),
+      };
+    });
+  };
 
   const totalIncome = incomeTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
   const totalExpense = expenseTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
@@ -78,28 +76,40 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
       <FlatList
         data={data}
         keyExtractor={(item) => item.category}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.left}>
-              <View>
+        renderItem={({ item, index }) => (
+          <View>
+            <View style={styles.card}>
+              <View style={styles.left}>
                 <View>
-                  <Text style={styles.name}>{item.category}</Text>
-                </View>
-                <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-600' }]}>
-                    {formatToCurrency(item.totalAmount)} <Text>{'\u2022'}</Text>
-                  </Text>
-                  <Text style={[styles.subText]}>
-                    {item.transactionCount}{' '}
-                    {item.transactionCount === 1 ? 'transaction' : 'transactions'}
-                  </Text>
+                  <View>
+                    <Text style={styles.name}>{item.category}</Text>
+                  </View>
+                  <View style={styles.subTextContainer}>
+                    <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-600' }]}>
+                      {formatToCurrency(item.totalAmount)} <Text>{'\u2022'}</Text>
+                    </Text>
+                    <Text style={[styles.subText]}>
+                      {item.transactionCount}{' '}
+                      {item.transactionCount === 1 ? 'transaction' : 'transactions'}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
 
-            <View>
-              <Text style={styles.amount}>{item.percentage} %</Text>
+              <View>
+                <Text style={styles.amount}>{item.percentage} %</Text>
+              </View>
             </View>
+            {index !== data.length - 1 && (
+              <View
+                style={{
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: '#E2E2EA',
+                  height: 1,
+                  width: '100%',
+                }}
+              />
+            )}
           </View>
         )}
       />
@@ -110,17 +120,17 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0911',
+    backgroundColor: '#FFFFFF',
     padding: 12,
     borderRadius: 8,
-    borderColor: '#1e1a32',
-    borderWidth: 1,
+    borderColor: '#E2E2EA',
+    borderWidth: 0.5,
     margin: 16,
   },
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    backgroundColor: '#1e1a32',
+    backgroundColor: '#E2E2EA',
     borderRadius: 8,
     padding: 5,
   },
@@ -130,19 +140,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 8,
   },
   tabText: {
-    color: '#B3B1C4',
+    color: '#282343',
     fontWeight: '500',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   card: {
     padding: 8,
-    marginBottom: 12,
     // backgroundColor: '#141221',
     borderRadius: 4,
     flexDirection: 'row',
@@ -152,10 +161,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#1E1E1E',
   },
   amount: {
-    color: '#B0AEC0',
+    color: '#5A5A6E',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
@@ -167,12 +176,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: '#FFFFFF',
+    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#8880A0',
+    color: '#7A7A8C',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },

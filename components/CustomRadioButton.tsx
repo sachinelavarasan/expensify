@@ -37,7 +37,7 @@ export default function CustomRadioButton({
         <View style={{ display: 'flex', flexDirection: 'row' }}>
           <Text
             style={[
-              { fontSize: 14, color: '#B3B1C4', marginVertical: 3, fontFamily: 'Inter-500' },
+              { fontSize: 14, color: '#282343', marginVertical: 3, fontFamily: 'Inter-500' },
             ]}>
             {label}
           </Text>
@@ -60,8 +60,8 @@ export default function CustomRadioButton({
             labelStyle={styles.labelStyle}
             selected={button.id == selectedId}
             onPress={handlePress}
-            borderColor="#8379b9"
-            color="#8379b9"
+            borderColor="#6B5DE6"
+            color="#6B5DE6"
             containerStyle={{ marginHorizontal: 0 }}
             disabled={disabled}
           />
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontSize: 14,
-    color: '#fff',
-    fontFamily: 'Inter-400',
+    color: '#1E1E1E',
+    fontFamily: 'Inter-500',
   },
 });

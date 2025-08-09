@@ -80,12 +80,12 @@ const Input = forwardRef(function MyInput(
           {isPassword ? (
             <TouchableOpacity onPress={() => setShow((state) => !state)}>
               {show ? (
-                <Ionicons style={styles.inputIconPassword} name="eye" color={'#FFF'} size={18} />
+                <Ionicons style={styles.inputIconPassword} name="eye" color={'#1E1E1E'} size={18} />
               ) : (
                 <Ionicons
                   style={styles.inputIconPassword}
                   name="eye-off"
-                  color={'#FFF'}
+                  color={'#1E1E1E'}
                   size={18}
                 />
               )}
@@ -119,18 +119,27 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderWidth: 0,
     paddingVertical: Platform.OS === 'android' ? 8 : 16,
     fontSize: 16,
     fontFamily: 'Inter-400',
-    color: '#FFFFFF',
+    color: '#1E1E1E',
     paddingHorizontal: 20,
-    backgroundColor: '#1C1C20',
-    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E2EA',
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.84,
+    elevation: 1,
   },
   label: {
     fontSize: 14,
-    color: '#B3B1C4',
+    color: '#282343',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },
@@ -150,7 +159,7 @@ const styles = StyleSheet.create({
   },
   borderNone: {
     borderWidth: 0,
-    backgroundColor: '#1C1C20',
+    backgroundColor: '#FFFFFF',
     borderRadius: 6,
   },
   titleText: {
