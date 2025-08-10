@@ -1,12 +1,5 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import ProfileHeader from '@/components/ProfileHeader';
@@ -14,25 +7,34 @@ import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-ic
 import Spacer from '@/components/Spacer';
 import CustomSwitch from '@/components/Switch';
 import TimePickerPaperWithButton from '@/components/TimePickerPaperWithButton';
-import { deviceWidth } from '@/utils/functions';
+import { deviceWidth, getAsyncValue, setAsyncValue } from '@/utils/functions';
 import CurrencyModal from '@/components/CurrencyModal';
 import DefaultTransactionModal from '@/components/DefaultTransactionModal';
 import DefaultGroupingModal from '@/components/DefaultGroupingModal';
 import { registerForPushNotificationsAsync } from '@/utils/registerForPushNotificationsAsync';
 import { useDisableNotificationToken, useEnableNotificationToken } from '@/hooks/useSettings';
+import { useGetUserData } from '@/hooks/useUserStore';
+import { format } from 'date-fns';
 
 export default function Setting() {
   const [time, setTime] = useState('');
   const [reminder, setReminder] = useState(false);
+  const [showBalance, setShowBalance] = useState(false);
+  const [carryBalance, setCarryBalance] = useState(false);
+  const [ttime, setTtime] = useState(false);
   const { mutateAsync: enableNotification } = useEnableNotificationToken();
   const { mutateAsync: disableNotification } = useDisableNotificationToken();
+  const { user, refetch } = useGetUserData();
 
   const handleEnable = (times: string) => {
-    if(!times) return;
+    if (!times) return;
     registerForPushNotificationsAsync().then(
       (token) => {
         setTime(times);
-        if (token && times) enableNotification({ token, time: times });
+        if (token && times) {
+          enableNotification({ token, time: times });
+          refetch();
+        }
       },
       (error) => alert('Failed to enable push notification!'),
     );
@@ -40,13 +42,64 @@ export default function Setting() {
   const handleDisable = () => {
     registerForPushNotificationsAsync().then(
       (token) => {
-        if (token) disableNotification(token);
+        if (token) {
+          disableNotification(token);
+          refetch();
+        }
       },
       (error) => alert('Failed to disable reminder notification'),
     );
   };
 
-  
+  useEffect(() => {
+    if (user && typeof user?.reminder_status === 'number') {
+      setReminder(Boolean(user?.reminder_status));
+      if (user?.reminder_time) {
+        setTime(user?.reminder_time);
+      }
+    }
+  }, [user]);
+
+  const updateSettingPreference = useCallback((name: string, value: boolean | string) => {
+    switch (name) {
+      case 'reminder':
+        if(typeof value === 'boolean') setReminder(value as boolean);
+        const now = new Date();
+        const formatted = time ? time : format(now, 'hh:mm a');
+        handleEnable(formatted);
+        break;
+      case 'balance':
+        setShowBalance(value as boolean);
+        break;
+      case 'over-balance':
+        setCarryBalance(value as boolean);
+        break;
+
+      case 'tt-time':
+        setTtime(value as boolean);
+        break;
+    }
+    setAsyncValue(name, JSON.stringify(value));
+  },[time]);
+
+  useEffect(() => {
+    const getValuesFromStore = async () => {
+      const balance = await getAsyncValue('balance');
+      const overBalance = await getAsyncValue('over-balance');
+      const ttTime = await getAsyncValue('tt-time');
+      if (balance) {
+        setShowBalance(JSON.parse(balance));
+      }
+      if (overBalance) {
+        setCarryBalance(JSON.parse(overBalance));
+      }
+      if (ttTime) {
+        setTtime(JSON.parse(ttTime));
+      }
+    };
+    getValuesFromStore();
+  }, []);
+
   return (
     <KeyboardAvoidingView
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
@@ -68,9 +121,16 @@ export default function Setting() {
                   <Text style={{ color: '#fff' }}>General</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
-                  <CurrencyModal />
-                  <DefaultTransactionModal />
-                  <DefaultGroupingModal />
+                  <CurrencyModal currency={user?.exp_us_currency} refetch={refetch} />
+                  <DefaultTransactionModal
+                    transaction_type={user?.exp_us_default_transaction}
+                    label={user?.exp_us_default_transaction === 2 ? 'Income' : 'Expense'}
+                    refetch={refetch}
+                  />
+                  <DefaultGroupingModal
+                    grouping={user?.exp_us_default_grouping}
+                    refetch={refetch}
+                  />
 
                   {/* <TouchableOpacity style={styles.card}>
                     <View style={styles.left}>
@@ -101,10 +161,14 @@ export default function Setting() {
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={(value)=>{
-                        setReminder(value)
-                        if(!value) handleDisable()
-                      }} />
+                      <CustomSwitch
+                        value={reminder}
+                        onChange={(value) => {
+                          if (value) {
+                            updateSettingPreference('reminder', value);
+                          } else handleDisable();
+                        }}
+                      />
                     </View>
                   </View>
                   <View style={{ marginBottom: 10 }}>
@@ -112,7 +176,7 @@ export default function Setting() {
                       label="Reminder Time"
                       value={time}
                       onChange={(value) => {
-                        handleEnable(value);
+                        updateSettingPreference('reminder', value);
                       }}
                       disabled={!reminder}
                     />
@@ -135,7 +199,12 @@ export default function Setting() {
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={setReminder} />
+                      <CustomSwitch
+                        value={showBalance}
+                        onChange={(value) => {
+                          updateSettingPreference('balance', value);
+                        }}
+                      />
                     </View>
                   </View>
                   <View style={styles.card}>
@@ -147,7 +216,12 @@ export default function Setting() {
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={setReminder} />
+                      <CustomSwitch
+                        value={carryBalance}
+                        onChange={(value) => {
+                          updateSettingPreference('over-balance', value);
+                        }}
+                      />
                     </View>
                   </View>
                   <View style={styles.card}>
@@ -161,7 +235,12 @@ export default function Setting() {
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={setReminder} />
+                      <CustomSwitch
+                        value={ttime}
+                        onChange={(value) => {
+                          updateSettingPreference('tt-time', value);
+                        }}
+                      />
                     </View>
                   </View>
                 </View>

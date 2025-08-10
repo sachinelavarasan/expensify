@@ -33,6 +33,8 @@ export interface IExpUser {
   exp_us_profile_url: string;
   exp_us_created_at: string;
   exp_us_updated_at: string;
+  reminder_status?: number;
+  reminder_time?: string;
 }
 
 export interface Itransaction {

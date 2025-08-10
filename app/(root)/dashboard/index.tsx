@@ -23,6 +23,7 @@ import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
+import { useGetUserData } from '@/hooks/useUserStore';
 
 export default function Index() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function Index() {
     transactionType,
   } = useMonthlyTransactions();
   useCategoryList();
+  useGetUserData()
 
   const [refreshing, setRefreshing] = useState(false);
 

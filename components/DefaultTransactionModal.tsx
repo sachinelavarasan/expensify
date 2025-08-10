@@ -12,6 +12,7 @@ import CustomRadioButton from './CustomRadioButton';
 import { IExpUser } from '@/types';
 import { showToast } from './ToastMessage';
 import { useUserSettingChanges } from '@/hooks/useSettings';
+import { QueryObserverResult } from '@tanstack/react-query';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -22,7 +23,7 @@ const schema = z.object({
 
 type DefaultTT = z.infer<typeof schema>;
 
-const DefaultTransactionModal = ({ transaction_type }: { transaction_type?: string }) => {
+const DefaultTransactionModal = ({ transaction_type, label, refetch }: { transaction_type?: number, label?: string, refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>> }) => {
   const [show, setShow] = useState(false);
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
 
@@ -43,7 +44,7 @@ const DefaultTransactionModal = ({ transaction_type }: { transaction_type?: stri
     if (transaction_type) {
       reset(
         {
-          transaction_type: 1,
+          transaction_type: transaction_type,
         },
         {
           keepDirty: false,
@@ -81,6 +82,7 @@ const DefaultTransactionModal = ({ transaction_type }: { transaction_type?: stri
       })
       .finally(() => {
         toggleModal();
+        refetch()
       });
   };
 
@@ -91,7 +93,7 @@ const DefaultTransactionModal = ({ transaction_type }: { transaction_type?: stri
           <FontAwesome name="exchange" size={20} color="white" />
           <View>
             <Text style={styles.option}>Default Transaction</Text>
-            <Text style={styles.subText}>Choose default type: Income or Expense</Text>
+            <Text style={styles.subText}>{label || 'Choose default type: Income or Expense'}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -142,7 +144,7 @@ const DefaultTransactionModal = ({ transaction_type }: { transaction_type?: stri
                 onPress={handleSubmit(settingChange)}
                 disabled={!isDirty || isPending}>
                 {isPending ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>Submit</Text>
               </TouchableOpacity>

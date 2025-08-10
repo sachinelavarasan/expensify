@@ -18,6 +18,7 @@ import CustomRadioButton from './CustomRadioButton';
 import { useUserSettingChanges } from '@/hooks/useSettings';
 import { showToast } from './ToastMessage';
 import { IExpUser } from '@/types';
+import { QueryObserverResult } from '@tanstack/react-query';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -30,9 +31,10 @@ type DefaultTGrouping = z.infer<typeof schema>;
 
 const DefaultGroupingModal = ({
   grouping,
+  refetch
 }: {
   grouping?: string;
-  exp_ba_id?: number;
+  refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>>
 }) => {
   const [show, setShow] = useState(false);
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
@@ -94,6 +96,7 @@ const DefaultGroupingModal = ({
         })
         .finally(() => {
           toggleModal();
+          refetch()
         });
     };
 
@@ -105,7 +108,7 @@ const DefaultGroupingModal = ({
           <View>
             <Text style={styles.option}>Default Grouping</Text>
             <Text style={styles.subText}>
-              Group transactions by month, year, week, day, or custom range
+              {grouping || 'Group transactions by month, year, week, day, or custom range'}
             </Text>
           </View>
         </View>
@@ -155,7 +158,7 @@ const DefaultGroupingModal = ({
                 onPress={handleSubmit(settingChange)}
                 disabled={!isDirty || isPending}>
                 {isPending ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>
                   Submit

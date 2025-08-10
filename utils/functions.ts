@@ -20,7 +20,6 @@ export const getAsyncValue = async (key: string)=>{
     if(value)
       return JSON.parse(value);
     
-    console.log(value);
     return null;
   } catch (error) {
     return null;

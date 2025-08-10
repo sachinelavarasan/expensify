@@ -52,7 +52,6 @@ const TimePickerPaperWithButton = ({
       updated.setMinutes(minutes);
       updated.setSeconds(0);
       setTime(updated);
-      console.log(updated);
       onChange(formatDisplayTime(updated));
     },
     [setOpen],

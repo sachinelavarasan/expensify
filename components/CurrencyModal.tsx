@@ -12,6 +12,7 @@ import { showToast } from './ToastMessage';
 import CustomRadioButton from './CustomRadioButton';
 import { IExpUser } from '@/types';
 import { useUserSettingChanges } from '@/hooks/useSettings';
+import { QueryObserverResult } from '@tanstack/react-query';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -22,7 +23,7 @@ const schema = z.object({
 
 type CurrencySchema = z.infer<typeof schema>;
 
-const CurrencyModal = ({ currency }: { currency?: string }) => {
+const CurrencyModal = ({ currency, refetch }: { currency?: string, refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>> }) => {
   const [show, setShow] = useState(false);
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
 
@@ -81,6 +82,7 @@ const CurrencyModal = ({ currency }: { currency?: string }) => {
       })
       .finally(() => {
         toggleModal();
+        refetch()
       });
   };
 
@@ -142,7 +144,7 @@ const CurrencyModal = ({ currency }: { currency?: string }) => {
                 onPress={handleSubmit(settingChange)}
                 disabled={!isDirty || isPending}>
                 {isPending ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>
                   Submit

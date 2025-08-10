@@ -18,6 +18,7 @@ import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
+import { useGetUserData } from '@/hooks/useUserStore';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -26,7 +27,7 @@ const CARD_WIDTH = deviceWidthAsNumber / 2;
 const Profile = () => {
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
-  const { user } = useUser();
+  const { user } = useGetUserData();
   const { signOut } = useAuth();
 
   const overAllAmount = accounts.reduce(
@@ -41,8 +42,8 @@ const Profile = () => {
  
   return (
     <AnimatedTopSection
-      title={user?.firstName || ''}
-      subtitle={user?.primaryPhoneNumber?.phoneNumber || ''}
+      title={user?.exp_us_name || ''}
+      subtitle={user?.exp_us_phone_no || ''}
       avatar={require('@/assets/images/user-default.png')}
       backgroundImage={require('@/assets/images/profile.png')}>
       <>
