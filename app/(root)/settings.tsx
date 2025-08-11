@@ -31,8 +31,8 @@ export default function Setting() {
     registerForPushNotificationsAsync().then(
       (token) => {
         setTime(times);
-        if (token && times) {
-          enableNotification({ token, time: times });
+        if (token) {
+          enableNotification({ token });
           refetch();
         }
       },
@@ -171,15 +171,16 @@ export default function Setting() {
                       />
                     </View>
                   </View>
-                  <View style={{ marginBottom: 10 }}>
-                    <TimePickerPaperWithButton
+                  <View>
+                    <Text style={styles.subText}>Daily notification at 11:00 AM </Text>
+                    {/* <TimePickerPaperWithButton
                       label="Reminder Time"
                       value={time}
                       onChange={(value) => {
                         updateSettingPreference('reminder', value);
                       }}
                       disabled={!reminder}
-                    />
+                    /> */}
                   </View>
                 </View>
               </View>

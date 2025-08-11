@@ -8,7 +8,7 @@ export const useEnableNotificationToken = () => {
   const { getToken, userId } = useAuth();
 
   return useMutation({
-    mutationFn: async (data: { token: string; time: string }) => {
+    mutationFn: async (data: { token: string }) => {
       if (!userId) {
         throw new Error('User is not authenticated');
       }
