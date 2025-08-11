@@ -6,6 +6,7 @@ import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
 import TransactionCard from '@/components/TransactionCard';
 import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
+import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -22,6 +23,7 @@ import {
 export default function AccountScreen() {
   const { id } = useLocalSearchParams() as unknown as { id: number };
   const { account, loading, refetch } = useAccountGroupedTransactions(id);
+  const { value } = useGetSettingsFromStore('tt-time');
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -49,12 +51,20 @@ export default function AccountScreen() {
             <View style={[styles.card, { width: 'auto' }]}>
               <View>
                 <Text style={styles.cardTitle}>{account.exp_ba_balance}</Text>
-                <Text style={styles.cardSubtitle}>Account: <Text style={{color: '#D1CCFF'}}>{account.exp_ba_name}</Text> {account.exp_ba_is_primary && <Text style={styles.default}>Default</Text>}</Text>
+                <Text style={styles.cardSubtitle}>
+                  Account: <Text style={{ color: '#D1CCFF' }}>{account.exp_ba_name}</Text>{' '}
+                  {account.exp_ba_is_primary && <Text style={styles.default}>Default</Text>}
+                </Text>
               </View>
               <View>
-                {!!account.exp_ba_id && <AddAccount account={{
-                  ...account
-                }} exp_ba_id={account.exp_ba_id}/>}
+                {!!account.exp_ba_id && (
+                  <AddAccount
+                    account={{
+                      ...account,
+                    }}
+                    exp_ba_id={account.exp_ba_id}
+                  />
+                )}
               </View>
             </View>
             <SectionList
@@ -72,7 +82,7 @@ export default function AccountScreen() {
               keyExtractor={(item, index) => item.exp_ts_id.toString()}
               renderItem={({ item }) => (
                 <View>
-                  <TransactionCard key={item.exp_ts_id} {...item} />
+                  <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value}/>
                 </View>
               )}
               renderSectionHeader={({ section: { title, income, expense } }) => (
@@ -155,12 +165,11 @@ const styles = StyleSheet.create({
     color: '#CCC',
     fontSize: 14,
     fontFamily: 'Inter-500',
-    
   },
-  default:{
+  default: {
     color: '#8880A0',
     fontSize: 10,
     fontFamily: 'Inter-500',
-    verticalAlign:'middle'
-  }
+    verticalAlign: 'middle',
+  },
 });

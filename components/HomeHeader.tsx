@@ -3,15 +3,17 @@ import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
+import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
 const CARDGAP = 10;
 
 const width = deviceWidth();
 
 const cardWidth = (width - CARDGAP * 3) / 2;
-const HomeHeader = ({ income, expense }: { income: number; expense: number}) => {
+const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
+  const { value: showBalance } = useGetSettingsFromStore('balance');
   return (
-    <View>
+    <View style={{marginBottom: 10}}>
       <View style={styles.topContainer}>
         <View style={[styles.card, { width: cardWidth }]}>
           <View>
@@ -37,14 +39,16 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number}) => 
         </View>
       </View>
       <View>
-        <View style={styles.balance}>
-          <Text style={[styles.balanceText, { color: '#EDEDED' }]}>Balance: {''}</Text>
-          <Text
-            style={[styles.balanceText, { color: '#EDEDED', fontFamily: 'Inter-600' }]}
-            numberOfLines={2}>
-            {formatToCurrency(income - expense)}
-          </Text>
-        </View>
+        {!!showBalance && (
+          <View style={styles.balance}>
+            <Text style={[styles.balanceText, { color: '#EDEDED' }]}>Balance: {''}</Text>
+            <Text
+              style={[styles.balanceText, { color: '#EDEDED', fontFamily: 'Inter-600' }]}
+              numberOfLines={2}>
+              {formatToCurrency(income - expense)}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -93,7 +97,7 @@ const styles = StyleSheet.create({
     width: 'auto',
     alignSelf: 'center',
     alignItems: 'center',
-    marginVertical: 10,
+    marginTop: 10,
   },
   balanceText: {
     fontSize: 12,
