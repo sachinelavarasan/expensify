@@ -10,6 +10,8 @@ import Animated, {
 import { ThemedView } from './ThemedView';
 import { deviceWidth } from '@/utils/functions';
 import UpdateProfile from './UpdateProfile';
+import { QueryObserverResult } from '@tanstack/react-query';
+import { IExpUser } from '@/types';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
@@ -22,6 +24,7 @@ type Props = {
   backgroundImage?: any;
   actionLabel?: string;
   children: ReactElement;
+  refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>>
 };
 
 export default function AnimatedTopSection({
@@ -29,6 +32,7 @@ export default function AnimatedTopSection({
   subtitle,
   avatar,
   backgroundImage,
+  refetch,
   children,
 }: Props) {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -108,7 +112,7 @@ export default function AnimatedTopSection({
             <Text style={styles.titleTextInHeader}>{title}</Text>
             {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
           </View>
-          <UpdateProfile />
+          <UpdateProfile refetch={refetch}/>
         </View>
       </Animated.View>
 
@@ -128,7 +132,7 @@ export default function AnimatedTopSection({
           )}
         </View>
 
-        <UpdateProfile />
+        <UpdateProfile refetch={refetch}/>
       </Animated.View>
     </ThemedView>
   );

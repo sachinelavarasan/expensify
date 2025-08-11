@@ -26,8 +26,8 @@ const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const router = useRouter();
-  const { accounts, loading } = useBankAccounts();
-  const { user } = useGetUserData();
+  const { accounts } = useBankAccounts();
+  const { user, refetch } = useGetUserData();
   const { signOut } = useAuth();
 
   const overAllAmount = accounts.reduce(
@@ -45,7 +45,9 @@ const Profile = () => {
       title={user?.exp_us_name || ''}
       subtitle={user?.exp_us_phone_no || ''}
       avatar={require('@/assets/images/user-default.png')}
-      backgroundImage={require('@/assets/images/profile.png')}>
+      backgroundImage={require('@/assets/images/profile.png')}
+      refetch={refetch}
+      >
       <>
         <Pressable>
           <View style={styles.card}>
