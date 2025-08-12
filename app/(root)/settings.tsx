@@ -11,63 +11,19 @@ import { deviceWidth, getAsyncValue, setAsyncValue } from '@/utils/functions';
 import CurrencyModal from '@/components/CurrencyModal';
 import DefaultTransactionModal from '@/components/DefaultTransactionModal';
 import DefaultGroupingModal from '@/components/DefaultGroupingModal';
-import { registerForPushNotificationsAsync } from '@/utils/registerForPushNotificationsAsync';
-import { useDisableNotificationToken, useEnableNotificationToken } from '@/hooks/useSettings';
 import { useGetUserData } from '@/hooks/useUserStore';
-import { format } from 'date-fns';
+import { useReminderSettings } from '@/hooks/useReminder';
 
 export default function Setting() {
-  const [time, setTime] = useState('');
-  const [reminder, setReminder] = useState(false);
+  const { enabled, time, scheduleNotification, disableNotification } = useReminderSettings();
   const [showBalance, setShowBalance] = useState(false);
   const [carryBalance, setCarryBalance] = useState(false);
   const [ttime, setTtime] = useState(false);
-  const { mutateAsync: enableNotification } = useEnableNotificationToken();
-  const { mutateAsync: disableNotification } = useDisableNotificationToken();
   const { user, refetch } = useGetUserData();
 
-  const handleEnable = (times: string) => {
-    if (!times) return;
-    registerForPushNotificationsAsync().then(
-      (token) => {
-        setTime(times);
-        if (token) {
-          enableNotification({ token });
-          refetch();
-        }
-      },
-      (error) => alert('Failed to enable push notification!'),
-    );
-  };
-  const handleDisable = () => {
-    registerForPushNotificationsAsync().then(
-      (token) => {
-        if (token) {
-          disableNotification(token);
-          refetch();
-        }
-      },
-      (error) => alert('Failed to disable reminder notification'),
-    );
-  };
-
-  useEffect(() => {
-    if (user && typeof user?.reminder_status === 'number') {
-      setReminder(Boolean(user?.reminder_status));
-      if (user?.reminder_time) {
-        setTime(user?.reminder_time);
-      }
-    }
-  }, [user]);
 
   const updateSettingPreference = useCallback((name: string, value: boolean | string) => {
     switch (name) {
-      case 'reminder':
-        if(typeof value === 'boolean') setReminder(value as boolean);
-        const now = new Date();
-        const formatted = time ? time : format(now, 'hh:mm a');
-        handleEnable(formatted);
-        break;
       case 'balance':
         setShowBalance(value as boolean);
         break;
@@ -80,7 +36,7 @@ export default function Setting() {
         break;
     }
     setAsyncValue(name, JSON.stringify(value));
-  },[time]);
+  }, []);
 
   useEffect(() => {
     const getValuesFromStore = async () => {
@@ -162,25 +118,24 @@ export default function Setting() {
                     </View>
                     <View>
                       <CustomSwitch
-                        value={reminder}
+                        value={enabled}
                         onChange={(value) => {
                           if (value) {
-                            updateSettingPreference('reminder', value);
-                          } else handleDisable();
+                            scheduleNotification();
+                          } else disableNotification();
                         }}
                       />
                     </View>
                   </View>
                   <View>
-                    <Text style={styles.subText}>Daily notification at 11:00 AM </Text>
-                    {/* <TimePickerPaperWithButton
+                    <TimePickerPaperWithButton
                       label="Reminder Time"
                       value={time}
                       onChange={(value) => {
-                        updateSettingPreference('reminder', value);
+                        scheduleNotification(value);
                       }}
-                      disabled={!reminder}
-                    /> */}
+                      disabled={!enabled}
+                    />
                   </View>
                 </View>
               </View>
