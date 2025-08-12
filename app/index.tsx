@@ -5,7 +5,6 @@ import { ActivityIndicator } from 'react-native';
 
 export default function Index() {
   const { isSignedIn, isLoaded } = useUser();
-
   if (!isLoaded) {
     return (
       <ThemedView style={{ flex: 1, justifyContent:'center' }}>
