@@ -12,9 +12,6 @@ export const queryKeys = {
 export const useCategoryList = () => {
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
   const {
     data: categories,
     isLoading: loading,
@@ -25,6 +22,9 @@ export const useCategoryList = () => {
     queryKey: queryKeys.categories,
     queryFn: async ({ queryKey }): Promise<ICategory[]> => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
 
       const response = await fetch(`${API_URL}/expensify/categories`, {
         headers: {
@@ -53,13 +53,12 @@ export const useReorderCategories = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (data: Pick<ICategory, 'exp_tc_id' | 'exp_tc_sort_order'>[]) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/expensify/categories/reorder`,
         {
@@ -88,10 +87,6 @@ export const useAddCategory = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (
       data: Pick<
@@ -100,6 +95,9 @@ export const useAddCategory = () => {
       >,
     ) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/categories`, {
         method: 'POST',
         headers: {
@@ -121,18 +119,21 @@ export const useEditCategory = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (
       data: Pick<
         ICategory,
-        'exp_tc_label' | 'exp_tc_icon' | 'exp_tc_transaction_type' | 'exp_tc_icon_bg_color'| 'exp_tc_id'
+        | 'exp_tc_label'
+        | 'exp_tc_icon'
+        | 'exp_tc_transaction_type'
+        | 'exp_tc_icon_bg_color'
+        | 'exp_tc_id'
       >,
     ) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/categories/${data.exp_tc_id}`, {
         method: 'PUT',
         headers: {
@@ -155,13 +156,12 @@ export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (id: number) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/categories/${id}`, {
         method: 'DELETE',
         headers: {
@@ -177,11 +177,10 @@ export const useDeleteCategory = () => {
   });
 };
 
-
 export const useGetCategoryCache = () => {
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData<ICategory[]>(['categories']);
   return {
-    categories: data || []
-  }
-}
+    categories: data || [],
+  };
+};

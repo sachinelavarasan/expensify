@@ -1,8 +1,12 @@
-import { BankAccount, CreateBankAccountDto, IAccountGroupedTransactions, UpdateBankAccountDto } from '@/types';
+import {
+  BankAccount,
+  CreateBankAccountDto,
+  IAccountGroupedTransactions,
+  UpdateBankAccountDto,
+} from '@/types';
 import { useAuth } from '@clerk/clerk-expo';
 
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -14,12 +18,11 @@ export const useAddBankAccount = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (data: CreateBankAccountDto) => {
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const token = await getToken();
       const res = await fetch(`${API_URL}/expensify/accounts`, {
         method: 'POST',
@@ -43,12 +46,12 @@ export const useUpdateBankAccount = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
   return useMutation({
     mutationFn: async (data: UpdateBankAccountDto) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/accounts/${data.exp_ba_id}`, {
         method: 'PUT',
         headers: {
@@ -73,13 +76,12 @@ export const useDeleteBankAccount = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (id: number) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/accounts/${id}`, {
         method: 'DELETE',
         headers: {
@@ -98,10 +100,7 @@ export const useDeleteBankAccount = () => {
 export const useBankAccounts = () => {
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-   const {
+  const {
     data: accounts,
     isLoading: loading,
     isError,
@@ -111,6 +110,9 @@ export const useBankAccounts = () => {
     queryKey: queryKeys.bankAccounts,
     queryFn: async () => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/accounts`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -132,10 +134,6 @@ export const useBankAccounts = () => {
 export const useAccountGroupedTransactions = (accountId: number) => {
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   const {
     data: account,
     isLoading: loading,
@@ -146,6 +144,9 @@ export const useAccountGroupedTransactions = (accountId: number) => {
     queryKey: ['accountDetail', accountId],
     queryFn: async () => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/accounts/${accountId}`, {
         headers: {
           Authorization: `Bearer ${token}`,

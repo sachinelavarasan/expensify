@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-expo';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;

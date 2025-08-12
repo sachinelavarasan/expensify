@@ -12,13 +12,9 @@ export const queryKeys = {
 
 const useMonthlyTransactions = (initialDate?: Date) => {
   const [currentMonth, setCurrentMonth] = useState(initialDate || new Date());
-   const [search, setSearch] = useState('');
+  const [search, setSearch] = useState('');
   const [transactionType, setTransactionType] = useState<string>('');
   const { getToken, userId } = useAuth();
-
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
 
   const {
     isLoading,
@@ -28,6 +24,9 @@ const useMonthlyTransactions = (initialDate?: Date) => {
     queryKey: [...queryKeys.transactions, currentMonth, search, transactionType],
     queryFn: async ({ queryKey }): Promise<Itransaction[]> => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const queryDate = queryKey[1] as Date;
       const searchText = queryKey[2] as string;
       const txType = queryKey[3] as string;
@@ -39,18 +38,15 @@ const useMonthlyTransactions = (initialDate?: Date) => {
       const endDate = format(end, 'yyyy-MM-dd');
       let url = `${API_URL}/expensify/transactions?startDate=${startDate}&endDate=${endDate}`;
 
-      if (searchText) url+=`&search=${searchText}`;
-      if (txType) url+=`&transaction_type=${txType}`;
+      if (searchText) url += `&search=${searchText}`;
+      if (txType) url += `&transaction_type=${txType}`;
 
-      const response = await fetch(
-        url,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-      );
+      });
 
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
@@ -72,8 +68,8 @@ const useMonthlyTransactions = (initialDate?: Date) => {
     setCurrentMonth((prev) => addMonths(prev, 1));
   };
 
-   const updateSearch = (newSearch: string) => setSearch(newSearch);
-    const updateTransactionType = (type: string) => setTransactionType(type);
+  const updateSearch = (newSearch: string) => setSearch(newSearch);
+  const updateTransactionType = (type: string) => setTransactionType(type);
 
   const refetchData = (customDate?: Date) => {
     if (customDate) {
@@ -95,7 +91,7 @@ const useMonthlyTransactions = (initialDate?: Date) => {
     updateSearch,
     updateTransactionType,
     refetch: refetchData,
-    refetchManual: refetch
+    refetchManual: refetch,
   };
 };
 
