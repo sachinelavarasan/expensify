@@ -20,7 +20,7 @@ export function useReminderSettings() {
 
   const scheduleNotification = useCallback(async (times?: string) => {
     try {
-      const enabledNotification = await registerForPushNotificationsCheck();
+      const enabledNotification = await registerForPushNotificationsCheck(); 
       if (!enabledNotification) {
         setEnabled(true);
         setEnabled(false);
@@ -87,6 +87,8 @@ export function useReminderSettings() {
 
       await AsyncStorage.setItem('reminder-time', displayTime);
       await AsyncStorage.setItem('reminder-enable', JSON.stringify(true));
+      setEnabled(true);
+      setTime(displayTime)
 
       console.log(`Scheduled notification for ${displayTime}`);
     } catch (error) {
