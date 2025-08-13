@@ -5,7 +5,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,12 +20,10 @@ import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
-import CustomDatePicker from '@/components/CustomDatePicker';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
 import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
-import CustomTimePicker from '@/components/TimePicker';
 import { AntDesign, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import OverlayLoader from '@/components/Overlay';
 import {
@@ -39,9 +36,12 @@ import ProfileHeader from '@/components/ProfileHeader';
 import CategorySelector from '@/components/CategorySelector';
 import DatePickerPaper from '@/components/DatePickerPaper';
 import TimePickerPaper from '@/components/TimePickerPaper';
+import { CustomSelectInput } from '@/components/CustomSelectInput';
+import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 
 export default function Transaction() {
   const { categories } = useGetCategoryCache();
+  const { accounts } = useGetUserBankAccounts();
   const { exp_ts_id, starred } = useLocalSearchParams() as {
     exp_ts_id?: string;
     starred?: boolean;
@@ -58,6 +58,7 @@ export default function Transaction() {
     formState: { errors, isValid, isDirty },
     watch,
     reset,
+    getValues,
     setValue,
   } = useForm({
     defaultValues: {
@@ -69,6 +70,7 @@ export default function Transaction() {
       exp_tc_id: undefined,
       exp_tt_id: 1,
       exp_st_id: false,
+      exp_ts_bank_account_id: undefined,
     },
     resolver: zodResolver(transactionSchema),
   });
@@ -88,12 +90,18 @@ export default function Transaction() {
           exp_tc_id: data.exp_tc_id,
           exp_tt_id: data.exp_tt_id || 1,
           exp_st_id: !!data.exp_st_id,
+          exp_ts_bank_account_id: data.exp_ts_bank_account_id || undefined,
         },
         {
           keepDirty: false,
           keepIsValidating: true,
         },
       );
+    } else if (!getValues('exp_ts_bank_account_id')) {
+      const primary = accounts.find((a) => a.exp_ba_is_primary);
+      if (primary) {
+        setValue('exp_ts_bank_account_id', primary.exp_ba_id);
+      }
     }
   }, [data, reset]);
 
@@ -228,6 +236,27 @@ export default function Transaction() {
                   <View style={styles.formContainer}>
                     <View>
                       <View style={[styles.sectionContainer]}>
+                        <Controller
+                          control={control}
+                          name="exp_ts_bank_account_id"
+                          render={({ field }) => (
+                            <CustomSelectInput
+                              {...field}
+                              value={field.value}
+                              options={accounts.map((account) => ({
+                                key: account.exp_ba_id,
+                                value: account.exp_ba_name,
+                              }))}
+                              placeholder="Account"
+                              label="Change Account"
+                              onChange={(selectedId) => {
+                                field.onChange(selectedId);
+                              }}
+                            />
+                          )}
+                        />
+
+                        <Spacer height={20} />
                         <View
                           style={{
                             display: 'flex',

@@ -59,7 +59,7 @@ export default function Starred() {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             renderItem={({ item }) => {
               return (
-                <View style={{ paddingVertical: 10 }}>
+                <View style={{ paddingVertical: 5 }}>
                   <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={value}/>
                 </View>
               );

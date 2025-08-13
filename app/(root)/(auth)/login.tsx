@@ -39,11 +39,8 @@ type SignInForm = z.infer<typeof schema>;
 export default function SignIn() {
   const router = useRouter();
   const { signIn, setActive, isLoaded } = useSignIn();
-   const {signOut} = useClerk();
-  const { isSignedIn } = useSession()
-  // const isFocused = useIsFocused();
+  const {signOut} = useClerk();
   const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState(null);
   const {
     control,
     handleSubmit,
@@ -62,7 +59,6 @@ export default function SignIn() {
   //     setError(null);
   //   };
   // }, [isFocused]);
-  console.log(isSignedIn);
 
   const onSubmit = async (data: SignInForm) => {
     if (!isLoaded) return;
