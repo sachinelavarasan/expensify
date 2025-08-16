@@ -24,9 +24,6 @@ interface ExportParams {
 export const useExportExcelTransactions = () => {
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
   return useMutation({
     mutationFn: async ({
       startDate,
@@ -35,6 +32,9 @@ export const useExportExcelTransactions = () => {
       tranType = 'all',
     }: ExportParams) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const url = `${API_URL}/expensify/export-excel?format=${fileType}&startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
       const response = await fetch(url, {
         method: 'GET',
@@ -82,9 +82,6 @@ export const useExportExcelTransactions = () => {
 export const useExportPdfTransactions = () => {
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
   return useMutation({
     mutationFn: async ({
       startDate,
@@ -96,6 +93,9 @@ export const useExportPdfTransactions = () => {
       tranType?: string;
     }) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const url = `${API_URL}/expensify/export-pdf?startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
       const response = await fetch(url, {
         method: 'GET',

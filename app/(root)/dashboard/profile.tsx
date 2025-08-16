@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Pressable,
   FlatList,
+  Image,
 } from 'react-native';
 import { deviceWidth } from '@/utils/functions';
 
@@ -18,6 +19,7 @@ import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useBankAccounts, useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
+import { useGetUserData } from '@/hooks/useUserStore';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -25,9 +27,10 @@ const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const router = useRouter();
-  const { accounts } = useGetUserBankAccounts();
-  const { user } = useUser();
+  const { accounts, loading } = useBankAccounts();
+  const { refetch } = useGetUserData();
   const { signOut } = useAuth();
+  const { user: currentUser } = useUser();
 
   const overAllAmount = accounts.reduce(
     (previous, current) => Number(previous) + Number(current.exp_ba_balance) || 0,
@@ -41,10 +44,11 @@ const Profile = () => {
 
   return (
     <AnimatedTopSection
-      title={user?.firstName || ''}
-      subtitle={user?.primaryPhoneNumber?.phoneNumber || ''}
+      title={currentUser?.firstName || ''}
+      subtitle={currentUser?.phoneNumbers?.[0]?.phoneNumber || ''}
       avatar={require('@/assets/images/user-default.png')}
-      backgroundImage={require('@/assets/images/profile.png')}>
+      backgroundImage={require('@/assets/images/profile.png')}
+      refetch={refetch}>
       <>
         <Pressable>
           <View style={styles.card}>
@@ -80,7 +84,15 @@ const Profile = () => {
           showsHorizontalScrollIndicator={false}
           data={accounts}
           keyExtractor={(item) => item.exp_ba_name}
-          ListEmptyComponent={() => <Spacer height={60} />}
+          ListEmptyComponent={() =>
+            !loading && accounts.length ? (
+              <Spacer height={60} />
+            ) : (
+              <View style={{ height: 60, justifyContent: 'center' }}>
+                <Text style={styles.subText}>There is no account exist</Text>
+              </View>
+            )
+          }
           renderItem={({ item }) => (
             <Link
               href={{

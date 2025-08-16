@@ -48,7 +48,7 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
         </View>
       </View> */}
       <LinearGradient
-        colors={['#463E75', '#6B5DE6', '#9C27B0']}
+        colors={['#463E75', '#8E24AA', '#FF4081']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.linearGradientContainer}>

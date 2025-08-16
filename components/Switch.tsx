@@ -29,5 +29,3 @@ const CustomSwitch = ({ value = false, onChange }: Props) => {
 };
 
 export default CustomSwitch;
-
-const styles = StyleSheet.create({});

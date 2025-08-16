@@ -8,13 +8,13 @@ export const useSaveTransaction = (starred: boolean | undefined) => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (payload: { exp_ts_id?: string }) => {
       const token = await getToken();
+
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
 
       const { exp_ts_id, ...data } = payload;
 
@@ -85,13 +85,12 @@ export const useDeleteTransaction = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();
 
-  if (!userId) {
-    throw new Error('User is not authenticated');
-  }
-
   return useMutation({
     mutationFn: async (id: number) => {
       const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
       const res = await fetch(`${API_URL}/expensify/transaction/${id}`, {
         method: 'DELETE',
         headers: {

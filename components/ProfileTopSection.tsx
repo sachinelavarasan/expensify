@@ -10,6 +10,8 @@ import Animated, {
 import { ThemedView } from './ThemedView';
 import { deviceWidth } from '@/utils/functions';
 import UpdateProfile from './UpdateProfile';
+import { QueryObserverResult } from '@tanstack/react-query';
+import { IExpUser } from '@/types';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
@@ -22,6 +24,7 @@ type Props = {
   backgroundImage?: any;
   actionLabel?: string;
   children: ReactElement;
+  refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 };
 
 export default function AnimatedTopSection({
@@ -29,6 +32,7 @@ export default function AnimatedTopSection({
   subtitle,
   avatar,
   backgroundImage,
+  refetch,
   children,
 }: Props) {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -104,10 +108,12 @@ export default function AnimatedTopSection({
         <View
           style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={styles.headerTextOverlay}>
-            <Text style={styles.titleTextInHeader}>{title}</Text>
+            <Text style={styles.titleTextInHeader} numberOfLines={1}>
+              {title}
+            </Text>
             {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
           </View>
-          <UpdateProfile />
+          <UpdateProfile refetch={refetch} />
         </View>
       </Animated.View>
 
@@ -127,7 +133,7 @@ export default function AnimatedTopSection({
           )}
         </View>
 
-        <UpdateProfile />
+        <UpdateProfile refetch={refetch} />
       </Animated.View>
     </ThemedView>
   );
@@ -170,6 +176,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
+    maxWidth: 150,
   },
   subtitle: {
     fontSize: 14,
@@ -224,9 +231,10 @@ const styles = StyleSheet.create({
   },
 
   titleTextInHeader: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1E1E1E',
+    maxWidth: 100,
   },
 
   subtitleTextInHeader: {

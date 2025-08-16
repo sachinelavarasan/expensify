@@ -685,3 +685,30 @@ export const transactionExportType = [
     label: 'Expense',
   },
 ];
+
+export const currencyOptions = [
+  { id: '₹', label: '₹' },
+  { id: '$', label: '$' },
+  { id: '€', label: '€' },
+  { id: '£', label: '£' },
+  { id: '¥', label: '¥' },
+];
+
+export const dataGroupingType = [
+  {
+    id: 'day',
+    label: 'Day',
+  },
+  {
+    id: 'week',
+    label: 'Week',
+  },
+  {
+    id: 'month',
+    label: 'Month',
+  },
+  {
+    id: 'year',
+    label: 'Year',
+  },
+];

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Text,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { z } from 'zod';
@@ -23,15 +24,16 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 // import { setError, signUp } from '@/redux/slices/auth/authSlice';
 
 import { phoneValidation } from '@/utils/Validation-custom';
-import { useSignUp } from '@clerk/clerk-expo';
+import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const schema = z.object({
   name: z.string().min(3, { message: 'Minimum 3 characters' }),
-  password: z.string().min(8, { message: 'Minimum 8 characters' }),
+  password: z.string().min(8, { message: 'Minimum 8 characters' }).max(16, { message: 'Maximun 16 characters' }),
   phone: z
     .string()
     .min(1, { message: 'Must have at least 1 character' })
-    .regex(phoneValidation, { message: 'invalid phone' }),
+    .regex(phoneValidation, { message: 'invalid phone number' }),
 });
 
 type SignUpForm = z.infer<typeof schema>;
@@ -47,7 +49,6 @@ const Register = () => {
   } = useForm({
     defaultValues: {
       name: '',
-      // email: 'janani@gmail.com',
       phone: '',
       password: '',
     },
@@ -66,9 +67,65 @@ const Register = () => {
 
       await signUp.preparePhoneNumberVerification({ strategy: 'phone_code' });
       setIsLoading(false);
+      await AsyncStorage.setItem('current-verify-number', data.phone);
       router.dismissTo('/(root)/(auth)/mobile-verify');
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
+      if (isClerkAPIResponseError(err)) {
+        const errorCode = err.errors[0]?.code;
+        switch (errorCode) {
+          case 'form_phone_number_invalid':
+            Alert.alert('Error', 'The phone number is invalid. Please check and try again.');
+            break;
+          case 'form_param_nil':
+            Alert.alert('Error', 'Required parameter is missing');
+            break;
+          case 'form_phone_number_already_verified':
+            Alert.alert('Error', 'This phone number is already registered.');
+            break;
+          case 'form_param_format_invalid':
+            Alert.alert(
+              'Error',
+              'Please enter a valid phone number including the correct country code.',
+            );
+            break;
+          case 'form_password_too_weak':
+            Alert.alert('Error', 'Password is too weak. Please use a stronger password.');
+            break;
+          case 'form_password_invalid':
+            Alert.alert('Error', 'Invalid password format.');
+            break;
+          case 'form_first_name_missing':
+            Alert.alert('Error', 'First name is required.');
+            break;
+          case 'form_rate_limited':
+            Alert.alert('Error', 'Too many attempts. Please try again later.');
+            break;
+          case 'form_password_length_too_short':
+            Alert.alert('Error', 'Passwords must be 8 characters or more.');
+            break;
+          case 'form_password_length_too_long':
+            Alert.alert('Error', 'Password length is too long');
+            break;
+          case 'form_identifier_exists':
+            Alert.alert('Error', 'Given phone number already exists');
+            break;
+          case 'form_password_validation_failed':
+            Alert.alert('Error', 'Password validation failed. Please try again.');
+            break;
+          case 'form_password_pwned':
+            Alert.alert('Error', 'This password has been exposed before. Please choose another');
+            break;
+          case 'form_internal_error':
+            Alert.alert('Error', 'Internal error occurred. Please try again later.');
+            break;
+          default:
+            Alert.alert('Error', 'An error occurred during sign-up.');
+            break;
+        }
+      } else {
+        Alert.alert('Error', 'An error occurred during sign-up.');
+      }
       setIsLoading(false);
     }
   };
@@ -181,7 +238,7 @@ const Register = () => {
                     onPress={handleSubmit(register)}
                     disabled={!isValid || isLoading}>
                     {isLoading ? (
-                      <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                      <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                     ) : null}
                     <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>Sign Up</Text>
                   </TouchableOpacity>
@@ -240,9 +297,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#463e75',
     borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
+    paddingVertical: 10,
     width: '100%',
   },
   loader: {

@@ -18,9 +18,9 @@ export const getAsyncValue = async (key: string)=>{
   try {
     let value = await AsyncStorage.getItem(key)
     if(value)
-    return JSON.parse(value);
-
-    return value;
+      return JSON.parse(value);
+    
+    return null;
   } catch (error) {
     return null;
   }

@@ -41,6 +41,13 @@ export default {
             "useFrameworks": "static"
           }
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": false
+        }
       ]
     ],
     "experiments": {

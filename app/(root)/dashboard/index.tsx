@@ -16,14 +16,15 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Entypo, Feather, FontAwesome6 } from '@expo/vector-icons';
+import { Entypo, Feather } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
 import { Itransaction } from '@/types';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
-import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+import { useGetUserData } from '@/hooks/useUserStore';
+import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
 export default function Index() {
   const router = useRouter();
@@ -40,9 +41,10 @@ export default function Index() {
     transactionType,
   } = useMonthlyTransactions();
   useCategoryList();
-  useBankAccounts();
+  useGetUserData();
 
   const [refreshing, setRefreshing] = useState(false);
+  const { value } = useGetSettingsFromStore('tt-time');
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -231,7 +233,7 @@ export default function Index() {
                 </View>
 
                 {item.data.map((lendItem: Itransaction) => (
-                  <TransactionCard key={lendItem.exp_ts_id} {...lendItem} />
+                  <TransactionCard key={lendItem.exp_ts_id} {...lendItem} showTsTime={value} />
                 ))}
               </View>
             );

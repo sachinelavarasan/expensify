@@ -20,7 +20,8 @@ const TransactionCard = ({
   exp_tc_icon,
   exp_tc_icon_bg_color,
   isStarred,
-}: Itransaction & { isStarred?: boolean }) => {
+  showTsTime = true,
+}: Itransaction & { isStarred?: boolean; showTsTime?: boolean }) => {
   return (
     <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild>
       <TouchableOpacity
@@ -59,10 +60,11 @@ const TransactionCard = ({
                 <Text style={[styles.subText, { marginRight: 6 }]}>{exp_ts_category}</Text>
                 <View
                   style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                  <Text>{'\u2022'}</Text>
-                  <Text style={[styles.subText, { fontFamily: 'Inter-600', color: '#999999' }]}>
-                    {exp_ts_time}
-                  </Text>
+                  {!!showTsTime && (
+                    <Text style={[styles.subText, { fontFamily: 'Inter-600', color: '#999999' }]}>
+                      <Text>{'\u2022'}</Text> {exp_ts_time}
+                    </Text>
+                  )}
                 </View>
               </View>
             </View>

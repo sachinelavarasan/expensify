@@ -17,6 +17,10 @@ import { Controller, useForm } from 'react-hook-form';
 import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useUser } from '@clerk/clerk-expo';
+import { QueryObserverResult } from '@tanstack/react-query';
+import { IExpUser } from '@/types';
+import { showToast } from './ToastMessage';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -25,9 +29,14 @@ const schema = z.object({
   name: z.string().min(3, { message: 'Minimum 3 characters' }),
 });
 
-type SignUpForm = z.infer<typeof schema>;
+type EditProfileForm = z.infer<typeof schema>;
 
-const UpdateProfile = () => {
+const UpdateProfile = ({
+  refetch,
+}: {
+  refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
+}) => {
+  const { user } = useUser();
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const toggleModal = () => {
@@ -43,6 +52,38 @@ const UpdateProfile = () => {
     },
     resolver: zodResolver(schema),
   });
+
+  const onSubmit = (data: EditProfileForm) => {
+    setIsLoading(true);
+    try {
+      user
+        ?.update({ firstName: data.name })
+        .then(() => {
+          showToast({
+            text1: 'Profile updated successfully!',
+            type: 'success',
+            position: 'bottom',
+          });
+        })
+        .catch(() => {
+          showToast({
+            text1: 'Server Error',
+            type: 'error',
+            position: 'bottom',
+          });
+        })
+        .finally(() => {
+          setTimeout(() => {
+            setIsLoading(false);
+            refetch();
+            setShow(false);
+          }, 1000);
+        });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile.');
+    }
+  };
   return (
     <>
       <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
@@ -55,6 +96,8 @@ const UpdateProfile = () => {
         hasBackdrop={true}
         deviceHeight={height}
         deviceWidth={width}
+        animationIn={'fadeIn'}
+        animationOut={'fadeOut'}
         coverScreen={true}>
         <View
           style={{
@@ -70,7 +113,12 @@ const UpdateProfile = () => {
                 justifyContent: 'space-between',
               }}>
               <Text style={styles.title}>Edit Details</Text>
-              <TouchableOpacity onPress={() => setShow(!show)} style={{ alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                onPress={() => setShow(!show)}
+                style={{ alignItems: 'flex-end' }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                disabled={isLoading}>
+                {' '}
                 <Ionicons name="close" color="#5A5A6E" size={20} />
               </TouchableOpacity>
             </View>
@@ -97,7 +145,7 @@ const UpdateProfile = () => {
             <View style={styles.btnContainer}>
               <TouchableOpacity
                 style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
-                // onPress={handleSubmit(register)}
+                onPress={handleSubmit(onSubmit)}
                 disabled={!isValid || isLoading}>
                 {isLoading ? (
                   <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
@@ -137,10 +185,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     backgroundColor: '#6B5DE6',
-    borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
-    width: '100%',
-    paddingHorizontal: 30,
+    borderRadius: 50,
+    paddingHorizontal: 20,
+    paddingVertical: 9,
+    width: 'auto',
   },
   loader: {
     position: 'absolute',

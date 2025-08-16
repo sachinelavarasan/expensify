@@ -14,11 +14,14 @@ import TransactionCard from '@/components/TransactionCard';
 import Emptystate from '@/components/Emptystate';
 import OverlayLoader from '@/components/Overlay';
 import { useGetStarredTransactions } from '@/hooks/useStarredTransactions';
+import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
 export default function Starred() {
   const { starred, isLoading, refetch } = useGetStarredTransactions();
 
   const [refreshing, setRefreshing] = useState(false);
+
+  const { value } = useGetSettingsFromStore('tt-time');
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -56,8 +59,8 @@ export default function Starred() {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             renderItem={({ item }) => {
               return (
-                <View>
-                  <TransactionCard key={item.exp_ts_id} {...item} isStarred />
+                <View style={{ paddingVertical: 5 }}>
+                  <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={value} />
                 </View>
               );
             }}

@@ -9,6 +9,7 @@ interface CustomRadioButtonProps {
   label?: string;
   disabled?: boolean;
   isRequired?: boolean;
+  isColumn?: boolean;
 }
 
 export default function CustomRadioButton({
@@ -18,6 +19,7 @@ export default function CustomRadioButton({
   label,
   disabled,
   isRequired = false,
+  isColumn = false,
 }: CustomRadioButtonProps) {
   const [selectedId, setSelectedId] = useState<string | number | undefined>(value);
   useEffect(() => {
@@ -52,7 +54,15 @@ export default function CustomRadioButton({
         </View>
       ) : null}
 
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          isColumn && {
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+          },
+        ]}>
         {options.map((button, index) => (
           <RadioButton
             {...button}

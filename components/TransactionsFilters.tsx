@@ -57,7 +57,8 @@ const TransactionFilters = ({
         hasBackdrop={true}
         deviceHeight={height}
         deviceWidth={width}
-        animationIn={'bounceIn'}
+        animationIn={'fadeIn'}
+        animationOut={'fadeOut'}
         coverScreen={true}>
         <View
           style={{

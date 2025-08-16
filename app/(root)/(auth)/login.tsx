@@ -14,7 +14,6 @@ import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useIsFocused } from '@react-navigation/native';
 
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
@@ -25,7 +24,7 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 
 import { phoneValidation } from '@/utils/Validation-custom';
 import AuthLink from '@/components/AuthLink';
-import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
+import { isClerkAPIResponseError, useClerk, useSession, useSignIn } from '@clerk/clerk-expo';
 
 const schema = z.object({
   phone: z
@@ -40,8 +39,7 @@ type SignInForm = z.infer<typeof schema>;
 export default function SignIn() {
   const router = useRouter();
   const { signIn, setActive, isLoaded } = useSignIn();
-  // const dispatch = useAppDispatch();
-  const isFocused = useIsFocused();
+  const {signOut} = useClerk();
   const [isLoading, setIsLoading] = useState(false);
   const {
     control,
@@ -56,16 +54,17 @@ export default function SignIn() {
     resolver: zodResolver(schema),
   });
 
-  useEffect(() => {
-    return () => {
-      // dispatch(setError(null));
-    };
-  }, [isFocused]);
+  // useEffect(() => {
+  //   return () => {
+  //     setError(null);
+  //   };
+  // }, [isFocused]);
 
   const onSubmit = async (data: SignInForm) => {
     if (!isLoaded) return;
     setIsLoading(true);
     try {
+      await signOut();
       const signInAttempt = await signIn.create({
         identifier: data.phone,
         password: data.password,
@@ -78,15 +77,38 @@ export default function SignIn() {
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
       setIsLoading(false);
+      reset();
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
       if (isClerkAPIResponseError(err)) {
-        const errors = err.errors;
-        if (errors[0].code === 'form_identifier_not_found') {
-          Alert.alert('Error', errors[0].message);
-        } else {
-          Alert.alert('Error', 'An error occurred while signing in');
+        const errorCode = err.errors[0].code;
+        console.log(errorCode);
+        switch (errorCode) {
+          case 'form_identifier_not_found':
+            Alert.alert('Error', 'User not found. Please check your phone number.');
+            break;
+          case 'form_password_incorrect':
+            Alert.alert('Error', 'Incorrect password. Please try again.');
+            break;
+          case 'form_verification_invalid':
+            Alert.alert('Error', 'Verification token is invalid or expired.');
+            break;
+          case 'form_identity_not_found':
+            Alert.alert('Error', 'No user found with your detail.');
+            break;
+          case 'form_param_format_invalid':
+            Alert.alert('Error', 'Please enter a valid phone number including the correct country code.');
+            break;
+          case 'form_identifier_exists':
+            Alert.alert('Error', 'Given phone number already exists');
+            break;
+          case 'form_internal_error':
+            Alert.alert('Error', 'Internal error occurred. Please try again later.');
+            break;
+          default:
+            Alert.alert('Error', 'An error occurred while signing in.');
         }
+      } else {
+        Alert.alert('Error', 'An error occurred during sign-up.');
       }
       setIsLoading(false);
     }
@@ -157,7 +179,7 @@ export default function SignIn() {
                     disabled={!isValid || isLoading}
                     onPress={handleSubmit(onSubmit)}>
                     {isLoading ? (
-                      <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                      <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                     ) : null}
                     <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>Sign In</Text>
                   </TouchableOpacity>
@@ -208,9 +230,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#463e75',
     borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
+    paddingVertical: 10,
     width: '100%',
   },
   loader: {

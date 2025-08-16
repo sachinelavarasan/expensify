@@ -1,39 +1,73 @@
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import ProfileHeader from '@/components/ProfileHeader';
-import {
-  FontAwesome,
-  FontAwesome5,
-  Ionicons,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from '@expo/vector-icons';
-import { deviceWidth } from '@/utils/functions';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import Spacer from '@/components/Spacer';
 import CustomSwitch from '@/components/Switch';
 import TimePickerPaperWithButton from '@/components/TimePickerPaperWithButton';
+import { deviceWidth, getAsyncValue, setAsyncValue } from '@/utils/functions';
+import CurrencyModal from '@/components/CurrencyModal';
+import DefaultTransactionModal from '@/components/DefaultTransactionModal';
+import DefaultGroupingModal from '@/components/DefaultGroupingModal';
+import { useGetUserData } from '@/hooks/useUserStore';
+import { useReminderSettings } from '@/hooks/useReminder';
 
 export default function Setting() {
-  const [time, setTime] = useState('');
-  const [reminder, setReminder] = useState(false);
+  const { enabled, time, scheduleNotification, disableNotification } = useReminderSettings();
+  const [showBalance, setShowBalance] = useState(false);
+  const [carryBalance, setCarryBalance] = useState(false);
+  const [ttime, setTtime] = useState(false);
+  const { user, refetch } = useGetUserData();
+
+  const updateSettingPreference = useCallback((name: string, value: boolean | string) => {
+    switch (name) {
+      case 'balance':
+        setShowBalance(value as boolean);
+        break;
+      case 'over-balance':
+        setCarryBalance(value as boolean);
+        break;
+
+      case 'tt-time':
+        setTtime(value as boolean);
+        break;
+    }
+    setAsyncValue(name, JSON.stringify(value));
+  }, []);
+
+  useEffect(() => {
+    const getValuesFromStore = async () => {
+      const balance = await getAsyncValue('balance');
+      const overBalance = await getAsyncValue('over-balance');
+      const ttTime = await getAsyncValue('tt-time');
+      if (balance) {
+        setShowBalance(JSON.parse(balance));
+      }
+      if (overBalance) {
+        setCarryBalance(JSON.parse(overBalance));
+      }
+      if (ttTime) {
+        setTtime(JSON.parse(ttTime));
+      }
+    };
+    getValuesFromStore();
+  }, []);
 
   return (
     <KeyboardAvoidingView
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
-        <ScrollView
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          style={{ paddingHorizontal: 10 }}>
+        <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
           <ProfileHeader title="Settings" />
           <ThemedView
             style={{
               flex: 1,
               paddingHorizontal: 10,
               backgroundColor: '#0F0E17',
+              paddingBottom: 40,
             }}>
             <Spacer height={20} />
             <View style={{ gap: 20 }}>
@@ -43,36 +77,18 @@ export default function Setting() {
                   <Text style={{ color: '#fff' }}>General</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
-                  <View style={styles.card}>
-                    <View style={styles.left}>
-                      <FontAwesome name="money" size={18} color="white" />
-                      <View>
-                        <Text style={styles.option}>Currency</Text>
-                        <Text style={styles.subText}>Set your preferred currency symbol</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.card}>
-                    <View style={styles.left}>
-                      <FontAwesome name="exchange" size={18} color="white" />
-                      <View>
-                        <Text style={styles.option}>Default Transaction</Text>
-                        <Text style={styles.subText}>Choose default type: Income or Expense</Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.card}>
-                    <View style={styles.left}>
-                      <FontAwesome5 name="layer-group" size={18} color="white" />
-                      <View>
-                        <Text style={styles.option}>Default Grouping</Text>
-                        <Text style={styles.subText}>
-                          Group transactions by month, year, week, day, or custom range
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.card}>
+                  <CurrencyModal currency={user?.exp_us_currency} refetch={refetch} />
+                  <DefaultTransactionModal
+                    transaction_type={user?.exp_us_default_transaction}
+                    label={user?.exp_us_default_transaction === 2 ? 'Income' : 'Expense'}
+                    refetch={refetch}
+                  />
+                  <DefaultGroupingModal
+                    grouping={user?.exp_us_default_grouping}
+                    refetch={refetch}
+                  />
+
+                  {/* <TouchableOpacity style={styles.card}>
                     <View style={styles.left}>
                       <MaterialCommunityIcons name="theme-light-dark" size={24} color="white" />
                       <View>
@@ -80,7 +96,7 @@ export default function Setting() {
                         <Text style={styles.subText}>Switch between light and dark modes</Text>
                       </View>
                     </View>
-                  </View>
+                  </TouchableOpacity> */}
                 </View>
               </View>
 
@@ -92,7 +108,7 @@ export default function Setting() {
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <FontAwesome name="money" size={18} color="white" />
+                      <MaterialIcons name="access-alarm" size={20} color="white" />
                       <View>
                         <Text style={styles.option}>Daily Reminder</Text>
                         <Text style={styles.subText}>
@@ -101,17 +117,24 @@ export default function Setting() {
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={setReminder} />
+                      <CustomSwitch
+                        value={enabled}
+                        onChange={(value) => {
+                          if (value) {
+                            scheduleNotification();
+                          } else disableNotification();
+                        }}
+                      />
                     </View>
                   </View>
-                  <View style={{ marginBottom: 10 }}>
+                  <View>
                     <TimePickerPaperWithButton
                       label="Reminder Time"
                       value={time}
                       onChange={(value) => {
-                        setTime(value);
+                        scheduleNotification(value);
                       }}
-                      disabled={!reminder}
+                      disabled={!enabled}
                     />
                   </View>
                 </View>
@@ -125,31 +148,41 @@ export default function Setting() {
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialIcons name="account-balance-wallet" size={18} color="white" />
+                      <MaterialIcons name="account-balance-wallet" size={20} color="white" />
                       <View>
                         <Text style={styles.option}>Show Balance</Text>
                         <Text style={styles.subText}>Toggle visibility of your total balance</Text>
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={setReminder} />
+                      <CustomSwitch
+                        value={showBalance}
+                        onChange={(value) => {
+                          updateSettingPreference('balance', value);
+                        }}
+                      />
                     </View>
                   </View>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialCommunityIcons name="calendar-arrow-right" size={18} color="white" />
+                      <MaterialCommunityIcons name="calendar-arrow-right" size={20} color="white" />
                       <View>
                         <Text style={styles.option}>Carry Over Balance</Text>
                         <Text style={styles.subText}>Move unused balance to the next period</Text>
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={setReminder} />
+                      <CustomSwitch
+                        value={carryBalance}
+                        onChange={(value) => {
+                          updateSettingPreference('over-balance', value);
+                        }}
+                      />
                     </View>
                   </View>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <Ionicons name="time-outline" size={18} color="white" />
+                      <Ionicons name="time-outline" size={20} color="white" />
                       <View>
                         <Text style={styles.option}>Show Transaction Time</Text>
                         <Text style={styles.subText}>
@@ -158,7 +191,12 @@ export default function Setting() {
                       </View>
                     </View>
                     <View>
-                      <CustomSwitch value={reminder} onChange={setReminder} />
+                      <CustomSwitch
+                        value={ttime}
+                        onChange={(value) => {
+                          updateSettingPreference('tt-time', value);
+                        }}
+                      />
                     </View>
                   </View>
                 </View>
@@ -178,7 +216,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderRadius: 8,
-    paddingHorizontal: 10,
   },
   amount: {
     color: '#A0A0A0',
@@ -191,6 +228,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     flex: 1,
+    maxWidth: deviceWidth() * 0.6,
   },
   option: {
     color: '#F1F1F6',
@@ -204,7 +242,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   subMenuContainer: {
-    paddingHorizontal: 10,
+    paddingLeft: 10,
     paddingVertical: 4,
   },
   subText: {

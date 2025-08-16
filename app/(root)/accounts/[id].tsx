@@ -6,6 +6,7 @@ import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
 import TransactionCard from '@/components/TransactionCard';
 import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
+import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -22,6 +23,7 @@ import {
 export default function AccountScreen() {
   const { id } = useLocalSearchParams() as unknown as { id: number };
   const { account, loading, refetch } = useAccountGroupedTransactions(id);
+  const { value } = useGetSettingsFromStore('tt-time');
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -80,7 +82,7 @@ export default function AccountScreen() {
               keyExtractor={(item, index) => item.exp_ts_id.toString()}
               renderItem={({ item }) => (
                 <View>
-                  <TransactionCard key={item.exp_ts_id} {...item} />
+                  <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
               renderSectionHeader={({ section: { title, income, expense } }) => (

@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useRef, ReactNod
 import * as Notifications from 'expo-notifications';
 import { Subscription } from 'expo-notifications';
 import { registerForPushNotificationsAsync } from '../utils/registerForPushNotificationsAsync';
-import { setAsyncValue } from '@/utils/functions';
 
 interface NotificationContextType {
   expoPushToken: string | null;
@@ -36,9 +35,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     registerForPushNotificationsAsync().then(
       (token) => {
         setExpoPushToken(token)
-        if(token) {
-          setAsyncValue('@fcm_token', token);
-        }
       },
       (error) => setError(error),
     );

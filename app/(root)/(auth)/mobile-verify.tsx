@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -9,24 +10,24 @@ import {
   View,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import OTPTextInput from 'react-native-otp-textinput';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
 
-// import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-// import { setError, verifyOtp, sendOtp } from '@/redux/slices/auth/authSlice';
-
 import { otpValidation } from '@/utils/Validation-custom';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { useSignUp } from '@clerk/clerk-expo';
+import { useClerk, useSignUp } from '@clerk/clerk-expo';
+import AuthLink from '@/components/AuthLink';
 
 const MobileVerify = () => {
   const [otp, setOtp] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
+  const {signOut} = useClerk();
   const [isModalVisible, setModalVisible] = useState(false);
 
   const router = useRouter();
@@ -43,18 +44,53 @@ const MobileVerify = () => {
     setOtp(data);
   };
 
+  useEffect(() => {
+    (async () => {
+      const storedEnabled = await AsyncStorage.getItem('current-verify-number');
+      if (storedEnabled !== null) setPhone(storedEnabled);
+    })();
+  }, []);
+
   const verify = async () => {
     if (!isLoadedSignUp) return;
     setIsOtpVerifyLoading(true);
-    const res = await signUp.attemptPhoneNumberVerification({
-      code: otp,
-    });
-    if (res.verifications.phoneNumber.status == 'verified') {
-      router.dismissTo('/(root)/(auth)/login');
-      console.log('success');
-      setIsOtpVerifyLoading(false);
-    } else {
-      console.log('error');
+    try {
+      const res = await signUp.attemptPhoneNumberVerification({
+        code: otp,
+      });
+
+
+      if (res.verifications.phoneNumber.status === 'verified') {
+         await signOut(); 
+        router.dismissTo('/(root)/(auth)/login');
+        await AsyncStorage.removeItem('current-verify-number');
+      } else {
+        Alert.alert('Error', 'Verification failed. Please check your code and try again.');
+        console.log('error: verification status not verified');
+      }
+    } catch (err: any) {
+      console.error('Verification error:', err);
+
+      const errorCode = err?.errors?.[0]?.code || 'unknown_error';
+
+      switch (errorCode) {
+        case 'form_verification_invalid':
+          Alert.alert('Error', 'Verification token is invalid or expired.');
+          break;
+        case 'form_rate_limited':
+          Alert.alert('Error', 'Too many attempts. Please try again later.');
+          break;
+        case 'form_internal_error':
+          Alert.alert('Error', 'Internal error occurred. Please try again later.');
+          break;
+        case 'form_identifier_exists':
+          Alert.alert('Error', 'Given phone number already exists');
+          break;
+        default:
+          Alert.alert('Error', 'This verification has expired. Go Back and Try again!');
+          break;
+      }
+    } finally {
       setIsOtpVerifyLoading(false);
     }
   };
@@ -96,17 +132,26 @@ const MobileVerify = () => {
               <Text style={styles.error}>{error}</Text>
             </View>
           )} */}
-          <Spacer height={50} />
+          <Spacer height={40} />
 
           <TouchableOpacity
             style={[styles.button, otpVerifyLoading || !otpValidation(otp) ? styles.disable : {}]}
             onPress={verify}
             disabled={otpVerifyLoading || !otpValidation(otp)}>
             {otpVerifyLoading ? (
-              <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+              <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
             ) : null}
             <Text style={[styles.title, otpVerifyLoading ? styles.textDisable : {}]}>Verify</Text>
           </TouchableOpacity>
+
+          <Spacer height={50} />
+          <AuthLink
+            linkText="SignUp"
+            description="Go Back "
+            onPress={() => {
+              router.replace('/sign-up');
+            }}
+          />
           <Modal
             isVisible={isModalVisible}
             hasBackdrop={true}
@@ -146,9 +191,9 @@ const MobileVerify = () => {
                     styles.button,
                     {
                       width: 'auto',
-                      paddingVertical: 12,
+                      paddingVertical: 10,
                       paddingHorizontal: 30,
-                      backgroundColor: '#6900FF',
+                      backgroundColor: '#463e75',
                     },
                   ]}
                   onPress={() => {
@@ -204,9 +249,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
+    backgroundColor: '#463e75',
     borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
+    paddingVertical: 10,
     width: '100%',
   },
   loader: {

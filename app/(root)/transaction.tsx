@@ -5,7 +5,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,12 +20,10 @@ import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
-import CustomDatePicker from '@/components/CustomDatePicker';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
 import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
-import CustomTimePicker from '@/components/TimePicker';
 import { AntDesign, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import OverlayLoader from '@/components/Overlay';
 import {
@@ -61,6 +58,7 @@ export default function Transaction() {
     formState: { errors, isValid, isDirty },
     watch,
     reset,
+    getValues,
     setValue,
     getValues,
   } = useForm({
