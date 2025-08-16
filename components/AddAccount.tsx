@@ -139,18 +139,19 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
     <>
       <Pressable onPress={toggleModal}>
         {exp_ba_id ? (
-          <FontAwesome name="edit" size={24} color="#FFF" />
+          <FontAwesome name="edit" size={24} color="#1E1E1E" />
         ) : (
           <Text
             style={{
-              color: '#B388FF',
+              color: '#6B5DE6',
               fontFamily: 'Inter-500',
               fontSize: 14,
-              borderWidth: 1,
-              borderColor: '#B388FF',
+              borderColor: '#6B5DE6',
               paddingVertical: 4,
-              paddingHorizontal: 6,
-              borderRadius: 40
+              paddingHorizontal: 14,
+              borderRadius: 40,
+              borderWidth: 1,
+              backgroundColor: '#FFFFFF',
             }}>
             Add New
           </Text>
@@ -182,7 +183,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
               <Text style={styles.title}>{exp_ba_id ? 'Edit Account' : 'Add Account'}</Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color="#fff" size={20} />
+                <Ionicons name="close" color="#5a4f96" size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -224,7 +225,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             <Text style={styles.label}>Select Icon</Text>
             <View
               style={{
-                borderColor: '#5a4f96',
+                borderColor: '#E2E2EA',
                 borderWidth: 1,
                 borderRadius: 8,
                 paddingVertical: 5,
@@ -252,14 +253,14 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
                         }}>
                         <View
                           style={{
-                            backgroundColor: selectedIcon === item ? '#6900FF' : '#282343',
+                            backgroundColor: selectedIcon === item ? '#6B5DE6' : '#EBE9FC',
                             padding: 5,
                             borderRadius: 5,
                           }}>
                           <MaterialIcons
                             name={item as React.ComponentProps<typeof MaterialIcons>['name']}
                             size={24}
-                            color="#fff"
+                            color={selectedIcon === item ? '#FFFFFF' : '#5A5A6E'}
                           />
                         </View>
                       </Pressable>
@@ -275,7 +276,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
                 onPress={handleSubmit(handlePress)}
                 disabled={!isDirty || isLoading || isUpdating}>
                 {isLoading || isUpdating ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.btntitle, isLoading || isUpdating ? styles.textDisable : {}]}>
                   {exp_ba_id ? 'Update' : 'Create'}
@@ -294,7 +295,7 @@ export default AddAccount;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
+    backgroundColor: '#FFFFFF',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,
@@ -302,14 +303,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    color: '#FFFFFF',
+    color: '#1E1E1E',
     fontFamily: 'Inter-600',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -321,12 +322,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   textDisable: { opacity: 0 },
   iconBox: {
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#B3B1C4',
+    color: '#282343',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },

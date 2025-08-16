@@ -82,7 +82,7 @@ export default function AccountScreen() {
               keyExtractor={(item, index) => item.exp_ts_id.toString()}
               renderItem={({ item }) => (
                 <View>
-                  <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value}/>
+                  <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
               renderSectionHeader={({ section: { title, income, expense } }) => (

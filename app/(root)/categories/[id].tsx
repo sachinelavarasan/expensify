@@ -147,7 +147,6 @@ const Category = () => {
             position: 'bottom',
           });
         });
-
     } catch (error) {
       console.error('Error deleting transaction:', error);
     }
@@ -242,7 +241,7 @@ const Category = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text
                     style={{
-                      color: '#fff',
+                      color: '#1E1E1E',
                       fontSize: 18,
                       marginVertical: 10,
                       marginHorizontal: 5,
@@ -307,7 +306,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   floatingButton: {
-    backgroundColor: '#5a4f96', // Replace with your primary color
+    backgroundColor: '#6B5DE6',
     width: 50,
     height: 50,
     borderRadius: 25,

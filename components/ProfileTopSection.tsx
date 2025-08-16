@@ -24,7 +24,7 @@ type Props = {
   backgroundImage?: any;
   actionLabel?: string;
   children: ReactElement;
-  refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>>
+  refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 };
 
 export default function AnimatedTopSection({
@@ -65,8 +65,7 @@ export default function AnimatedTopSection({
     const opacity = interpolate(scrollOffset.value, [0, 60, 100], [1, 0.7, 0], Extrapolate.CLAMP);
 
     return {
-      transform: [{ scale }, 
-        { translateY }],
+      transform: [{ scale }, { translateY }],
       opacity,
     };
   });
@@ -76,8 +75,8 @@ export default function AnimatedTopSection({
     return { opacity };
   });
 
-  const titleColor = '#FFF';
-  const subtitleColor = '#CCC';
+  const titleColor = '#1E1E1E';
+  const subtitleColor = '#7A7A8C';
 
   return (
     <ThemedView style={styles.container}>
@@ -92,7 +91,7 @@ export default function AnimatedTopSection({
       <Animated.View style={[styles.background, bgStyle]}>
         {backgroundImage && (
           <Image
-            resizeMode='cover'
+            resizeMode="cover"
             source={backgroundImage}
             style={[
               styles.backgroundImage,
@@ -109,10 +108,12 @@ export default function AnimatedTopSection({
         <View
           style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={styles.headerTextOverlay}>
-            <Text style={styles.titleTextInHeader} numberOfLines={1}>{title}</Text>
+            <Text style={styles.titleTextInHeader} numberOfLines={1}>
+              {title}
+            </Text>
             {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
           </View>
-          <UpdateProfile refetch={refetch}/>
+          <UpdateProfile refetch={refetch} />
         </View>
       </Animated.View>
 
@@ -132,7 +133,7 @@ export default function AnimatedTopSection({
           )}
         </View>
 
-        <UpdateProfile refetch={refetch}/>
+        <UpdateProfile refetch={refetch} />
       </Animated.View>
     </ThemedView>
   );
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#7A7A8C',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   titleTextContainer: {
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    maxWidth: 150
+    maxWidth: 150,
   },
   subtitle: {
     fontSize: 14,
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#6900FF',
+    borderColor: '#E2E2EA',
   },
   avatarContainer: {
     position: 'absolute',
@@ -214,9 +215,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: deviceWidth() * 0.8,
     height: AVATAR_SIZE,
-    backgroundColor: '#0F0E17',
+    backgroundColor: '#FFFFFF',
     borderWidth: 3,
-    borderColor: '#463e75',
+    borderColor: '#E2E2EA',
   },
   avatarFull: {
     width: AVATAR_SIZE,
@@ -232,13 +233,13 @@ const styles = StyleSheet.create({
   titleTextInHeader: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFF',
-    maxWidth: 100
+    color: '#1E1E1E',
+    maxWidth: 100,
   },
 
   subtitleTextInHeader: {
     fontSize: 14,
-    color: '#CCC',
+    color: '#282343',
     marginTop: 4,
   },
 });

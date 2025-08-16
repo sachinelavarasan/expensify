@@ -60,6 +60,7 @@ export default function Transaction() {
     reset,
     getValues,
     setValue,
+    getValues,
   } = useForm({
     defaultValues: {
       exp_ts_title: '',
@@ -359,11 +360,12 @@ export default function Transaction() {
                       <View style={[styles.sectionContainer]}>
                         <View
                           style={{
-                            borderColor: '#5a4f96',
+                            borderColor: '#E2E2EA',
                             borderWidth: 1,
                             borderRadius: 8,
                             paddingVertical: 5,
                             paddingHorizontal: 8,
+                            backgroundColor: '#FFFFFF',
                           }}>
                           <View
                             style={{
@@ -379,14 +381,16 @@ export default function Transaction() {
                                 { flex: 1, flexWrap: 'wrap', lineHeight: 20 },
                               ]}>
                               Category
-                              {!!selectedCategory() &&
-                              <Text
-                                style={{
-                                  fontFamily: 'Inter-500',
-                                  color: '#FFF',
-                                }}>
-                                {' '}:{' '}{selectedCategory()}
-                              </Text>}
+                              {!!selectedCategory() && (
+                                <Text
+                                  style={{
+                                    fontFamily: 'Inter-500',
+                                    color: '#1E1E1E',
+                                  }}>
+                                  {' '}
+                                  : {selectedCategory()}
+                                </Text>
+                              )}
                             </Text>
                             <View
                               style={{
@@ -485,7 +489,7 @@ export default function Transaction() {
                       shouldDirty: true,
                     });
                   }}>
-                  <AntDesign name={exp_st_id ? 'star' : 'staro'} size={20} color="#FFF" />
+                  <AntDesign name={exp_st_id ? 'star' : 'staro'} size={20} color="#FFB347" />
                 </TouchableOpacity>
 
                 {exp_ts_id && (
@@ -494,7 +498,7 @@ export default function Transaction() {
                       {isLoading ? (
                         <ActivityIndicator animating color={'#6900FF'} style={styles.loader} />
                       ) : null}
-                      <FontAwesome5 name="trash" size={20} color="#FFF" />
+                      <FontAwesome5 name="trash" size={20} color="#1E1E1E" />
                     </TouchableOpacity>
                   </>
                 )}
@@ -512,7 +516,7 @@ export default function Transaction() {
                 disabled={!isValid || !isDirty || isFetching || isDeleting || isLoading}
                 onPress={handleSubmit(onSubmit)}>
                 {isLoading ? (
-                  <ActivityIndicator animating color={'#1C1C29'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
                   {exp_ts_id ? 'Update' : 'Add'}
@@ -548,7 +552,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -560,12 +564,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.5,
+    opacity: 0.7,
   },
   textDisable: { opacity: 0 },
   errorContainer: {
@@ -590,7 +594,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
-    color: '#FFF',
+    color: '#1E1E1E',
     fontFamily: 'Inter-600',
   },
   sectionTitle: {
@@ -615,7 +619,7 @@ const styles = StyleSheet.create({
   footer: {
     // height: 50,
     elevation: 10,
-    backgroundColor: '#1A1A24',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
@@ -627,7 +631,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   subText: {
-    color: '#8880A0',
+    color: '#282343',
     fontSize: 12,
     fontFamily: 'Inter-500',
   },
@@ -641,7 +645,7 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: 14,
-    color: '#CCC',
+    color: '#282343',
     fontFamily: 'Inter-500',
   },
 });

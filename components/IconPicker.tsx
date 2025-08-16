@@ -74,11 +74,15 @@ const IconPicker = ({
                     }}>
                     <View
                       style={{
-                        backgroundColor: selected === item ? '#6900FF' : '#282343',
+                        backgroundColor: selected === item ? '#6900FF' : '#EBE9FC',
                         padding: 5,
                         borderRadius: 5,
                       }}>
-                      <MaterialIcons name={item} size={24} color="#fff" />
+                      <MaterialIcons
+                        name={item}
+                        size={24}
+                        color={selected === item ? '#FFFFFF' : '#7A7A8C'}
+                      />
                     </View>
                   </Pressable>
                 </View>
@@ -97,11 +101,11 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 14,
     fontFamily: 'Inter-600',
-    color: '#FFF',
+    color: '#1E1E1E',
     marginBottom: 10,
   },
   label: {
-    color: '#B3B1C4',
+    color: '#282343',
     fontSize: 12,
     fontFamily: 'Inter-500',
   },

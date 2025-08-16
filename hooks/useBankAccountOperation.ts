@@ -170,7 +170,6 @@ export const useAccountGroupedTransactions = (accountId: number) => {
     refetch,
   };
 };
-
 export const useGetUserBankAccounts = () => {
   const queryClient = useQueryClient();
   const data = queryClient.getQueryData<BankAccount[]>(queryKeys.bankAccounts);

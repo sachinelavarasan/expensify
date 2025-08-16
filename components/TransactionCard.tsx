@@ -60,10 +60,9 @@ const TransactionCard = ({
                 <Text style={[styles.subText, { marginRight: 6 }]}>{exp_ts_category}</Text>
                 <View
                   style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                 
                   {!!showTsTime && (
-                    <Text style={[styles.subText, { fontFamily: 'Inter-600', color: '#efeef6' }]}>
-                       <Text>{'\u2022'}</Text> {exp_ts_time}
+                    <Text style={[styles.subText, { fontFamily: 'Inter-600', color: '#999999' }]}>
+                      <Text>{'\u2022'}</Text> {exp_ts_time}
                     </Text>
                   )}
                 </View>
@@ -93,15 +92,28 @@ const styles = StyleSheet.create({
     // backgroundColor: '#1e1a32',
     // paddingHorizontal: 14,
     // paddingVertical: 10,
-    borderRadius: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E2EA',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    shadowColor: '#fff',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.84,
+    elevation: 1,
+    backgroundColor: '#FFFFFF',
   },
   name: {
-    color: '#F1F1F6',
+    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   subText: {
-    color: '#B3B1C4',
+    color: '#282343',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },

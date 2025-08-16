@@ -21,7 +21,6 @@ export default function Setting() {
   const [ttime, setTtime] = useState(false);
   const { user, refetch } = useGetUserData();
 
-
   const updateSettingPreference = useCallback((name: string, value: boolean | string) => {
     switch (name) {
       case 'balance':
@@ -66,8 +65,9 @@ export default function Setting() {
           <ThemedView
             style={{
               flex: 1,
+              paddingHorizontal: 10,
+              backgroundColor: '#0F0E17',
               paddingBottom: 40,
-              paddingHorizontal: 20,
             }}>
             <Spacer height={20} />
             <View style={{ gap: 20 }}>

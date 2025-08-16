@@ -60,7 +60,7 @@ export default function Starred() {
             renderItem={({ item }) => {
               return (
                 <View style={{ paddingVertical: 5 }}>
-                  <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={value}/>
+                  <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={value} />
                 </View>
               );
             }}

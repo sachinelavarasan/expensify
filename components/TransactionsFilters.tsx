@@ -16,8 +16,8 @@ const TransactionFilters = ({
   searchText,
   applyFilters,
 }: {
-  selectedTransaction: string,
-  searchText: string,
+  selectedTransaction: string;
+  searchText: string;
   applyFilters: (search: string, transactionType: string) => void;
 }) => {
   const [show, setShow] = useState(false);
@@ -47,7 +47,7 @@ const TransactionFilters = ({
           paddingVertical: 5,
           paddingHorizontal: 10,
         }}>
-        <FontAwesome6 name="filter" size={20} color="#5a4f96" />
+        <FontAwesome6 name="filter" size={20} color="#6B5DE6" />
       </TouchableOpacity>
 
       <Modal
@@ -76,7 +76,7 @@ const TransactionFilters = ({
               <Text style={styles.title}>Apply Filters</Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color="#fff" size={20} />
+                <Ionicons name="close" color="#282343" size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -116,7 +116,7 @@ export default TransactionFilters;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
+    backgroundColor: '#FFFFFF',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,
@@ -124,14 +124,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    color: '#FFFFFF',
+    color: '#1E1E1E',
     fontFamily: 'Inter-600',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#B3B1C4',
+    color: '#282343',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },

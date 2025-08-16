@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   borderNone: {
     borderWidth: 0,
-    backgroundColor: '#FFF',
+    backgroundColor: '#1E1E1E',
   },
   // titleText: {
   //   fontSize: 15,

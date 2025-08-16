@@ -71,12 +71,13 @@ const UpdateProfile = ({
             type: 'error',
             position: 'bottom',
           });
-        }).finally(()=>{
-          setTimeout(()=>{
+        })
+        .finally(() => {
+          setTimeout(() => {
             setIsLoading(false);
             refetch();
-            setShow(false)
-          }, 1000)
+            setShow(false);
+          }, 1000);
         });
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -86,7 +87,7 @@ const UpdateProfile = ({
   return (
     <>
       <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
-        <AntDesign name="edit" size={24} color="#CCC" />
+        <AntDesign name="edit" size={24} color="#7A7A8C" />
       </Pressable>
 
       <Modal
@@ -108,16 +109,19 @@ const UpdateProfile = ({
             <View
               style={{
                 flexDirection: 'row',
-                justifyContent: 'space-between',
                 alignItems: 'center',
+                justifyContent: 'space-between',
               }}>
               <Text style={styles.title}>Edit Details</Text>
-
-              <TouchableOpacity onPress={() => setShow(!show)} style={{ alignItems: 'flex-end' }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} disabled={isLoading}>
-              <Ionicons name="close" color="#fff" size={20} />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShow(!show)}
+                style={{ alignItems: 'flex-end' }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                disabled={isLoading}>
+                {' '}
+                <Ionicons name="close" color="#5A5A6E" size={20} />
+              </TouchableOpacity>
             </View>
-
             <Spacer height={15} />
             <Controller
               control={control}
@@ -144,7 +148,7 @@ const UpdateProfile = ({
                 onPress={handleSubmit(onSubmit)}
                 disabled={!isValid || isLoading}>
                 {isLoading ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
                 ) : null}
                 <Text style={[styles.btntitle, isLoading ? styles.textDisable : {}]}>Update</Text>
               </TouchableOpacity>
@@ -160,16 +164,16 @@ export default UpdateProfile;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
+    backgroundColor: '#FFFFFF',
     width: deviceWidth() - 60,
     borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 25,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
   },
   title: {
     textAlign: 'center',
     fontSize: 20,
-    color: '#FFFFFF',
+    color: '#1E1E1E',
     marginBottom: 2,
     fontFamily: 'Inter-800',
   },
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -192,12 +196,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   textDisable: { opacity: 0 },
 });
