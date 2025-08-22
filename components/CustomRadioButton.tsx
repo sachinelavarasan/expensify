@@ -39,7 +39,7 @@ export default function CustomRadioButton({
         <View style={{ display: 'flex', flexDirection: 'row' }}>
           <Text
             style={[
-              { fontSize: 14, color: '#B3B1C4', marginVertical: 3, fontFamily: 'Inter-500' },
+              { fontSize: 12, color: '#B3B1C4', marginVertical: 3, fontFamily: 'Inter-400' },
             ]}>
             {label}
           </Text>
@@ -91,6 +91,6 @@ const styles = StyleSheet.create({
   labelStyle: {
     fontSize: 14,
     color: '#fff',
-    fontFamily: 'Inter-400',
+    fontFamily: 'Inter-500',
   },
 });

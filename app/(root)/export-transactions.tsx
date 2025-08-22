@@ -1,5 +1,7 @@
 import {
   ActivityIndicator,
+  Alert,
+  Button,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -8,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -17,14 +19,25 @@ import Spacer from '@/components/Spacer';
 import {
   useExportExcelTransactions,
   useExportPdfTransactions,
+  useImportExcel,
 } from '@/hooks/useExportTransactions';
 import CustomRadioButton from '@/components/CustomRadioButton';
 import { exportType, transactionExportType } from '@/utils/common-data';
 import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
-import { AntDesign, Entypo } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import * as XLSX from 'xlsx';
+import { CustomSelectInput } from '@/components/CustomSelectInput';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import { formatToCurrency } from '@/utils/formatter';
+import { useRouter } from 'expo-router';
 
 export default function ExportData() {
+  const router = useRouter();
   const { mutateAsync: exportExcelMutation, isPending } = useExportExcelTransactions();
+  const { mutateAsync: importExcelMutation, isPending: processing, error, data } = useImportExcel();
   const { mutateAsync: exportPdfMutation, isPending: isPdfLoading } = useExportPdfTransactions();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
@@ -142,6 +155,40 @@ export default function ExportData() {
                 </Text>
               </TouchableOpacity>
             </View>
+            <Spacer height={20} />
+            <Spacer
+              height={1}
+              otherStyle={{
+                backgroundColor: '#5a4f9645',
+              }}
+            />
+            <Spacer height={20} />
+            <View style={[{ paddingHorizontal: 5 }]}>
+              <Text style={[styles.subText, { lineHeight: 20 }]}>
+                If you want to add multiple transactions at once, simply click the{' '}
+                <Text style={{ fontWeight: '800', color: '#FFF' }}>Import Transations</Text> button and upload
+                your <Text style={{ fontWeight: '800', color: '#FFF' }}>.xlsx</Text> file.
+              </Text>
+              <Spacer height={10} />
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.opacityBg,
+                  isPdfLoading || isPending ? styles.disable : '',
+                ]}
+                onPress={() => router.push('/(root)/import-transactions')}>
+                {isPdfLoading || isPending ? (
+                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                ) : null}
+                <Text style={[styles.title, isPdfLoading || isPending ? styles.textDisable : {}]}>
+                  Import Transactions
+                </Text>
+              </TouchableOpacity>
+              <Spacer height={20} />
+
+            </View>
+
+            <Spacer height={100} />
           </ThemedView>
         </ScrollView>
       </SafeAreaViewComponent>
@@ -158,9 +205,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6900FF',
     borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
+    paddingVertical: 10,
     width: '100%',
   },
   title: {
@@ -170,6 +216,9 @@ const styles = StyleSheet.create({
   },
   logoutBg: {
     backgroundColor: '#282343',
+  },
+  opacityBg: {
+    backgroundColor: '#28234377',
   },
   card: {
     borderColor: '#5a4f96',
@@ -186,5 +235,41 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  subText: {
+    fontSize: 14,
+    color: '#ccc',
+    marginTop: 2,
+  },
+  contentContainer: {
+    padding: 12,
+  },
+
+  itemContainer: {
+    padding: 8,
+    marginBottom: 12,
+    backgroundColor: '#141221',
+    borderRadius: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  left: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  name: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: 'Inter-600',
+  },
+  subTextContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
 });

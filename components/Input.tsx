@@ -129,10 +129,10 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   label: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#B3B1C4',
     marginBottom: 6,
-    fontFamily: 'Inter-400',
+    fontFamily: 'Inter-500',
   },
   error: {
     fontSize: 12,

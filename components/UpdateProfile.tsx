@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
@@ -45,6 +45,7 @@ const UpdateProfile = ({
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors, isValid },
   } = useForm({
     defaultValues: {
@@ -52,6 +53,20 @@ const UpdateProfile = ({
     },
     resolver: zodResolver(schema),
   });
+
+  useEffect(() => {
+    if (user?.firstName) {
+      reset(
+        {
+          name: user?.firstName,
+        },
+        {
+          keepDirty: false,
+          keepIsValidating: true,
+        }
+      );
+    }
+  }, [user]);
 
   const onSubmit = (data: EditProfileForm) => {
     setIsLoading(true);
@@ -71,12 +86,13 @@ const UpdateProfile = ({
             type: 'error',
             position: 'bottom',
           });
-        }).finally(()=>{
-          setTimeout(()=>{
+        })
+        .finally(() => {
+          setTimeout(() => {
             setIsLoading(false);
             refetch();
-            setShow(false)
-          }, 1000)
+            setShow(false);
+          }, 1000);
         });
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -113,9 +129,13 @@ const UpdateProfile = ({
               }}>
               <Text style={styles.title}>Edit Details</Text>
 
-              <TouchableOpacity onPress={() => setShow(!show)} style={{ alignItems: 'flex-end' }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} disabled={isLoading}>
-              <Ionicons name="close" color="#fff" size={20} />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShow(!show)}
+                style={{ alignItems: 'flex-end' }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                disabled={isLoading}>
+                <Ionicons name="close" color="#fff" size={20} />
+              </TouchableOpacity>
             </View>
 
             <Spacer height={15} />

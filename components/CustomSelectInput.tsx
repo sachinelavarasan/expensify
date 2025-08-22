@@ -11,6 +11,7 @@ interface CustomSelectInputProps {
   onChange: (id: number | string) => void;
   value: string | number;
   isRequired?: boolean;
+  isSmall?: boolean;
 }
 
 export const CustomSelectInput = ({
@@ -20,6 +21,7 @@ export const CustomSelectInput = ({
   placeholder,
   value,
   isRequired = false,
+  isSmall = false,
 }: CustomSelectInputProps) => {
   const [selected, setSelected] = useState(value);
   const [defaultOption, setDefaultOption] = useState<{ key: any; value: any } | undefined>();
@@ -35,27 +37,27 @@ export const CustomSelectInput = ({
       {label ? (
         <View style={{ display: 'flex', flexDirection: 'row' }}>
           <Text style={styles.labelStyles}>{label}</Text>
-          {/* {isRequired ? (
+          {isRequired ? (
             <View style={{ marginLeft: 5, marginTop: 5 }}>
               <Image
                 source={require('@/assets/icons/required.png')}
-                style={{ width: 8, height: 8 }}
+                style={{ width: 5, height: 5 }}
               />
             </View>
-          ) : null} */}
+          ) : null}
         </View>
       ) : null}
       <SelectList
         onSelect={() => onChange(selected)}
         setSelected={setSelected}
-        fontFamily="Inter-500"
+        fontFamily={isSmall? "Inter-400": "Inter-500"}
         data={options}
-        arrowicon={<FontAwesome name="chevron-down" size={16} color={'#B3B1C4'} />}
+        arrowicon={<FontAwesome name="chevron-down" size={10} color={'#5a5962'} />}
         search={false}
         boxStyles={styles.boxStyles} // Apply custom styles
         defaultOption={defaultOption} //default selected option
         dropdownStyles={styles.dropdownStyles}
-        inputStyles={styles.inputStyles}
+        inputStyles={isSmall?{}: styles.inputStyles}
         dropdownTextStyles={styles.dropdownTextStyles}
         maxHeight={150}
         placeholder={placeholder}
@@ -79,22 +81,23 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: 'Inter-300',
     color: '#6E6E80',
   },
   dropdownStyles: { backgroundColor: '#1C1C20', borderWidth: 0 },
   inputStyles: {
     color: '#ffffff',
-    paddingVertical: Platform.OS === 'android' ? 1 : 6,
+    paddingVertical: 2,
   },
   dropdownTextStyles: {
     color: '#B3B1C4',
+    fontSize: 12,
   },
   labelStyles: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#B3B1C4',
     marginBottom: 6,
-    fontFamily: 'Inter-400',
+    fontFamily: 'Inter-500',
   },
 });

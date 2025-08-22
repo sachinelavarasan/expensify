@@ -12,6 +12,7 @@ import { deviceWidth } from '@/utils/functions';
 import UpdateProfile from './UpdateProfile';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
@@ -24,7 +25,7 @@ type Props = {
   backgroundImage?: any;
   actionLabel?: string;
   children: ReactElement;
-  refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>>
+  refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 };
 
 export default function AnimatedTopSection({
@@ -55,7 +56,7 @@ export default function AnimatedTopSection({
   });
 
   const avatarStyle = useAnimatedStyle(() => {
-    const scale = interpolate(scrollOffset.value, [0, 100, 200], [1, 0.9, 0.8], Extrapolate.CLAMP);
+    const scale = interpolate(scrollOffset.value, [0, 80, 100], [1, 0.9, 0.8], Extrapolate.CLAMP);
     const translateY = interpolate(
       scrollOffset.value,
       [0, 100],
@@ -65,8 +66,7 @@ export default function AnimatedTopSection({
     const opacity = interpolate(scrollOffset.value, [0, 60, 100], [1, 0.7, 0], Extrapolate.CLAMP);
 
     return {
-      transform: [{ scale }, 
-        { translateY }],
+      transform: [{ scale }, { translateY }],
       opacity,
     };
   });
@@ -85,14 +85,14 @@ export default function AnimatedTopSection({
         ref={scrollRef}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT - 180 }}>
+        contentContainerStyle={{ paddingTop: HEADER_MAX_HEIGHT - 200 }}>
         <View style={styles.content}>{children}</View>
       </Animated.ScrollView>
 
       <Animated.View style={[styles.background, bgStyle]}>
-        {backgroundImage && (
+        {/* {backgroundImage && (
           <Image
-            resizeMode='cover'
+            resizeMode="cover"
             source={backgroundImage}
             style={[
               styles.backgroundImage,
@@ -101,20 +101,44 @@ export default function AnimatedTopSection({
               },
             ]}
           />
-        )}
+        )} */}
+        <LinearGradient
+          colors={['#2E026D', '#15162C', '#0F0E17']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          locations={[0.1, 0.5, 1]}
+          style={[styles.backgroundImage]}
+        />
       </Animated.View>
 
       <Animated.View style={[styles.avatarContainer, avatarStyle]}>
         <Image source={avatar} style={styles.avatarFull} />
+
+        <View style={styles.headerContent}>
+          <View style={styles.headerTextOverlay}>
+            <Text style={styles.titleTextInHeader} numberOfLines={1}>
+              {title}
+            </Text>
+            {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
+          </View>
+
+          <UpdateProfile refetch={refetch} />
+        </View>
+      </Animated.View>
+
+      {/* <Animated.View style={[styles.avatarContainer, avatarStyle]}>
+        <Image source={avatar} style={styles.avatarFull} />
         <View
           style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={styles.headerTextOverlay}>
-            <Text style={styles.titleTextInHeader} numberOfLines={1}>{title}</Text>
+            <Text style={styles.titleTextInHeader} numberOfLines={1}>
+              {title}
+            </Text>
             {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
           </View>
-          <UpdateProfile refetch={refetch}/>
+          <UpdateProfile refetch={refetch} />
         </View>
-      </Animated.View>
+      </Animated.View> */}
 
       <Animated.View style={[styles.titleBar, titleBarOpacity, { backgroundColor: '#0F0E17' }]}>
         <Animated.View style={[styles.headerAvatarSmall]}>
@@ -132,7 +156,7 @@ export default function AnimatedTopSection({
           )}
         </View>
 
-        <UpdateProfile refetch={refetch}/>
+        <UpdateProfile refetch={refetch} />
       </Animated.View>
     </ThemedView>
   );
@@ -149,7 +173,7 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     width: '100%',
-    // height: '100%',
+    height: '100%',
   },
   avatar: {
     width: '100%',
@@ -175,7 +199,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    maxWidth: 150
+    maxWidth: 150,
   },
   subtitle: {
     fontSize: 14,
@@ -203,42 +227,80 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#6900FF',
   },
-  avatarContainer: {
-    position: 'absolute',
-    top: HEADER_MAX_HEIGHT - (AVATAR_SIZE + 460) / 2,
-    left: 40,
-    zIndex: 3,
-    borderRadius: AVATAR_SIZE / 2,
-    overflow: 'hidden',
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: deviceWidth() * 0.8,
-    height: AVATAR_SIZE,
-    backgroundColor: '#0F0E17',
-    borderWidth: 3,
-    borderColor: '#463e75',
-  },
-  avatarFull: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-  },
-  headerTextOverlay: {
-    marginLeft: 15,
-    justifyContent: 'center',
-    flexShrink: 1,
-  },
+  // avatarContainer: {
+  //   position: 'absolute',
+  //   top: HEADER_MAX_HEIGHT - (AVATAR_SIZE + 460) / 2,
+  //   left: 40,
+  //   zIndex: 3,
+  //   borderRadius: AVATAR_SIZE / 2,
+  //   overflow: 'hidden',
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   width: deviceWidth() * 0.8,
+  //   height: AVATAR_SIZE,
+  //   backgroundColor: '#0F0E17',
+  //   borderWidth: 3,
+  //   borderColor: '#463e75',
+  // },
+  // avatarFull: {
+  //   width: AVATAR_SIZE,
+  //   height: AVATAR_SIZE,
+  //   borderRadius: AVATAR_SIZE / 2,
+  // },
+  // headerTextOverlay: {
+  //   marginLeft: 15,
+  //   justifyContent: 'center',
+  //   flexShrink: 1,
+  // },
 
   titleTextInHeader: {
     fontSize: 16,
     fontWeight: '700',
     color: '#FFF',
-    maxWidth: 100
+    maxWidth: 100,
   },
 
   subtitleTextInHeader: {
     fontSize: 14,
     color: '#CCC',
     marginTop: 4,
+  },
+  avatarContainer: {
+    position: 'absolute',
+    top: HEADER_MAX_HEIGHT - (AVATAR_SIZE + 540) / 2,
+    left: 20,
+    right: 20, // make it flexible width
+    zIndex: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12, // spacing inside
+    borderRadius: 20, // smoother card look
+    backgroundColor: '#1A1825', // darker than app bg
+    borderWidth: 1,
+    borderColor: '#2E026D', // subtle accent border
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+
+  avatarFull: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: '#6900FF', // nice accent around avatar
+  },
+
+  headerContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  headerTextOverlay: {
+    flexShrink: 1,
   },
 });

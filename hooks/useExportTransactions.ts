@@ -177,3 +177,36 @@ async function saveFile(uri: string, filename: string, mimetype: string) {
     }
   }
 }
+
+
+interface ExcelPayload {
+  headers: Record<string, string>;
+  data: any[];
+}
+
+export const useImportExcel = () => {
+  const { getToken, userId } = useAuth();
+  return useMutation({
+    mutationFn: async (payload: ExcelPayload) => {
+      const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
+      const url = `${API_URL}/expensify/import-data`;
+      const response = await fetch(`${url}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to process Excel file");
+      }
+
+      return response.json();
+    },
+  });
+};

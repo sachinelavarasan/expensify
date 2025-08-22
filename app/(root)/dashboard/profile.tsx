@@ -9,17 +9,17 @@ import {
   TouchableOpacity,
   Pressable,
   FlatList,
-  Image,
 } from 'react-native';
 import { deviceWidth } from '@/utils/functions';
 
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
 import { useGetUserData } from '@/hooks/useUserStore';
+import BankCard from '@/components/AccountCard';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -41,15 +41,14 @@ const Profile = () => {
     signOut();
     router.replace('/(root)/(auth)/login');
   };
- 
+
   return (
     <AnimatedTopSection
       title={currentUser?.firstName || ''}
       subtitle={currentUser?.phoneNumbers?.[0]?.phoneNumber || ''}
       avatar={require('@/assets/images/user-default.png')}
       backgroundImage={require('@/assets/images/profile.png')}
-      refetch={refetch}
-      >
+      refetch={refetch}>
       <>
         <Pressable>
           <View style={styles.card}>
@@ -82,48 +81,57 @@ const Profile = () => {
           showsHorizontalScrollIndicator={false}
           data={accounts}
           keyExtractor={(item) => item.exp_ba_name}
-          ListEmptyComponent={()=>(
-            (!loading && accounts.length) ?(
-              <Spacer height={60}/>
-            ):(
-              <View style={{height: 60, justifyContent:'center'}}>
-                <Text style={styles.subText}>
-                  There is no account exist
-                </Text>
+          ListEmptyComponent={() =>
+            !loading && accounts.length ? (
+              <Spacer height={60} />
+            ) : (
+              <View style={{ height: 60, justifyContent: 'center' }}>
+                <Text style={styles.subText}>There is no account exist</Text>
               </View>
             )
-          )}
-
+          }
           renderItem={({ item }) => (
-            <Link
-              href={{
-                pathname: '/accounts/[id]',
-                params: { id: item.exp_ba_id },
-              }}
-              asChild>
-              <TouchableOpacity style={styles.accountCard}>
-                <View
-                  style={[
-                    styles.left,
-                    {
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    },
-                  ]}>
-                  <View>
-                    <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>
-                  </View>
-                  <View style={{ backgroundColor: '#282343', padding: 2, borderRadius: 2 }}>
-                    <MaterialIcons name="account-balance-wallet" size={16} color="#FFF" />
-                  </View>
-                </View>
+             <BankCard
+                bankName={item.exp_ba_name}
+                holderName={"Elavarasan"}
+                // accountNumber="123456789012"
+                balance={item.exp_ba_balance}
+                variant="dark"
+                accent="#6C63FF"
+                onPress={()=>{
+                  router.push(`/accounts/${item.exp_ba_id}`)
+                }}
+              />
+            // <Link
+            //   href={{
+            //     pathname: '/accounts/[id]',
+            //     params: { id: item.exp_ba_id },
+            //   }}
+            //   asChild>
+            //   {/* <TouchableOpacity style={styles.accountCard}>
+            //     <View
+            //       style={[
+            //         styles.left,
+            //         {
+            //           flexDirection: 'row',
+            //           justifyContent: 'space-between',
+            //           alignItems: 'center',
+            //         },
+            //       ]}>
+            //       <View>
+            //         <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>
+            //       </View>
+            //       <View style={{ backgroundColor: '#282343', padding: 2, borderRadius: 2 }}>
+            //         <MaterialIcons name="account-balance-wallet" size={16} color="#FFF" />
+            //       </View>
+            //     </View>
 
-                <View>
-                  <Text style={styles.amount}>{item.exp_ba_balance}</Text>
-                </View>
-              </TouchableOpacity>
-            </Link>
+            //     <View>
+            //       <Text style={styles.amount}>{item.exp_ba_balance}</Text>
+            //     </View>
+            //   </TouchableOpacity> */}
+             
+            // </Link>
           )}
         />
         <Link href={'/(root)/categories'} asChild>
@@ -174,14 +182,16 @@ const Profile = () => {
             <View style={styles.card}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
-                  <MaterialCommunityIcons name="file-export" size={24} color="#FFF" />
+                  <MaterialIcons name="import-export" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Export Transactions</Text>
+                    <Text style={styles.option}>Import / Export Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Download and share your transaction history</Text>
+                    <Text style={[styles.subText]}>
+                      Download and share your transaction history
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -202,7 +212,9 @@ const Profile = () => {
                     <Text style={styles.option}>Settings</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Customize your app preferences and controls</Text>
+                    <Text style={[styles.subText]}>
+                      Customize your app preferences and controls
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -317,8 +329,8 @@ const styles = StyleSheet.create({
     color: '#6F6D85',
     fontSize: 14,
     fontFamily: 'Inter-500',
-    wordWrap:'wrap',
-    maxWidth: deviceWidth() - 80
+    wordWrap: 'wrap',
+    maxWidth: deviceWidth() - 80,
   },
   subTextContainer: {
     display: 'flex',

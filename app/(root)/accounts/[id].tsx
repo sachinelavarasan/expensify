@@ -1,3 +1,4 @@
+import BankCard from '@/components/AccountCard';
 import AddAccount from '@/components/AddAccount';
 import Emptystate from '@/components/Emptystate';
 import ProfileHeader from '@/components/ProfileHeader';
@@ -8,6 +9,7 @@ import TransactionCard from '@/components/TransactionCard';
 import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
+import { deviceWidth } from '@/utils/functions';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -19,6 +21,10 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+
+const width = deviceWidth();
+
+const cardWidth = width - 30;
 
 export default function AccountScreen() {
   const { id } = useLocalSearchParams() as unknown as { id: number };
@@ -39,25 +45,9 @@ export default function AccountScreen() {
     <SafeAreaViewComponent edges={['top']}>
       <ThemedView style={styles.container}>
         <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
-          <ProfileHeader title="Account Details" subtitle="All Time" />
-        </View>
-        {loading || refreshing || !account ? (
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator size="large" color="#6900FF" />
-          </View>
-        ) : (
-          <>
-            <Spacer height={10} />
-            <View style={[styles.card, { width: 'auto' }]}>
-              <View>
-                <Text style={styles.cardTitle}>{account.exp_ba_balance}</Text>
-                <Text style={styles.cardSubtitle}>
-                  Account: <Text style={{ color: '#D1CCFF' }}>{account.exp_ba_name}</Text>{' '}
-                  {account.exp_ba_is_primary && <Text style={styles.default}>Default</Text>}
-                </Text>
-              </View>
-              <View>
-                {!!account.exp_ba_id && (
+          <ProfileHeader title="Account Details" subtitle="All Time" >
+            <View>
+                {!!account?.exp_ba_id && (
                   <AddAccount
                     account={{
                       ...account,
@@ -66,6 +56,27 @@ export default function AccountScreen() {
                   />
                 )}
               </View>
+          </ProfileHeader>
+        </View>
+        {loading || refreshing || !account ? (
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color="#6900FF" />
+          </View>
+        ) : (
+          <>
+            <Spacer height={10} />
+            <View style={{ paddingHorizontal: 15 }}>
+              <BankCard
+                bankName={account.exp_ba_name}
+                holderName={'Elavarasan'}
+                // accountNumber="123456789012"
+                balance={account.exp_ba_balance}
+                variant="dark"
+                accent="#6C63FF"
+                otherStyle={{
+                  width: cardWidth,
+                }}
+              />
             </View>
             <SectionList
               ListEmptyComponent={
@@ -82,7 +93,7 @@ export default function AccountScreen() {
               keyExtractor={(item, index) => item.exp_ts_id.toString()}
               renderItem={({ item }) => (
                 <View>
-                  <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value}/>
+                  <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
               renderSectionHeader={({ section: { title, income, expense } }) => (

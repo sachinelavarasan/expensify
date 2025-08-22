@@ -48,7 +48,7 @@ export default function Stat() {
   }, []);
 
   return (
-    <ThemedView style={{ flex: 1, paddingHorizontal: 10 }}>
+    <ThemedView style={{ flex: 1 }}>
       {loading && <OverlayLoader />}
 
       <FlatList

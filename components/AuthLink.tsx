@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 
 
 interface ExtraButtonProps {
   linkText: string;
-  description: string;
+  description?: string;
 }
 //Touchable opacity default props and custom props for this button
 const AuthLink: React.FC<ExtraButtonProps & TouchableOpacityProps> = ({

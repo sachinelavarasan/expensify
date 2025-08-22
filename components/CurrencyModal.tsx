@@ -99,7 +99,7 @@ const CurrencyModal = ({ currency, refetch }: { currency?: string, refetch: ()=>
       </TouchableOpacity>
 
       <Modal
-        backdropColor="rgba(0, 0, 0, 0.5)"
+        backdropColor="#0000007f"
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}

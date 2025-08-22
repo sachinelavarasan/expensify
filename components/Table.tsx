@@ -5,7 +5,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 
 const width = deviceWidth();
-const tableWidth = width - 52;
+const tableWidth = width - 32;
 
 export default function TableView({ transactions }: { transactions: Itransaction[] }) {
   const income = transactions
@@ -93,32 +93,32 @@ export default function TableView({ transactions }: { transactions: Itransaction
 const styles = StyleSheet.create({
   table: {
     borderWidth: 1,
-    borderColor: '#1e1a32',
-    borderRadius: 4,
+    borderColor: '#2D2A40',
+    borderRadius: 2,
     margin: 16,
     height: 'auto',
-    // maxHeight: 174,
     borderBottomWidth: 0,
-    backgroundColor: '#0a0911',
+    backgroundColor: '#161421',
     width: tableWidth,
   },
   row: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#1e1a32',
-    backgroundColor: '#0a0911',
+    borderBottomColor: '#2D2A40',
+    backgroundColor: '#1C1A2B',
   },
   cell: {
     flex: 1,
     padding: 12,
     fontSize: 14,
-    color: '#B3B1C4',
+    color: '#D1CFE9',
   },
   header: {
-    backgroundColor: '#1e1a32',
+    backgroundColor: '#2A2740',
   },
   headerText: {
     fontWeight: '600',
-    color: '#E0E0F0',
+    color: '#E6E6FA',
+    fontSize: 14,
   },
 });

@@ -6,11 +6,13 @@ import { useRouter } from 'expo-router';
 export default function ProfileHeader({
   title,
   deleteAction,
-  subtitle
+  subtitle,
+  children,
 }: {
   title: string;
   deleteAction?: () => void;
-  subtitle?: string
+  subtitle?: string;
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
   return (
@@ -23,7 +25,7 @@ export default function ProfileHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Pressable onPress={router.back} style={{ marginRight: 10 }}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
@@ -36,15 +38,17 @@ export default function ProfileHeader({
             }}>
             {title}
           </Text>
-          {!!subtitle && <Text
-            style={{
-              fontSize: 14,
-              color: '#CCC',
-              fontFamily: 'Inter-400',
-              textTransform:'uppercase'
-            }}>
-            {subtitle}
-          </Text>}
+          {!!subtitle && (
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#CCC',
+                fontFamily: 'Inter-400',
+                textTransform: 'uppercase',
+              }}>
+              {subtitle}
+            </Text>
+          )}
         </View>
       </View>
       <View>
@@ -53,6 +57,7 @@ export default function ProfileHeader({
             <FontAwesome5 name="trash" size={20} color="#D9363E" />
           </TouchableOpacity>
         )}
+        {children}
       </View>
     </View>
   );
