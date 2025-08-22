@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
-const AVATAR_SIZE = 80;
+const AVATAR_SIZE = 70;
 
 type Props = {
   title: string;
@@ -59,11 +59,11 @@ export default function AnimatedTopSection({
     const scale = interpolate(scrollOffset.value, [0, 80, 100], [1, 0.9, 0.8], Extrapolate.CLAMP);
     const translateY = interpolate(
       scrollOffset.value,
-      [0, 100],
-      [0, -HEADER_MAX_HEIGHT + (HEADER_MIN_HEIGHT - 200) / 2],
+      [0, 10],
+      [0, -HEADER_MAX_HEIGHT + (HEADER_MIN_HEIGHT - 100) / 2],
       Extrapolate.CLAMP,
     );
-    const opacity = interpolate(scrollOffset.value, [0, 60, 100], [1, 0.7, 0], Extrapolate.CLAMP);
+    const opacity = interpolate(scrollOffset.value, [0, 0, 100], [1, 0, 0], Extrapolate.CLAMP);
 
     return {
       transform: [{ scale }, { translateY }],
@@ -72,7 +72,7 @@ export default function AnimatedTopSection({
   });
 
   const titleBarOpacity = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollOffset.value, [70, 80], [0, 1], Extrapolate.CLAMP);
+    const opacity = interpolate(scrollOffset.value, [0, 10], [0, 1], Extrapolate.CLAMP);
     return { opacity };
   });
 

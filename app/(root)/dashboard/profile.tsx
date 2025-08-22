@@ -73,7 +73,7 @@ const Profile = () => {
           contentContainerStyle={{
             marginTop: 5,
             marginBottom: 15,
-            gap: 5,
+            gap: 10,
             padding: 5,
           }}
           horizontal
@@ -101,6 +101,7 @@ const Profile = () => {
                 onPress={()=>{
                   router.push(`/accounts/${item.exp_ba_id}`)
                 }}
+                otherStyle={{width: deviceWidth() - 60}}
               />
             // <Link
             //   href={{
