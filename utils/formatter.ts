@@ -1,4 +1,5 @@
-import {Decimal} from 'decimal.js';
+import { format, parse } from 'date-fns';
+import { Decimal } from 'decimal.js';
 
 export const formattedAmountold = (amount: number) => {
   if (amount >= 1_00_00_000) {
@@ -119,16 +120,11 @@ export function formatToCurrency2(
 //   }
 // };
 
-
 export const formatToCurrency = (
   amount: number | string | bigint,
-  currency: SupportedCurrency = 'INR'
+  currency: SupportedCurrency = 'INR',
 ): string => {
-  if (
-    amount === null ||
-    amount === undefined ||
-    (typeof amount === 'number' && isNaN(amount))
-  ) {
+  if (amount === null || amount === undefined || (typeof amount === 'number' && isNaN(amount))) {
     return '-';
   }
 
@@ -170,4 +166,8 @@ export const formatToCurrency = (
   return `${prefix}${symbol}${abs.toFixed(2)}`;
 };
 
-
+export const timeCoverter = (time: any) => {
+  if(!time) return ''
+  const parsed = parse(time, 'HH:mm', new Date());
+  return format(parsed, 'hh:mm a')
+};

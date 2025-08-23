@@ -1,5 +1,5 @@
 import { useAuth } from '@clerk/clerk-expo';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
@@ -180,7 +180,7 @@ async function saveFile(uri: string, filename: string, mimetype: string) {
 
 
 interface ExcelPayload {
-  headers: Record<string, string>;
+  headers: any;
   data: any[];
 }
 
@@ -205,6 +205,35 @@ export const useImportExcel = () => {
       if (!response.ok) {
         throw new Error("Failed to process Excel file");
       }
+
+      return response.json();
+    },
+  });
+};
+export const useImportBulkTransaction = () => {
+  const { getToken, userId } = useAuth();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: ExcelPayload) => {
+      const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
+      const url = `${API_URL}/expensify/bulk-transactions`;
+      const response = await fetch(`${url}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to process Excel file");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
 
       return response.json();
     },

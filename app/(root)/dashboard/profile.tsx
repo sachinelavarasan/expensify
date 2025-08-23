@@ -94,6 +94,7 @@ const Profile = () => {
              <BankCard
                 bankName={item.exp_ba_name}
                 holderName={"Elavarasan"}
+                icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 // accountNumber="123456789012"
                 balance={item.exp_ba_balance}
                 variant="dark"
@@ -136,7 +137,7 @@ const Profile = () => {
           )}
         />
         <Link href={'/(root)/categories'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
@@ -154,11 +155,11 @@ const Profile = () => {
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
 
         <Link href={'/(root)/starred'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
@@ -176,10 +177,10 @@ const Profile = () => {
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
         <Link href={'/(root)/export-transactions'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
@@ -199,10 +200,10 @@ const Profile = () => {
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
         <Link href={'/(root)/settings'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
@@ -222,7 +223,7 @@ const Profile = () => {
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
         <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
           <TouchableOpacity style={[styles.button, styles.logoutBg]} onPress={onSubmit}>

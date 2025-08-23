@@ -80,7 +80,7 @@ export default function Stat() {
                 isAnimated
                 animationDuration={500}
                 innerCircleColor="#1F1A29"
-                innerRadius={80}
+                innerRadius={65}
                 labelsPosition="mid"
                 textColor="#6900FF"
                 centerLabelComponent={() =>

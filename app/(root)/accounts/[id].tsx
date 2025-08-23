@@ -10,7 +10,7 @@ import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -44,8 +44,8 @@ export default function AccountScreen() {
   return (
     <SafeAreaViewComponent edges={['top']}>
       <ThemedView style={styles.container}>
-        <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
-          <ProfileHeader title="Account Details" subtitle="All Time" >
+        <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
+          <ProfileHeader title="Account Details" subtitle="All Time" paddingHorizontal={false}>
             <View>
                 {!!account?.exp_ba_id && (
                   <AddAccount
@@ -69,6 +69,7 @@ export default function AccountScreen() {
               <BankCard
                 bankName={account.exp_ba_name}
                 holderName={'Elavarasan'}
+                 icon={account.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 // accountNumber="123456789012"
                 balance={account.exp_ba_balance}
                 variant="dark"

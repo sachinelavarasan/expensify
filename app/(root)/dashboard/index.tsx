@@ -25,6 +25,7 @@ import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
+import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 
 export default function Index() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function Index() {
   } = useMonthlyTransactions();
   useCategoryList();
   useGetUserData();
+  useBankAccounts();
 
   const [refreshing, setRefreshing] = useState(false);
   const { value } = useGetSettingsFromStore('tt-time');
@@ -186,7 +188,7 @@ export default function Index() {
           bounces={false}
           showsVerticalScrollIndicator={false}
           data={groupedDataArray}
-          contentContainerStyle={{ paddingBottom: 20, flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 250, flex: 1 }}
           ListEmptyComponent={
             <Emptystate
               title="No transactions yet"

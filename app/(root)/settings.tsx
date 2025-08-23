@@ -21,7 +21,6 @@ export default function Setting() {
   const [ttime, setTtime] = useState(false);
   const { user, refetch } = useGetUserData();
 
-
   const updateSettingPreference = useCallback((name: string, value: boolean | string) => {
     switch (name) {
       case 'balance':
@@ -62,13 +61,13 @@ export default function Setting() {
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
         <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          <ProfileHeader title="Settings" />
           <ThemedView
             style={{
               flex: 1,
               paddingBottom: 40,
               paddingHorizontal: 20,
             }}>
+            <ProfileHeader title="Settings" paddingHorizontal={false}/>
             <Spacer height={20} />
             <View style={{ gap: 20 }}>
               {/* General Section */}

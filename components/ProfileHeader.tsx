@@ -8,18 +8,20 @@ export default function ProfileHeader({
   deleteAction,
   subtitle,
   children,
+  paddingHorizontal = true,
 }: {
   title: string;
   deleteAction?: () => void;
   subtitle?: string;
   children?: React.ReactNode;
+  paddingHorizontal?: boolean;
 }) {
   const router = useRouter();
   return (
     <View
       style={{
         height: 50,
-        paddingHorizontal: 10,
+        paddingHorizontal: paddingHorizontal ? 10 : 0,
         marginTop: 5,
         flexDirection: 'row',
         alignItems: 'center',

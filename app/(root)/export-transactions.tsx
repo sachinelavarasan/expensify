@@ -90,12 +90,12 @@ export default function ExportData() {
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
         <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          <ProfileHeader title="Export Transactions" />
           <ThemedView
             style={{
               flex: 1,
               paddingHorizontal: 20,
             }}>
+            <ProfileHeader title="Export Transactions" paddingHorizontal={false} />
             <Spacer height={20} />
             <View style={{ alignItems: 'flex-start' }}>
               <View style={[styles.card, { width: '100%' }]}>
@@ -173,14 +173,10 @@ export default function ExportData() {
               <TouchableOpacity
                 style={[
                   styles.button,
-                  styles.opacityBg,
-                  isPdfLoading || isPending ? styles.disable : '',
+                  styles.opacityBg
                 ]}
                 onPress={() => router.push('/(root)/import-transactions')}>
-                {isPdfLoading || isPending ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
-                ) : null}
-                <Text style={[styles.title, isPdfLoading || isPending ? styles.textDisable : {}]}>
+                <Text style={[styles.title]}>
                   Import Transactions
                 </Text>
               </TouchableOpacity>
@@ -215,10 +211,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   logoutBg: {
-    backgroundColor: '#282343',
+    backgroundColor: '#076ae3',
   },
   opacityBg: {
-    backgroundColor: '#28234377',
+    backgroundColor: '#2E8B57',
   },
   card: {
     borderColor: '#5a4f96',

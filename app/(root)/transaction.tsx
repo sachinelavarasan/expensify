@@ -248,7 +248,7 @@ export default function Transaction() {
                                 value: account.exp_ba_name,
                               }))}
                               placeholder="Account"
-                              label="Change Account"
+                              label="Choose Account"
                               onChange={(selectedId) => {
                                 field.onChange(selectedId);
                               }}

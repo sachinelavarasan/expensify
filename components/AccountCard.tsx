@@ -10,7 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
 
 type BankCardProps = {
@@ -23,6 +23,7 @@ type BankCardProps = {
   accent?: string;
   onPress?: () => void;
   otherStyle?: StyleProp<ViewStyle>;
+  icon: React.ComponentProps<typeof MaterialIcons>['name']
 };
 
 const maskAccount = (num: string) => (num.length <= 4 ? num : `•••• •••• •••• ${num.slice(-4)}`);
@@ -35,6 +36,7 @@ const BankCard = ({
   holderName,
   accountNumber,
   balance,
+  icon,
   currency = 'USD',
   variant = 'dark',
   accent,
@@ -98,7 +100,7 @@ const BankCard = ({
           <View style={[styles.chip, { backgroundColor: colors.chip }]}>
             <View style={styles.chipInner} />
           </View>
-          <MaterialCommunityIcons name="credit-card-chip" size={22} color={colors.sub} />
+          <MaterialIcons name={icon} size={22} color={colors.sub} />
         </View>
 
         {/* Number */}
