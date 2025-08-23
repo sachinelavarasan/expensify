@@ -60,7 +60,6 @@ export default function Transaction() {
     reset,
     getValues,
     setValue,
-    getValues,
   } = useForm({
     defaultValues: {
       exp_ts_title: '',

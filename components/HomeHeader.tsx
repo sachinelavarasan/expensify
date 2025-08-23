@@ -48,7 +48,9 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
         </View>
       </View> */}
       <LinearGradient
-        colors={['#463E75', '#8E24AA', '#FF4081']}
+        // colors={['#463E75', '#8E24AA', '#FF4081']}
+        colors={['#463E75', '#6B5DE6', '#6900FF']}
+        // colors={['#463E75', '#FF6F00', '#FFC107']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.linearGradientContainer}>
@@ -108,14 +110,18 @@ const styles = StyleSheet.create({
   linearGradientContainer: {
     padding: 20,
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
     margin: 16,
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 1,
+    shadowOffset: { width: 0, height: 100 },
+    // Shadow for Android
+    elevation: 12,
   },
+
   title: {
-    color: 'rgba(255,255,255,0.8)',
+    color: '#FFFFFF',
     fontSize: 13,
     fontFamily: 'Inter-600',
   },

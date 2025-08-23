@@ -49,7 +49,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         const background = useSharedValue('transparent');
 
         if (isFocused) {
-          background.value = withSpring('#6B5DE6', {
+          background.value = withSpring('#6900FF', {
             duration: 0,
           }); // animate when focused
         } else {

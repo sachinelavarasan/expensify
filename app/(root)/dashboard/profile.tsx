@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   logoutBg: {
-    backgroundColor: '#6B5DE6',
+    backgroundColor: '#6900FF',
   },
   accountCard: {
     borderWidth: 1,

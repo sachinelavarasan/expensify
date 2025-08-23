@@ -25,6 +25,7 @@ import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Index() {
   const router = useRouter();
@@ -107,8 +108,24 @@ export default function Index() {
   return (
     <ThemedView style={{ flex: 1, paddingHorizontal: 2 }}>
       {loading && <OverlayLoader />}
-      <TouchableOpacity style={styles.floatingButton} onPress={handlePress}>
-        <Entypo name="plus" size={24} color="white" />
+      <TouchableOpacity
+        style={{
+          width: 50,
+          height: 50,
+          position: 'absolute',
+          bottom: 20,
+          right: 0,
+          zIndex: 2,
+          marginRight: 10,
+        }}
+        onPress={handlePress}>
+        <LinearGradient
+          colors={['#6B5DE6', '#6900FF']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.floatingButton}>
+          <Entypo name="plus" size={24} color="white" />
+        </LinearGradient>
       </TouchableOpacity>
       <View>
         <FlatList
@@ -118,7 +135,7 @@ export default function Index() {
           contentContainerStyle={{ paddingBottom: 20, flex: 1 }}
           stickyHeaderIndices={[0]}
           ListHeaderComponent={() => (
-            <View style={{ backgroundColor: '#F9F9FB', paddingBottom: 10 }}>
+            <View style={{ backgroundColor: '#F9F9FB' }}>
               <View
                 style={{
                   paddingTop: 10,
@@ -273,21 +290,15 @@ const styles = StyleSheet.create({
     color: '#5A5A6E',
   },
   floatingButton: {
-    backgroundColor: '#6B5DE6',
     width: 50,
     height: 50,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 20,
-    right: 0,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    zIndex: 2,
-    marginRight: 10,
   },
 });

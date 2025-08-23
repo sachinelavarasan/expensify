@@ -118,7 +118,6 @@ const UpdateProfile = ({
                 style={{ alignItems: 'flex-end' }}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 disabled={isLoading}>
-                {' '}
                 <Ionicons name="close" color="#5A5A6E" size={20} />
               </TouchableOpacity>
             </View>
@@ -188,7 +187,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
-    width: 'auto',
+    width: '100%',
   },
   loader: {
     position: 'absolute',

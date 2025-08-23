@@ -3,6 +3,7 @@ import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const width = deviceWidth();
 const tableWidth = width - 52;
@@ -25,7 +26,12 @@ export default function TableView({ transactions }: { transactions: Itransaction
         flex: 1,
       }}>
       <View style={styles.table}>
-        <View style={[styles.row, styles.header]}>
+        {/* Table Header with Gradient */}
+        <LinearGradient
+          colors={['#6900FF', '#6B5DE6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.headerRow}>
           <View style={{ width: firstColumnWidth }}>
             <Text style={[styles.cell, styles.headerText]}>Type</Text>
           </View>
@@ -35,8 +41,9 @@ export default function TableView({ transactions }: { transactions: Itransaction
           <View style={{ width: thirdColumnWidth }}>
             <Text style={[styles.cell, styles.headerText]}>Count</Text>
           </View>
-        </View>
+        </LinearGradient>
 
+        {/* Income Row */}
         <View key={'income'} style={styles.row}>
           <View style={{ width: firstColumnWidth }}>
             <Text style={[styles.cell, { color: '#5A5A6E', fontFamily: 'Inter-500' }]}>Income</Text>
@@ -52,6 +59,8 @@ export default function TableView({ transactions }: { transactions: Itransaction
             </Text>
           </View>
         </View>
+
+        {/* Expense Row */}
         <View key={'expense'} style={styles.row}>
           <View style={{ width: firstColumnWidth }}>
             <Text style={[styles.cell, { color: '#5A5A6E', fontFamily: 'Inter-500' }]}>
@@ -69,6 +78,8 @@ export default function TableView({ transactions }: { transactions: Itransaction
             </Text>
           </View>
         </View>
+
+        {/* Overall Row */}
         <View key={'overall'} style={styles.row}>
           <View style={{ width: firstColumnWidth }}>
             <Text style={[styles.cell, { color: '#1E1E1E', fontFamily: 'Inter-500' }]}>
@@ -95,10 +106,9 @@ const styles = StyleSheet.create({
     borderColor: '#E2E2EA',
     borderRadius: 4,
     margin: 16,
-    height: 'auto',
-    // maxHeight: 174,
     borderBottomWidth: 0,
     width: tableWidth,
+    overflow: 'hidden', // important to keep gradient corners rounded
   },
   row: {
     flexDirection: 'row',
@@ -106,17 +116,19 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E2E2EA',
     backgroundColor: '#FFFFFF',
   },
+  headerRow: {
+    flexDirection: 'row',
+    paddingVertical: 4,
+  },
   cell: {
     flex: 1,
     padding: 12,
     fontSize: 14,
     color: '#282343',
   },
-  header: {
-    backgroundColor: '#6B5DE6',
-  },
   headerText: {
     fontWeight: '600',
     color: '#FFFFFF',
+    fontFamily: 'Inter-600',
   },
 });

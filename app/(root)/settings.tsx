@@ -13,8 +13,11 @@ import DefaultTransactionModal from '@/components/DefaultTransactionModal';
 import DefaultGroupingModal from '@/components/DefaultGroupingModal';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useReminderSettings } from '@/hooks/useReminder';
+import ThemeToggle from '@/components/ThemeToggle';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Setting() {
+  const { colors } = useThemeContext();
   const { enabled, time, scheduleNotification, disableNotification } = useReminderSettings();
   const [showBalance, setShowBalance] = useState(false);
   const [carryBalance, setCarryBalance] = useState(false);
@@ -71,6 +74,11 @@ export default function Setting() {
             }}>
             <Spacer height={20} />
             <View style={{ gap: 20 }}>
+              <View style={[{ backgroundColor: colors.background }]}>
+                <Text style={{ color: colors.text }}>Hello, Theme World!</Text>
+                <ThemeToggle />
+              </View>
+
               {/* General Section */}
               <View>
                 <View>

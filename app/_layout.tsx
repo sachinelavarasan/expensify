@@ -10,9 +10,10 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
-import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+// import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ToastMessage from '@/components/ToastMessage';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { ThemeProvider } from '@/contexts/ThemedContext';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -95,7 +96,7 @@ function LayoutBuilder() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider value={DarkTheme}>
+        <ThemeProvider>
           <ExpoStatus />
           {authLoaded && fontsLoaded ? (
             <Stack screenOptions={{ headerShown: false }}>
