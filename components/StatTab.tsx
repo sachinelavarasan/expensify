@@ -5,13 +5,12 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import Spacer from './Spacer';
 
-
 interface progressBar {
-    category: string;
-    color: string;
-    totalAmount: number;
-    transactionCount: number;
-    percentage: number;
+  category: string;
+  color: string;
+  totalAmount: number;
+  transactionCount: number;
+  percentage: number;
 }
 
 type SegmentProps = {
@@ -38,13 +37,24 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
   }, [progress]);
 
   return (
-    <View style={styles.container}>
-      <Text style={{
-        fontFamily:'Inter-600',
-        fontSize: 14,
-        color: "#FFF"
-      }}>Spending by Category</Text>
-      <Spacer height={10}/>
+    <View
+      style={{
+        padding: 10,
+        backgroundColor: '#0a0911',
+        borderWidth:1,
+        borderColor: "#463e75",
+        borderRadius: 6,
+        marginBottom: 10
+      }}>
+      <Text
+        style={{
+          fontFamily: 'Inter-600',
+          fontSize: 14,
+          color: '#FFF',
+        }}>
+        Spending by Category
+      </Text>
+      <Spacer height={10} />
       <View style={styles.barBackground}>
         {data.map((cat, index) => (
           <ProgressSegment
@@ -70,7 +80,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
   );
 }
 
-function ProgressBar({ percentage }: { percentage: number }) {
+function ProgressBar({ percentage, color }: { percentage: number, color: string }) {
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -95,7 +105,7 @@ function ProgressBar({ percentage }: { percentage: number }) {
         style={[
           {
             height: '100%',
-            backgroundColor: '#6C63FF',
+            backgroundColor: color || '#6C63FF',
             borderRadius: 4,
           },
           animatedStyle,
@@ -148,8 +158,6 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
     });
   };
 
-
-
   const totalIncome = incomeTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
   const totalExpense = expenseTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
 
@@ -178,7 +186,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         </TouchableOpacity>
       </View>
 
-      <MultiColorProgressBar data={data}/>
+      <MultiColorProgressBar data={data} />
 
       <FlatList
         data={data}
@@ -204,7 +212,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
 
             <View>
               <Text style={styles.amount}>{item.percentage} %</Text>
-              <ProgressBar percentage={item.percentage} />
+              <ProgressBar percentage={item.percentage} color={item.color}/>
             </View>
           </View>
         )}
@@ -248,9 +256,7 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: 8,
-    marginBottom: 12,
-    // backgroundColor: '#141221',
-    borderRadius: 4,
+    marginBottom: 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -290,23 +296,23 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   barBackground: {
-    flexDirection: "row",
-    height: 24,
-    width: "100%",
-    backgroundColor: "#1e1a32",
-    borderRadius: 12,
-    overflow: "hidden",
+    flexDirection: 'row',
+    height: 20,
+    width: '100%',
+    backgroundColor: '#1e1a32',
+    borderRadius: 10,
+    overflow: 'hidden',
   },
   segment: {
-    height: "100%",
-    borderRadius: 0, // rounded is handled by container
+    height: '100%',
+    borderRadius: 0,
   },
   legend: {
     marginTop: 12,
   },
   legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 6,
   },
   colorBox: {
@@ -316,7 +322,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   legendText: {
-    color: "#ccc",
+    color: '#ccc',
     fontSize: 12,
   },
 });
