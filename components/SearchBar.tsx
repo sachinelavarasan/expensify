@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, TextInput, View, Keyboard, Platform } from 'react-native';
 import { Feather, Entypo } from '@expo/vector-icons';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   searchPhrase: string;
@@ -12,13 +13,44 @@ interface Props {
 }
 
 const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = false }: Props) => {
+  const { theme, colors } = useThemeContext();
   const [clicked, setIsClicked] = useState(false);
   return (
-    <View style={styles.container}>
-      <View style={clicked ? styles.searchBar__clicked : styles.searchBar__unclicked}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme === 'light' ? colors.background : 'transparent',
+          shadowColor: theme === 'light' ? '#fff' : '#000',
+        },
+      ]}>
+      <View
+        style={
+          clicked
+            ? [
+                styles.searchBar__clicked,
+                {
+                  backgroundColor: theme === 'light' ? colors.background : 'transparent',
+                  borderColor: colors.borderSelected,
+                },
+              ]
+            : [
+                styles.searchBar__unclicked,
+                {
+                  backgroundColor: theme === 'light' ? colors.background : 'transparent',
+                  borderColor: colors.borderColor,
+                },
+              ]
+        }>
         <Feather name="search" size={18} color="#999999" style={{ marginLeft: 10 }} />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme === 'light' ? colors.background : 'transparent',
+              color: colors.text,
+            },
+          ]}
           placeholder="Search"
           value={searchPhrase}
           onChangeText={onChange}
@@ -32,6 +64,9 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
           onSubmitEditing={() => {
             Keyboard.dismiss();
             onClick?.(searchPhrase);
+            setIsClicked(false);
+          }}
+          onBlur={() => {
             setIsClicked(false);
           }}
           placeholderTextColor={'#6E6E80'}
@@ -99,11 +134,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     width: '100%',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E2E2EA',
+
     paddingHorizontal: 2,
-    shadowColor: '#fff',
     shadowOffset: {
       width: 0,
       height: 0,
@@ -111,24 +143,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2.84,
     elevation: 1,
-    backgroundColor: '#FFFFFF',
   },
   searchBar__unclicked: {
     // paddingVertical: 12,
     // paddingHorizontal: 10,
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 4,
     alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
   },
   searchBar__clicked: {
     // paddingVertical: 12,
     // paddingHorizontal: 10,
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 4,
+    borderWidth: 1,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'space-evenly',
   },
@@ -138,9 +169,7 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === 'android' ? 8 : 16,
     fontSize: 16,
     fontFamily: 'Inter-500',
-    color: '#1E1E1E',
     paddingHorizontal: 10,
-    backgroundColor: '#FFFFFF',
     borderRadius: 6,
   },
   actions: {

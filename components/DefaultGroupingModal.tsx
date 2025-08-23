@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
@@ -19,6 +13,7 @@ import { useUserSettingChanges } from '@/hooks/useSettings';
 import { showToast } from './ToastMessage';
 import { IExpUser } from '@/types';
 import { QueryObserverResult } from '@tanstack/react-query';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -31,11 +26,12 @@ type DefaultTGrouping = z.infer<typeof schema>;
 
 const DefaultGroupingModal = ({
   grouping,
-  refetch
+  refetch,
 }: {
   grouping?: string;
-  refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>>
+  refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 }) => {
+  const { theme, colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
 
@@ -70,44 +66,44 @@ const DefaultGroupingModal = ({
     reset();
   };
 
-   const settingChange = (datas: DefaultTGrouping) => {
+  const settingChange = (datas: DefaultTGrouping) => {
     if (datas.grouping.trim().length === 0) {
       return;
     }
-     
-      const data: Partial<IExpUser> = {
-        exp_us_default_grouping: datas.grouping,
-      };
-  
-      settingChanges(data)
-        .then(() => {
-          showToast({
-            text1: 'Transaction grouping has been updated',
-            type: 'success',
-            position: 'bottom',
-          });
-        })
-        .catch(() => {
-          showToast({
-            text1: 'Server Error',
-            type: 'error',
-            position: 'bottom',
-          });
-        })
-        .finally(() => {
-          toggleModal();
-          refetch()
-        });
+
+    const data: Partial<IExpUser> = {
+      exp_us_default_grouping: datas.grouping,
     };
+
+    settingChanges(data)
+      .then(() => {
+        showToast({
+          text1: 'Transaction grouping has been updated',
+          type: 'success',
+          position: 'bottom',
+        });
+      })
+      .catch(() => {
+        showToast({
+          text1: 'Server Error',
+          type: 'error',
+          position: 'bottom',
+        });
+      })
+      .finally(() => {
+        toggleModal();
+        refetch();
+      });
+  };
 
   return (
     <>
       <TouchableOpacity style={styles.card} onPress={toggleModal}>
         <View style={styles.left}>
-          <FontAwesome5 name="layer-group" size={20} color="white" />
+          <FontAwesome5 name="layer-group" size={20} color={colors.text} />
           <View>
-            <Text style={styles.option}>Default Grouping</Text>
-            <Text style={styles.subText}>
+            <Text style={[styles.option, { color: colors.title }]}>Default Grouping</Text>
+            <Text style={[styles.subText, { color: colors.description }]}>
               {grouping || 'Group transactions by month, year, week, day, or custom range'}
             </Text>
           </View>
@@ -115,7 +111,7 @@ const DefaultGroupingModal = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor="rgba(0, 0, 0, 0.5)"
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -129,17 +125,19 @@ const DefaultGroupingModal = ({
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: colors.background }]}>
             <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={styles.title}>Default Grouping</Text>
+              <Text style={[styles.title, { color: colors.title }]}>Default Grouping</Text>
 
-              <TouchableOpacity onPress={toggleModal} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color="#fff" size={20} />
+              <TouchableOpacity
+                onPress={toggleModal}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close" color={colors.title} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -150,7 +148,7 @@ const DefaultGroupingModal = ({
               )}
               name="grouping"
             />
-           
+
             <Spacer height={20} />
             <View>
               <TouchableOpacity
@@ -160,9 +158,7 @@ const DefaultGroupingModal = ({
                 {isPending ? (
                   <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>
-                  Submit
-                </Text>
+                <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>Submit</Text>
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -192,7 +188,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -215,12 +211,6 @@ const styles = StyleSheet.create({
   iconBox: {
     alignItems: 'center',
     borderRadius: 8,
-  },
-  label: {
-    fontSize: 14,
-    color: '#B3B1C4',
-    marginBottom: 6,
-    fontFamily: 'Inter-400',
   },
   card: {
     paddingVertical: 8,

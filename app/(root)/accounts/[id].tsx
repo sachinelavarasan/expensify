@@ -5,6 +5,7 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
 import TransactionCard from '@/components/TransactionCard';
+import { useThemeContext } from '@/contexts/ThemedContext';
 import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
@@ -21,6 +22,7 @@ import {
 } from 'react-native';
 
 export default function AccountScreen() {
+  const { colors } = useThemeContext();
   const { id } = useLocalSearchParams() as unknown as { id: number };
   const { account, loading, refetch } = useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
@@ -48,11 +50,21 @@ export default function AccountScreen() {
         ) : (
           <>
             <Spacer height={10} />
-            <View style={[styles.card, { width: 'auto' }]}>
+            <View
+              style={[
+                styles.card,
+                {
+                  width: 'auto',
+                  backgroundColor: colors.background,
+                  borderColor: colors.borderColor,
+                },
+              ]}>
               <View>
-                <Text style={styles.cardTitle}>{account.exp_ba_balance}</Text>
-                <Text style={styles.cardSubtitle}>
-                  Account: <Text style={{ color: '#D1CCFF' }}>{account.exp_ba_name}</Text>{' '}
+                <Text style={[styles.cardTitle, { color: colors.title }]}>
+                  {account.exp_ba_balance}
+                </Text>
+                <Text style={[styles.cardSubtitle, { color: colors.description }]}>
+                  Account: <Text style={{ color: colors.primary }}>{account.exp_ba_name}</Text>{' '}
                   {account.exp_ba_is_primary && <Text style={styles.default}>Default</Text>}
                 </Text>
               </View>
@@ -91,20 +103,20 @@ export default function AccountScreen() {
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    backgroundColor: '#0F0E17',
-                    paddingVertical: 10,
+                    paddingTop: 10,
+                    backgroundColor: colors.background,
                   }}>
-                  <Text style={styles.dateHeader}>{title}</Text>
+                  <Text style={[styles.dateHeader, { color: colors.secondary }]}>{title}</Text>
 
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!expense && (
-                      <Text style={styles.totalAmount}>
+                      <Text style={[styles.totalAmount, { color: colors.title }]}>
                         <Feather name="arrow-up-right" size={12} color="#FF4D4F" />
                         {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
-                      <Text style={styles.totalAmount}>
+                      <Text style={[styles.totalAmount, { color: colors.title }]}>
                         <Feather name="arrow-down-left" size={12} color="#00C896" />
                         {formatToCurrency(income)}
                       </Text>
@@ -133,19 +145,15 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 32,
-    backgroundColor: '#fff',
-    color: 'red',
   },
   title: {
     fontSize: 24,
   },
   totalAmount: {
-    color: '#D5D5D5',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   card: {
-    borderColor: '#5a4f96',
     borderWidth: 1,
     padding: 15,
     borderRadius: 10,
@@ -156,18 +164,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   cardTitle: {
-    color: '#F4F5F8',
     fontSize: 16,
     fontFamily: 'Inter-700',
     paddingBottom: 5,
   },
   cardSubtitle: {
-    color: '#CCC',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   default: {
-    color: '#8880A0',
     fontSize: 10,
     fontFamily: 'Inter-500',
     verticalAlign: 'middle',

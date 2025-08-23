@@ -26,8 +26,10 @@ import TransactionFilters from '@/components/TransactionsFilters';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Index() {
+  const { colors } = useThemeContext();
   const router = useRouter();
   const {
     transactions,
@@ -135,7 +137,7 @@ export default function Index() {
           contentContainerStyle={{ paddingBottom: 20, flex: 1 }}
           stickyHeaderIndices={[0]}
           ListHeaderComponent={() => (
-            <View style={{ backgroundColor: '#F9F9FB' }}>
+            <View style={{ backgroundColor: colors.background }}>
               <View
                 style={{
                   paddingTop: 10,
@@ -161,53 +163,57 @@ export default function Index() {
                   <Pressable
                     style={{
                       borderWidth: 1,
-                      borderColor: '#6B5DE6',
+                      borderColor: colors.borderColor,
                       paddingVertical: 4,
                       paddingHorizontal: 10,
                       borderRadius: 50,
                       flexDirection: 'row',
                       gap: 5,
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: colors.bottomBarBackground,
                     }}
                     onPress={() => removeFilter('search')}>
-                    <Text style={{ textTransform: 'capitalize', color: '#1E1E1E' }}>{search}</Text>
-                    <Entypo name="cross" size={18} color="#5A5A6E" />
+                    <Text style={{ textTransform: 'capitalize', color: colors.title }}>
+                      {search}
+                    </Text>
+                    <Entypo name="cross" size={18} color={colors.arrowColor} />
                   </Pressable>
                 )}
                 {!!transactionType && (
                   <Pressable
                     style={{
                       borderWidth: 1,
-                      borderColor: '#6B5DE6',
+                      borderColor: colors.borderColor,
                       paddingVertical: 4,
                       paddingHorizontal: 10,
                       borderRadius: 50,
                       flexDirection: 'row',
                       gap: 5,
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: colors.bottomBarBackground,
                     }}
                     onPress={() => removeFilter('t_type')}>
-                    <Text style={{ textTransform: 'capitalize', color: '#1E1E1E' }}>
+                    <Text style={{ textTransform: 'capitalize', color: colors.title }}>
                       {transactionType}
                     </Text>
-                    <Entypo name="cross" size={18} color="#5A5A6E" />
+                    <Entypo name="cross" size={18} color={colors.arrowColor} />
                   </Pressable>
                 )}
                 {!!search && !!transactionType && (
                   <Pressable
                     style={{
                       borderWidth: 1,
-                      borderColor: '#6B5DE6',
+                      borderColor: colors.borderColor,
                       paddingVertical: 4,
                       paddingHorizontal: 10,
                       borderRadius: 50,
                       flexDirection: 'row',
                       gap: 5,
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: colors.bottomBarBackground,
                     }}
                     onPress={() => removeFilter('default')}>
-                    <Text style={{ textTransform: 'capitalize', color: '#1E1E1E' }}>Clear All</Text>
-                    <Entypo name="cross" size={18} color="#5A5A6E" />
+                    <Text style={{ textTransform: 'capitalize', color: colors.title }}>
+                      Clear All
+                    </Text>
+                    <Entypo name="cross" size={18} color={colors.arrowColor} />
                   </Pressable>
                 )}
               </View>
@@ -229,20 +235,20 @@ export default function Index() {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                   }}>
-                  <Text style={styles.dateHeader}>
+                  <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>
                     {format(new Date(item.date), 'dd MMMM yyyy')}
                   </Text>
 
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!item.debit && (
-                      <Text style={styles.totalAmount}>
-                        <Feather name="arrow-up-right" size={12} color="#FF4D4F" />
+                      <Text style={[styles.totalAmount, { color: colors.title }]}>
+                        <Feather name="arrow-up-right" size={14} color={colors.expense} />
                         {formatToCurrency(item.debit)}
                       </Text>
                     )}
                     {!!item.credit && (
-                      <Text style={styles.totalAmount}>
-                        <Feather name="arrow-down-left" size={12} color="#00C896" />
+                      <Text style={[styles.totalAmount, { color: colors.title }]}>
+                        <Feather name="arrow-down-left" size={14} color={colors.income} />
                         {formatToCurrency(item.credit)}
                       </Text>
                     )}
@@ -280,14 +286,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   totalAmount: {
-    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   dateHeader: {
     fontSize: 12,
     fontFamily: 'Inter-500',
-    color: '#5A5A6E',
+    // color: '#5A5A6E',
   },
   floatingButton: {
     width: 50,

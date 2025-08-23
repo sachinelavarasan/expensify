@@ -64,25 +64,22 @@ export default function Setting() {
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
         <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          <ProfileHeader title="Settings" />
           <ThemedView
             style={{
               flex: 1,
               paddingHorizontal: 10,
-              backgroundColor: '#0F0E17',
+              backgroundColor: colors.background,
               paddingBottom: 40,
             }}>
+            <ProfileHeader title="Settings" />
             <Spacer height={20} />
             <View style={{ gap: 20 }}>
-              <View style={[{ backgroundColor: colors.background }]}>
-                <Text style={{ color: colors.text }}>Hello, Theme World!</Text>
-                <ThemeToggle />
-              </View>
+              <ThemeToggle />
 
               {/* General Section */}
               <View>
                 <View>
-                  <Text style={{ color: '#fff' }}>General</Text>
+                  <Text style={{ color: colors.text }}>General</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <CurrencyModal currency={user?.exp_us_currency} refetch={refetch} />
@@ -98,10 +95,10 @@ export default function Setting() {
 
                   {/* <TouchableOpacity style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialCommunityIcons name="theme-light-dark" size={24} color="white" />
+                      <MaterialCommunityIcons name="theme-light-dark" size={24} color={colors.text} />
                       <View>
-                        <Text style={styles.option}>Theme Setup</Text>
-                        <Text style={styles.subText}>Switch between light and dark modes</Text>
+                        <Text style={[styles.option,{color:colors.title}]}>Theme Setup</Text>
+                        <Text style={[styles.subText,{color:colors.description}]}>Switch between light and dark modes</Text>
                       </View>
                     </View>
                   </TouchableOpacity> */}
@@ -111,15 +108,15 @@ export default function Setting() {
               {/* Reminder Section */}
               <View>
                 <View>
-                  <Text style={{ color: '#fff' }}>Reminder</Text>
+                  <Text style={{ color: colors.text }}>Reminder</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialIcons name="access-alarm" size={20} color="white" />
+                      <MaterialIcons name="access-alarm" size={20} color={colors.text} />
                       <View>
-                        <Text style={styles.option}>Daily Reminder</Text>
-                        <Text style={styles.subText}>
+                        <Text style={[styles.option, { color: colors.title }]}>Daily Reminder</Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
                           Get a daily notification to add transactions
                         </Text>
                       </View>
@@ -151,15 +148,17 @@ export default function Setting() {
               {/* Display Customization Section */}
               <View>
                 <View>
-                  <Text style={{ color: '#fff' }}>Display Customization</Text>
+                  <Text style={{ color: colors.text }}>Display Customization</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialIcons name="account-balance-wallet" size={20} color="white" />
+                      <MaterialIcons name="account-balance-wallet" size={20} color={colors.text} />
                       <View>
-                        <Text style={styles.option}>Show Balance</Text>
-                        <Text style={styles.subText}>Toggle visibility of your total balance</Text>
+                        <Text style={[styles.option, { color: colors.title }]}>Show Balance</Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
+                          Toggle visibility of your total balance
+                        </Text>
                       </View>
                     </View>
                     <View>
@@ -173,10 +172,18 @@ export default function Setting() {
                   </View>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialCommunityIcons name="calendar-arrow-right" size={20} color="white" />
+                      <MaterialCommunityIcons
+                        name="calendar-arrow-right"
+                        size={20}
+                        color={colors.text}
+                      />
                       <View>
-                        <Text style={styles.option}>Carry Over Balance</Text>
-                        <Text style={styles.subText}>Move unused balance to the next period</Text>
+                        <Text style={[styles.option, { color: colors.title }]}>
+                          Carry Over Balance
+                        </Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
+                          Move unused balance to the next period
+                        </Text>
                       </View>
                     </View>
                     <View>
@@ -190,10 +197,12 @@ export default function Setting() {
                   </View>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <Ionicons name="time-outline" size={20} color="white" />
+                      <Ionicons name="time-outline" size={20} color={colors.text} />
                       <View>
-                        <Text style={styles.option}>Show Transaction Time</Text>
-                        <Text style={styles.subText}>
+                        <Text style={[styles.option, { color: colors.title }]}>
+                          Show Transaction Time
+                        </Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
                           Display the time along with each transaction
                         </Text>
                       </View>

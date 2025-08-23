@@ -12,6 +12,7 @@ import { deviceWidth } from '@/utils/functions';
 import UpdateProfile from './UpdateProfile';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
@@ -35,6 +36,7 @@ export default function AnimatedTopSection({
   refetch,
   children,
 }: Props) {
+  const { colors } = useThemeContext();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
 
@@ -75,8 +77,8 @@ export default function AnimatedTopSection({
     return { opacity };
   });
 
-  const titleColor = '#1E1E1E';
-  const subtitleColor = '#7A7A8C';
+  const titleColor = colors.title;
+  const subtitleColor = colors.secondary;
 
   return (
     <ThemedView style={styles.container}>
@@ -103,21 +105,35 @@ export default function AnimatedTopSection({
         )}
       </Animated.View>
 
-      <Animated.View style={[styles.avatarContainer, avatarStyle]}>
+      <Animated.View
+        style={[
+          styles.avatarContainer,
+          avatarStyle,
+          { backgroundColor: colors.background, borderColor: colors.background },
+        ]}>
         <Image source={avatar} style={styles.avatarFull} />
         <View
           style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={styles.headerTextOverlay}>
-            <Text style={styles.titleTextInHeader} numberOfLines={1}>
+            <Text style={[styles.titleTextInHeader, { color: colors.title }]} numberOfLines={1}>
               {title}
             </Text>
-            {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
+            {subtitle && (
+              <Text style={[styles.subtitleTextInHeader, { color: colors.lighterTitle }]}>
+                {subtitle}
+              </Text>
+            )}
           </View>
           <UpdateProfile refetch={refetch} />
         </View>
       </Animated.View>
 
-      <Animated.View style={[styles.titleBar, titleBarOpacity, { backgroundColor: '#0F0E17' }]}>
+      <Animated.View
+        style={[
+          styles.titleBar,
+          titleBarOpacity,
+          { backgroundColor: colors.background, borderBottomColor: colors.borderColor },
+        ]}>
         <Animated.View style={[styles.headerAvatarSmall]}>
           <Image source={avatar} style={styles.avatar} resizeMode="contain" />
         </Animated.View>
@@ -166,7 +182,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomColor: '#7A7A8C',
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   titleTextContainer: {
@@ -215,9 +230,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: deviceWidth() * 0.8,
     height: AVATAR_SIZE,
-    backgroundColor: '#FFFFFF',
     borderWidth: 3,
-    borderColor: '#E2E2EA',
   },
   avatarFull: {
     width: AVATAR_SIZE,
@@ -233,13 +246,11 @@ const styles = StyleSheet.create({
   titleTextInHeader: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1E1E1E',
     maxWidth: 100,
   },
 
   subtitleTextInHeader: {
     fontSize: 14,
-    color: '#282343',
     marginTop: 4,
   },
 });

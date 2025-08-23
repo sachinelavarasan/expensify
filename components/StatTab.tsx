@@ -1,9 +1,11 @@
+import { useThemeContext } from '@/contexts/ThemedContext';
 import { Itransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 
 export default function IncomeExpenseTabs({ transactions }: { transactions: Itransaction[] }) {
+  const { colors } = useThemeContext();
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
 
   const incomeTransactions = transactions.filter((tx) => tx.exp_tt_id === 2);
@@ -54,12 +56,21 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
   const data = activeTab === 'income' ? incomeMetrics : expenseMetrics;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.tabContainer}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, borderColor: colors.borderColor },
+      ]}>
+      <View style={[styles.tabContainer, { backgroundColor: colors.bottomBarBackground }]}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'income' && styles.activeTab]}
           onPress={() => setActiveTab('income')}>
-          <Text style={[styles.tabText, activeTab === 'income' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              { color: colors.description },
+              activeTab === 'income' && styles.activeTabText,
+            ]}>
             Income
           </Text>
         </TouchableOpacity>
@@ -67,7 +78,12 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         <TouchableOpacity
           style={[styles.tab, activeTab === 'expense' && styles.activeTab]}
           onPress={() => setActiveTab('expense')}>
-          <Text style={[styles.tabText, activeTab === 'expense' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              { color: colors.description },
+              activeTab === 'expense' && styles.activeTabText,
+            ]}>
             Expense
           </Text>
         </TouchableOpacity>
@@ -82,13 +98,17 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
               <View style={styles.left}>
                 <View>
                   <View>
-                    <Text style={styles.name}>{item.category}</Text>
+                    <Text style={[styles.name, { color: colors.title }]}>{item.category}</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-600' }]}>
+                    <Text
+                      style={[
+                        styles.subText,
+                        { marginRight: 6, fontFamily: 'Inter-600', color: colors.description },
+                      ]}>
                       {formatToCurrency(item.totalAmount)} <Text>{'\u2022'}</Text>
                     </Text>
-                    <Text style={[styles.subText]}>
+                    <Text style={[styles.subText, { color: colors.description }]}>
                       {item.transactionCount}{' '}
                       {item.transactionCount === 1 ? 'transaction' : 'transactions'}
                     </Text>
@@ -97,14 +117,16 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
               </View>
 
               <View>
-                <Text style={styles.amount}>{item.percentage} %</Text>
+                <Text style={[styles.amount, { color: colors.description }]}>
+                  {item.percentage} %
+                </Text>
               </View>
             </View>
             {index !== data.length - 1 && (
               <View
                 style={{
                   borderBottomWidth: 0.5,
-                  borderBottomColor: '#E2E2EA',
+                  borderBottomColor: colors.borderColor,
                   height: 1,
                   width: '100%',
                 }}
@@ -120,17 +142,14 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     padding: 12,
     borderRadius: 8,
-    borderColor: '#E2E2EA',
     borderWidth: 0.5,
     margin: 16,
   },
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    backgroundColor: '#E2E2EA',
     borderRadius: 8,
     padding: 5,
   },
@@ -144,7 +163,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tabText: {
-    color: '#282343',
     fontWeight: '500',
   },
   activeTabText: {
@@ -158,13 +176,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E1E1E',
-  },
   amount: {
-    color: '#5A5A6E',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
@@ -176,12 +188,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#7A7A8C',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },

@@ -1,7 +1,10 @@
+import { useThemeContext } from '@/contexts/ThemedContext';
 import { View, Platform, TouchableOpacity, Text } from 'react-native';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
+  const { colors } = useThemeContext();
+
   return (
     <View
       style={{
@@ -10,12 +13,12 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         justifyContent: 'space-between',
         alignItems: 'center',
         elevation: 10,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.bottomBarBackground,
         paddingBottom: Platform.OS === 'ios' ? 10 : 0,
         paddingTop: 5,
         position: 'static',
         bottom: 0,
-        borderTopColor: '#E2E2EA',
+        borderTopColor: colors.borderColor,
         borderTopWidth: 0.5,
       }}>
       {state.routes.map((route: any, index: number) => {
@@ -49,7 +52,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         const background = useSharedValue('transparent');
 
         if (isFocused) {
-          background.value = withSpring('#6900FF', {
+          background.value = withSpring('#6B5DE6', {
             duration: 0,
           }); // animate when focused
         } else {
@@ -99,7 +102,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
             </Animated.View>
             <Text
               style={{
-                color: !isFocused ? '#282343' : '#1E1E1E',
+                color: !isFocused ? colors.lighterTitle : colors.title,
                 fontFamily: 'Inter-500',
                 fontSize: 12,
               }}>

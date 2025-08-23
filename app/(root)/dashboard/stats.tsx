@@ -8,8 +8,10 @@ import TableView from '@/components/Table';
 import IncomeExpenseTabs from '@/components/StatTab';
 import { useCallback, useState } from 'react';
 import { RefreshControl } from 'react-native-gesture-handler';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Stat() {
+  const { colors } = useThemeContext();
   const { transactions, currentMonth, loading, goToNextMonth, goToPreviousMonth, refetch } =
     useMonthlyTransactions();
 
@@ -79,10 +81,10 @@ export default function Stat() {
                 donut
                 isAnimated
                 animationDuration={500}
-                innerCircleColor="#FFFFFF"
+                innerCircleColor={colors.background}
                 innerRadius={80}
                 labelsPosition="mid"
-                textColor="#6900FF"
+                textColor="#6B5DE6"
                 centerLabelComponent={() =>
                   pieData.length > 0 ? (
                     pieData.map((item, index) => (
@@ -98,7 +100,7 @@ export default function Stat() {
                       </Text>
                     ))
                   ) : (
-                    <Text style={{ fontSize: 16, color: '#1E1E1E' }}>No data</Text>
+                    <Text style={{ fontSize: 16, color: colors.title }}>No data</Text>
                   )
                 }
               />

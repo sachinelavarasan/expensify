@@ -13,6 +13,7 @@ import CustomRadioButton from './CustomRadioButton';
 import { IExpUser } from '@/types';
 import { useUserSettingChanges } from '@/hooks/useSettings';
 import { QueryObserverResult } from '@tanstack/react-query';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -23,14 +24,21 @@ const schema = z.object({
 
 type CurrencySchema = z.infer<typeof schema>;
 
-const CurrencyModal = ({ currency, refetch }: { currency?: string, refetch: ()=>Promise<QueryObserverResult<IExpUser, Error>> }) => {
+const CurrencyModal = ({
+  currency,
+  refetch,
+}: {
+  currency?: string;
+  refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
+}) => {
+  const { colors, theme } = useThemeContext();
   const [show, setShow] = useState(false);
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
 
   const {
     control,
     handleSubmit,
-    formState: {  isDirty },
+    formState: { isDirty },
     reset,
   } = useForm({
     defaultValues: {
@@ -82,7 +90,7 @@ const CurrencyModal = ({ currency, refetch }: { currency?: string, refetch: ()=>
       })
       .finally(() => {
         toggleModal();
-        refetch()
+        refetch();
       });
   };
 
@@ -90,16 +98,18 @@ const CurrencyModal = ({ currency, refetch }: { currency?: string, refetch: ()=>
     <>
       <TouchableOpacity style={styles.card} onPress={toggleModal}>
         <View style={styles.left}>
-          <FontAwesome name="money" size={20} color="white" />
+          <FontAwesome name="money" size={20} color={colors.title} />
           <View>
-            <Text style={styles.option}>Currency</Text>
-            <Text style={styles.subText}>{currency || 'Set your preferred currency symbol'}</Text>
+            <Text style={[styles.option, { color: colors.title }]}>Currency</Text>
+            <Text style={[styles.subText, { color: colors.description }]}>
+              {currency || 'Set your preferred currency symbol'}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
 
       <Modal
-        backdropColor="rgba(0, 0, 0, 0.5)"
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -113,19 +123,19 @@ const CurrencyModal = ({ currency, refetch }: { currency?: string, refetch: ()=>
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: colors.background }]}>
             <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={styles.title}>Currency</Text>
+              <Text style={[styles.title, { color: colors.title }]}>Currency</Text>
 
               <TouchableOpacity
                 onPress={toggleModal}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color="#fff" size={20} />
+                <Ionicons name="close" color={colors.arrowColor} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -146,9 +156,7 @@ const CurrencyModal = ({ currency, refetch }: { currency?: string, refetch: ()=>
                 {isPending ? (
                   <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>
-                  Submit
-                </Text>
+                <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>Submit</Text>
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -163,7 +171,6 @@ export default CurrencyModal;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,
@@ -171,14 +178,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    color: '#FFFFFF',
     fontFamily: 'Inter-600',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -202,12 +208,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  label: {
-    fontSize: 14,
-    color: '#B3B1C4',
-    marginBottom: 6,
-    fontFamily: 'Inter-400',
-  },
   card: {
     paddingVertical: 8,
     marginBottom: 6,
@@ -215,11 +215,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderRadius: 8,
-  },
-  amount: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
   },
   left: {
     display: 'flex',
@@ -230,13 +225,11 @@ const styles = StyleSheet.create({
     maxWidth: deviceWidth() * 0.65,
   },
   option: {
-    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
     fontSize: 12,
-    color: '#ccc',
     marginTop: 2,
   },
 });

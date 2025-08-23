@@ -4,6 +4,7 @@ import { Link } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Itransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const TransactionCard = ({
   exp_ts_title,
@@ -22,6 +23,7 @@ const TransactionCard = ({
   isStarred,
   showTsTime = true,
 }: Itransaction & { isStarred?: boolean; showTsTime?: boolean }) => {
+  const { theme, colors } = useThemeContext();
   return (
     <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild>
       <TouchableOpacity
@@ -32,7 +34,16 @@ const TransactionCard = ({
           borderRadius: 5,
           paddingVertical: 7,
         }}>
-        <View style={styles.innerContainer}>
+        <View
+          style={[
+            styles.innerContainer,
+            {
+              borderColor: theme === 'light' ? colors.borderColor : 'transparent',
+              borderWidth: 1,
+              backgroundColor: theme === 'light' ? colors.background : 'transparent',
+              shadowColor: theme === 'light' ? '#fff' : '#000',
+            },
+          ]}>
           <View style={styles.left}>
             <View
               style={{
@@ -54,14 +65,24 @@ const TransactionCard = ({
             </View>
             <View>
               <View>
-                <Text style={styles.name}>{exp_ts_title}</Text>
+                <Text style={[styles.name, { color: colors.title }]}>{exp_ts_title}</Text>
               </View>
               <View style={styles.subTextContainer}>
-                <Text style={[styles.subText, { marginRight: 6 }]}>{exp_ts_category}</Text>
+                <Text
+                  style={[
+                    styles.subText,
+                    { marginRight: 6, fontFamily: 'Inter-500', color: colors.lighterTitle },
+                  ]}>
+                  {exp_ts_category}
+                </Text>
                 <View
                   style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                   {!!showTsTime && (
-                    <Text style={[styles.subText, { fontFamily: 'Inter-600', color: '#999999' }]}>
+                    <Text
+                      style={[
+                        styles.subText,
+                        { fontFamily: 'Inter-500', color: colors.description },
+                      ]}>
                       <Text>{'\u2022'}</Text> {exp_ts_time}
                     </Text>
                   )}
@@ -70,7 +91,8 @@ const TransactionCard = ({
             </View>
           </View>
           <View style={styles.right}>
-            <Text style={[styles.amount, { color: exp_tt_id === 2 ? '#48BB78' : '#F56565' }]}>
+            <Text
+              style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
               {exp_tt_id === 2 ? '+' : '-'}
               {formatToCurrency(exp_ts_amount)}
             </Text>
@@ -93,11 +115,8 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 14,
     // paddingVertical: 10,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E2E2EA',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    shadowColor: '#fff',
     shadowOffset: {
       width: 0,
       height: 0,
@@ -105,15 +124,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2.84,
     elevation: 1,
-    backgroundColor: '#FFFFFF',
   },
   name: {
-    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   subText: {
-    color: '#282343',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },
@@ -141,6 +157,6 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 12,
-    fontFamily: 'Inter-500',
+    fontFamily: 'Inter-600',
   },
 });

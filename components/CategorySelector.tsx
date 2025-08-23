@@ -4,6 +4,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ICategory } from '@/types';
 import { UseFormSetValue } from 'react-hook-form';
 import { transactionSchemaType } from '@/utils/schema';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   categories: ICategory[] | [];
@@ -14,6 +15,7 @@ interface Props {
 const MAX_VISIBLE = 6;
 
 export default function CategorySelector({ categories, selected, setValue }: Props) {
+  const { colors, theme } = useThemeContext();
   const [showAll, setShowAll] = useState(false);
 
   const visibleItems = showAll ? categories : categories.slice(0, MAX_VISIBLE);
@@ -29,7 +31,7 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
                   alignItems: 'center',
                   flexDirection: 'row',
                   borderWidth: 1,
-                  borderColor: '#E2E2EA',
+                  borderColor: colors.borderColor,
                   borderRadius: 50,
                   width: 'auto',
                 },
@@ -61,7 +63,7 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
                   fontFamily: 'Inter-500',
                   fontSize: 12,
                   padding: 5,
-                  color: selected === item.exp_tc_id ? '#FFFFFF' : '#1E1E1E',
+                  color: selected === item.exp_tc_id || theme !== 'light' ? '#FFFFFF' : '#1E1E1E',
                 }}>
                 {item.exp_tc_label}
               </Text>
@@ -78,13 +80,13 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
             alignSelf: 'flex-start',
             paddingHorizontal: 10,
             borderWidth: 1,
-            borderColor: '#E2E2EA',
+            borderColor: 'transparent',
             paddingVertical: 5,
             borderRadius: 50,
             marginBottom: 5,
-            backgroundColor: '#F3F2F8',
+            backgroundColor: colors.primary,
           }}>
-          <Text style={{ color: '#282343', fontSize: 12 }}>
+          <Text style={{ color: '#fff', fontSize: 12, fontFamily: 'Inter-600' }}>
             {showAll ? 'View Less' : 'View More'}
           </Text>
         </Pressable>

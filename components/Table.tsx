@@ -4,11 +4,13 @@ import { deviceWidth } from '@/utils/functions';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
 const tableWidth = width - 52;
 
 export default function TableView({ transactions }: { transactions: Itransaction[] }) {
+  const { colors } = useThemeContext();
   const income = transactions
     .filter((tx) => tx.exp_tt_id === 2)
     .reduce((acc, tx) => acc + Number(tx.exp_ts_amount), 0);
@@ -25,7 +27,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
       style={{
         flex: 1,
       }}>
-      <View style={styles.table}>
+      <View style={[styles.table, { borderColor: colors.borderColor }]}>
         {/* Table Header with Gradient */}
         <LinearGradient
           colors={['#6900FF', '#6B5DE6']}
@@ -44,55 +46,76 @@ export default function TableView({ transactions }: { transactions: Itransaction
         </LinearGradient>
 
         {/* Income Row */}
-        <View key={'income'} style={styles.row}>
+        <View
+          key={'income'}
+          style={[
+            styles.row,
+            { backgroundColor: colors.bottomBarBackground, borderBottomColor: colors.borderColor },
+          ]}>
           <View style={{ width: firstColumnWidth }}>
-            <Text style={[styles.cell, { color: '#5A5A6E', fontFamily: 'Inter-500' }]}>Income</Text>
+            <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-300' }]}>
+              Income
+            </Text>
           </View>
           <View style={{ width: secondColumnWidth }}>
-            <Text style={[styles.cell]} numberOfLines={3}>
+            <Text style={[styles.cell, { color: colors.title }]} numberOfLines={3}>
               {formatToCurrency(income)}
             </Text>
           </View>
           <View style={{ width: thirdColumnWidth }}>
-            <Text style={[styles.cell]}>
+            <Text style={[styles.cell, { color: colors.title }]}>
               {transactions.filter((tx) => tx.exp_tt_id === 2).length}
             </Text>
           </View>
         </View>
 
         {/* Expense Row */}
-        <View key={'expense'} style={styles.row}>
+        <View
+          key={'expense'}
+          style={[
+            styles.row,
+            { backgroundColor: colors.bottomBarBackground, borderBottomColor: colors.borderColor },
+          ]}>
           <View style={{ width: firstColumnWidth }}>
-            <Text style={[styles.cell, { color: '#5A5A6E', fontFamily: 'Inter-500' }]}>
+            <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-300' }]}>
               Expense
             </Text>
           </View>
           <View style={{ width: secondColumnWidth }}>
-            <Text style={[styles.cell]} numberOfLines={3}>
+            <Text style={[styles.cell, { color: colors.title }]} numberOfLines={3}>
               {formatToCurrency(expense)}
             </Text>
           </View>
           <View style={{ width: thirdColumnWidth }}>
-            <Text style={[styles.cell, { width: thirdColumnWidth }]}>
+            <Text style={[styles.cell, { color: colors.title, width: thirdColumnWidth }]}>
               {transactions.filter((tx) => tx.exp_tt_id === 1).length}
             </Text>
           </View>
         </View>
 
         {/* Overall Row */}
-        <View key={'overall'} style={styles.row}>
+        <View
+          key={'overall'}
+          style={[
+            styles.row,
+            { backgroundColor: colors.bottomBarBackground, borderBottomColor: colors.borderColor },
+          ]}>
           <View style={{ width: firstColumnWidth }}>
-            <Text style={[styles.cell, { color: '#1E1E1E', fontFamily: 'Inter-500' }]}>
+            <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-600' }]}>
               Over All
             </Text>
           </View>
           <View style={{ width: secondColumnWidth }}>
-            <Text style={[styles.cell]} numberOfLines={3}>
+            <Text
+              style={[styles.cell, { color: colors.title, fontFamily: 'Inter-600' }]}
+              numberOfLines={3}>
               {formatToCurrency(income - expense)}
             </Text>
           </View>
           <View style={{ width: thirdColumnWidth }}>
-            <Text style={[styles.cell]}>{transactions.length}</Text>
+            <Text style={[styles.cell, { color: colors.title, fontFamily: 'Inter-600' }]}>
+              {transactions.length}
+            </Text>
           </View>
         </View>
       </View>
@@ -103,7 +126,6 @@ export default function TableView({ transactions }: { transactions: Itransaction
 const styles = StyleSheet.create({
   table: {
     borderWidth: 0.5,
-    borderColor: '#E2E2EA',
     borderRadius: 4,
     margin: 16,
     borderBottomWidth: 0,
@@ -113,8 +135,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     borderBottomWidth: 0.5,
-    borderBottomColor: '#E2E2EA',
-    backgroundColor: '#FFFFFF',
   },
   headerRow: {
     flexDirection: 'row',
@@ -124,7 +144,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     fontSize: 14,
-    color: '#282343',
   },
   headerText: {
     fontWeight: '600',

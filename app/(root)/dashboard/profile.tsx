@@ -20,12 +20,14 @@ import { useBankAccounts, useGetUserBankAccounts } from '@/hooks/useBankAccountO
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
 import { useGetUserData } from '@/hooks/useUserStore';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
 const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
+  const { colors } = useThemeContext();
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
   const { refetch } = useGetUserData();
@@ -51,18 +53,22 @@ const Profile = () => {
       refetch={refetch}>
       <>
         <Pressable>
-          <View style={styles.card}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.bottomBarBackground, paddingHorizontal: 10 },
+            ]}>
             <View style={styles.left}>
               <View style={{ backgroundColor: '#6B5DE6', padding: 8, borderRadius: 5 }}>
                 <MaterialIcons name="account-balance" size={24} color="#FFFFFF" />
               </View>
               <View>
                 <View>
-                  <Text style={styles.option}>Accounts</Text>
+                  <Text style={[styles.option, { color: colors.title }]}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText]}>Over All : </Text>
-                  <Text style={[styles.subText, { color: '#1E1E1E', fontFamily: 'Inter-600' }]}>
+                  <Text style={[styles.subText, { color: colors.description }]}>Over All : </Text>
+                  <Text style={[styles.subText, { color: colors.title, fontFamily: 'Inter-600' }]}>
                     {overAllAmount}
                   </Text>
                 </View>
@@ -89,7 +95,9 @@ const Profile = () => {
               <Spacer height={60} />
             ) : (
               <View style={{ height: 60, justifyContent: 'center' }}>
-                <Text style={styles.subText}>There is no account exist</Text>
+                <Text style={[styles.subText, { color: colors.description }]}>
+                  There is no account exist
+                </Text>
               </View>
             )
           }
@@ -129,15 +137,22 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                <View
+                  style={{
+                    backgroundColor: colors.bottomBarBackground,
+                    padding: 8,
+                    borderRadius: 5,
+                  }}>
                   <MaterialIcons name="category" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Categories</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>Categories</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Keep your spending neatly sorted</Text>
+                    <Text style={[styles.subText, { color: colors.description }]}>
+                      Keep your spending neatly sorted
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -151,15 +166,24 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                <View
+                  style={{
+                    backgroundColor: colors.bottomBarBackground,
+                    padding: 8,
+                    borderRadius: 5,
+                  }}>
                   <MaterialIcons name="star" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Starred Transactions</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>
+                      Starred Transactions
+                    </Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Access your favorite transactions quickly</Text>
+                    <Text style={[styles.subText, { color: colors.description }]}>
+                      Access your favorite transactions quickly
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -172,15 +196,22 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                <View
+                  style={{
+                    backgroundColor: colors.bottomBarBackground,
+                    padding: 8,
+                    borderRadius: 5,
+                  }}>
                   <MaterialCommunityIcons name="file-export" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Export Transactions</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>
+                      Export Transactions
+                    </Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>
+                    <Text style={[styles.subText, { color: colors.description }]}>
                       Download and share your transaction history
                     </Text>
                   </View>
@@ -195,15 +226,20 @@ const Profile = () => {
           <Pressable>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#EBE9FC', padding: 8, borderRadius: 5 }}>
+                <View
+                  style={{
+                    backgroundColor: colors.bottomBarBackground,
+                    padding: 8,
+                    borderRadius: 5,
+                  }}>
                   <MaterialIcons name="settings" size={24} color="#6B5DE6" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Settings</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>Settings</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>
+                    <Text style={[styles.subText, { color: colors.description }]}>
                       Customize your app preferences and controls
                     </Text>
                   </View>
@@ -239,11 +275,6 @@ const styles = StyleSheet.create({
     marginTop: -140,
     marginLeft: (deviceWidth() - 150) / 2,
   },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
   email: {
     fontSize: 16,
     color: 'gray',
@@ -256,7 +287,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: Platform.OS === 'android' ? 10 : 16,
     width: '100%',
@@ -267,7 +297,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#1E1E1E',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -293,8 +322,7 @@ const styles = StyleSheet.create({
   },
   card: {
     paddingVertical: 8,
-    marginBottom: 12,
-    borderRadius: 4,
+    borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -312,14 +340,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   option: {
-    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#7A7A8C',
     fontSize: 14,
-    fontFamily: 'Inter-500',
+    fontFamily: 'Inter-400',
     wordWrap: 'wrap',
     maxWidth: deviceWidth() - 80,
   },

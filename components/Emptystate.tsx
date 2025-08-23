@@ -1,3 +1,4 @@
+import { useThemeContext } from '@/contexts/ThemedContext';
 import React from 'react';
 import { Image, StyleSheet, Text, View, ViewProps } from 'react-native';
 
@@ -7,12 +8,13 @@ interface ExtraButtonProps {
 }
 
 const Emptystate = ({ title, description, ...props }: ExtraButtonProps & ViewProps) => {
+  const { colors } = useThemeContext();
   return (
     <View style={styles.container}>
       <Image source={require('@/assets/images/empty-state.png')} />
       <View style={styles.contenContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
+        <Text style={[styles.title, { color: colors.title }]}>{title}</Text>
+        <Text style={[styles.description, { color: colors.description }]}>{description}</Text>
       </View>
     </View>
   );
@@ -29,13 +31,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: '#1E1E1E',
     fontSize: 20,
     fontFamily: 'Inter-600',
     textAlign: 'center',
   },
   description: {
-    color: '#7A7A8C',
     fontSize: 14,
     fontFamily: 'Inter-400',
     textAlign: 'center',

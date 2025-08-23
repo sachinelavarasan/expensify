@@ -87,7 +87,7 @@ const TimePickerPaperWithButton = ({
           borderColor: 'transparent',
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent:'center',
+          justifyContent: 'center',
           width: 120,
         }}>
         <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />

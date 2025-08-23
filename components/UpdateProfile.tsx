@@ -21,6 +21,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
 import { showToast } from './ToastMessage';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -36,6 +37,7 @@ const UpdateProfile = ({
 }: {
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 }) => {
+  const { colors, theme } = useThemeContext();
   const { user } = useUser();
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,12 +88,12 @@ const UpdateProfile = ({
   };
   return (
     <>
-      <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
-        <AntDesign name="edit" size={24} color="#7A7A8C" />
+      <Pressable style={{ marginLeft: 70 }} onPress={toggleModal}>
+        <AntDesign name="edit" size={24} color={colors.secondary} />
       </Pressable>
 
       <Modal
-        backdropColor="rgba(0, 0, 0, 0.5)"
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -105,14 +107,14 @@ const UpdateProfile = ({
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: colors.background }]}>
             <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}>
-              <Text style={styles.title}>Edit Details</Text>
+              <Text style={[styles.title, { color: colors.title }]}>Edit Details</Text>
               <TouchableOpacity
                 onPress={() => setShow(!show)}
                 style={{ alignItems: 'flex-end' }}
@@ -163,7 +165,6 @@ export default UpdateProfile;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#FFFFFF',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 20,

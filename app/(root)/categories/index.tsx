@@ -28,8 +28,10 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Category() {
+  const { colors } = useThemeContext();
   const { categories, loading } = useCategoryList();
   const router = useRouter();
   const { mutateAsync: reorderList, isPending: isLoading } = useReorderCategories();
@@ -133,14 +135,19 @@ export default function Category() {
           </TouchableOpacity>
         </Animated.View>
         <ProfileHeader title="Categories" />
-        <View style={styles.tabContainer}>
+        <View style={[styles.tabContainer, { backgroundColor: colors.bottomBarBackground }]}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'income' && styles.activeTab]}
             onPress={() => {
               setActiveTab('income');
               setDataList(incomeCategories);
             }}>
-            <Text style={[styles.tabText, activeTab === 'income' && styles.activeTabText]}>
+            <Text
+              style={[
+                styles.tabText,
+                { color: colors.description },
+                activeTab === 'income' && styles.activeTabText,
+              ]}>
               Income
             </Text>
           </TouchableOpacity>
@@ -151,7 +158,12 @@ export default function Category() {
               setActiveTab('expense');
               setDataList(expenseCategories);
             }}>
-            <Text style={[styles.tabText, activeTab === 'expense' && styles.activeTabText]}>
+            <Text
+              style={[
+                styles.tabText,
+                { color: colors.description },
+                activeTab === 'expense' && styles.activeTabText,
+              ]}>
               Expense
             </Text>
           </TouchableOpacity>
@@ -208,7 +220,9 @@ export default function Category() {
                             )}
                           </View>
                         </Pressable>
-                        <Text style={styles.name}>{item.exp_tc_label}</Text>
+                        <Text style={[styles.name, { color: colors.title }]}>
+                          {item.exp_tc_label}
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   </Link>
@@ -255,7 +269,7 @@ export default function Category() {
                           )}
                         </View>
                       </Pressable>
-                      <Text style={styles.name}>
+                      <Text style={[styles.name, { color: colors.title }]}>
                         {item.exp_tc_label}
                         {isActive}
                       </Text>
@@ -290,7 +304,6 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    backgroundColor: '#E2E2EA',
     borderRadius: 8,
     padding: 5,
     marginHorizontal: 10,
@@ -305,7 +318,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tabText: {
-    color: '#282343',
     fontWeight: '500',
   },
   activeTabText: {
@@ -331,7 +343,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: '#1E1E1E',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },

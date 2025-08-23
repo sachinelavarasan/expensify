@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import { useThemeContext } from '@/contexts/ThemedContext';
+import { Colors } from '@/constants/Colors';
 
 const MonthSwitcher = ({
   nextMonth,
@@ -11,16 +13,17 @@ const MonthSwitcher = ({
   prevMonth: () => void;
   currentMonth: string;
 }) => {
+  const { colors } = useThemeContext();
   return (
     <View style={styles.monthSwitch}>
       <TouchableOpacity onPress={prevMonth} style={{ paddingHorizontal: 10 }}>
-        <AntDesign name="left" color="#8880A0" size={18} />
+        <AntDesign name="left" color={colors.arrowColor} size={18} />
       </TouchableOpacity>
 
-      <Text style={styles.month}>{currentMonth}</Text>
+      <Text style={[styles.month, { color: colors.monthSwitcher }]}>{currentMonth}</Text>
 
       <TouchableOpacity onPress={nextMonth} style={{ paddingHorizontal: 10 }}>
-        <AntDesign name="right" color="#8880A0" size={18} />
+        <AntDesign name="right" color={colors.arrowColor} size={18} />
       </TouchableOpacity>
     </View>
   );
@@ -28,7 +31,6 @@ const MonthSwitcher = ({
 
 const styles = StyleSheet.create({
   month: {
-    color: '#1a1a1a',
     fontSize: 18,
     fontFamily: 'Inter-500',
   },

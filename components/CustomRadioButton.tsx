@@ -1,3 +1,4 @@
+import { useThemeContext } from '@/contexts/ThemedContext';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Image } from 'react-native';
 import { RadioButton } from 'react-native-radio-buttons-group';
@@ -21,6 +22,7 @@ export default function CustomRadioButton({
   isRequired = false,
   isColumn = false,
 }: CustomRadioButtonProps) {
+  const { colors } = useThemeContext();
   const [selectedId, setSelectedId] = useState<string | number | undefined>(value);
   useEffect(() => {
     if (value) {
@@ -39,7 +41,7 @@ export default function CustomRadioButton({
         <View style={{ display: 'flex', flexDirection: 'row' }}>
           <Text
             style={[
-              { fontSize: 14, color: '#282343', marginVertical: 3, fontFamily: 'Inter-500' },
+              { fontSize: 14, color: colors.text, marginVertical: 3, fontFamily: 'Inter-500' },
             ]}>
             {label}
           </Text>
@@ -67,7 +69,7 @@ export default function CustomRadioButton({
           <RadioButton
             {...button}
             key={button.id}
-            labelStyle={styles.labelStyle}
+            labelStyle={[styles.labelStyle, { color: colors.title }]}
             selected={button.id == selectedId}
             onPress={handlePress}
             borderColor="#6B5DE6"
@@ -90,7 +92,6 @@ const styles = StyleSheet.create({
   },
   labelStyle: {
     fontSize: 14,
-    color: '#1E1E1E',
     fontFamily: 'Inter-500',
   },
 });

@@ -38,8 +38,10 @@ import DatePickerPaper from '@/components/DatePickerPaper';
 import TimePickerPaper from '@/components/TimePickerPaper';
 import { CustomSelectInput } from '@/components/CustomSelectInput';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Transaction() {
+  const { colors } = useThemeContext();
   const { categories } = useGetCategoryCache();
   const { accounts } = useGetUserBankAccounts();
   const { exp_ts_id, starred } = useLocalSearchParams() as {
@@ -359,12 +361,12 @@ export default function Transaction() {
                       <View style={[styles.sectionContainer]}>
                         <View
                           style={{
-                            borderColor: '#E2E2EA',
+                            borderColor: colors.borderColor,
                             borderWidth: 1,
                             borderRadius: 8,
                             paddingVertical: 5,
                             paddingHorizontal: 8,
-                            backgroundColor: '#FFFFFF',
+                            backgroundColor: colors.background,
                           }}>
                           <View
                             style={{
@@ -377,14 +379,14 @@ export default function Transaction() {
                             <Text
                               style={[
                                 styles.categoryLabel,
-                                { flex: 1, flexWrap: 'wrap', lineHeight: 20 },
+                                { flex: 1, flexWrap: 'wrap', lineHeight: 20, color: colors.title },
                               ]}>
                               Category
                               {!!selectedCategory() && (
                                 <Text
                                   style={{
                                     fontFamily: 'Inter-500',
-                                    color: '#1E1E1E',
+                                    color: colors.text,
                                   }}>
                                   {' '}
                                   : {selectedCategory()}
@@ -405,7 +407,7 @@ export default function Transaction() {
                                   paddingHorizontal: 10,
                                 }}
                                 onPress={redirectToCategory}>
-                                <MaterialIcons name="edit" size={22} color="#fff" />
+                                <MaterialIcons name="edit" size={22} color={colors.text} />
                               </TouchableOpacity>
                               <TouchableOpacity
                                 activeOpacity={0.2}
@@ -413,7 +415,7 @@ export default function Transaction() {
                                   paddingHorizontal: 10,
                                 }}
                                 onPress={redirectToCategory}>
-                                <MaterialIcons name="add" size={22} color="#fff" />
+                                <MaterialIcons name="add" size={22} color={colors.text} />
                               </TouchableOpacity>
                             </View>
                           </View>
@@ -454,13 +456,13 @@ export default function Transaction() {
                       />
                       <View style={styles.subTextContainer}>
                         {!!data?.exp_ts_created_at && (
-                          <Text style={styles.subText}>
+                          <Text style={[styles.subText, { color: colors.lighterTitle }]}>
                             Created:{' '}
                             {format(new Date(data.exp_ts_created_at), 'do MMMM yyyy HH:MM a')}
                           </Text>
                         )}
                         {!!data?.exp_ts_updated_at && (
-                          <Text style={styles.subText}>
+                          <Text style={[styles.subText, { color: colors.lighterTitle }]}>
                             Modified:{' '}
                             {format(new Date(data.exp_ts_updated_at), 'do MMMM yyyy HH:MM a')}
                           </Text>
@@ -474,7 +476,7 @@ export default function Transaction() {
               keyExtractor={() => 'form-transaction'}
             />
           </ThemedView>
-          <View style={styles.footer}>
+          <View style={[styles.footer, { backgroundColor: colors.bottomBarBackground }]}>
             <View>
               <View
                 style={{
@@ -497,7 +499,7 @@ export default function Transaction() {
                       {isLoading ? (
                         <ActivityIndicator animating color={'#6900FF'} style={styles.loader} />
                       ) : null}
-                      <FontAwesome5 name="trash" size={20} color="#1E1E1E" />
+                      <FontAwesome5 name="trash" size={20} color={colors.text} />
                     </TouchableOpacity>
                   </>
                 )}
@@ -644,7 +646,6 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: 14,
-    color: '#282343',
     fontFamily: 'Inter-500',
   },
 });

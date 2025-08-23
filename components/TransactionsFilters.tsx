@@ -7,6 +7,8 @@ import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import { transactionExportType } from '@/utils/common-data';
 import SearchBar from './SearchBar';
 import CustomRadioButton from './CustomRadioButton';
+import { useThemeContext } from '@/contexts/ThemedContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -20,6 +22,7 @@ const TransactionFilters = ({
   searchText: string;
   applyFilters: (search: string, transactionType: string) => void;
 }) => {
+  const { colors, theme } = useThemeContext();
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState(searchText);
   const [transactionType, setTransactionType] = useState<string>(selectedTransaction);
@@ -51,7 +54,7 @@ const TransactionFilters = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor="rgba(0, 0, 0, 0.5)"
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
         style={{ flex: 1 }}
         isVisible={show}
         hasBackdrop={true}
@@ -66,17 +69,17 @@ const TransactionFilters = ({
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: colors.background }]}>
             <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={styles.title}>Apply Filters</Text>
+              <Text style={[styles.title, { color: colors.title }]}>Apply Filters</Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color="#282343" size={20} />
+                <Ionicons name="close" color={colors.arrowColor} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -100,8 +103,14 @@ const TransactionFilters = ({
             </View>
             <Spacer height={30} />
             <View>
-              <TouchableOpacity style={[styles.button]} onPress={handlePress}>
-                <Text style={[styles.btntitle]}>Apply</Text>
+              <TouchableOpacity onPress={handlePress}>
+                <LinearGradient
+                  colors={['#6B5DE6', '#6900FF']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.button]}>
+                  <Text style={[styles.btntitle]}>Apply</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -116,7 +125,6 @@ export default TransactionFilters;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#FFFFFF',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,

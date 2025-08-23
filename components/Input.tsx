@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface ExtraInputProps {
   label?: string;
@@ -24,6 +25,7 @@ const Input = forwardRef(function MyInput(
   props: ExtraInputProps & TextInputProps,
   ref: React.Ref<TextInput>,
 ) {
+  const { theme, colors } = useThemeContext();
   const {
     label,
     borderLess,
@@ -40,7 +42,7 @@ const Input = forwardRef(function MyInput(
     <View>
       {label ? (
         <View style={{ display: 'flex', flexDirection: 'row' }}>
-          <Text style={styles.label}>{label}</Text>
+          <Text style={[styles.label, { color: colors.title }]}>{label}</Text>
           {/* {isRequired ? (
             <View style={{ marginLeft: 5, marginTop: 5 }}>
               <Image
@@ -54,7 +56,11 @@ const Input = forwardRef(function MyInput(
       <View
         style={[
           styles.inputContainer,
-          borderLess ? styles.borderNone : null,
+          {
+            backgroundColor: colors.background,
+            // shadowColor: theme === 'dark' ? '#fff' : '#000',
+          },
+          borderLess ? [styles.borderNone, { backgroundColor: colors.background }] : null,
           !editable ? { opacity: 0.7 } : null,
         ]}>
         <View style={styles.innerView}>
@@ -63,6 +69,11 @@ const Input = forwardRef(function MyInput(
             {...otherProps}
             style={[
               styles.input,
+              {
+                backgroundColor: theme === 'light' ? colors.background : 'transparent',
+                color: colors.text,
+                borderColor: colors.borderColor,
+              },
               isTitle ? styles.titleText : null,
               isTextBox ? styles.textBox : null,
             ]}
@@ -102,9 +113,6 @@ export default Input;
 
 const styles = StyleSheet.create({
   inputContainer: {
-    borderColor: '#F2F2F2',
-    borderRadius: 6,
-    borderWidth: 1,
     marginBottom: 0,
   },
   textBox: {
@@ -124,22 +132,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-400',
     color: '#1E1E1E',
     paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
+
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E2EA',
-    shadowColor: '#fff',
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2.84,
-    elevation: 1,
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 0,
+    // },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 2.84,
+    // elevation: 1,
   },
   label: {
     fontSize: 14,
-    color: '#282343',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },
@@ -159,7 +164,6 @@ const styles = StyleSheet.create({
   },
   borderNone: {
     borderWidth: 0,
-    backgroundColor: '#FFFFFF',
     borderRadius: 6,
   },
   titleText: {

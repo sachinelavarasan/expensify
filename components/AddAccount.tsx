@@ -21,6 +21,7 @@ import { z } from 'zod';
 import { accountIcon } from '@/utils/common-data';
 import { showToast } from './ToastMessage';
 import { useAddBankAccount, useUpdateBankAccount } from '@/hooks/useBankAccountOperation';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -39,6 +40,7 @@ const schema = z.object({
 type BankAccount = z.infer<typeof schema>;
 
 const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?: number }) => {
+  const { colors, theme } = useThemeContext();
   const [show, setShow] = useState(false);
   const { mutateAsync: addBankAccount, isPending: isLoading } = useAddBankAccount();
   const { mutateAsync: updateBankAccount, isPending: isUpdating } = useUpdateBankAccount();
@@ -139,19 +141,19 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
     <>
       <Pressable onPress={toggleModal}>
         {exp_ba_id ? (
-          <FontAwesome name="edit" size={24} color="#1E1E1E" />
+          <FontAwesome name="edit" size={24} color={colors.title} />
         ) : (
           <Text
             style={{
-              color: '#6B5DE6',
+              color: colors.title,
               fontFamily: 'Inter-500',
               fontSize: 14,
-              borderColor: '#6B5DE6',
+              borderColor: colors.borderColor,
               paddingVertical: 4,
               paddingHorizontal: 14,
               borderRadius: 40,
               borderWidth: 1,
-              backgroundColor: '#FFFFFF',
+              backgroundColor: colors.background,
             }}>
             Add New
           </Text>
@@ -159,7 +161,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
       </Pressable>
 
       <Modal
-        backdropColor="rgba(0, 0, 0, 0.5)"
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -173,14 +175,16 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <View style={styles.modal}>
+          <View style={[styles.modal, { backgroundColor: colors.background }]}>
             <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={styles.title}>{exp_ba_id ? 'Edit Account' : 'Add Account'}</Text>
+              <Text style={[styles.title, { color: colors.title }]}>
+                {exp_ba_id ? 'Edit Account' : 'Add Account'}
+              </Text>
 
               <TouchableOpacity onPress={toggleModal}>
                 <Ionicons name="close" color="#5a4f96" size={20} />
@@ -222,10 +226,10 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
               name="exp_ba_balance"
             />
             <Spacer height={20} />
-            <Text style={styles.label}>Select Icon</Text>
+            <Text style={[styles.label, { color: colors.title }]}>Select Icon</Text>
             <View
               style={{
-                borderColor: '#E2E2EA',
+                borderColor: colors.borderColor,
                 borderWidth: 1,
                 borderRadius: 8,
                 paddingVertical: 5,
@@ -295,7 +299,6 @@ export default AddAccount;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#FFFFFF',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,
@@ -303,7 +306,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    color: '#1E1E1E',
     fontFamily: 'Inter-600',
   },
   button: {
@@ -336,7 +338,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#282343',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },
