@@ -60,10 +60,9 @@ const TransactionCard = ({
                 <Text style={[styles.subText, { marginRight: 6 }]}>{exp_ts_category}</Text>
                 <View
                   style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                 
                   {!!showTsTime && (
                     <Text style={[styles.subText, { fontFamily: 'Inter-600', color: '#efeef6' }]}>
-                       <Text>{'\u2022'}</Text> {exp_ts_time}
+                      <Text>{'\u2022'}</Text> {exp_ts_time}
                     </Text>
                   )}
                 </View>

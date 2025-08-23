@@ -110,86 +110,83 @@ export default function Index() {
       <TouchableOpacity style={styles.floatingButton} onPress={handlePress}>
         <Entypo name="plus" size={24} color="white" />
       </TouchableOpacity>
+      <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
+        <View
+          style={{
+            paddingVertical: 10,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+          <MonthSwitcher
+            nextMonth={goToNextMonth}
+            prevMonth={goToPreviousMonth}
+            currentMonth={currentMonth}
+          />
+          <TransactionFilters
+            applyFilters={applyFilters}
+            searchText={search}
+            selectedTransaction={transactionType}
+          />
+        </View>
+        <HomeHeader income={income} expense={expense} />
+        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+          {!!search && (
+            <Pressable
+              style={{
+                borderWidth: 1,
+                borderColor: '#5a4f96',
+                paddingVertical: 4,
+                paddingHorizontal: 10,
+                borderRadius: 50,
+                flexDirection: 'row',
+                gap: 5,
+              }}
+              onPress={() => removeFilter('search')}>
+              <Text style={{ textTransform: 'capitalize' }}>{search}</Text>
+              <Entypo name="cross" size={18} color="#5a4f96" />
+            </Pressable>
+          )}
+          {!!transactionType && (
+            <Pressable
+              style={{
+                borderWidth: 1,
+                borderColor: '#5a4f96',
+                paddingVertical: 4,
+                paddingHorizontal: 10,
+                borderRadius: 50,
+                flexDirection: 'row',
+                gap: 5,
+              }}
+              onPress={() => removeFilter('t_type')}>
+              <Text style={{ textTransform: 'capitalize' }}>{transactionType}</Text>
+              <Entypo name="cross" size={18} color="#5a4f96" />
+            </Pressable>
+          )}
+          {!!search && !!transactionType && (
+            <Pressable
+              style={{
+                borderWidth: 1,
+                borderColor: '#5a4f96',
+                paddingVertical: 4,
+                paddingHorizontal: 10,
+                borderRadius: 50,
+                flexDirection: 'row',
+                gap: 5,
+              }}
+              onPress={() => removeFilter('default')}>
+              <Text style={{ textTransform: 'capitalize' }}>Clear All</Text>
+              <Entypo name="cross" size={18} color="#5a4f96" />
+            </Pressable>
+          )}
+        </View>
+      </View>
       <View>
         <FlatList
           bounces={false}
           showsVerticalScrollIndicator={false}
           data={groupedDataArray}
           contentContainerStyle={{ paddingBottom: 20, flex: 1 }}
-          stickyHeaderIndices={[0]}
-          ListHeaderComponent={() => (
-            <View style={{ backgroundColor: '#0F0E17', paddingBottom: 10 }}>
-              <View
-                style={{
-                  paddingVertical: 10,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <MonthSwitcher
-                  nextMonth={goToNextMonth}
-                  prevMonth={goToPreviousMonth}
-                  currentMonth={currentMonth}
-                />
-                <TransactionFilters
-                  applyFilters={applyFilters}
-                  searchText={search}
-                  selectedTransaction={transactionType}
-                />
-              </View>
-              <HomeHeader income={income} expense={expense} />
-              <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                {!!search && (
-                  <Pressable
-                    style={{
-                      borderWidth: 1,
-                      borderColor: '#5a4f96',
-                      paddingVertical: 4,
-                      paddingHorizontal: 10,
-                      borderRadius: 50,
-                      flexDirection: 'row',
-                      gap: 5,
-                    }}
-                    onPress={() => removeFilter('search')}>
-                    <Text style={{ textTransform: 'capitalize' }}>{search}</Text>
-                    <Entypo name="cross" size={18} color="#5a4f96" />
-                  </Pressable>
-                )}
-                {!!transactionType && (
-                  <Pressable
-                    style={{
-                      borderWidth: 1,
-                      borderColor: '#5a4f96',
-                      paddingVertical: 4,
-                      paddingHorizontal: 10,
-                      borderRadius: 50,
-                      flexDirection: 'row',
-                      gap: 5,
-                    }}
-                    onPress={() => removeFilter('t_type')}>
-                    <Text style={{ textTransform: 'capitalize' }}>{transactionType}</Text>
-                    <Entypo name="cross" size={18} color="#5a4f96" />
-                  </Pressable>
-                )}
-                {!!search && !!transactionType && (
-                  <Pressable
-                    style={{
-                      borderWidth: 1,
-                      borderColor: '#5a4f96',
-                      paddingVertical: 4,
-                      paddingHorizontal: 10,
-                      borderRadius: 50,
-                      flexDirection: 'row',
-                      gap: 5,
-                    }}
-                    onPress={() => removeFilter('default')}>
-                    <Text style={{ textTransform: 'capitalize' }}>Clear All</Text>
-                    <Entypo name="cross" size={18} color="#5a4f96" />
-                  </Pressable>
-                )}
-              </View>
-            </View>
-          )}
           ListEmptyComponent={
             <Emptystate
               title="No transactions yet"
@@ -267,7 +264,7 @@ const styles = StyleSheet.create({
     color: '#a19bca',
   },
   floatingButton: {
-    backgroundColor: '#5a4f96', // Replace with your primary color
+    backgroundColor: '#5a4f96',
     width: 50,
     height: 50,
     borderRadius: 25,
