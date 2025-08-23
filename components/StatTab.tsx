@@ -1,7 +1,109 @@
 import { Itransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Spacer from './Spacer';
+
+
+interface progressBar {
+    category: string;
+    color: string;
+    totalAmount: number;
+    transactionCount: number;
+    percentage: number;
+}
+
+type SegmentProps = {
+  color: string;
+  percentage: number;
+  progress: any; // sharedValue passed down
+};
+
+function ProgressSegment({ color, percentage, progress }: SegmentProps) {
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      flex: percentage * progress.value,
+    };
+  });
+
+  return <Animated.View style={[styles.segment, { backgroundColor: color }, animatedStyle]} />;
+}
+
+function MultiColorProgressBar({ data }: { data: progressBar[] }) {
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withTiming(1, { duration: 1500 });
+  }, [progress]);
+
+  return (
+    <View style={styles.container}>
+      <Text style={{
+        fontFamily:'Inter-600',
+        fontSize: 14,
+        color: "#FFF"
+      }}>Spending by Category</Text>
+      <Spacer height={10}/>
+      <View style={styles.barBackground}>
+        {data.map((cat, index) => (
+          <ProgressSegment
+            key={index}
+            color={cat.color}
+            percentage={cat.percentage}
+            progress={progress}
+          />
+        ))}
+      </View>
+
+      <View style={styles.legend}>
+        {data.map((cat, i) => (
+          <View key={i} style={styles.legendItem}>
+            <View style={[styles.colorBox, { backgroundColor: cat.color }]} />
+            <Text style={styles.legendText}>
+              {cat.category} - {cat.percentage}%
+            </Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function ProgressBar({ percentage }: { percentage: number }) {
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    progress.value = withTiming(percentage, { duration: 800 });
+  }, [percentage, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    width: `${progress.value}%`,
+  }));
+
+  return (
+    <View
+      style={{
+        height: 6,
+        backgroundColor: '#ccc',
+        borderRadius: 4,
+        overflow: 'hidden',
+        marginTop: 6,
+        width: 50,
+      }}>
+      <Animated.View
+        style={[
+          {
+            height: '100%',
+            backgroundColor: '#6C63FF',
+            borderRadius: 4,
+          },
+          animatedStyle,
+        ]}
+      />
+    </View>
+  );
+}
 
 export default function IncomeExpenseTabs({ transactions }: { transactions: Itransaction[] }) {
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
@@ -24,27 +126,28 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
   const incomeByCategory = groupByCategory(incomeTransactions);
   const expenseByCategory = groupByCategory(expenseTransactions);
 
- const calculateCategoryMetrics = (
-  categoryData: { [key: string]: Itransaction[] },
-  totalAmount: number
-) => {
-  return Object.entries(categoryData).map(([category, transactions]) => {
-    const totalCategoryAmount = transactions.reduce((sum, tx) => {
-      return sum + Number(tx.exp_ts_amount);
-    }, 0);
+  const calculateCategoryMetrics = (
+    categoryData: { [key: string]: Itransaction[] },
+    totalAmount: number,
+  ) => {
+    return Object.entries(categoryData).map(([category, transactions]) => {
+      const totalCategoryAmount = transactions.reduce((sum, tx) => {
+        return sum + Number(tx.exp_ts_amount);
+      }, 0);
 
+      const percentage =
+        totalAmount > 0 ? ((totalCategoryAmount / totalAmount) * 100).toFixed(2) : '0.00';
 
-    const percentage =
-      totalAmount > 0 ? ((totalCategoryAmount / totalAmount) * 100).toFixed(2) : '0.00';
+      return {
+        category,
+        color: transactions[0]?.exp_tc_icon_bg_color,
+        totalAmount: totalCategoryAmount,
+        transactionCount: transactions.length,
+        percentage: parseFloat(percentage),
+      };
+    });
+  };
 
-    return {
-      category,
-      totalAmount: totalCategoryAmount,
-      transactionCount: transactions.length,
-      percentage: parseFloat(percentage),
-    };
-  });
-};
 
 
   const totalIncome = incomeTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
@@ -75,6 +178,8 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         </TouchableOpacity>
       </View>
 
+      <MultiColorProgressBar data={data}/>
+
       <FlatList
         data={data}
         keyExtractor={(item) => item.category}
@@ -99,6 +204,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
 
             <View>
               <Text style={styles.amount}>{item.percentage} %</Text>
+              <ProgressBar percentage={item.percentage} />
             </View>
           </View>
         )}
@@ -156,8 +262,9 @@ const styles = StyleSheet.create({
   },
   amount: {
     color: '#B0AEC0',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
+    fontSize: 12,
+    fontFamily: 'Inter-400',
+    textAlign: 'center',
   },
   left: {
     display: 'flex',
@@ -181,5 +288,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
+  },
+  barBackground: {
+    flexDirection: "row",
+    height: 24,
+    width: "100%",
+    backgroundColor: "#1e1a32",
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  segment: {
+    height: "100%",
+    borderRadius: 0, // rounded is handled by container
+  },
+  legend: {
+    marginTop: 12,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  colorBox: {
+    width: 14,
+    height: 14,
+    marginRight: 8,
+    borderRadius: 3,
+  },
+  legendText: {
+    color: "#ccc",
+    fontSize: 12,
   },
 });
