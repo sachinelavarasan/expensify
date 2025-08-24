@@ -13,6 +13,8 @@ export const LightColors = {
   income: '#37955e',
   expense: '#f33f3f',
   bottomBarBackground: '#F5F5F5',
+  topBarColor: '#F5F5F5',
+  themedViewBg: ['#FFF','#FFF']
 };
 
 export const DarkColors = {
@@ -30,6 +32,8 @@ export const DarkColors = {
   borderSelected: '#6B5DE6',
   expense: '#F56565',
   bottomBarBackground: '#1A1733',
+  topBarColor: '#1A1733',
+  themedViewBg: ['#26004d', '#1a0033', '#0d001a', '#000000']
 };
 
 export type ThemeColors = typeof LightColors;

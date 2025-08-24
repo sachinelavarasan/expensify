@@ -19,12 +19,14 @@ import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 
-// import { enableNotificationToken, logIn, setError } from '@/redux/slices/auth/authSlice';
-// import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 import { phoneValidation } from '@/utils/Validation-custom';
 import AuthLink from '@/components/AuthLink';
-import { isClerkAPIResponseError, useClerk, useSession, useSignIn } from '@clerk/clerk-expo';
+import { isClerkAPIResponseError, useClerk, useSignIn } from '@clerk/clerk-expo';
+import { ThemedView } from '@/components/ThemedView';
+import { useThemeContext } from '@/contexts/ThemedContext';
+
+
 
 const schema = z.object({
   phone: z
@@ -37,9 +39,10 @@ const schema = z.object({
 type SignInForm = z.infer<typeof schema>;
 
 export default function SignIn() {
+  const { colors } = useThemeContext();
   const router = useRouter();
   const { signIn, setActive, isLoaded } = useSignIn();
-  const {signOut} = useClerk();
+  const { signOut } = useClerk();
   const [isLoading, setIsLoading] = useState(false);
   const {
     control,
@@ -96,7 +99,10 @@ export default function SignIn() {
             Alert.alert('Error', 'No user found with your detail.');
             break;
           case 'form_param_format_invalid':
-            Alert.alert('Error', 'Please enter a valid phone number including the correct country code.');
+            Alert.alert(
+              'Error',
+              'Please enter a valid phone number including the correct country code.',
+            );
             break;
           case 'form_identifier_exists':
             Alert.alert('Error', 'Given phone number already exists');
@@ -119,12 +125,12 @@ export default function SignIn() {
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
-        <ScrollView
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flex: 1 }}
-          keyboardShouldPersistTaps={'always'}>
-          <View style={styles.container}>
+        <ThemedView style={styles.container}>
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ flex: 1 }}
+            keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
               {/* {error && (
                 <View style={styles.errorContainer}>
@@ -132,7 +138,9 @@ export default function SignIn() {
                 </View>
               )} */}
               <View style={styles.imageContainer}>
-                <Text style={styles.label}>Welcome Back! 👋 </Text>
+                <Text style={[styles.label, {
+                  color: colors.title
+                }]}>Welcome Back! 👋 </Text>
               </View>
               <Spacer height={25} />
               <View style={styles.loginContainer}>
@@ -195,8 +203,8 @@ export default function SignIn() {
                 <Spacer height={50} />
               </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </ThemedView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
   );
@@ -241,12 +249,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#1E1E1E',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   textDisable: { opacity: 0 },
   errorContainer: {

@@ -26,10 +26,15 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { phoneValidation } from '@/utils/Validation-custom';
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemedView } from '@/components/ThemedView';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const schema = z.object({
   name: z.string().min(3, { message: 'Minimum 3 characters' }),
-  password: z.string().min(8, { message: 'Minimum 8 characters' }).max(16, { message: 'Maximun 16 characters' }),
+  password: z
+    .string()
+    .min(8, { message: 'Minimum 8 characters' })
+    .max(16, { message: 'Maximun 16 characters' }),
   phone: z
     .string()
     .min(1, { message: 'Must have at least 1 character' })
@@ -40,6 +45,7 @@ type SignUpForm = z.infer<typeof schema>;
 
 const Register = () => {
   const router = useRouter();
+  const { colors } = useThemeContext();
   const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
   const [isLoading, setIsLoading] = useState(false);
   const {
@@ -135,12 +141,12 @@ const Register = () => {
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
-        <ScrollView
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flex: 1 }}
-          keyboardShouldPersistTaps={'always'}>
-          <View style={styles.container}>
+        <ThemedView style={styles.container}>
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ flex: 1 }}
+            keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
               {/* {error && (
                 <View style={styles.errorContainer}>
@@ -153,7 +159,15 @@ const Register = () => {
                 style={styles.image}
                 resizeMode="contain"
               /> */}
-                <Text style={styles.label}>Create your account</Text>
+                <Text
+                  style={[
+                    styles.label,
+                    {
+                      color: colors.title,
+                    },
+                  ]}>
+                  Create your account
+                </Text>
               </View>
               <Spacer height={25} />
               <View style={styles.loginContainer}>
@@ -262,8 +276,8 @@ const Register = () => {
                   autoFocus={true}></OTPTextInput> */}
               </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </ThemedView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
   );
@@ -308,12 +322,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#1E1E1E',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   textDisable: { opacity: 0 },
   errorContainer: {

@@ -104,7 +104,7 @@ const UpdateProfile = ({
   return (
     <>
       <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
-        <FontAwesome5 name="user-edit" size={20} color="#FFF" />
+        <FontAwesome5 name="user-edit" size={20} color={colors.secondary} />
       </Pressable>
 
       <Modal

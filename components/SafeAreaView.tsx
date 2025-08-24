@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, type ViewProps } from 'react-native';
 import { SafeAreaView, SafeAreaProvider, SafeAreaViewProps } from 'react-native-safe-area-context';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
-import { useThemeColor } from '@/hooks/useThemeColor';
 
 type SafeAreaViewComponentProps = ViewProps & SafeAreaViewProps & {
   children: React.ReactElement;
@@ -17,10 +17,11 @@ const SafeAreaViewComponent = ({
   darkColor,
   ...otherProps
 }: SafeAreaViewComponentProps) => {
+  const { colors } = useThemeContext();
   return (
     <SafeAreaProvider>
       <SafeAreaView
-        style={[{ backgroundColor: '#0F0E17' }, styles.container, style]}
+        style={[{ backgroundColor: colors.topBarColor }, styles.container, style]}
         {...otherProps}>
         {children}
       </SafeAreaView>

@@ -16,7 +16,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'APP_THEME';
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>('system');
   const [systemScheme, setSystemScheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
 
@@ -26,6 +26,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const storedTheme = await AsyncStorage.getItem(STORAGE_KEY);
       if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
         setTheme(storedTheme);
+      }else {
+        setTheme('system');
       }
     };
     loadTheme();

@@ -3,6 +3,8 @@ import { formatToCurrency } from '@/utils/formatter';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+
+import { useThemeContext } from '@/contexts/ThemedContext';
 import Spacer from './Spacer';
 
 interface progressBar {
@@ -31,6 +33,8 @@ function ProgressSegment({ color, percentage, progress }: SegmentProps) {
 
 function MultiColorProgressBar({ data }: { data: progressBar[] }) {
   const progress = useSharedValue(0);
+  const { colors } = useThemeContext();
+  
 
   useEffect(() => {
     progress.value = withTiming(1, { duration: 1500 });
@@ -40,9 +44,9 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
     <View
       style={{
         padding: 10,
-        backgroundColor: '#0a0911',
+        backgroundColor: colors.bottomBarBackground,
         borderWidth:1,
-        borderColor: "#463e75",
+        borderColor: colors.borderColor,
         borderRadius: 6,
         marginBottom: 10
       }}>
@@ -50,7 +54,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
         style={{
           fontFamily: 'Inter-600',
           fontSize: 14,
-          color: '#FFF',
+          color: colors.title,
         }}>
         Spending by Category
       </Text>
@@ -70,7 +74,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
         {data.map((cat, i) => (
           <View key={i} style={styles.legendItem}>
             <View style={[styles.colorBox, { backgroundColor: cat.color }]} />
-            <Text style={styles.legendText}>
+            <Text style={[styles.legendText, {color: colors.description}]}>
               {cat.category} - {cat.percentage}%
             </Text>
           </View>
@@ -116,6 +120,7 @@ function ProgressBar({ percentage, color }: { percentage: number, color: string 
 }
 
 export default function IncomeExpenseTabs({ transactions }: { transactions: Itransaction[] }) {
+  const { colors } = useThemeContext();
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
 
   const incomeTransactions = transactions.filter((tx) => tx.exp_tt_id === 2);
@@ -167,12 +172,21 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
   const data = activeTab === 'income' ? incomeMetrics : expenseMetrics;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.tabContainer}>
+   <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, borderColor: colors.borderColor },
+      ]}>
+      <View style={[styles.tabContainer, { backgroundColor: colors.bottomBarBackground }]}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'income' && styles.activeTab]}
           onPress={() => setActiveTab('income')}>
-          <Text style={[styles.tabText, activeTab === 'income' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              { color: colors.description },
+              activeTab === 'income' && styles.activeTabText,
+            ]}>
             Income
           </Text>
         </TouchableOpacity>
@@ -180,7 +194,12 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         <TouchableOpacity
           style={[styles.tab, activeTab === 'expense' && styles.activeTab]}
           onPress={() => setActiveTab('expense')}>
-          <Text style={[styles.tabText, activeTab === 'expense' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              { color: colors.description },
+              activeTab === 'expense' && styles.activeTabText,
+            ]}>
             Expense
           </Text>
         </TouchableOpacity>
@@ -196,13 +215,17 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
             <View style={styles.left}>
               <View>
                 <View>
-                  <Text style={styles.name}>{item.category}</Text>
+                  <Text style={[styles.name, { color: colors.title }]}>{item.category}</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-600' }]}>
+                  <Text
+                      style={[
+                        styles.subText,
+                        { marginRight: 6, fontFamily: 'Inter-600', color: colors.description },
+                      ]}>
                     {formatToCurrency(item.totalAmount)} <Text>{'\u2022'}</Text>
                   </Text>
-                  <Text style={[styles.subText]}>
+                   <Text style={[styles.subText, { color: colors.description }]}>
                     {item.transactionCount}{' '}
                     {item.transactionCount === 1 ? 'transaction' : 'transactions'}
                   </Text>
@@ -211,7 +234,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
             </View>
 
             <View>
-              <Text style={styles.amount}>{item.percentage} %</Text>
+              <Text style={[styles.amount, { color: colors.description }]}>{item.percentage} %</Text>
               <ProgressBar percentage={item.percentage} color={item.color}/>
             </View>
           </View>
@@ -224,17 +247,17 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0911',
+    // backgroundColor: '#0a0911',
     padding: 12,
     borderRadius: 8,
-    borderColor: '#1e1a32',
+    // borderColor: '#1e1a32',
     borderWidth: 1,
     margin: 16,
   },
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    backgroundColor: '#1e1a32',
+    // backgroundColor: '#1e1a32',
     borderRadius: 8,
     padding: 5,
   },
@@ -248,7 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tabText: {
-    color: '#B3B1C4',
+    // color: '#B3B1C4',
     fontWeight: '500',
   },
   activeTabText: {
@@ -264,10 +287,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    // color: '#333',
   },
   amount: {
-    color: '#B0AEC0',
+    // color: '#B0AEC0',
     fontSize: 12,
     fontFamily: 'Inter-400',
     textAlign: 'center',
@@ -280,12 +303,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: '#FFFFFF',
+    // color: '#FFFFFF',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#8880A0',
+    // color: '#8880A0',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },

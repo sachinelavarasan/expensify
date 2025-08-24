@@ -22,6 +22,8 @@ import { otpValidation } from '@/utils/Validation-custom';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
 import { useClerk, useSignUp } from '@clerk/clerk-expo';
 import AuthLink from '@/components/AuthLink';
+import { ThemedView } from '@/components/ThemedView';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const MobileVerify = () => {
   const [otp, setOtp] = useState<string>('');
@@ -29,6 +31,7 @@ const MobileVerify = () => {
   const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
   const {signOut} = useClerk();
   const [isModalVisible, setModalVisible] = useState(false);
+  const { colors } = useThemeContext();
 
   const router = useRouter();
 
@@ -100,6 +103,7 @@ const MobileVerify = () => {
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
+        <ThemedView style={{flex: 1}}>
         <ScrollView
           bounces={false}
           showsVerticalScrollIndicator={false}
@@ -111,8 +115,8 @@ const MobileVerify = () => {
           }}
           keyboardShouldPersistTaps={'always'}>
           <Spacer height={100} />
-          <Text style={styles.header}>Verify Phone</Text>
-          <Text style={styles.subtext}>
+          <Text style={[styles.header, {color: colors.title}]}>Verify Phone</Text>
+          <Text style={[styles.subtext, {color: colors.description}]}>
             Enter the 6-digit code that has been sent to{' '}
             <Text style={[styles.subtext]}>{phone}</Text>
           </Text>
@@ -166,7 +170,7 @@ const MobileVerify = () => {
               }}>
               <View
                 style={{
-                  backgroundColor: '#0E0E10',
+                  backgroundColor: colors.background,
                   width: width - 60,
                   borderRadius: 10,
                   paddingVertical: 30,
@@ -177,7 +181,7 @@ const MobileVerify = () => {
                 }}>
                 <Text
                   style={{
-                    color: '#ffffff',
+                    color: colors.title,
                     fontSize: 18,
                     textAlign: 'center',
                     lineHeight: 24,
@@ -208,6 +212,7 @@ const MobileVerify = () => {
             </View>
           </Modal>
         </ScrollView>
+        </ThemedView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
   );
@@ -260,12 +265,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#1E1E1E',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   textDisable: { opacity: 0 },
   errorContainer: {

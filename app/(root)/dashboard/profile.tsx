@@ -20,17 +20,20 @@ import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
 import { useGetUserData } from '@/hooks/useUserStore';
 import BankCard from '@/components/AccountCard';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
 const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
+  const { colors } = useThemeContext();
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
   const { refetch } = useGetUserData();
   const { signOut } = useAuth();
   const { user: currentUser } = useUser();
+  
 
   const overAllAmount = accounts.reduce(
     (previous, current) => Number(previous) + Number(current.exp_ba_balance) || 0,
@@ -51,17 +54,20 @@ const Profile = () => {
       refetch={refetch}>
       <>
         <Pressable>
-          <View style={styles.card}>
+          <View style={[
+              styles.card,
+              { backgroundColor: colors.bottomBarBackground},
+            ]}>
             <View style={styles.left}>
               <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                 <MaterialIcons name="account-balance" size={24} color="#FFF" />
               </View>
               <View>
                 <View>
-                  <Text style={styles.option}>Accounts</Text>
+                  <Text style={[styles.option, { color: colors.title }]}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText]}>Over All : {overAllAmount}</Text>
+                  <Text style={[styles.subText, { color: colors.title, fontFamily: 'Inter-600' }]}>Over All : {overAllAmount}</Text>
                 </View>
               </View>
             </View>
@@ -86,7 +92,7 @@ const Profile = () => {
               <Spacer height={60} />
             ) : (
               <View style={{ height: 60, justifyContent: 'center' }}>
-                <Text style={styles.subText}>There is no account exist</Text>
+                <Text style={[styles.subText, { color: colors.description }]}>There is no account exist</Text>
               </View>
             )
           }
@@ -138,17 +144,20 @@ const Profile = () => {
         />
         <Link href={'/(root)/categories'} asChild>
           <TouchableOpacity>
-            <View style={styles.card}>
+            <View style={[
+              styles.card,
+              { backgroundColor: colors.bottomBarBackground},
+            ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="category" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Categories</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>Categories</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Keep your spending neatly sorted</Text>
+                    <Text style={[styles.subText, { color: colors.description }]}>Keep your spending neatly sorted</Text>
                   </View>
                 </View>
               </View>
@@ -160,17 +169,20 @@ const Profile = () => {
 
         <Link href={'/(root)/starred'} asChild>
           <TouchableOpacity>
-            <View style={styles.card}>
+            <View style={[
+              styles.card,
+              { backgroundColor: colors.bottomBarBackground},
+            ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="star" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Starred Transactions</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>Starred Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>Access your favorite transactions quickly</Text>
+                    <Text style={[styles.subText, { color: colors.description }]}>Access your favorite transactions quickly</Text>
                   </View>
                 </View>
               </View>
@@ -181,17 +193,20 @@ const Profile = () => {
         </Link>
         <Link href={'/(root)/export-transactions'} asChild>
           <TouchableOpacity>
-            <View style={styles.card}>
+            <View style={[
+              styles.card,
+              { backgroundColor: colors.bottomBarBackground},
+            ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="import-export" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Import / Export Transactions</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>Import / Export Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>
+                    <Text style={[styles.subText, { color: colors.description }]}>
                       Download and share your transaction history
                     </Text>
                   </View>
@@ -204,17 +219,20 @@ const Profile = () => {
         </Link>
         <Link href={'/(root)/settings'} asChild>
           <TouchableOpacity>
-            <View style={styles.card}>
+            <View style={[
+              styles.card,
+              { backgroundColor: colors.bottomBarBackground},
+            ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="settings" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={styles.option}>Settings</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>Settings</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText]}>
+                    <Text style={[styles.subText, { color: colors.description }]}>
                       Customize your app preferences and controls
                     </Text>
                   </View>
@@ -309,6 +327,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 10
   },
   amount: {
     color: '#A0A0A0',
@@ -329,7 +348,7 @@ const styles = StyleSheet.create({
   },
   subText: {
     color: '#6F6D85',
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Inter-500',
     wordWrap: 'wrap',
     maxWidth: deviceWidth() - 80,

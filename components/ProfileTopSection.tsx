@@ -12,8 +12,8 @@ import { deviceWidth } from '@/utils/functions';
 import UpdateProfile from './UpdateProfile';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
-import { useThemeContext } from '@/contexts/ThemedContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
@@ -123,10 +123,14 @@ export default function AnimatedTopSection({
 
         <View style={styles.headerContent}>
           <View style={styles.headerTextOverlay}>
-            <Text style={styles.titleTextInHeader} numberOfLines={1}>
+            <Text style={[styles.titleTextInHeader, { color: colors.title }]} numberOfLines={1}>
               {title}
             </Text>
-            {subtitle && <Text style={styles.subtitleTextInHeader}>{subtitle}</Text>}
+            {subtitle && (
+              <Text style={[styles.subtitleTextInHeader, { color: colors.lighterTitle }]}>
+                {subtitle}
+              </Text>
+            )}
           </View>
 
           <UpdateProfile refetch={refetch} />

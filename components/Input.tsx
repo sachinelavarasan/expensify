@@ -63,7 +63,15 @@ const Input = forwardRef(function MyInput(
           borderLess ? [styles.borderNone, { backgroundColor: colors.background }] : null,
           !editable ? { opacity: 0.7 } : null,
         ]}>
-        <View style={styles.innerView}>
+        <View
+          style={[
+            styles.innerView,
+            {
+              borderColor: colors.borderColor,
+              borderRadius: 8,
+              borderWidth: 1,
+            },
+          ]}>
           <TextInput
             ref={ref}
             {...otherProps}
@@ -72,7 +80,6 @@ const Input = forwardRef(function MyInput(
               {
                 backgroundColor: theme === 'light' ? colors.background : 'transparent',
                 color: colors.text,
-                borderColor: colors.borderColor,
               },
               isTitle ? styles.titleText : null,
               isTextBox ? styles.textBox : null,
@@ -127,14 +134,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingVertical: Platform.OS === 'android' ? 8 : 16,
+    paddingVertical: 8,
     fontSize: 16,
     fontFamily: 'Inter-400',
     color: '#1E1E1E',
     paddingHorizontal: 20,
-
     borderRadius: 8,
     borderWidth: 1,
+    borderColor: 'transparent'
     // shadowOffset: {
     //   width: 0,
     //   height: 0,

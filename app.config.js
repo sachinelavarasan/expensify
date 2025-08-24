@@ -6,7 +6,7 @@ export default {
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "expensify",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
       "supportsTablet": true

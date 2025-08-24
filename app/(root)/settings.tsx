@@ -13,8 +13,11 @@ import DefaultTransactionModal from '@/components/DefaultTransactionModal';
 import DefaultGroupingModal from '@/components/DefaultGroupingModal';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useReminderSettings } from '@/hooks/useReminder';
+import ThemeToggle from '@/components/ThemeToggle';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Setting() {
+  const { colors } = useThemeContext();
   const { enabled, time, scheduleNotification, disableNotification } = useReminderSettings();
   const [showBalance, setShowBalance] = useState(false);
   const [carryBalance, setCarryBalance] = useState(false);
@@ -70,10 +73,11 @@ export default function Setting() {
             <ProfileHeader title="Settings" paddingHorizontal={false}/>
             <Spacer height={20} />
             <View style={{ gap: 20 }}>
+              <ThemeToggle />
               {/* General Section */}
               <View>
                 <View>
-                  <Text style={{ color: '#fff' }}>General</Text>
+                  <Text style={{ color: colors.text }}>General</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <CurrencyModal currency={user?.exp_us_currency} refetch={refetch} />
@@ -102,15 +106,15 @@ export default function Setting() {
               {/* Reminder Section */}
               <View>
                 <View>
-                  <Text style={{ color: '#fff' }}>Reminder</Text>
+                  <Text style={{ color: colors.text }}>Reminder</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialIcons name="access-alarm" size={20} color="white" />
+                      <MaterialIcons name="access-alarm" size={20} color={colors.text} />
                       <View>
-                        <Text style={styles.option}>Daily Reminder</Text>
-                        <Text style={styles.subText}>
+                        <Text style={[styles.option, { color: colors.title }]}>Daily Reminder</Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
                           Get a daily notification to add transactions
                         </Text>
                       </View>
@@ -142,15 +146,15 @@ export default function Setting() {
               {/* Display Customization Section */}
               <View>
                 <View>
-                  <Text style={{ color: '#fff' }}>Display Customization</Text>
+                  <Text style={{ color: colors.text }}>Display Customization</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialIcons name="account-balance-wallet" size={20} color="white" />
+                      <MaterialIcons name="account-balance-wallet" size={20} color={colors.text} />
                       <View>
-                        <Text style={styles.option}>Show Balance</Text>
-                        <Text style={styles.subText}>Toggle visibility of your total balance</Text>
+                        <Text style={[styles.option, { color: colors.title }]}>Show Balance</Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>Toggle visibility of your total balance</Text>
                       </View>
                     </View>
                     <View>
@@ -164,10 +168,10 @@ export default function Setting() {
                   </View>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialCommunityIcons name="calendar-arrow-right" size={20} color="white" />
+                      <MaterialCommunityIcons name="calendar-arrow-right" size={20} color={colors.text} />
                       <View>
-                        <Text style={styles.option}>Carry Over Balance</Text>
-                        <Text style={styles.subText}>Move unused balance to the next period</Text>
+                        <Text style={[styles.option, { color: colors.title }]}>Carry Over Balance</Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>Move unused balance to the next period</Text>
                       </View>
                     </View>
                     <View>
@@ -181,10 +185,10 @@ export default function Setting() {
                   </View>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <Ionicons name="time-outline" size={20} color="white" />
+                      <Ionicons name="time-outline" size={20} color={colors.text}/>
                       <View>
-                        <Text style={styles.option}>Show Transaction Time</Text>
-                        <Text style={styles.subText}>
+                        <Text style={[styles.option, { color: colors.title }]}>Show Transaction Time</Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
                           Display the time along with each transaction
                         </Text>
                       </View>
