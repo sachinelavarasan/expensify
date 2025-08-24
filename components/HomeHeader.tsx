@@ -1,105 +1,71 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
 const CARDGAP = 10;
-
 const width = deviceWidth();
-
 const cardWidth = (width - CARDGAP * 3) / 2;
+
 const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
+  const { value: showBalance } = useGetSettingsFromStore('balance');
+
   return (
-    <View>
-      {/* <View style={styles.topContainer}>
-        <View style={[styles.card, { width: cardWidth }]}>
+    <View style={{ marginBottom: 10 }}>
+      {/* Income + Expense */}
+      <View style={styles.topContainer}>
+        {/* Income Card */}
+        <LinearGradient
+          colors={['#1D2B64', '#1E1B30']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.card, { width: cardWidth }]}>
           <View>
             <Text style={styles.cardTitle}>Income</Text>
             <Text style={styles.cardSubtitle} numberOfLines={2}>
               {formatToCurrency(income)}
             </Text>
           </View>
-          <View>
-            <Feather name="arrow-down-left" size={20} color="#F3F2F8" />
+          <View style={styles.iconBadgeGreen}>
+            <Feather name="arrow-down-left" size={16} color="#00C896" />
           </View>
-        </View>
-        <View style={[styles.card, { width: cardWidth }]}>
+        </LinearGradient>
+
+        {/* Expense Card */}
+        <LinearGradient
+          colors={['#3A0A0A', '#1E1B30']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.card, { width: cardWidth }]}>
           <View>
             <Text style={styles.cardTitle}>Expense</Text>
-            <Text style={styles.cardSubtitle} numberOfLines={3}>
+            <Text style={styles.cardSubtitle} numberOfLines={2}>
               {formatToCurrency(expense)}
             </Text>
           </View>
-          <View>
-            <Feather name="arrow-up-right" size={20} color="#FF4D4F" />
+          <View style={styles.iconBadgeRed}>
+            <Feather name="arrow-up-right" size={16} color="#FF4D4F" />
           </View>
-        </View>
+        </LinearGradient>
       </View>
-      <View>
-        <View style={styles.balance}>
-          <Text style={[styles.balanceText, { color: '#EDEDED' }]}>Balance: {''}</Text>
+
+      {!!showBalance && (
+        <LinearGradient
+          colors={['#2E2654', '#1E1B30']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.balance}>
+          <Text style={[styles.balanceText, { opacity: 0.8 }]}>Balance:</Text>
           <Text
-            style={[styles.balanceText, { color: '#EDEDED', fontFamily: 'Inter-600' }]}
-            numberOfLines={2}>
+            style={[styles.balanceText, { fontFamily: 'Inter-600', marginLeft: 6, color: '#FFF' }]}
+            numberOfLines={1}>
             {formatToCurrency(income - expense)}
           </Text>
-        </View>
-      </View> */}
-      <LinearGradient
-        // colors={['#463E75', '#8E24AA', '#FF4081']}
-        colors={['#463E75', '#6B5DE6', '#6900FF']}
-        // colors={['#463E75', '#FF6F00', '#FFC107']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.linearGradientContainer}>
-        <View style={{ flexDirection: 'column', justifyContent: 'center' }}>
-          {/* Title & Balance */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={styles.totalBalanceTitle}>Total Balance</Text>
-            <Text
-              style={{
-                color: '#FFFFFF',
-                fontFamily: 'Inter-700',
-                fontSize: 28,
-                marginTop: 4,
-              }}
-              numberOfLines={2}>
-              {formatToCurrency(income - expense)}
-            </Text>
-          </View>
-
-          {/* Income & Expense Row */}
-          <View style={styles.detailsContainer}>
-            {/* Income */}
-            <View style={{ alignItems: 'flex-start' }}>
-              <View style={{ gap: 4, flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="arrow-down-circle" size={20} color="#ffffff" />
-                <Text style={styles.title}>Income</Text>
-              </View>
-
-              <Text style={styles.subTitle} numberOfLines={2}>
-                {formatToCurrency(income)}
-              </Text>
-            </View>
-
-            {/* Divider */}
-            <View style={styles.divider} />
-
-            {/* Expense */}
-            <View style={{ alignItems: 'flex-end' }}>
-              <View style={{ gap: 4, flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="arrow-up-circle" size={20} color="#ffffff" />
-                <Text style={styles.title}>Expense</Text>
-              </View>
-              <Text style={styles.subTitle} numberOfLines={2}>
-                {formatToCurrency(expense)}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
+      )}
     </View>
   );
 };
@@ -107,43 +73,62 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
 export default HomeHeader;
 
 const styles = StyleSheet.create({
-  linearGradientContainer: {
-    padding: 20,
-    borderRadius: 16,
-    margin: 16,
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 1,
-    shadowOffset: { width: 0, height: 100 },
-    // Shadow for Android
-    elevation: 12,
+  topContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
   },
-
-  title: {
-    color: '#FFFFFF',
+  card: {
+    borderRadius: 16,
+    padding: 18,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  cardTitle: {
+    color: '#F4F5F8',
     fontSize: 13,
     fontFamily: 'Inter-600',
+    paddingBottom: 5,
   },
-  subTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Inter-600',
-    marginTop: 2,
+  cardSubtitle: {
+    color: '#E0E0FF',
+    fontSize: 12,
+    fontFamily: 'Inter-700',
+    maxWidth: cardWidth - 50,
   },
-  totalBalanceTitle: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 15,
-    fontFamily: 'Inter-600',
-  },
-  divider: {
-    borderColor: 'rgba(255,255,255,0.4)',
-    borderWidth: 0.5,
-    height: 30,
-  },
-  detailsContainer: {
-    flexDirection: 'row',
+  iconBadgeGreen: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,200,150,0.15)',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
+  iconBadgeRed: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,77,79,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  balance: {
+  flexDirection: 'row',
+  paddingVertical: 6,
+  paddingHorizontal: 16,
+  borderRadius: 20,
+  alignSelf: 'center',
+  alignItems: 'center',
+  marginTop: 12,
+},
+balanceText: {
+  fontSize: 13,
+  fontFamily: 'Inter-500',
+  color: '#EDEDED',
+},
 });

@@ -8,11 +8,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { AntDesign, Ionicons } from '@expo/vector-icons';
+import { AntDesign, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,6 +47,7 @@ const UpdateProfile = ({
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors, isValid },
   } = useForm({
     defaultValues: {
@@ -54,6 +55,20 @@ const UpdateProfile = ({
     },
     resolver: zodResolver(schema),
   });
+
+  useEffect(() => {
+    if (user?.firstName) {
+      reset(
+        {
+          name: user?.firstName,
+        },
+        {
+          keepDirty: false,
+          keepIsValidating: true,
+        }
+      );
+    }
+  }, [user]);
 
   const onSubmit = (data: EditProfileForm) => {
     setIsLoading(true);
@@ -88,8 +103,8 @@ const UpdateProfile = ({
   };
   return (
     <>
-      <Pressable style={{ marginLeft: 70 }} onPress={toggleModal}>
-        <AntDesign name="edit" size={24} color={colors.secondary} />
+      <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
+        <FontAwesome5 name="user-edit" size={20} color="#FFF" />
       </Pressable>
 
       <Modal
@@ -114,13 +129,14 @@ const UpdateProfile = ({
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}>
-              <Text style={[styles.title, { color: colors.title }]}>Edit Details</Text>
+              <Text style={styles.title}>Edit Details</Text>
+
               <TouchableOpacity
                 onPress={() => setShow(!show)}
                 style={{ alignItems: 'flex-end' }}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 disabled={isLoading}>
-                <Ionicons name="close" color="#5A5A6E" size={20} />
+                <Ionicons name="close" color="#fff" size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />

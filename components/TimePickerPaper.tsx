@@ -31,11 +31,11 @@ const TimePickerPaper = ({
   useEffect(() => {
     if (!value) {
       const now = new Date();
-      const formatted = formatDisplayTime(now);
+      const formatted = format(now, 'hh:mm a');
       setTime(now);
       onChange(formatted);
     } else {
-      const parsedTime = parse(value, 'hh:mm a', new Date());
+      const parsedTime = parse(value, 'HH:mm', new Date());
       if (!isNaN(parsedTime.getTime())) {
         setTime(parsedTime);
       }
@@ -52,7 +52,7 @@ const TimePickerPaper = ({
       updated.setMinutes(minutes);
       updated.setSeconds(0);
       setTime(updated);
-      onChange(formatDisplayTime(updated));
+      onChange(format(updated, 'HH:mm'));
     },
     [setOpen],
   );
@@ -90,7 +90,7 @@ const TimePickerPaper = ({
         }}>
         <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />
         <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
-          {value || placeholder || 'Select Time'}
+          {formatDisplayTime(time) || placeholder || 'Select Time'}
         </Text>
       </TouchableOpacity>
 

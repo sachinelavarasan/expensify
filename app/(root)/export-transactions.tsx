@@ -1,5 +1,7 @@
 import {
   ActivityIndicator,
+  Alert,
+  Button,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -8,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -17,14 +19,25 @@ import Spacer from '@/components/Spacer';
 import {
   useExportExcelTransactions,
   useExportPdfTransactions,
+  useImportExcel,
 } from '@/hooks/useExportTransactions';
 import CustomRadioButton from '@/components/CustomRadioButton';
 import { exportType, transactionExportType } from '@/utils/common-data';
 import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
-import { AntDesign, Entypo } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import * as XLSX from 'xlsx';
+import { CustomSelectInput } from '@/components/CustomSelectInput';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
+import { formatToCurrency } from '@/utils/formatter';
+import { useRouter } from 'expo-router';
 
 export default function ExportData() {
+  const router = useRouter();
   const { mutateAsync: exportExcelMutation, isPending } = useExportExcelTransactions();
+  const { mutateAsync: importExcelMutation, isPending: processing, error, data } = useImportExcel();
   const { mutateAsync: exportPdfMutation, isPending: isPdfLoading } = useExportPdfTransactions();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
@@ -76,9 +89,13 @@ export default function ExportData() {
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
-        <ThemedView style={{ flex: 1, paddingHorizontal: 10 }}>
-          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-            <ProfileHeader title="Export Transactions" />
+        <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+          <ThemedView
+            style={{
+              flex: 1,
+              paddingHorizontal: 20,
+            }}>
+            <ProfileHeader title="Export Transactions" paddingHorizontal={false} />
             <Spacer height={20} />
             <View style={{ alignItems: 'flex-start' }}>
               <View style={[styles.card, { width: '100%' }]}>
@@ -89,7 +106,7 @@ export default function ExportData() {
                   placeholder="Start date"
                 />
                 <Spacer height={5} />
-                <AntDesign name="arrowdown" size={24} color="#6B5DE6" />
+                <AntDesign name="arrowdown" size={24} color="#6900FF" />
                 <Spacer height={5} />
                 <DatePickerWithOutValue
                   label="To:"
@@ -131,16 +148,45 @@ export default function ExportData() {
                 ]}
                 onPress={download}>
                 {isPdfLoading || isPending ? (
-                  <ActivityIndicator animating color={'#1E1E1E'} style={styles.loader} />
+                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
-                <Text
-                  style={[styles.exportBtn, isPdfLoading || isPending ? styles.textDisable : {}]}>
+                <Text style={[styles.title, isPdfLoading || isPending ? styles.textDisable : {}]}>
                   Export Now
                 </Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
-        </ThemedView>
+            <Spacer height={20} />
+            <Spacer
+              height={1}
+              otherStyle={{
+                backgroundColor: '#5a4f9645',
+              }}
+            />
+            <Spacer height={20} />
+            <View style={[{ paddingHorizontal: 5 }]}>
+              <Text style={[styles.subText, { lineHeight: 20 }]}>
+                If you want to add multiple transactions at once, simply click the{' '}
+                <Text style={{ fontWeight: '800', color: '#FFF' }}>Import Transations</Text> button and upload
+                your <Text style={{ fontWeight: '800', color: '#FFF' }}>.xlsx</Text> file.
+              </Text>
+              <Spacer height={10} />
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.opacityBg
+                ]}
+                onPress={() => router.push('/(root)/import-transactions')}>
+                <Text style={[styles.title]}>
+                  Import Transactions
+                </Text>
+              </TouchableOpacity>
+              <Spacer height={20} />
+
+            </View>
+
+            <Spacer height={100} />
+          </ThemedView>
+        </ScrollView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
   );
@@ -155,26 +201,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
+    paddingVertical: 10,
     width: '100%',
   },
   title: {
-    color: '#1E1E1E',
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   logoutBg: {
-    backgroundColor: '#6B5DE6',
+    backgroundColor: '#076ae3',
+  },
+  opacityBg: {
+    backgroundColor: '#2E8B57',
   },
   card: {
-    borderColor: '#E2E2EA',
+    borderColor: '#5a4f96',
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 10,
-    backgroundColor: '#FFFFFF',
   },
   disable: {
     opacity: 0.6,
@@ -185,9 +232,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  exportBtn: {
+  subText: {
+    fontSize: 14,
+    color: '#ccc',
+    marginTop: 2,
+  },
+  contentContainer: {
+    padding: 12,
+  },
+
+  itemContainer: {
+    padding: 8,
+    marginBottom: 12,
+    backgroundColor: '#141221',
+    borderRadius: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  left: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  name: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Inter-600',
+  },
+  subTextContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
 });

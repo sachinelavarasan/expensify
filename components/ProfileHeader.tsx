@@ -8,10 +8,14 @@ export default function ProfileHeader({
   title,
   deleteAction,
   subtitle,
+  children,
+  paddingHorizontal = true,
 }: {
   title: string;
   deleteAction?: () => void;
   subtitle?: string;
+  children?: React.ReactNode;
+  paddingHorizontal?: boolean;
 }) {
   const { colors } = useThemeContext();
   const router = useRouter();
@@ -19,6 +23,7 @@ export default function ProfileHeader({
     <View
       style={{
         height: 50,
+        paddingHorizontal: paddingHorizontal ? 10 : 0,
         marginTop: 5,
         flexDirection: 'row',
         alignItems: 'center',
@@ -56,6 +61,7 @@ export default function ProfileHeader({
             <FontAwesome5 name="trash" size={20} color="#D9363E" />
           </TouchableOpacity>
         )}
+        {children}
       </View>
     </View>
   );

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Image, Platform, StyleSheet, Text, View } from 'react-native';
 import { SelectList } from 'react-native-dropdown-select-list';
 import { FontAwesome } from '@expo/vector-icons';
-import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface CustomSelectInputProps {
   options: { key: any; value: any }[];
@@ -12,6 +11,7 @@ interface CustomSelectInputProps {
   onChange: (id: number | string) => void;
   value: string | number;
   isRequired?: boolean;
+  isSmall?: boolean;
 }
 
 export const CustomSelectInput = ({
@@ -21,8 +21,8 @@ export const CustomSelectInput = ({
   placeholder,
   value,
   isRequired = false,
+  isSmall = false,
 }: CustomSelectInputProps) => {
-  const { colors, theme } = useThemeContext();
   const [selected, setSelected] = useState(value);
   const [defaultOption, setDefaultOption] = useState<{ key: any; value: any } | undefined>();
 
@@ -36,61 +36,29 @@ export const CustomSelectInput = ({
     <View style={styles.selectBoxContainer}>
       {label ? (
         <View style={{ display: 'flex', flexDirection: 'row' }}>
-          <Text style={[styles.labelStyles, { color: colors.title }]}>{label}</Text>
-          {/* {isRequired ? (
+          <Text style={styles.labelStyles}>{label}</Text>
+          {isRequired ? (
             <View style={{ marginLeft: 5, marginTop: 5 }}>
               <Image
                 source={require('@/assets/icons/required.png')}
-                style={{ width: 8, height: 8 }}
+                style={{ width: 5, height: 5 }}
               />
             </View>
-          ) : null} */}
+          ) : null}
         </View>
       ) : null}
       <SelectList
         onSelect={() => onChange(selected)}
         setSelected={setSelected}
-        fontFamily="Inter-500"
+        fontFamily={isSmall? "Inter-400": "Inter-500"}
         data={options}
-        arrowicon={<FontAwesome name="chevron-down" size={16} color={colors.arrowColor} />}
+        arrowicon={<FontAwesome name="chevron-down" size={10} color={'#5a5962'} />}
         search={false}
-        boxStyles={{
-          padding: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderRadius: 8,
-          borderWidth: 1,
-          borderColor: colors.borderColor,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          shadowColor: colors.background,
-          shadowOffset: {
-            width: 0,
-            height: 0,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 2.84,
-          elevation: 1,
-          backgroundColor: colors.background,
-        }} // Apply custom styles
+        boxStyles={styles.boxStyles} // Apply custom styles
         defaultOption={defaultOption} //default selected option
-        dropdownStyles={{
-          backgroundColor: theme === 'light' ? colors.background : colors.background,
-          borderColor: colors.borderColor,
-          borderRadius: 8,
-          borderWidth: 1,
-          shadowOffset: {
-            width: 0,
-            height: 0,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 2.84,
-          elevation: 1,
-          shadowColor: theme === 'light' ? '#fff' : '#000',
-        }}
-        inputStyles={{ color: colors.title, paddingVertical: Platform.OS === 'android' ? 1 : 6 }}
-        dropdownTextStyles={{ color: colors.title }}
+        dropdownStyles={styles.dropdownStyles}
+        inputStyles={isSmall?{}: styles.inputStyles}
+        dropdownTextStyles={styles.dropdownTextStyles}
         maxHeight={150}
         placeholder={placeholder}
       />
@@ -105,9 +73,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
+  boxStyles: {
+    borderWidth: 0,
+    borderRadius: 6,
+    padding: 0,
+    backgroundColor: '#1C1C20',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    fontSize: 12,
+    fontFamily: 'Inter-300',
+    color: '#6E6E80',
+  },
+  dropdownStyles: { backgroundColor: '#1C1C20', borderWidth: 0 },
+  inputStyles: {
+    color: '#ffffff',
+    paddingVertical: 2,
+  },
+  dropdownTextStyles: {
+    color: '#B3B1C4',
+    fontSize: 12,
+  },
   labelStyles: {
-    fontSize: 16,
+    fontSize: 12,
+    color: '#B3B1C4',
     marginBottom: 6,
-    fontFamily: 'Inter-400',
+    fontFamily: 'Inter-500',
   },
 });

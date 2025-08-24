@@ -8,10 +8,8 @@ import TableView from '@/components/Table';
 import IncomeExpenseTabs from '@/components/StatTab';
 import { useCallback, useState } from 'react';
 import { RefreshControl } from 'react-native-gesture-handler';
-import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Stat() {
-  const { colors } = useThemeContext();
   const { transactions, currentMonth, loading, goToNextMonth, goToPreviousMonth, refetch } =
     useMonthlyTransactions();
 
@@ -50,7 +48,7 @@ export default function Stat() {
   }, []);
 
   return (
-    <ThemedView style={{ flex: 1, paddingHorizontal: 10 }}>
+    <ThemedView style={{ flex: 1 }}>
       {loading && <OverlayLoader />}
 
       <FlatList
@@ -81,17 +79,17 @@ export default function Stat() {
                 donut
                 isAnimated
                 animationDuration={500}
-                innerCircleColor={colors.background}
-                innerRadius={80}
+                innerCircleColor="#1F1A29"
+                innerRadius={65}
                 labelsPosition="mid"
-                textColor="#6B5DE6"
+                textColor="#6900FF"
                 centerLabelComponent={() =>
                   pieData.length > 0 ? (
                     pieData.map((item, index) => (
                       <Text
                         key={index}
                         style={{
-                          fontSize: 16,
+                          fontSize: 14,
                           marginBottom: 5,
                           color: item.color,
                           fontFamily: 'Inter-600',
@@ -100,13 +98,13 @@ export default function Stat() {
                       </Text>
                     ))
                   ) : (
-                    <Text style={{ fontSize: 16, color: colors.title }}>No data</Text>
+                    <Text style={{ fontSize: 16, color: '#333' }}>No data</Text>
                   )
                 }
               />
             </View>
 
-            <View style={{ flex: 1 }}>
+            <View style={{flex: 1}}>
               <TableView transactions={transactions} />
             </View>
 

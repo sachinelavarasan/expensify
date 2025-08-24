@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { accountIcon } from '@/utils/common-data';
 import { showToast } from './ToastMessage';
+import { LinearGradient } from "expo-linear-gradient";
 import { useAddBankAccount, useUpdateBankAccount } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
@@ -139,26 +140,19 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
   };
   return (
     <>
-      <Pressable onPress={toggleModal}>
+     <Pressable onPress={toggleModal} style={{ borderRadius: 40, overflow: 'hidden' }}>
+      <LinearGradient
+        colors={["#6C63FF", "#B388FF"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[exp_ba_id ? styles.iconWrapper : styles.addbutton]}>
         {exp_ba_id ? (
-          <FontAwesome name="edit" size={24} color={colors.title} />
+          <FontAwesome name="edit" size={20} color="#FFF" />
         ) : (
-          <Text
-            style={{
-              color: colors.title,
-              fontFamily: 'Inter-500',
-              fontSize: 14,
-              borderColor: colors.borderColor,
-              paddingVertical: 4,
-              paddingHorizontal: 14,
-              borderRadius: 40,
-              borderWidth: 1,
-              backgroundColor: colors.background,
-            }}>
-            Add New
-          </Text>
+          <Text style={styles.text}>Add New</Text>
         )}
-      </Pressable>
+      </LinearGradient>
+    </Pressable>
 
       <Modal
         backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
@@ -340,5 +334,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 6,
     fontFamily: 'Inter-400',
+  },
+  addbutton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: "#B388FF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  iconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: "#B388FF",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  text: {
+    color: '#FFF',
+    fontSize: 14,
+    fontFamily: 'Inter-600',
   },
 });

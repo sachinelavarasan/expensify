@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
-const tableWidth = width - 52;
+const tableWidth = width - 32;
 
 export default function TableView({ transactions }: { transactions: Itransaction[] }) {
   const { colors } = useThemeContext();
@@ -125,10 +125,13 @@ export default function TableView({ transactions }: { transactions: Itransaction
 
 const styles = StyleSheet.create({
   table: {
-    borderWidth: 0.5,
-    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#2D2A40',
+    borderRadius: 2,
     margin: 16,
+    height: 'auto',
     borderBottomWidth: 0,
+    backgroundColor: '#161421',
     width: tableWidth,
     overflow: 'hidden', // important to keep gradient corners rounded
   },
@@ -144,10 +147,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     fontSize: 14,
+    color: '#D1CFE9',
+  },
+  header: {
+    backgroundColor: '#2A2740',
   },
   headerText: {
     fontWeight: '600',
-    color: '#FFFFFF',
-    fontFamily: 'Inter-600',
+    color: '#E6E6FA',
+    fontSize: 14,
   },
 });

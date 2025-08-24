@@ -62,8 +62,8 @@ const DatePickerPaper = forwardRef<any, Props>(
           <View style={{ display: 'flex', flexDirection: 'row' }}>
             <Text
               style={{
-                fontSize: 14,
-                color: '#282343',
+                fontSize: 12,
+                color: '#B3B1C4',
                 marginBottom: 6,
                 fontFamily: 'Inter-400',
               }}>

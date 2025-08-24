@@ -9,25 +9,23 @@ import {
   TouchableOpacity,
   Pressable,
   FlatList,
-  Image,
 } from 'react-native';
 import { deviceWidth } from '@/utils/functions';
 
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useBankAccounts, useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
 import { useGetUserData } from '@/hooks/useUserStore';
-import { useThemeContext } from '@/contexts/ThemedContext';
+import BankCard from '@/components/AccountCard';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
 const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
-  const { colors } = useThemeContext();
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
   const { refetch } = useGetUserData();
@@ -53,24 +51,17 @@ const Profile = () => {
       refetch={refetch}>
       <>
         <Pressable>
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: colors.bottomBarBackground, paddingHorizontal: 10 },
-            ]}>
+          <View style={styles.card}>
             <View style={styles.left}>
-              <View style={{ backgroundColor: '#6B5DE6', padding: 8, borderRadius: 5 }}>
-                <MaterialIcons name="account-balance" size={24} color="#FFFFFF" />
+              <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                <MaterialIcons name="account-balance" size={24} color="#FFF" />
               </View>
               <View>
                 <View>
-                  <Text style={[styles.option, { color: colors.title }]}>Accounts</Text>
+                  <Text style={styles.option}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText, { color: colors.description }]}>Over All : </Text>
-                  <Text style={[styles.subText, { color: colors.title, fontFamily: 'Inter-600' }]}>
-                    {overAllAmount}
-                  </Text>
+                  <Text style={[styles.subText]}>Over All : {overAllAmount}</Text>
                 </View>
               </View>
             </View>
@@ -82,7 +73,7 @@ const Profile = () => {
           contentContainerStyle={{
             marginTop: 5,
             marginBottom: 15,
-            gap: 5,
+            gap: 10,
             padding: 5,
           }}
           horizontal
@@ -95,123 +86,112 @@ const Profile = () => {
               <Spacer height={60} />
             ) : (
               <View style={{ height: 60, justifyContent: 'center' }}>
-                <Text style={[styles.subText, { color: colors.description }]}>
-                  There is no account exist
-                </Text>
+                <Text style={styles.subText}>There is no account exist</Text>
               </View>
             )
           }
           renderItem={({ item }) => (
-            <Link
-              href={{
-                pathname: '/accounts/[id]',
-                params: { id: item.exp_ba_id },
-              }}
-              asChild>
-              <TouchableOpacity style={styles.accountCard}>
-                <View
-                  style={[
-                    styles.left,
-                    {
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    },
-                  ]}>
-                  <View>
-                    <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>
-                  </View>
-                  <View style={{ backgroundColor: '#6B5DE6', padding: 2, borderRadius: 2 }}>
-                    <MaterialIcons name="account-balance-wallet" size={16} color="#FFFFFF" />
-                  </View>
-                </View>
+             <BankCard
+                bankName={item.exp_ba_name}
+                holderName={"Elavarasan"}
+                icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
+                // accountNumber="123456789012"
+                balance={item.exp_ba_balance}
+                variant="dark"
+                accent="#6C63FF"
+                onPress={()=>{
+                  router.push(`/accounts/${item.exp_ba_id}`)
+                }}
+                otherStyle={{width: deviceWidth() - 60}}
+              />
+            // <Link
+            //   href={{
+            //     pathname: '/accounts/[id]',
+            //     params: { id: item.exp_ba_id },
+            //   }}
+            //   asChild>
+            //   {/* <TouchableOpacity style={styles.accountCard}>
+            //     <View
+            //       style={[
+            //         styles.left,
+            //         {
+            //           flexDirection: 'row',
+            //           justifyContent: 'space-between',
+            //           alignItems: 'center',
+            //         },
+            //       ]}>
+            //       <View>
+            //         <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>
+            //       </View>
+            //       <View style={{ backgroundColor: '#282343', padding: 2, borderRadius: 2 }}>
+            //         <MaterialIcons name="account-balance-wallet" size={16} color="#FFF" />
+            //       </View>
+            //     </View>
 
-                <View>
-                  <Text style={styles.amount}>{item.exp_ba_balance}</Text>
-                </View>
-              </TouchableOpacity>
-            </Link>
+            //     <View>
+            //       <Text style={styles.amount}>{item.exp_ba_balance}</Text>
+            //     </View>
+            //   </TouchableOpacity> */}
+             
+            // </Link>
           )}
         />
         <Link href={'/(root)/categories'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View
-                  style={{
-                    backgroundColor: colors.bottomBarBackground,
-                    padding: 8,
-                    borderRadius: 5,
-                  }}>
-                  <MaterialIcons name="category" size={24} color="#6B5DE6" />
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="category" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={[styles.option, { color: colors.title }]}>Categories</Text>
+                    <Text style={styles.option}>Categories</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText, { color: colors.description }]}>
-                      Keep your spending neatly sorted
-                    </Text>
+                    <Text style={[styles.subText]}>Keep your spending neatly sorted</Text>
                   </View>
                 </View>
               </View>
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
 
         <Link href={'/(root)/starred'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View
-                  style={{
-                    backgroundColor: colors.bottomBarBackground,
-                    padding: 8,
-                    borderRadius: 5,
-                  }}>
-                  <MaterialIcons name="star" size={24} color="#6B5DE6" />
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="star" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={[styles.option, { color: colors.title }]}>
-                      Starred Transactions
-                    </Text>
+                    <Text style={styles.option}>Starred Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText, { color: colors.description }]}>
-                      Access your favorite transactions quickly
-                    </Text>
+                    <Text style={[styles.subText]}>Access your favorite transactions quickly</Text>
                   </View>
                 </View>
               </View>
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
         <Link href={'/(root)/export-transactions'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View
-                  style={{
-                    backgroundColor: colors.bottomBarBackground,
-                    padding: 8,
-                    borderRadius: 5,
-                  }}>
-                  <MaterialCommunityIcons name="file-export" size={24} color="#6B5DE6" />
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="import-export" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={[styles.option, { color: colors.title }]}>
-                      Export Transactions
-                    </Text>
+                    <Text style={styles.option}>Import / Export Transactions</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText, { color: colors.description }]}>
+                    <Text style={[styles.subText]}>
                       Download and share your transaction history
                     </Text>
                   </View>
@@ -220,26 +200,21 @@ const Profile = () => {
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
         <Link href={'/(root)/settings'} asChild>
-          <Pressable>
+          <TouchableOpacity>
             <View style={styles.card}>
               <View style={styles.left}>
-                <View
-                  style={{
-                    backgroundColor: colors.bottomBarBackground,
-                    padding: 8,
-                    borderRadius: 5,
-                  }}>
-                  <MaterialIcons name="settings" size={24} color="#6B5DE6" />
+                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="settings" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={[styles.option, { color: colors.title }]}>Settings</Text>
+                    <Text style={styles.option}>Settings</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText, { color: colors.description }]}>
+                    <Text style={[styles.subText]}>
                       Customize your app preferences and controls
                     </Text>
                   </View>
@@ -248,7 +223,7 @@ const Profile = () => {
 
               <View>{/* <Text style={styles.amount}>%</Text> */}</View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         </Link>
         <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
           <TouchableOpacity style={[styles.button, styles.logoutBg]} onPress={onSubmit}>
@@ -275,6 +250,11 @@ const styles = StyleSheet.create({
     marginTop: -140,
     marginLeft: (deviceWidth() - 150) / 2,
   },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
   email: {
     fontSize: 16,
     color: 'gray',
@@ -287,6 +267,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
+    backgroundColor: '#6900FF',
     borderRadius: 8,
     paddingVertical: Platform.OS === 'android' ? 10 : 16,
     width: '100%',
@@ -297,6 +278,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
+    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -322,13 +304,14 @@ const styles = StyleSheet.create({
   },
   card: {
     paddingVertical: 8,
-    borderRadius: 8,
+    marginBottom: 12,
+    borderRadius: 4,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   amount: {
-    color: '#5a4f96',
+    color: '#A0A0A0',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
@@ -340,12 +323,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   option: {
+    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
+    color: '#6F6D85',
     fontSize: 14,
-    fontFamily: 'Inter-400',
+    fontFamily: 'Inter-500',
     wordWrap: 'wrap',
     maxWidth: deviceWidth() - 80,
   },
@@ -356,22 +341,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   logoutText: {
-    color: '#FFFFFF',
+    color: '#f1f1f6',
   },
   logoutBg: {
-    backgroundColor: '#6900FF',
+    backgroundColor: '#282343',
   },
   accountCard: {
     borderWidth: 1,
-    borderColor: '#E2E2EA',
-    backgroundColor: '#EBE9FC',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    borderColor: '#463e75',
+    padding: 5,
     borderRadius: 4,
     width: CARD_WIDTH,
   },
   accountlabel: {
-    color: '#282343',
+    color: '#B3B1C4',
     fontSize: 13,
     fontFamily: 'Inter-600',
     width: CARD_WIDTH * 0.5,

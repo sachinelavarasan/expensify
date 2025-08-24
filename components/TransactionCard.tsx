@@ -3,8 +3,9 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Link } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Itransaction } from '@/types';
-import { formatToCurrency } from '@/utils/formatter';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { formatToCurrency, timeCoverter } from '@/utils/formatter';
+import { deviceWidth } from '@/utils/functions';
 
 const TransactionCard = ({
   exp_ts_title,
@@ -65,7 +66,9 @@ const TransactionCard = ({
             </View>
             <View>
               <View>
-                <Text style={[styles.name, { color: colors.title }]}>{exp_ts_title}</Text>
+                <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>
+                  {exp_ts_title}
+                </Text>
               </View>
               <View style={styles.subTextContainer}>
                 <Text
@@ -83,7 +86,7 @@ const TransactionCard = ({
                         styles.subText,
                         { fontFamily: 'Inter-500', color: colors.description },
                       ]}>
-                      <Text>{'\u2022'}</Text> {exp_ts_time}
+                      <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
                     </Text>
                   )}
                 </View>
@@ -128,6 +131,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 14,
     fontFamily: 'Inter-500',
+    maxWidth: deviceWidth() - 150,
   },
   subText: {
     fontSize: 12,

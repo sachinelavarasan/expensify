@@ -1,3 +1,4 @@
+import BankCard from '@/components/AccountCard';
 import AddAccount from '@/components/AddAccount';
 import Emptystate from '@/components/Emptystate';
 import ProfileHeader from '@/components/ProfileHeader';
@@ -5,11 +6,11 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
 import TransactionCard from '@/components/TransactionCard';
-import { useThemeContext } from '@/contexts/ThemedContext';
 import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
-import { Feather } from '@expo/vector-icons';
+import { deviceWidth } from '@/utils/functions';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -21,8 +22,11 @@ import {
   RefreshControl,
 } from 'react-native';
 
+const width = deviceWidth();
+
+const cardWidth = width - 30;
+
 export default function AccountScreen() {
-  const { colors } = useThemeContext();
   const { id } = useLocalSearchParams() as unknown as { id: number };
   const { account, loading, refetch } = useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
@@ -40,36 +44,10 @@ export default function AccountScreen() {
   return (
     <SafeAreaViewComponent edges={['top']}>
       <ThemedView style={styles.container}>
-        <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
-          <ProfileHeader title="Account Details" subtitle="All Time" />
-        </View>
-        {loading || refreshing || !account ? (
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator size="large" color="#6900FF" />
-          </View>
-        ) : (
-          <>
-            <Spacer height={10} />
-            <View
-              style={[
-                styles.card,
-                {
-                  width: 'auto',
-                  backgroundColor: colors.background,
-                  borderColor: colors.borderColor,
-                },
-              ]}>
-              <View>
-                <Text style={[styles.cardTitle, { color: colors.title }]}>
-                  {account.exp_ba_balance}
-                </Text>
-                <Text style={[styles.cardSubtitle, { color: colors.description }]}>
-                  Account: <Text style={{ color: colors.primary }}>{account.exp_ba_name}</Text>{' '}
-                  {account.exp_ba_is_primary && <Text style={styles.default}>Default</Text>}
-                </Text>
-              </View>
-              <View>
-                {!!account.exp_ba_id && (
+        <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
+          <ProfileHeader title="Account Details" subtitle="All Time" paddingHorizontal={false}>
+            <View>
+                {!!account?.exp_ba_id && (
                   <AddAccount
                     account={{
                       ...account,
@@ -78,6 +56,28 @@ export default function AccountScreen() {
                   />
                 )}
               </View>
+          </ProfileHeader>
+        </View>
+        {loading || refreshing || !account ? (
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color="#6900FF" />
+          </View>
+        ) : (
+          <>
+            <Spacer height={10} />
+            <View style={{ paddingHorizontal: 15 }}>
+              <BankCard
+                bankName={account.exp_ba_name}
+                holderName={'Elavarasan'}
+                 icon={account.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
+                // accountNumber="123456789012"
+                balance={account.exp_ba_balance}
+                variant="dark"
+                accent="#6C63FF"
+                otherStyle={{
+                  width: cardWidth,
+                }}
+              />
             </View>
             <SectionList
               ListEmptyComponent={
@@ -103,20 +103,20 @@ export default function AccountScreen() {
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    paddingTop: 10,
-                    backgroundColor: colors.background,
+                    backgroundColor: '#0F0E17',
+                    paddingVertical: 10,
                   }}>
-                  <Text style={[styles.dateHeader, { color: colors.secondary }]}>{title}</Text>
+                  <Text style={styles.dateHeader}>{title}</Text>
 
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!expense && (
-                      <Text style={[styles.totalAmount, { color: colors.title }]}>
+                      <Text style={styles.totalAmount}>
                         <Feather name="arrow-up-right" size={12} color="#FF4D4F" />
                         {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
-                      <Text style={[styles.totalAmount, { color: colors.title }]}>
+                      <Text style={styles.totalAmount}>
                         <Feather name="arrow-down-left" size={12} color="#00C896" />
                         {formatToCurrency(income)}
                       </Text>
@@ -145,15 +145,19 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 32,
+    backgroundColor: '#fff',
+    color: 'red',
   },
   title: {
     fontSize: 24,
   },
   totalAmount: {
+    color: '#D5D5D5',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   card: {
+    borderColor: '#5a4f96',
     borderWidth: 1,
     padding: 15,
     borderRadius: 10,
@@ -164,15 +168,18 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   cardTitle: {
+    color: '#F4F5F8',
     fontSize: 16,
     fontFamily: 'Inter-700',
     paddingBottom: 5,
   },
   cardSubtitle: {
+    color: '#CCC',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   default: {
+    color: '#8880A0',
     fontSize: 10,
     fontFamily: 'Inter-500',
     verticalAlign: 'middle',

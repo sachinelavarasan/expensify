@@ -41,7 +41,7 @@ export default function CustomRadioButton({
         <View style={{ display: 'flex', flexDirection: 'row' }}>
           <Text
             style={[
-              { fontSize: 14, color: colors.text, marginVertical: 3, fontFamily: 'Inter-500' },
+              { fontSize: 12, color: colors.text, marginVertical: 3, fontFamily: 'Inter-500' },
             ]}>
             {label}
           </Text>
