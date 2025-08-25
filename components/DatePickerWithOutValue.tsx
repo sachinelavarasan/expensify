@@ -3,6 +3,7 @@ import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { format, parseISO } from 'date-fns';
 import { DatePickerModal, en, registerTranslation } from 'react-native-paper-dates';
+import { useThemeContext } from '@/contexts/ThemedContext';
 registerTranslation('en', en);
 
 interface Props {
@@ -19,6 +20,7 @@ interface Props {
 const DatePickerWithOutValue = forwardRef<any, Props>(
   ({ value, onChange, onBlur, error, placeholder, isRequired, label, minimumDate }, ref) => {
     const [open, setOpen] = useState(false);
+     const { colors } = useThemeContext();
     const [minimum, setMinimumDate] = useState<Date>();
     const [pickerDate, setPickerDate] = useState<Date>();
 
@@ -63,7 +65,7 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
               <Text
                 style={{
                   fontSize: 14,
-                  color: '#282343',
+                  color: colors.title,
                   marginBottom: 6,
                   fontFamily: 'Inter-400',
                 }}>
@@ -81,15 +83,15 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 20,
-              borderColor: '#c7c7c7',
+              borderColor: colors.borderColor,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#EBE9FC',
+              backgroundColor: colors.background,
               gap: 15,
             }}>
-            <Entypo name="calendar" size={14} color="#1E1E1E" />
-            <Text style={{ color: '#1E1E1E', fontWeight: '500', fontFamily: 'Inter-500' }}>
+            <Entypo name="calendar" size={14} color={colors.title} />
+            <Text style={{ color: colors.title, fontWeight: '500', fontFamily: 'Inter-500' }}>
               {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
             </Text>
           </TouchableOpacity>

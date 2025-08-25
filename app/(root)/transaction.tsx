@@ -476,7 +476,7 @@ export default function Transaction() {
               keyExtractor={() => 'form-transaction'}
             />
           </ThemedView>
-          <View style={[styles.footer, { backgroundColor: colors.bottomBarBackground }]}>
+          <View style={[styles.footer, { backgroundColor: colors.barBackground }]}>
             <View>
               <View
                 style={{

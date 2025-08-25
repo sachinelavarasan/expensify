@@ -1,7 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
-  Button,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useMemo, useState, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -19,25 +17,18 @@ import Spacer from '@/components/Spacer';
 import {
   useExportExcelTransactions,
   useExportPdfTransactions,
-  useImportExcel,
 } from '@/hooks/useExportTransactions';
 import CustomRadioButton from '@/components/CustomRadioButton';
 import { exportType, transactionExportType } from '@/utils/common-data';
 import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
 import { AntDesign } from '@expo/vector-icons';
-import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
-import * as XLSX from 'xlsx';
-import { CustomSelectInput } from '@/components/CustomSelectInput';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import { BottomSheetDefaultBackdropProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetBackdrop/types';
-import { formatToCurrency } from '@/utils/formatter';
 import { useRouter } from 'expo-router';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function ExportData() {
   const router = useRouter();
+  const { colors } = useThemeContext();
   const { mutateAsync: exportExcelMutation, isPending } = useExportExcelTransactions();
-  const { mutateAsync: importExcelMutation, isPending: processing, error, data } = useImportExcel();
   const { mutateAsync: exportPdfMutation, isPending: isPdfLoading } = useExportPdfTransactions();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
@@ -98,7 +89,7 @@ export default function ExportData() {
             <ProfileHeader title="Export Transactions" paddingHorizontal={false} />
             <Spacer height={20} />
             <View style={{ alignItems: 'flex-start' }}>
-              <View style={[styles.card, { width: '100%' }]}>
+              <View style={[styles.card, { width: '100%', backgroundColor: colors.background, borderColor: colors.borderColor }]}>
                 <DatePickerWithOutValue
                   label="From:"
                   onChange={(data: string) => setStart(data)}
@@ -118,7 +109,7 @@ export default function ExportData() {
               </View>
             </View>
             <Spacer height={20} />
-            <View style={styles.card}>
+            <View style={[styles.card,{ backgroundColor: colors.background, borderColor: colors.borderColor }]}>
               <CustomRadioButton
                 label="Format"
                 value={docType}
@@ -129,7 +120,7 @@ export default function ExportData() {
               />
             </View>
             <Spacer height={20} />
-            <View style={styles.card}>
+            <View style={[styles.card,{ backgroundColor: colors.background, borderColor: colors.borderColor }]}>
               <CustomRadioButton
                 label="Transaction Type"
                 value={tranType}
@@ -144,6 +135,9 @@ export default function ExportData() {
                 style={[
                   styles.button,
                   styles.logoutBg,
+                  {
+                   backgroundColor: colors.primary
+                  },
                   isPdfLoading || isPending ? styles.disable : '',
                 ]}
                 onPress={download}>
@@ -164,16 +158,19 @@ export default function ExportData() {
             />
             <Spacer height={20} />
             <View style={[{ paddingHorizontal: 5 }]}>
-              <Text style={[styles.subText, { lineHeight: 20 }]}>
+              <Text style={[styles.subText, { lineHeight: 20, color: colors.description }]}>
                 If you want to add multiple transactions at once, simply click the{' '}
-                <Text style={{ fontWeight: '800', color: '#FFF' }}>Import Transations</Text> button and upload
-                your <Text style={{ fontWeight: '800', color: '#FFF' }}>.xlsx</Text> file.
+                <Text style={{ fontWeight: '800', color: colors.description }}>Import Transations</Text> button and upload
+                your <Text style={{ fontWeight: '800', color: colors.description }}>.xlsx</Text> file.
               </Text>
               <Spacer height={10} />
               <TouchableOpacity
                 style={[
                   styles.button,
-                  styles.opacityBg
+                  styles.opacityBg,
+                  {
+                    backgroundColor: colors.income
+                  }
                 ]}
                 onPress={() => router.push('/(root)/import-transactions')}>
                 <Text style={[styles.title]}>

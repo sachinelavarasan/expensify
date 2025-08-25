@@ -58,7 +58,7 @@ export default function ProfileHeader({
       <View>
         {deleteAction && (
           <TouchableOpacity onPress={deleteAction}>
-            <FontAwesome5 name="trash" size={20} color="#D9363E" />
+            <FontAwesome5 name="trash" size={20} color={colors.expense} />
           </TouchableOpacity>
         )}
         {children}

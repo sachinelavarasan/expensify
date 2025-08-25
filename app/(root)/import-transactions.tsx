@@ -24,6 +24,7 @@ import { formatToCurrency } from '@/utils/formatter';
 import { useImportBulkTransaction, useImportExcel } from '@/hooks/useExportTransactions';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import { showToast } from '@/components/ToastMessage';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 type HeadersMap = {
   title: string;
@@ -35,6 +36,7 @@ type HeadersMap = {
 };
 
 export default function ImportTransactions() {
+  const { colors } = useThemeContext();
   const [step, setStep] = useState<0 | 1 | 2>(0);
 
   const { mutateAsync: importExcelMutation, isPending: processing, data } = useImportExcel();
@@ -251,14 +253,16 @@ export default function ImportTransactions() {
                     <View
                       style={[
                         styles.stepDot,
-                        active ? styles.stepDotActive : styles.stepDotInactive,
+                        active
+                          ? { ...styles.stepDotActive, backgroundColor: colors.primary }
+                          : { ...styles.stepDotInactive, backgroundColor: colors.lighterTitle },
                       ]}>
                       <Text style={styles.stepDotText}>{idx + 1}</Text>
                     </View>
                     <Text
                       style={[
                         styles.stepLabel,
-                        active ? styles.stepLabelActive : styles.stepLabelInactive,
+                        active ? {...styles.stepLabelActive, color: colors.primary} : {...styles.stepLabelInactive, color: colors.secondary},
                       ]}>
                       {label}
                     </Text>
@@ -266,7 +270,7 @@ export default function ImportTransactions() {
                       <View
                         style={[
                           styles.stepLine,
-                          active ? styles.stepLineActive : styles.stepLineInactive,
+                          active ? {...styles.stepLineActive, backgroundColor: colors.primary} : {...styles.stepLineInactive, backgroundColor: colors.secondary},
                         ]}
                       />
                     )}
@@ -277,23 +281,31 @@ export default function ImportTransactions() {
 
             {step === 0 && (
               <View style={{ paddingHorizontal: 5 }}>
-                <Text style={[styles.subText, { lineHeight: 20, marginBottom: 10 }]}>
+                <Text style={[styles.subText, { lineHeight: 20, marginBottom: 10, color: colors.description }]}>
                   Make sure your file includes the required columns like{' '}
-                  <Text style={{ fontWeight: '600', color: '#EAEAEA' }}>Title</Text>,{' '}
-                  <Text style={{ fontWeight: '600', color: '#EAEAEA' }}>Date</Text>,{' '}
-                  <Text style={{ fontWeight: '600', color: '#EAEAEA' }}>Amount</Text>, and{' '}
-                  <Text style={{ fontWeight: '600', color: '#EAEAEA' }}>Transaction Type</Text>.
+                  <Text style={{ fontWeight: '600', color: colors.description }}>Title</Text>,{' '}
+                  <Text style={{ fontWeight: '600', color: colors.description }}>Date</Text>,{' '}
+                  <Text style={{ fontWeight: '600', color: colors.description }}>Amount</Text>, and{' '}
+                  <Text style={{ fontWeight: '600', color: colors.description }}>Transaction Type</Text>.
                 </Text>
-                <Text style={styles.subText}>
-                  Supported format <Text style={{ fontWeight: '800', color: '#FFF' }}>.xlsx</Text>{' '}
+                <Text style={[styles.subText, { color: colors.description }]}>
+                  Supported format <Text style={{ fontWeight: '800', color: colors.description }}>.xlsx</Text>{' '}
                   only
                 </Text>
-                <Text style={styles.subText}>
+                <Text style={[styles.subText, { color: colors.description }]}>
                   Please upload a file smaller than{' '}
-                  <Text style={{ fontWeight: '800', color: '#FFF' }}>1MB</Text>.
+                  <Text style={{ fontWeight: '800', color: colors.description  }}>1MB</Text>.
                 </Text>
                 <Spacer height={20} />
-                <TouchableOpacity style={[styles.button, styles.primary]} onPress={pickExcelFile}>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.primary,
+                    {
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                  onPress={pickExcelFile}>
                   <Text style={styles.title}>Choose a File</Text>
                 </TouchableOpacity>
               </View>
@@ -301,7 +313,7 @@ export default function ImportTransactions() {
 
             {step === 1 && excelHeaders?.length > 0 && (
               <View style={{ gap: 10, paddingHorizontal: 5 }}>
-                <Text style={styles.subText}>
+                <Text style={[styles.subText, { color: colors.description }]}>
                   Map your spreadsheet columns to the required fields.
                 </Text>
 
@@ -356,7 +368,9 @@ export default function ImportTransactions() {
                 <Spacer height={10} />
                 <View>
                   <TouchableOpacity
-                    style={[styles.button, styles.secondary]}
+                    style={[styles.button, {
+                      backgroundColor: colors.secondary,
+                    },]}
                     onPress={() => setStep(0)}>
                     <Text style={styles.title}>Back</Text>
                   </TouchableOpacity>
@@ -366,6 +380,9 @@ export default function ImportTransactions() {
                     style={[
                       styles.button,
                       styles.accent,
+                      {
+                      backgroundColor: colors.primary,
+                      },
                       (!canGoNextFromMap || processing) && styles.disable,
                     ]}
                     onPress={generatePreview}>
@@ -380,7 +397,7 @@ export default function ImportTransactions() {
 
             {step === 2 && (
               <View style={{ paddingHorizontal: 5 }}>
-                <Text style={[styles.subText, { marginBottom: 8 }]}>
+                <Text style={[styles.subText, { marginBottom: 8, color: colors.description }]}>
                   Preview the parsed rows below. You can open lists for valid/invalid rows.
                 </Text>
 
@@ -416,11 +433,11 @@ export default function ImportTransactions() {
 
                 <View>
                   <View style={{ paddingHorizontal: 5 }}>
-                    <Text style={[styles.subText, { marginBottom: 10 }]}>
+                    <Text style={[styles.subText, { marginBottom: 10, color: colors.description }]}>
                       Ready to import{' '}
-                      <Text style={{ color: '#fff', fontWeight: '700' }}>{validRows.length}</Text>{' '}
+                      <Text style={{ color: colors.description, fontWeight: '700' }}>{validRows.length}</Text>{' '}
                       valid records into{' '}
-                      <Text style={{ color: '#fff', fontWeight: '700' }}>
+                      <Text style={{ color: colors.description, fontWeight: '700' }}>
                         {
                           accounts.find((a) => String(a.exp_ba_id) === String(headersMap.account))
                             ?.exp_ba_name
@@ -430,7 +447,7 @@ export default function ImportTransactions() {
                     </Text>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                       <TouchableOpacity
-                        style={[styles.button, styles.secondary, { flex: 1 }]}
+                        style={[styles.button, {backgroundColor: colors.secondary}, { flex: 1 }]}
                         onPress={() => setStep(2)}>
                         <Text style={styles.title}>Back</Text>
                       </TouchableOpacity>
@@ -440,16 +457,17 @@ export default function ImportTransactions() {
                           styles.button,
                           styles.accent,
                           { flex: 1 },
+                          {backgroundColor: colors.primary},
                           (saving || validRows.length === 0) && styles.disable,
                         ]}
                         onPress={finalizeImport}>
-                        {saving && <ActivityIndicator color="#FFF" style={styles.loader} />}
+                        {saving && <ActivityIndicator color={colors.primary} style={styles.loader} />}
                         <Text style={[styles.title, saving && styles.textDisable]}>Import Now</Text>
                       </TouchableOpacity>
                     </View>
 
                     <Spacer height={16} />
-                    <TouchableOpacity style={[styles.button, styles.secondary]} onPress={resetAll}>
+                    <TouchableOpacity style={[styles.button, {backgroundColor: colors.secondary}]} onPress={resetAll}>
                       <Text style={styles.title}>Start Over</Text>
                     </TouchableOpacity>
                   </View>

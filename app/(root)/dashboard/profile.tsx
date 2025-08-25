@@ -27,7 +27,7 @@ const deviceWidthAsNumber = deviceWidth() - 67;
 const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
-  const { colors } = useThemeContext();
+  const { colors, theme } = useThemeContext();
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
   const { refetch } = useGetUserData();
@@ -56,10 +56,10 @@ const Profile = () => {
         <Pressable>
           <View style={[
               styles.card,
-              { backgroundColor: colors.bottomBarBackground},
+              // { backgroundColor: colors.bottomBarBackground},
             ]}>
             <View style={styles.left}>
-              <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+              <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                 <MaterialIcons name="account-balance" size={24} color="#FFF" />
               </View>
               <View>
@@ -103,7 +103,7 @@ const Profile = () => {
                 icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 // accountNumber="123456789012"
                 balance={item.exp_ba_balance}
-                variant="dark"
+                variant={theme === 'system'? 'dark': theme}
                 accent="#6C63FF"
                 onPress={()=>{
                   router.push(`/accounts/${item.exp_ba_id}`)
@@ -146,10 +146,10 @@ const Profile = () => {
           <TouchableOpacity>
             <View style={[
               styles.card,
-              { backgroundColor: colors.bottomBarBackground},
+              // { backgroundColor: colors.bottomBarBackground},
             ]}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="category" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -171,10 +171,10 @@ const Profile = () => {
           <TouchableOpacity>
             <View style={[
               styles.card,
-              { backgroundColor: colors.bottomBarBackground},
+              // { backgroundColor: colors.bottomBarBackground},
             ]}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="star" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -195,10 +195,10 @@ const Profile = () => {
           <TouchableOpacity>
             <View style={[
               styles.card,
-              { backgroundColor: colors.bottomBarBackground},
+              // { backgroundColor: colors.bottomBarBackground},
             ]}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="import-export" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -221,10 +221,10 @@ const Profile = () => {
           <TouchableOpacity>
             <View style={[
               styles.card,
-              { backgroundColor: colors.bottomBarBackground},
+              // { backgroundColor: colors.bottomBarBackground},
             ]}>
               <View style={styles.left}>
-                <View style={{ backgroundColor: '#282343', padding: 8, borderRadius: 5 }}>
+                <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="settings" size={24} color="#FFF" />
                 </View>
                 <View>
@@ -244,7 +244,7 @@ const Profile = () => {
           </TouchableOpacity>
         </Link>
         <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
-          <TouchableOpacity style={[styles.button, styles.logoutBg]} onPress={onSubmit}>
+          <TouchableOpacity style={[styles.button, styles.logoutBg, {backgroundColor: colors.primary}]} onPress={onSubmit}>
             <Text style={[styles.title, styles.logoutText]}>Logout</Text>
           </TouchableOpacity>
         </View>

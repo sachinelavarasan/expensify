@@ -12,6 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 type BankCardProps = {
   bankName: string;
