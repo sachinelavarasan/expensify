@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import {
+  ColorValue,
   FlatList,
   Pressable,
   RefreshControl,
@@ -25,9 +26,9 @@ import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useThemeContext } from '@/contexts/ThemedContext';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+import { useThemeContext } from '@/contexts/ThemedContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Index() {
   const { colors } = useThemeContext();
@@ -110,21 +111,24 @@ export default function Index() {
   const expense = groupedDataArray.reduce((acc, item) => acc + item.debit, 0);
 
   return (
-    <ThemedView style={{ flex: 1, paddingHorizontal: 2 }}>
+    <ThemedView style={{ flex: 1, paddingHorizontal: 20 }}>
       {loading && <OverlayLoader />}
-      <TouchableOpacity
+      {/* <TouchableOpacity style={styles.floatingButton} onPress={handlePress}>
+        <Entypo name="plus" size={24} color="white" />
+      </TouchableOpacity> */}
+        <TouchableOpacity
         style={{
           width: 50,
           height: 50,
           position: 'absolute',
-          bottom: 20,
+          bottom: 5,
           right: 0,
           zIndex: 2,
           marginRight: 10,
         }}
         onPress={handlePress}>
         <LinearGradient
-          colors={['#6B5DE6', '#6900FF']}
+          colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.floatingButton}>
@@ -217,7 +221,7 @@ export default function Index() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           renderItem={({ item }) => {
             return (
-              <View style={{ paddingVertical: 10, paddingHorizontal: 15 }}>
+              <View style={{ paddingVertical: 10, paddingHorizontal: 5 }}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -231,13 +235,13 @@ export default function Index() {
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!item.debit && (
                       <Text style={[styles.totalAmount, { color: colors.title }]}>
-                        <Feather name="arrow-up-right" size={14} color={colors.expense} />
+                        <Feather name="arrow-up-right" size={12} color={colors.expense} />
                         {formatToCurrency(item.debit)}
                       </Text>
                     )}
                     {!!item.credit && (
                       <Text style={[styles.totalAmount, { color: colors.title }]}>
-                        <Feather name="arrow-down-left" size={14} color={colors.income} />
+                        <Feather name="arrow-down-left" size={12} color={colors.income} />
                         {formatToCurrency(item.credit)}
                       </Text>
                     )}
@@ -275,13 +279,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   totalAmount: {
+    color: '#D5D5D5',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
   dateHeader: {
     fontSize: 12,
     fontFamily: 'Inter-500',
-    // color: '#5A5A6E',
+    color: '#a19bca',
   },
   floatingButton: {
     backgroundColor: '#5a4f96',
@@ -290,10 +295,15 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    bottom: 20,
+    right: 0,
     elevation: 5,
-    shadowColor: '#000000',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    zIndex: 2,
+    marginRight: 10,
   },
 });

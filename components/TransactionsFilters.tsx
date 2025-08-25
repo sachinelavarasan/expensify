@@ -48,7 +48,7 @@ const TransactionFilters = ({
           alignItems: 'center',
           justifyContent: 'center',
           paddingVertical: 5,
-          paddingHorizontal: 10,
+          paddingHorizontal: 5,
         }}>
         <FontAwesome6 name="filter" size={20} color="#6B5DE6" />
       </TouchableOpacity>

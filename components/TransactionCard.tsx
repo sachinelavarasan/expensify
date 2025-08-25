@@ -3,9 +3,9 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Link } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Itransaction } from '@/types';
-import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency, timeCoverter } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const TransactionCard = ({
   exp_ts_title,
@@ -24,7 +24,7 @@ const TransactionCard = ({
   isStarred,
   showTsTime = true,
 }: Itransaction & { isStarred?: boolean; showTsTime?: boolean }) => {
-  const { theme, colors } = useThemeContext();
+  const { colors } = useThemeContext();
   return (
     <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild>
       <TouchableOpacity
@@ -35,16 +35,7 @@ const TransactionCard = ({
           borderRadius: 5,
           paddingVertical: 7,
         }}>
-        <View
-          style={[
-            styles.innerContainer,
-            {
-              borderColor: theme === 'light' ? colors.borderColor : 'transparent',
-              borderWidth: 1,
-              backgroundColor: theme === 'light' ? colors.background : 'transparent',
-              shadowColor: theme === 'light' ? '#fff' : '#000',
-            },
-          ]}>
+        <View style={styles.innerContainer}>
           <View style={styles.left}>
             <View
               style={{
@@ -66,27 +57,22 @@ const TransactionCard = ({
             </View>
             <View>
               <View>
-                <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>
-                  {exp_ts_title}
-                </Text>
+                <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>{exp_ts_title}</Text>
               </View>
               <View style={styles.subTextContainer}>
-                <Text
-                  style={[
+                <Text style={[
                     styles.subText,
                     { marginRight: 6, fontFamily: 'Inter-500', color: colors.lighterTitle },
-                  ]}>
-                  {exp_ts_category}
-                </Text>
+                  ]}>{exp_ts_category}</Text>
                 <View
                   style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                   {!!showTsTime && (
-                    <Text
-                      style={[
+                    <Text style={[
                         styles.subText,
                         { fontFamily: 'Inter-500', color: colors.description },
                       ]}>
                       <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
+                      
                     </Text>
                   )}
                 </View>
@@ -94,8 +80,7 @@ const TransactionCard = ({
             </View>
           </View>
           <View style={styles.right}>
-            <Text
-              style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
+            <Text style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
               {exp_tt_id === 2 ? '+' : '-'}
               {formatToCurrency(exp_ts_amount)}
             </Text>
@@ -117,23 +102,16 @@ const styles = StyleSheet.create({
     // backgroundColor: '#1e1a32',
     // paddingHorizontal: 14,
     // paddingVertical: 10,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2.84,
-    elevation: 1,
+    borderRadius: 5,
   },
   name: {
+    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-500',
-    maxWidth: deviceWidth() - 150,
+    maxWidth: deviceWidth() - 150
   },
   subText: {
+    color: '#B3B1C4',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },
@@ -161,6 +139,6 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 12,
-    fontFamily: 'Inter-600',
+    fontFamily: 'Inter-500',
   },
 });

@@ -50,7 +50,7 @@ export default function Stat() {
   }, []);
 
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <ThemedView style={{ flex: 1, paddingHorizontal: 20 }}>
       {loading && <OverlayLoader />}
 
       <FlatList
@@ -106,9 +106,9 @@ export default function Stat() {
               />
             </View>
 
-            <View style={{ flex: 1 }}>
+            {/* <View> */}
               <TableView transactions={transactions} />
-            </View>
+            {/* </View> */}
 
             {transactions.length > 0 && (
               <View>

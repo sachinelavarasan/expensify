@@ -2,7 +2,7 @@ import { Itransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ColorValue } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2D2A40',
     borderRadius: 2,
-    margin: 16,
+    marginVertical: 16,
     height: 'auto',
     borderBottomWidth: 0,
     backgroundColor: '#161421',

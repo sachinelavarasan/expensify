@@ -16,13 +16,13 @@ const MonthSwitcher = ({
   const { colors } = useThemeContext();
   return (
     <View style={styles.monthSwitch}>
-      <TouchableOpacity onPress={prevMonth} style={{ paddingHorizontal: 10 }}>
+      <TouchableOpacity onPress={prevMonth} style={{ paddingRight: 10 }}>
         <AntDesign name="left" color={colors.arrowColor} size={18} />
       </TouchableOpacity>
 
       <Text style={[styles.month, { color: colors.monthSwitcher }]}>{currentMonth}</Text>
 
-      <TouchableOpacity onPress={nextMonth} style={{ paddingHorizontal: 10 }}>
+      <TouchableOpacity onPress={nextMonth} style={{ paddingLeft: 10 }}>
         <AntDesign name="right" color={colors.arrowColor} size={18} />
       </TouchableOpacity>
     </View>

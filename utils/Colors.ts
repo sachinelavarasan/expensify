@@ -14,7 +14,8 @@ export const LightColors = {
   expense: '#f33f3f',
   bottomBarBackground: '#F5F5F5',
   topBarColor: '#F5F5F5',
-  themedViewBg: ['#FFF','#FFF']
+  themedViewBg: ['#FFF','#FFF'],
+  floatingBtnBg:['#6B5DE6', '#6900FF']
 };
 
 export const DarkColors = {
@@ -33,7 +34,8 @@ export const DarkColors = {
   expense: '#F56565',
   bottomBarBackground: '#1A1733',
   topBarColor: '#1A1733',
-  themedViewBg: ['#26004d', '#1a0033', '#0d001a', '#000000']
+  themedViewBg: ['#26004d', '#1a0033', '#0d001a', '#000000'],
+  floatingBtnBg: ['#26004d', '#1a0033']
 };
 
 export type ThemeColors = typeof LightColors;

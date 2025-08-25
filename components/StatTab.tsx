@@ -179,7 +179,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
       ]}>
       <View style={[styles.tabContainer, { backgroundColor: colors.bottomBarBackground }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'income' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'income' && {...styles.activeTab, backgroundColor: '#6900FF'}]}
           onPress={() => setActiveTab('income')}>
           <Text
             style={[
@@ -192,7 +192,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'expense' && styles.activeTab]}
+          style={[styles.tab, activeTab === 'expense' && {...styles.activeTab, backgroundColor: '#6900FF'}]}
           onPress={() => setActiveTab('expense')}>
           <Text
             style={[
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     // borderColor: '#1e1a32',
     borderWidth: 1,
-    margin: 16,
+    marginVertical: 16,
   },
   tabContainer: {
     flexDirection: 'row',

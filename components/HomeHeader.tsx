@@ -6,9 +6,9 @@ import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
-const CARDGAP = 10;
+const CARDGAP = 15;
 const width = deviceWidth();
-const cardWidth = (width - CARDGAP * 3) / 2;
+const cardWidth = (width - (CARDGAP) * 3) / 2;
 
 const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
   const { value: showBalance } = useGetSettingsFromStore('balance');
