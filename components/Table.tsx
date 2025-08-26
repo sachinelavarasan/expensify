@@ -30,7 +30,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
       <View style={[styles.table, { borderColor: colors.borderColor }]}>
         {/* Table Header with Gradient */}
         <LinearGradient
-          colors={['#6900FF', '#6B5DE6']}
+          colors={['#705AD4', '#6B5DE6']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.headerRow}>

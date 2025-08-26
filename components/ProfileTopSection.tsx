@@ -37,7 +37,7 @@ export default function AnimatedTopSection({
   refetch,
   children,
 }: Props) {
-  const { colors } = useThemeContext();
+  const { colors, theme } = useThemeContext();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
 
@@ -117,7 +117,10 @@ export default function AnimatedTopSection({
         style={[
           styles.avatarContainer,
           avatarStyle,
-          { backgroundColor: colors.background, borderColor: colors.background },
+          {
+            backgroundColor: theme === 'dark' ? '#26004d' : colors.background,
+            borderColor: colors.background,
+          },
         ]}>
         <Image source={avatar} style={styles.avatarFull} />
 
@@ -155,7 +158,10 @@ export default function AnimatedTopSection({
         style={[
           styles.titleBar,
           titleBarOpacity,
-          { backgroundColor: colors.background, borderBottomColor: colors.borderColor },
+          {
+            backgroundColor: theme === 'dark' ? '#26004d' : colors.background,
+            borderBottomColor: colors.borderColor,
+          },
         ]}>
         <Animated.View style={[styles.headerAvatarSmall]}>
           <Image source={avatar} style={styles.avatar} resizeMode="contain" />

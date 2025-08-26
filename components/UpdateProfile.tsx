@@ -65,7 +65,7 @@ const UpdateProfile = ({
         {
           keepDirty: false,
           keepIsValidating: true,
-        }
+        },
       );
     }
   }, [user]);
@@ -104,7 +104,11 @@ const UpdateProfile = ({
   return (
     <>
       <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
-        <FontAwesome5 name="user-edit" size={20} color={colors.secondary} />
+        <FontAwesome5
+          name="user-edit"
+          size={20}
+          color={theme === 'dark' ? '#fff' : colors.secondary}
+        />
       </Pressable>
 
       <Modal
@@ -136,7 +140,7 @@ const UpdateProfile = ({
                 style={{ alignItems: 'flex-end' }}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 disabled={isLoading}>
-                <Ionicons name="close" color="#fff" size={20} />
+                <Ionicons name="close" color={colors.arrowColor} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />

@@ -30,9 +30,11 @@ import {
 import CustomRadioButton from '@/components/CustomRadioButton';
 import OverlayLoader from '@/components/Overlay';
 import { ICategoryWithCount } from '@/types';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const Category = () => {
   const router = useRouter();
+  const { theme, colors } = useThemeContext();
 
   const { id, data } = useLocalSearchParams<{ id: string; data?: string }>();
   const { mutateAsync: addCategory, isPending: isAdding } = useAddCategory();
@@ -241,7 +243,7 @@ const Category = () => {
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text
                     style={{
-                      color: '#1E1E1E',
+                      color: colors.title,
                       fontSize: 18,
                       marginVertical: 10,
                       marginHorizontal: 5,

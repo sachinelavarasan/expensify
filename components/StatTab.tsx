@@ -34,7 +34,6 @@ function ProgressSegment({ color, percentage, progress }: SegmentProps) {
 function MultiColorProgressBar({ data }: { data: progressBar[] }) {
   const progress = useSharedValue(0);
   const { colors } = useThemeContext();
-  
 
   useEffect(() => {
     progress.value = withTiming(1, { duration: 1500 });
@@ -45,10 +44,10 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
       style={{
         padding: 10,
         backgroundColor: colors.bottomBarBackground,
-        borderWidth:1,
+        borderWidth: 1,
         borderColor: colors.borderColor,
         borderRadius: 6,
-        marginBottom: 10
+        marginBottom: 10,
       }}>
       <Text
         style={{
@@ -74,7 +73,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
         {data.map((cat, i) => (
           <View key={i} style={styles.legendItem}>
             <View style={[styles.colorBox, { backgroundColor: cat.color }]} />
-            <Text style={[styles.legendText, {color: colors.description}]}>
+            <Text style={[styles.legendText, { color: colors.description }]}>
               {cat.category} - {cat.percentage}%
             </Text>
           </View>
@@ -84,7 +83,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
   );
 }
 
-function ProgressBar({ percentage, color }: { percentage: number, color: string }) {
+function ProgressBar({ percentage, color }: { percentage: number; color: string }) {
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -172,14 +171,17 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
   const data = activeTab === 'income' ? incomeMetrics : expenseMetrics;
 
   return (
-   <View
+    <View
       style={[
         styles.container,
         { backgroundColor: colors.background, borderColor: colors.borderColor },
       ]}>
       <View style={[styles.tabContainer, { backgroundColor: colors.barBackground }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'income' && {...styles.activeTab, backgroundColor: '#6900FF'}]}
+          style={[
+            styles.tab,
+            activeTab === 'income' && { ...styles.activeTab, backgroundColor: '#6B5DE6' },
+          ]}
           onPress={() => setActiveTab('income')}>
           <Text
             style={[
@@ -192,7 +194,10 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'expense' && {...styles.activeTab, backgroundColor: '#6900FF'}]}
+          style={[
+            styles.tab,
+            activeTab === 'expense' && { ...styles.activeTab, backgroundColor: '#6B5DE6' },
+          ]}
           onPress={() => setActiveTab('expense')}>
           <Text
             style={[
@@ -219,13 +224,13 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
                 </View>
                 <View style={styles.subTextContainer}>
                   <Text
-                      style={[
-                        styles.subText,
-                        { marginRight: 6, fontFamily: 'Inter-600', color: colors.description },
-                      ]}>
+                    style={[
+                      styles.subText,
+                      { marginRight: 6, fontFamily: 'Inter-600', color: colors.description },
+                    ]}>
                     {formatToCurrency(item.totalAmount)} <Text>{'\u2022'}</Text>
                   </Text>
-                   <Text style={[styles.subText, { color: colors.description }]}>
+                  <Text style={[styles.subText, { color: colors.description }]}>
                     {item.transactionCount}{' '}
                     {item.transactionCount === 1 ? 'transaction' : 'transactions'}
                   </Text>
@@ -234,8 +239,10 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
             </View>
 
             <View>
-              <Text style={[styles.amount, { color: colors.description }]}>{item.percentage} %</Text>
-              <ProgressBar percentage={item.percentage} color={item.color}/>
+              <Text style={[styles.amount, { color: colors.description }]}>
+                {item.percentage} %
+              </Text>
+              <ProgressBar percentage={item.percentage} color={item.color} />
             </View>
           </View>
         )}

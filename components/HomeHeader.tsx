@@ -8,7 +8,7 @@ import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
 const CARDGAP = 15;
 const width = deviceWidth();
-const cardWidth = (width - (CARDGAP) * 3) / 2;
+const cardWidth = (width - CARDGAP * 3) / 2;
 
 const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
   const { value: showBalance } = useGetSettingsFromStore('balance');
@@ -118,17 +118,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   balance: {
-  flexDirection: 'row',
-  paddingVertical: 6,
-  paddingHorizontal: 16,
-  borderRadius: 20,
-  alignSelf: 'center',
-  alignItems: 'center',
-  marginTop: 12,
-},
-balanceText: {
-  fontSize: 13,
-  fontFamily: 'Inter-500',
-  color: '#EDEDED',
-},
+    flexDirection: 'row',
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    alignSelf: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  balanceText: {
+    fontSize: 13,
+    fontFamily: 'Inter-500',
+    color: '#EDEDED',
+  },
 });

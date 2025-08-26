@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { materialIconList } from '@/utils/common-data';
 import { calcNumColumns } from '@/utils/functions';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const IconPicker = ({
   onSelect,
@@ -11,6 +12,7 @@ const IconPicker = ({
   onSelect: (name: string) => void;
   currentValue: string;
 }) => {
+  const { colors, theme } = useThemeContext();
   const [selected, setSelected] = useState<string>(currentValue);
   const groupedDataArray = Object.keys(materialIconList).map((key: string) => ({
     data: materialIconList[key],
@@ -36,7 +38,7 @@ const IconPicker = ({
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-          <Text style={styles.header}>Icon</Text>
+          <Text style={[styles.header, { color: colors.title }]}>Icon</Text>
         </View>
       )}
       renderItem={({ item }: any) => {
@@ -59,7 +61,7 @@ const IconPicker = ({
                   alignItems: 'center',
                   paddingBottom: 5,
                 }}>
-                <Text style={styles.label}>{item.name}</Text>
+                <Text style={[styles.label, { color: colors.lighterTitle }]}>{item.name}</Text>
               </View>
             )}
             renderItem={({ item }) => {
@@ -74,7 +76,12 @@ const IconPicker = ({
                     }}>
                     <View
                       style={{
-                        backgroundColor: selected === item ? '#6900FF' : '#EBE9FC',
+                        backgroundColor:
+                          selected === item
+                            ? '#6900FF'
+                            : theme == 'dark'
+                              ? colors.barBackground
+                              : '#fff',
                         padding: 5,
                         borderRadius: 5,
                       }}>

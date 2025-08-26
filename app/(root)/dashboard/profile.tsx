@@ -14,7 +14,7 @@ import { deviceWidth } from '@/utils/functions';
 
 import { useUser, useAuth } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
@@ -33,7 +33,6 @@ const Profile = () => {
   const { refetch } = useGetUserData();
   const { signOut } = useAuth();
   const { user: currentUser } = useUser();
-  
 
   const overAllAmount = accounts.reduce(
     (previous, current) => Number(previous) + Number(current.exp_ba_balance) || 0,
@@ -54,7 +53,8 @@ const Profile = () => {
       refetch={refetch}>
       <>
         <Pressable>
-          <View style={[
+          <View
+            style={[
               styles.card,
               // { backgroundColor: colors.bottomBarBackground},
             ]}>
@@ -67,7 +67,9 @@ const Profile = () => {
                   <Text style={[styles.option, { color: colors.title }]}>Accounts</Text>
                 </View>
                 <View style={styles.subTextContainer}>
-                  <Text style={[styles.subText, { color: colors.title, fontFamily: 'Inter-600' }]}>Over All : {overAllAmount}</Text>
+                  <Text style={[styles.subText, { color: colors.title, fontFamily: 'Inter-600' }]}>
+                    Over All : {overAllAmount}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -92,24 +94,26 @@ const Profile = () => {
               <Spacer height={60} />
             ) : (
               <View style={{ height: 60, justifyContent: 'center' }}>
-                <Text style={[styles.subText, { color: colors.description }]}>There is no account exist</Text>
+                <Text style={[styles.subText, { color: colors.description }]}>
+                  There is no account exist
+                </Text>
               </View>
             )
           }
           renderItem={({ item }) => (
-             <BankCard
-                bankName={item.exp_ba_name}
-                holderName={"Elavarasan"}
-                icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
-                // accountNumber="123456789012"
-                balance={item.exp_ba_balance}
-                variant={theme === 'system'? 'dark': theme}
-                accent="#6C63FF"
-                onPress={()=>{
-                  router.push(`/accounts/${item.exp_ba_id}`)
-                }}
-                otherStyle={{width: deviceWidth() - 60}}
-              />
+            <BankCard
+              bankName={item.exp_ba_name}
+              holderName={'Elavarasan'}
+              icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
+              // accountNumber="123456789012"
+              balance={item.exp_ba_balance}
+              variant={theme === 'system' ? 'dark' : theme}
+              accent="#6C63FF"
+              onPress={() => {
+                router.push(`/accounts/${item.exp_ba_id}`);
+              }}
+              otherStyle={{ width: deviceWidth() - 60 }}
+            />
             // <Link
             //   href={{
             //     pathname: '/accounts/[id]',
@@ -138,16 +142,17 @@ const Profile = () => {
             //       <Text style={styles.amount}>{item.exp_ba_balance}</Text>
             //     </View>
             //   </TouchableOpacity> */}
-             
+
             // </Link>
           )}
         />
         <Link href={'/(root)/categories'} asChild>
           <TouchableOpacity>
-            <View style={[
-              styles.card,
-              // { backgroundColor: colors.bottomBarBackground},
-            ]}>
+            <View
+              style={[
+                styles.card,
+                // { backgroundColor: colors.bottomBarBackground},
+              ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="category" size={24} color="#FFF" />
@@ -157,7 +162,9 @@ const Profile = () => {
                     <Text style={[styles.option, { color: colors.title }]}>Categories</Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText, { color: colors.description }]}>Keep your spending neatly sorted</Text>
+                    <Text style={[styles.subText, { color: colors.description }]}>
+                      Keep your spending neatly sorted
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -169,20 +176,25 @@ const Profile = () => {
 
         <Link href={'/(root)/starred'} asChild>
           <TouchableOpacity>
-            <View style={[
-              styles.card,
-              // { backgroundColor: colors.bottomBarBackground},
-            ]}>
+            <View
+              style={[
+                styles.card,
+                // { backgroundColor: colors.bottomBarBackground},
+              ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="star" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={[styles.option, { color: colors.title }]}>Starred Transactions</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>
+                      Starred Transactions
+                    </Text>
                   </View>
                   <View style={styles.subTextContainer}>
-                    <Text style={[styles.subText, { color: colors.description }]}>Access your favorite transactions quickly</Text>
+                    <Text style={[styles.subText, { color: colors.description }]}>
+                      Access your favorite transactions quickly
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -193,17 +205,20 @@ const Profile = () => {
         </Link>
         <Link href={'/(root)/export-transactions'} asChild>
           <TouchableOpacity>
-            <View style={[
-              styles.card,
-              // { backgroundColor: colors.bottomBarBackground},
-            ]}>
+            <View
+              style={[
+                styles.card,
+                // { backgroundColor: colors.bottomBarBackground},
+              ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="import-export" size={24} color="#FFF" />
                 </View>
                 <View>
                   <View>
-                    <Text style={[styles.option, { color: colors.title }]}>Import / Export Transactions</Text>
+                    <Text style={[styles.option, { color: colors.title }]}>
+                      Import / Export Transactions
+                    </Text>
                   </View>
                   <View style={styles.subTextContainer}>
                     <Text style={[styles.subText, { color: colors.description }]}>
@@ -219,10 +234,11 @@ const Profile = () => {
         </Link>
         <Link href={'/(root)/settings'} asChild>
           <TouchableOpacity>
-            <View style={[
-              styles.card,
-              // { backgroundColor: colors.bottomBarBackground},
-            ]}>
+            <View
+              style={[
+                styles.card,
+                // { backgroundColor: colors.bottomBarBackground},
+              ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
                   <MaterialIcons name="settings" size={24} color="#FFF" />
@@ -244,8 +260,11 @@ const Profile = () => {
           </TouchableOpacity>
         </Link>
         <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
-          <TouchableOpacity style={[styles.button, styles.logoutBg, {backgroundColor: colors.primary}]} onPress={onSubmit}>
-            <Text style={[styles.title, styles.logoutText]}>Logout</Text>
+          <TouchableOpacity
+            style={[styles.button, styles.logoutBg, { backgroundColor: '#cc1928' }]}
+            onPress={onSubmit}>
+            <Feather name="log-out" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={[styles.title, styles.logoutText, { color: '#fff' }]}>Logout</Text>
           </TouchableOpacity>
         </View>
       </>
@@ -327,7 +346,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
   },
   amount: {
     color: '#A0A0A0',

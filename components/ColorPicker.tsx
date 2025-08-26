@@ -1,3 +1,4 @@
+import { useThemeContext } from '@/contexts/ThemedContext';
 import { customColors } from '@/utils/common-data';
 import { calcNumColumns } from '@/utils/functions';
 import React, { useEffect, useState } from 'react';
@@ -30,6 +31,7 @@ export const CustomColorSwatches = ({
   onSelect: (data: string) => void;
   currentValue: string;
 }) => {
+  const { colors } = useThemeContext();
   const [selected, setSelected] = useState<string>(currentValue);
   const handleColorSelect = (selectedColor: string) => {
     setSelected(selectedColor);
@@ -55,9 +57,9 @@ export const CustomColorSwatches = ({
         marginBottom: 30,
       }}>
       <View>
-        <Text style={styles.dateHeader}>
+        <Text style={[styles.dateHeader, { color: colors.description }]}>
           Color{' '}
-          <Text style={styles.subText}>
+          <Text style={[styles.subText, { color: colors.lighterTitle }]}>
             <Text>{'\u2022'}</Text> Swipe right for more colors
           </Text>
         </Text>

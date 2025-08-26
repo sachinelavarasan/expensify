@@ -57,22 +57,27 @@ const TransactionCard = ({
             </View>
             <View>
               <View>
-                <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>{exp_ts_title}</Text>
+                <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>
+                  {exp_ts_title}
+                </Text>
               </View>
               <View style={styles.subTextContainer}>
-                <Text style={[
+                <Text
+                  style={[
                     styles.subText,
                     { marginRight: 6, fontFamily: 'Inter-500', color: colors.lighterTitle },
-                  ]}>{exp_ts_category}</Text>
+                  ]}>
+                  {exp_ts_category}
+                </Text>
                 <View
                   style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                   {!!showTsTime && (
-                    <Text style={[
+                    <Text
+                      style={[
                         styles.subText,
                         { fontFamily: 'Inter-500', color: colors.description },
                       ]}>
-                      <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
-                      
+                      <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}r
                     </Text>
                   )}
                 </View>
@@ -80,7 +85,8 @@ const TransactionCard = ({
             </View>
           </View>
           <View style={styles.right}>
-            <Text style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
+            <Text
+              style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
               {exp_tt_id === 2 ? '+' : '-'}
               {formatToCurrency(exp_ts_amount)}
             </Text>
@@ -108,7 +114,7 @@ const styles = StyleSheet.create({
     color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-500',
-    maxWidth: deviceWidth() - 150
+    maxWidth: deviceWidth() - 150,
   },
   subText: {
     color: '#B3B1C4',
