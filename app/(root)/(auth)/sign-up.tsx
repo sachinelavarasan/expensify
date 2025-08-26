@@ -311,9 +311,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 8,
-    paddingVertical: 10,
+    paddingVertical: 8,
     width: '100%',
   },
   loader: {

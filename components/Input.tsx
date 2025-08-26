@@ -92,18 +92,18 @@ const Input = forwardRef(function MyInput(
             spellCheck={false}
             placeholderTextColor={'#6E6E80'}
             selectionColor="#fdfdfd"
-            cursorColor="#EDEDED"
+            cursorColor={colors.secondary}
             editable={editable}
           />
           {isPassword ? (
             <TouchableOpacity onPress={() => setShow((state) => !state)}>
               {show ? (
-                <Ionicons style={styles.inputIconPassword} name="eye" color={'#1E1E1E'} size={18} />
+                <Ionicons style={styles.inputIconPassword} name="eye" color={colors.lighterTitle} size={18} />
               ) : (
                 <Ionicons
                   style={styles.inputIconPassword}
                   name="eye-off"
-                  color={'#1E1E1E'}
+                  color={colors.lighterTitle}
                   size={18}
                 />
               )}
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 5,
     fontSize: 16,
     fontFamily: 'Inter-400',
     color: '#1E1E1E',

@@ -29,7 +29,7 @@ const MobileVerify = () => {
   const [otp, setOtp] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
-  const {signOut} = useClerk();
+  const { signOut } = useClerk();
   const [isModalVisible, setModalVisible] = useState(false);
   const { colors } = useThemeContext();
 
@@ -62,9 +62,8 @@ const MobileVerify = () => {
         code: otp,
       });
 
-
       if (res.verifications.phoneNumber.status === 'verified') {
-         await signOut(); 
+        await signOut();
         router.dismissTo('/(root)/(auth)/login');
         await AsyncStorage.removeItem('current-verify-number');
       } else {
@@ -103,115 +102,116 @@ const MobileVerify = () => {
       {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
-        <ThemedView style={{flex: 1}}>
-        <ScrollView
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            paddingHorizontal: 20,
-          }}
-          keyboardShouldPersistTaps={'always'}>
-          <Spacer height={100} />
-          <Text style={[styles.header, {color: colors.title}]}>Verify Phone</Text>
-          <Text style={[styles.subtext, {color: colors.description}]}>
-            Enter the 6-digit code that has been sent to{' '}
-            <Text style={[styles.subtext]}>{phone}</Text>
-          </Text>
-          <Spacer height={30} />
-          <OTPTextInput
-            inputCount={6}
-            containerStyle={styles.textInputContainer}
-            textInputStyle={styles.roundedTextInput}
-            inputCellLength={1}
-            tintColor="#6900FF"
-            offTintColor="#8880A0"
-            keyboardType="numeric"
-            autoFocus={true}
-            handleTextChange={handleTextChange}></OTPTextInput>
-          {/* {error && (
+        <ThemedView style={{ flex: 1 }}>
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+            }}
+            keyboardShouldPersistTaps={'always'}>
+            <Spacer height={100} />
+            <Text style={[styles.header, { color: colors.title }]}>Verify Phone</Text>
+            <Text style={[styles.subtext, { color: colors.description }]}>
+              Enter the 6-digit code that has been sent to{' '}
+              <Text style={[styles.subtext]}>{phone}</Text>
+            </Text>
+            <Spacer height={30} />
+            <OTPTextInput
+              inputCount={6}
+              containerStyle={styles.textInputContainer}
+              textInputStyle={styles.roundedTextInput}
+              inputCellLength={1}
+              tintColor="#6900FF"
+              offTintColor="#8880A0"
+              keyboardType="numeric"
+              autoFocus={true}
+              handleTextChange={handleTextChange}></OTPTextInput>
+            {/* {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.error}>{error}</Text>
             </View>
           )} */}
-          <Spacer height={40} />
+            <Spacer height={40} />
 
-          <TouchableOpacity
-            style={[styles.button, otpVerifyLoading || !otpValidation(otp) ? styles.disable : {}]}
-            onPress={verify}
-            disabled={otpVerifyLoading || !otpValidation(otp)}>
-            {otpVerifyLoading ? (
-              <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
-            ) : null}
-            <Text style={[styles.title, otpVerifyLoading ? styles.textDisable : {}]}>Verify</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, otpVerifyLoading || !otpValidation(otp) ? styles.disable : {}]}
+              onPress={verify}
+              disabled={otpVerifyLoading || !otpValidation(otp)}>
+              {otpVerifyLoading ? (
+                <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+              ) : null}
+              <Text style={[styles.title, otpVerifyLoading ? styles.textDisable : {}]}>Verify</Text>
+            </TouchableOpacity>
 
-          <Spacer height={50} />
-          <AuthLink
-            linkText="SignUp"
-            description="Go Back "
-            onPress={() => {
-              router.replace('/sign-up');
-            }}
-          />
-          <Modal
-            isVisible={isModalVisible}
-            hasBackdrop={true}
-            deviceHeight={height}
-            deviceWidth={width}
-            coverScreen={true}>
-            <View
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
+            <Spacer height={50} />
+            <AuthLink
+              linkText="SignUp"
+              description="Go Back "
+              onPress={() => {
+                router.replace('/sign-up');
+              }}
+            />
+            <Modal
+              isVisible={isModalVisible}
+              hasBackdrop={true}
+              deviceHeight={height}
+              deviceWidth={width}
+              coverScreen={true}>
               <View
                 style={{
-                  backgroundColor: colors.background,
-                  width: width - 60,
-                  borderRadius: 10,
-                  paddingVertical: 30,
-                  paddingHorizontal: 30,
                   display: 'flex',
-                  alignItems: 'center',
                   justifyContent: 'center',
+                  alignItems: 'center',
                 }}>
-                <Text
+                <View
                   style={{
-                    color: colors.title,
-                    fontSize: 18,
-                    textAlign: 'center',
-                    lineHeight: 24,
-                    fontFamily: 'Inter-500',
+                    backgroundColor: colors.background,
+                    width: width - 60,
+                    borderRadius: 10,
+                    paddingVertical: 30,
+                    paddingHorizontal: 30,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}>
-                  Your mobile number has been verified successfully.
-                </Text>
-                <Spacer height={30} />
-                <TouchableOpacity
-                  style={[
-                    styles.button,
-                    {
-                      width: 'auto',
-                      paddingVertical: 10,
-                      paddingHorizontal: 30,
-                      backgroundColor: '#463e75',
-                    },
-                  ]}
-                  onPress={() => {
-                    toggleModal();
-                    setTimeout(() => {
-                      router.replace('/(root)/(auth)/login');
-                    }, 500);
-                  }}>
-                  <Text style={[styles.title]}>Login</Text>
-                </TouchableOpacity>
+                  <Text
+                    style={{
+                      color: colors.title,
+                      fontSize: 18,
+                      textAlign: 'center',
+                      lineHeight: 24,
+                      fontFamily: 'Inter-500',
+                    }}>
+                    Your mobile number has been verified successfully.
+                  </Text>
+                  <Spacer height={30} />
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      {
+                        width: 'auto',
+                        paddingHorizontal: 30,
+                        backgroundColor: '#6B5DE6',
+                        borderRadius: 8,
+                        paddingVertical: 8,
+                      },
+                    ]}
+                    onPress={() => {
+                      toggleModal();
+                      setTimeout(() => {
+                        router.replace('/(root)/(auth)/login');
+                      }, 500);
+                    }}>
+                    <Text style={[styles.title]}>Login</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </Modal>
-        </ScrollView>
+            </Modal>
+          </ScrollView>
         </ThemedView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
@@ -254,9 +254,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#463e75',
+    backgroundColor: '#6B5DE6',
     borderRadius: 8,
-    paddingVertical: 10,
+    paddingVertical: 8,
     width: '100%',
   },
   loader: {

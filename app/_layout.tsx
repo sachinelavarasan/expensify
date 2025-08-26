@@ -14,6 +14,7 @@ import { tokenCache } from '@clerk/clerk-expo/token-cache';
 import ToastMessage from '@/components/ToastMessage';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ThemeProvider } from '@/contexts/ThemedContext';
+import NetworkInfoModal from '@/components/NetworkInfoModal';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -115,6 +116,7 @@ function LayoutBuilder() {
             </Stack>
           ) : null}
           <ToastMessage />
+          <NetworkInfoModal />
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

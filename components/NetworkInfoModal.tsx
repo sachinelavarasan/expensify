@@ -6,12 +6,14 @@ import Modal from 'react-native-modal';
 import Spacer from '@/components/Spacer';
 
 import { deviceWidth, deviceHeight } from '@/utils/functions';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const NetworkInfoModal = () => {
   const [netInfo, setNetInfo] = useState<{ type: string; connected: any }>({
     type: '',
     connected: null,
   });
+  const { colors, theme } = useThemeContext();
   const width = deviceWidth();
   const height = deviceHeight();
   useEffect(() => {
@@ -34,6 +36,7 @@ const NetworkInfoModal = () => {
   }
   return (
     <Modal
+    backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
       isVisible={true}
       hasBackdrop={true}
       deviceHeight={height}
@@ -45,11 +48,11 @@ const NetworkInfoModal = () => {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <View style={styles.modal}>
+        <View style={[styles.modal, {  backgroundColor: colors.background }]}>
           <Image source={require('@/assets/icons/network-warning.png')} />
-          <Text style={styles.title}>Network Error</Text>
+          <Text style={[styles.title , { color:  colors.title}]}>Network Error</Text>
           <Spacer height={15} />
-          <Text style={styles.subTitle}>
+          <Text style={[styles.subTitle, { color:  colors.description}]}>
             There is an error occurred while connecting to network. Please check your mobile
             network.
           </Text>
@@ -74,7 +77,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#ffffff',
-    fontSize: 24,
+    fontSize: 20,
     textAlign: 'center',
     lineHeight: 24,
     marginTop: 16,
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
   },
   subTitle: {
     color: '#C7C7C7',
-    fontSize: 16,
+    fontSize: 14,
     textAlign: 'center',
     lineHeight: 24,
     fontFamily: 'Inter-500',

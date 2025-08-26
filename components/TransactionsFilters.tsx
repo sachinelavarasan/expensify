@@ -54,7 +54,7 @@ const TransactionFilters = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(14, 14, 16, 0.6)'}
         style={{ flex: 1 }}
         isVisible={show}
         hasBackdrop={true}
