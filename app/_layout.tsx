@@ -97,7 +97,7 @@ function LayoutBuilder() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-          <ExpoStatus style='auto'/>
+          <ExpoStatus style='inverted'/>
           {authLoaded && fontsLoaded ? (
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(root)/(auth)" options={{ headerShown: false }} />

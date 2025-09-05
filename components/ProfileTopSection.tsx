@@ -118,7 +118,7 @@ export default function AnimatedTopSection({
           styles.avatarContainer,
           avatarStyle,
           {
-            backgroundColor: theme === 'dark' ? '#26004d' : colors.background,
+            backgroundColor: colors.bottomBarBackground,
             borderColor: colors.background,
           },
         ]}>
@@ -159,7 +159,7 @@ export default function AnimatedTopSection({
           styles.titleBar,
           titleBarOpacity,
           {
-            backgroundColor: theme === 'dark' ? '#26004d' : colors.background,
+            backgroundColor:  colors.bottomBarBackground,
             borderBottomColor: colors.borderColor,
           },
         ]}>
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     padding: 12, // spacing inside
     borderRadius: 20, // smoother card look
     backgroundColor: '#1A1825', // darker than app bg
-    borderWidth: 1,
+    // borderWidth: 1,
     borderColor: '#2E026D', // subtle accent border
     shadowColor: '#000',
     shadowOpacity: 0.2,

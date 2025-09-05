@@ -101,6 +101,7 @@ const UpdateProfile = ({
       alert('Failed to update profile.');
     }
   };
+  const titleColor = colors.title;
   return (
     <>
       <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
@@ -133,7 +134,7 @@ const UpdateProfile = ({
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}>
-              <Text style={styles.title}>Edit Details</Text>
+              <Text style={[styles.title, { color: titleColor }]}>Edit Details</Text>
 
               <TouchableOpacity
                 onPress={() => setShow(!show)}

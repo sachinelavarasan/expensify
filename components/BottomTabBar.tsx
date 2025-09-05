@@ -1,5 +1,5 @@
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { View, Platform, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
@@ -14,7 +14,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         alignItems: 'center',
         elevation: 10,
         backgroundColor: colors.bottomBarBackground,
-        paddingBottom: Platform.OS === 'ios' ? 10 : 0,
+        paddingBottom: 0,
         paddingTop: 5,
         position: 'static',
         bottom: 0,

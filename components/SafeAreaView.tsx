@@ -21,7 +21,7 @@ const SafeAreaViewComponent = ({
   return (
     <SafeAreaProvider>
       <SafeAreaView
-        style={[{ backgroundColor: colors.bottomBarBackground }, styles.container, style]}
+        style={[{ backgroundColor: colors.barBackground }, styles.container, style]}
         {...otherProps}>
         {children}
       </SafeAreaView>

@@ -13,10 +13,10 @@ export const LightColors = {
   income: '#37955e',
   expense: '#f33f3f',
   bottomBarBackground: '#FFF',
-  barBackground: '#F5F5F5',
-  topBarColor: '#F5F5F5',
-  themedViewBg: ['#F4F3FF', '#F4F3FF'],
-  floatingBtnBg: ['#6B5DE6', '#705AD4'],
+  barBackground: '#FFFFFF',
+  topBarColor: '#FFFFFF',
+  themedViewBg: ['#FFF', '#FFF'],
+  floatingBtnBg: ['#050506ff', '#705AD4'],
 };
 
 export const DarkColors = {
@@ -33,10 +33,10 @@ export const DarkColors = {
   borderColor: '#333333',
   borderSelected: '#6B5DE6',
   expense: '#F56565',
-  bottomBarBackground: '#1A1733',
-  barBackground: '#1A1733',
+  bottomBarBackground: '#0d001a',
+  barBackground: '#1a0033',
   topBarColor: '#1A1733',
-  themedViewBg: ['#26004d', '#1a0033', '#0d001a', '#000000'],
+  themedViewBg: ['#26004d', '#1a0033', '#0d001a', '#26004d'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
 };
 

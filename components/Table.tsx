@@ -2,12 +2,12 @@ import { Itransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, ColorValue } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
-const tableWidth = width - 32;
+const tableWidth = width - 40;
 
 export default function TableView({ transactions }: { transactions: Itransaction[] }) {
   const { colors } = useThemeContext();

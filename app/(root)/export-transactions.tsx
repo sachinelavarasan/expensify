@@ -138,13 +138,14 @@ export default function ExportData() {
                   {
                    backgroundColor: colors.primary
                   },
-                  isPdfLoading || isPending ? styles.disable : '',
+                  isPdfLoading || isPending || !start || !end ? styles.disable : '',
                 ]}
+                disabled={!start || !end}
                 onPress={download}>
                 {isPdfLoading || isPending ? (
                   <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.title, isPdfLoading || isPending ? styles.textDisable : {}]}>
+                <Text style={[styles.title, isPdfLoading || isPending  ? styles.textDisable : {}]}>
                   Export Now
                 </Text>
               </TouchableOpacity>

@@ -16,7 +16,7 @@ export function ThemedView({ style, children, ...otherProps }: ThemedViewProps) 
         colors.themedViewBg as [ColorValue, ColorValue]
       }
       start={{ x: 2, y: 0 }}
-      end={{ x: 0, y: 1 }}
+      end={{ x: 0, y: 2 }}
       style={[{ flex: 1 }, style]}
       {...otherProps}>
       {children}
