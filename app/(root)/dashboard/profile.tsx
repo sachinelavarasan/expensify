@@ -21,6 +21,7 @@ import Spacer from '@/components/Spacer';
 import { useGetUserData } from '@/hooks/useUserStore';
 import BankCard from '@/components/AccountCard';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { formatToCurrency } from '@/utils/formatter';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -68,7 +69,7 @@ const Profile = () => {
                 </View>
                 <View style={styles.subTextContainer}>
                   <Text style={[styles.subText, { color: colors.title, fontFamily: 'Inter-600' }]}>
-                    Over All : {overAllAmount}
+                    Over All : {formatToCurrency(overAllAmount)}
                   </Text>
                 </View>
               </View>

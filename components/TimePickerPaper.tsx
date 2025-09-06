@@ -31,7 +31,7 @@ const TimePickerPaper = ({
   useEffect(() => {
     if (!value) {
       const now = new Date();
-      const formatted = format(now, 'hh:mm a');
+      const formatted = format(now, 'HH:mm');
       setTime(now);
       onChange(formatted);
     } else {

@@ -214,6 +214,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
                   onChangeText={field.onChange}
                   error={errors.exp_ba_balance?.message}
                   borderLess
+                  editable={!exp_ba_id}
                   isRequired
                 />
               )}

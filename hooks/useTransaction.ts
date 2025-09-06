@@ -47,6 +47,7 @@ export const useSaveTransaction = (starred: boolean | undefined) => {
       } else {
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
       }
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
     },
   });
 };
@@ -104,6 +105,7 @@ export const useDeleteTransaction = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
     },
   });
 };
