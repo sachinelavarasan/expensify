@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
-import { StatusBar as ExpoStatus } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
@@ -88,18 +87,19 @@ function LayoutBuilder() {
     const prepare = async () => {
       if (fontsLoaded && authLoaded) {
         await SplashScreen.hideAsync();
+        
       }
     };
     prepare();
   }, [fontsLoaded, authLoaded]);
+  
 
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-          <ExpoStatus style='inverted'/>
           {authLoaded && fontsLoaded ? (
-            <Stack screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={{ headerShown: false }} >
               <Stack.Screen name="(root)/(auth)" options={{ headerShown: false }} />
               <Stack.Screen name="(root)/dashboard" options={{ headerShown: false }} />
               <Stack.Screen name="(root)/transaction" options={{ headerShown: false }} />

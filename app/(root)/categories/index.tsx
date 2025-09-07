@@ -135,7 +135,7 @@ export default function Category() {
           </TouchableOpacity>
         </Animated.View>
         <ProfileHeader title="Categories" />
-        <View style={[styles.tabContainer, { backgroundColor: colors.bottomBarBackground }]}>
+        <View style={[styles.tabContainer, { backgroundColor: colors.topBarColor }]}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'income' && styles.activeTab]}
             onPress={() => {

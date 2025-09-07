@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Appearance, ColorSchemeName } from 'react-native';
+import {  ColorSchemeName } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LightColors, DarkColors, ThemeColors } from '../utils/Colors';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
-  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
   colorScheme: ColorSchemeName;
   colors: ThemeColors;
 }
@@ -18,42 +18,46 @@ const STORAGE_KEY = 'APP_THEME';
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>('dark');
-  const [systemScheme, setSystemScheme] = useState<ColorSchemeName>(Appearance.getColorScheme());
+  const [themeColors, setThemeColors] = useState<ThemeColors>(DarkColors);
 
-  // Load theme from storage
   useEffect(() => {
     const loadTheme = async () => {
       const storedTheme = await AsyncStorage.getItem(STORAGE_KEY);
-      if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
-        setTheme(storedTheme);
+      if (storedTheme === 'light') {
+        setTheme('light');
+        setThemeColors(LightColors);
       }else {
         setTheme('dark');
+        setThemeColors(DarkColors)
       }
     };
     loadTheme();
   }, []);
 
-  // Save theme when it changes
+   const toggleTheme = async () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, newTheme);
+       if (newTheme === 'light') {
+        setTheme('light');
+        setThemeColors(LightColors)
+      }else {
+        setTheme('dark');
+        setThemeColors(DarkColors)
+      }
+    } catch (error) {
+      console.error('Error saving theme to AsyncStorage:', error);
+    }
+  };
+
+
   useEffect(() => {
     AsyncStorage.setItem(STORAGE_KEY, theme).catch(() => {});
   }, [theme]);
 
-  // Listen for system theme changes only if "system" is selected
-  useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      if (theme === 'system') {
-        setSystemScheme(colorScheme);
-      }
-    });
-    return () => subscription.remove();
-  }, [theme]);
-
-  // Final color scheme (resolved)
-  const effectiveScheme = theme === 'system' ? systemScheme : theme;
-  const colors = effectiveScheme === 'dark' ? DarkColors : LightColors;
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, colorScheme: effectiveScheme, colors }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, colorScheme: theme, colors: themeColors }}>
       {children}
     </ThemeContext.Provider>
   );

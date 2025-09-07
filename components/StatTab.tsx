@@ -39,6 +39,10 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
     progress.value = withTiming(1, { duration: 1500 });
   }, [progress]);
 
+  if(!data || data.length === 0){
+    return <Text style={[styles.subText, { color: colors.description }]}>No income transaction added yet</Text>
+  }
+
   return (
     <View
       style={{
@@ -176,7 +180,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         styles.container,
         { backgroundColor: colors.background, borderColor: colors.borderColor },
       ]}>
-      <View style={[styles.tabContainer, { backgroundColor: colors.barBackground }]}>
+      <View style={[styles.tabContainer, { backgroundColor: colors.topBarColor }]}>
         <TouchableOpacity
           style={[
             styles.tab,

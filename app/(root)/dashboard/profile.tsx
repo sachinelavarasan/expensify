@@ -108,7 +108,7 @@ const Profile = () => {
               icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
               // accountNumber="123456789012"
               balance={item.exp_ba_balance}
-              variant={theme === 'system' ? 'dark' : theme}
+              variant={theme}
               accent="#6C63FF"
               onPress={() => {
                 router.push(`/accounts/${item.exp_ba_id}`);

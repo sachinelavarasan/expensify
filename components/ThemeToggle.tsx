@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, Switch } from 'react-native';
+import { View, Text } from 'react-native';
 import { useThemeContext } from '../contexts/ThemedContext';
 import { Feather } from '@expo/vector-icons';
 import CustomSwitch from './Switch';
 
 const ThemeToggle = () => {
-  const { theme, setTheme, colors } = useThemeContext();
+  const { theme, toggleTheme, colors } = useThemeContext();
   const isDark = theme === 'dark';
 
   return (
@@ -29,7 +29,7 @@ const ThemeToggle = () => {
           </View>
 
           {/* Right side: Switch */}
-          <CustomSwitch value={isDark} onChange={(val) => setTheme(val ? 'dark' : 'light')} />
+          <CustomSwitch value={isDark} onChange={toggleTheme} />
         </View>
         <Text
           style={{
