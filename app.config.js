@@ -1,11 +1,11 @@
 export default {
   "expo": {
     "name": "Expenix",
-    "slug": "expenix",
+    "slug": "expensify",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expenix",
+    "scheme": "expensify",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
