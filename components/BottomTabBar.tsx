@@ -1,9 +1,10 @@
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { useEffect } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
-  const { colors } = useThemeContext();
+  const { theme, colors } = useThemeContext();
 
   return (
     <View
@@ -49,15 +50,15 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
             target: route.key,
           });
         };
+        const focusedColor = colors.primary || '#6B5DE6';
         const background = useSharedValue('transparent');
 
-        if (isFocused) {
-          background.value = withSpring('#6B5DE6', {
+        
+          background.value = withSpring(isFocused ? focusedColor : 'transparent', {
             duration: 0,
           }); // animate when focused
-        } else {
-          background.value = withSpring('transparent'); // animate when focused
-        }
+        
+
 
         const animatedStyle = useAnimatedStyle(() => {
           return {
