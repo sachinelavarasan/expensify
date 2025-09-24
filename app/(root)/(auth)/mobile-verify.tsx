@@ -64,7 +64,9 @@ const MobileVerify = () => {
 
       if (res.verifications.phoneNumber.status === 'verified') {
         await signOut();
-        router.dismissTo('/(root)/(auth)/login');
+        setTimeout(()=>{
+          router.dismissTo('/(root)/(auth)/login');
+        }, 1000)
         await AsyncStorage.removeItem('current-verify-number');
       } else {
         Alert.alert('Error', 'Verification failed. Please check your code and try again.');

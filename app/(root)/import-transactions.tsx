@@ -368,20 +368,12 @@ export default function ImportTransactions() {
                 <Spacer height={10} />
                 <View>
                   <TouchableOpacity
-                    style={[styles.button, {
-                      backgroundColor: colors.secondary,
-                    },]}
-                    onPress={() => setStep(0)}>
-                    <Text style={styles.title}>Back</Text>
-                  </TouchableOpacity>
-                  <Spacer height={20} />
-                  <TouchableOpacity
                     disabled={!canGoNextFromMap || processing}
                     style={[
                       styles.button,
                       styles.accent,
                       {
-                      backgroundColor: colors.primary,
+                      backgroundColor: '#2E8B57',
                       },
                       (!canGoNextFromMap || processing) && styles.disable,
                     ]}
@@ -390,6 +382,17 @@ export default function ImportTransactions() {
                     <Text style={[styles.title, processing && styles.textDisable]}>
                       Generate Preview
                     </Text>
+                  </TouchableOpacity>
+                  <Spacer height={20} />
+                  <TouchableOpacity
+                    style={[styles.button, {
+                      borderColor: colors.primary,
+                      borderWidth: 1
+                    },]}
+                    onPress={() => setStep(0)}>
+                    <Text style={[styles.title, {
+                      color: colors.primary
+                    }]}>Back</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -407,7 +410,7 @@ export default function ImportTransactions() {
                     <Text style={styles.previewCount}>{validRows.length}</Text>
                     {validRows.length > 0 && (
                       <TouchableOpacity
-                        style={[styles.button, styles.primary]}
+                        style={[styles.button, styles.accent]}
                         onPress={toggleValid}>
                         <Text style={styles.title}>View valid</Text>
                       </TouchableOpacity>
@@ -445,12 +448,7 @@ export default function ImportTransactions() {
                       </Text>
                       .
                     </Text>
-                    <View style={{ flexDirection: 'row', gap: 10 }}>
-                      <TouchableOpacity
-                        style={[styles.button, {backgroundColor: colors.secondary}, { flex: 1 }]}
-                        onPress={() => setStep(2)}>
-                        <Text style={styles.title}>Back</Text>
-                      </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: 10 }}>                    
                       <TouchableOpacity
                         disabled={saving || validRows.length === 0}
                         style={[
@@ -464,6 +462,17 @@ export default function ImportTransactions() {
                         {saving && <ActivityIndicator color={colors.primary} style={styles.loader} />}
                         <Text style={[styles.title, saving && styles.textDisable]}>Import Now</Text>
                       </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                      style={[styles.button, {
+                        borderColor: colors.primary,
+                        borderWidth: 1
+                      },]}
+                      onPress={() => setStep(2)}>
+                      <Text style={[styles.title, {
+                        color: colors.primary
+                      }]}>Back</Text>
+                    </TouchableOpacity>
                     </View>
 
                     <Spacer height={16} />

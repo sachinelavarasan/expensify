@@ -1,10 +1,13 @@
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
   const { theme, colors } = useThemeContext();
+
+  const bottomTabs = useMemo(()=>state, [state, theme])
+
 
   return (
     <View
@@ -22,7 +25,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         borderTopColor: colors.borderColor,
         borderTopWidth: 0.5,
       }}>
-      {state.routes.map((route: any, index: number) => {
+      {bottomTabs.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
