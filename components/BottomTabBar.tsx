@@ -1,13 +1,9 @@
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { useMemo } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
-import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
-  const { theme, colors } = useThemeContext();
-
-  const bottomTabs = useMemo(()=>state, [state, theme])
-
+  const { colors } = useThemeContext();
 
   return (
     <View
@@ -25,7 +21,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         borderTopColor: colors.borderColor,
         borderTopWidth: 0.5,
       }}>
-      {bottomTabs.routes.map((route: any, index: number) => {
+      {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
@@ -54,21 +50,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
           });
         };
         const focusedColor = colors.primary || '#6B5DE6';
-        const background = useSharedValue('transparent');
-
         
-          background.value = withSpring(isFocused ? focusedColor : 'transparent', {
-            duration: 0,
-          }); // animate when focused
-        
-
-
-        const animatedStyle = useAnimatedStyle(() => {
-          return {
-            backgroundColor: background.value,
-            borderRadius: 15,
-          };
-        });
 
         return (
           <TouchableOpacity
@@ -93,8 +75,9 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
                   paddingHorizontal: 20,
                   paddingVertical: 2,
                   alignItems: 'center',
+                  backgroundColor: isFocused ? focusedColor : 'transparent',
+                  borderRadius: isFocused ? 15: 0,
                 },
-                animatedStyle,
               ]}>
               {/* {route.name === 'notification' ? (
                 <Image
