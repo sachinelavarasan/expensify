@@ -149,7 +149,7 @@ export const formatToCurrency = (
   const abs = value.abs();
   const prefix = isNegative ? '-' : '';
   const formatLabel = (val: Decimal.Value, label: string) =>
-    `${prefix}${symbol}${new Decimal(val).toFixed(1)}${label}`;
+    `${prefix}${symbol}${new Decimal(val).toFixed(2)}${label}`;
 
   if (currency === 'INR') {
     if (abs.gte('10000000')) return formatLabel(abs.div('10000000'), ' Cr');
