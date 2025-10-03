@@ -41,5 +41,7 @@ android
 ios
 
 google-services.json
+google-service-for-eas.json
+play-console-services.json
 
 *.aab
