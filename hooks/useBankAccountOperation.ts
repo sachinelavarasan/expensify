@@ -68,6 +68,7 @@ export const useUpdateBankAccount = () => {
       queryClient.invalidateQueries({
         queryKey: ['accountDetail', String(variables.exp_ba_id)],
       });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
     },
   });
 };

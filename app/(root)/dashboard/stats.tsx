@@ -54,7 +54,7 @@ export default function Stat() {
       {loading && <OverlayLoader />}
 
       <FlatList
-        data={[1]} // dummy data to trigger render
+        data={[1]}
         keyExtractor={() => 'page-wrapper'}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 50 }}

@@ -19,7 +19,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         position: 'static',
         bottom: 0,
         borderTopColor: colors.borderColor,
-        borderTopWidth: 0.5,
+        borderTopWidth: 0.2,
       }}>
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];

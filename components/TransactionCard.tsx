@@ -77,7 +77,7 @@ const TransactionCard = ({
                         styles.subText,
                         { fontFamily: 'Inter-500', color: colors.description },
                       ]}>
-                      <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}r
+                      <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
                     </Text>
                   )}
                 </View>

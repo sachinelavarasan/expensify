@@ -11,8 +11,8 @@ import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
+import { useUser } from '@clerk/clerk-expo';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -34,6 +34,7 @@ export default function AccountScreen() {
   const { id } = useLocalSearchParams() as unknown as { id: number };
   const { account, loading, refetch } = useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
+  const { user: currentUser } = useUser();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -69,14 +70,14 @@ export default function AccountScreen() {
         ) : (
           <>
             <Spacer height={10} />
-            <View style={{ paddingHorizontal: 15 }}>
+            <View style={{ paddingHorizontal: 15, marginBottom: 5 }}>
               <BankCard
                 bankName={account.exp_ba_name}
-                holderName={'Elavarasan'}
+                holderName={currentUser?.firstName || ''}
                 icon={account.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 // accountNumber="123456789012"
                 balance={account.exp_ba_balance}
-                variant={theme === 'system' ? 'dark' : theme}
+                variant={theme === 'dark' ? 'dark' : 'light'}
                 // variant="dark"
                 accent="#6C63FF"
                 otherStyle={{
@@ -95,10 +96,11 @@ export default function AccountScreen() {
               bounces={false}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 80, paddingHorizontal: 20 }}
+              contentContainerStyle={{ paddingBottom: 80 }}
+              style={{paddingHorizontal: 15}}
               keyExtractor={(item, index) => item.exp_ts_id.toString()}
               renderItem={({ item }) => (
-                <View>
+                <View style={{paddingHorizontal: 5}}>
                   <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
@@ -111,20 +113,15 @@ export default function AccountScreen() {
                 //     backgroundColor: theme === 'dark' ? '#0d001a' : '#F4F3FF',
                 //     paddingVertical: 10,
                 //   }}>
-                <LinearGradient
-                  colors={
-                    (theme == 'dark'
-                      ? ['#26004d', '#1a0033', '#26004d', '#0d001a']
-                      : colors.themedViewBg) as [ColorValue, ColorValue]
-                  }
-                  start={{ x: 1.5, y: 0 }}
-                  end={{ x: 0, y: 1.5 }}
+                <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    backgroundColor: theme === 'dark' ? '#0d001a' : '#F4F3FF',
-                    paddingVertical: 20,
+                    backgroundColor: colors.themedViewBg[0], 
+                    paddingVertical: 16,
+                    paddingHorizontal: 10,
+                    borderRadius: 4,
                   }}>
                   <Text style={[styles.dateHeader, { color: colors.title }]}>{title}</Text>
 
@@ -142,7 +139,7 @@ export default function AccountScreen() {
                       </Text>
                     )}
                   </View>
-                </LinearGradient>
+                </View>
                 // </View>
               )}
               stickySectionHeadersEnabled={true}

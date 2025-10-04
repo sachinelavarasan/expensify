@@ -127,7 +127,7 @@ const BankCard = ({
 
         {/* Hint */}
         <Text style={[styles.hint, { color: colors.sub }]}>
-          {showFull ? 'Tap to hide details' : 'Tap to reveal details'}
+          {/* {showFull ? 'Tap to hide details' : 'Tap to reveal details'} */}
         </Text>
       </LinearGradient>
     </TouchableOpacity>
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   hint: {
-    marginTop: 12,
+    marginTop: 6,
     fontSize: 11,
     textAlign: 'right',
   },

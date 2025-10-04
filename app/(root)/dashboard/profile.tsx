@@ -104,7 +104,7 @@ const Profile = () => {
           renderItem={({ item }) => (
             <BankCard
               bankName={item.exp_ba_name}
-              holderName={'Elavarasan'}
+              holderName={currentUser?.firstName || ''}
               icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
               // accountNumber="123456789012"
               balance={item.exp_ba_balance}

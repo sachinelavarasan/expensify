@@ -162,7 +162,7 @@ export default function Transaction() {
         deleteTransaction(Number(exp_ts_id))
           .then(() => {
             showToast({
-              text1: 'Transaction removed successfully',
+              text1: 'The transaction has been removed.',
               type: 'success',
               position: 'bottom',
             });
@@ -458,13 +458,13 @@ export default function Transaction() {
                         {!!data?.exp_ts_created_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
                             Created:{' '}
-                            {format(new Date(data.exp_ts_created_at), 'do MMMM yyyy HH:MM a')}
+                            {format(data.exp_ts_created_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
                         {!!data?.exp_ts_updated_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
                             Modified:{' '}
-                            {format(new Date(data.exp_ts_updated_at), 'do MMMM yyyy HH:MM a')}
+                            {format(data.exp_ts_updated_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
                       </View>
@@ -495,10 +495,7 @@ export default function Transaction() {
 
                 {exp_ts_id && (
                   <>
-                    <TouchableOpacity onPress={handleDelete}>
-                      {isLoading ? (
-                        <ActivityIndicator animating color={'#6900FF'} style={styles.loader} />
-                      ) : null}
+                    <TouchableOpacity onPress={handleDelete} disabled={isLoading}>
                       <FontAwesome5 name="trash" size={20} color={colors.text} />
                     </TouchableOpacity>
                   </>
