@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   hint: {
-    marginTop: 6,
+    marginTop: 12,
     fontSize: 11,
     textAlign: 'right',
   },

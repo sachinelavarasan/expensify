@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import {
+  Alert,
   ColorValue,
   FlatList,
   Pressable,
@@ -29,6 +30,9 @@ import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import SwipeableRow from '@/components/Swippable';
+import { showToast } from '@/components/ToastMessage';
+import { useDeleteTransaction } from '@/hooks/useTransaction';
 
 export default function Index() {
   const { colors } = useThemeContext();
@@ -45,6 +49,7 @@ export default function Index() {
     search,
     transactionType,
   } = useMonthlyTransactions();
+  const { mutateAsync: deleteTransaction } = useDeleteTransaction();
   useCategoryList();
   useGetUserData();
   useBankAccounts();
@@ -63,6 +68,42 @@ export default function Index() {
   const handlePress = () => {
     router.push('/(root)/transaction');
   };
+
+  const handleDelete = async (exp_ts_id: number) => {
+      try {
+        const confirm = await new Promise((resolve) =>
+          Alert.alert(
+            'Delete this transaction?',
+            'Are you sure you want to delete this transaction?',
+            [
+              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+              { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+            ],
+          ),
+        );
+  
+        if (!confirm) return;
+  
+        if (exp_ts_id)
+          deleteTransaction(Number(exp_ts_id))
+            .then(() => {
+              showToast({
+                text1: 'The transaction has been removed.',
+                type: 'success',
+                position: 'bottom',
+              });
+            })
+            .catch(() => {
+              showToast({
+                text1: 'Server Error',
+                type: 'error',
+                position: 'bottom',
+              });
+            });
+      } catch (error) {
+        console.error('Error deleting transaction:', error);
+      }
+    };
 
   const applyFilters = (search: string, transactionType: string) => {
     updateSearch(search);
@@ -116,7 +157,7 @@ export default function Index() {
       {/* <TouchableOpacity style={styles.floatingButton} onPress={handlePress}>
         <Entypo name="plus" size={24} color="white" />
       </TouchableOpacity> */}
-        <TouchableOpacity
+      <TouchableOpacity
         style={{
           width: 50,
           height: 50,
@@ -248,8 +289,13 @@ export default function Index() {
                   </View>
                 </View>
 
-                {item.data.map((lendItem: Itransaction) => (
-                  <TransactionCard key={lendItem.exp_ts_id} {...lendItem} showTsTime={value} />
+                {item.data.map((transaction: Itransaction) => (
+                  <SwipeableRow
+                    key={transaction.exp_ts_id}
+                    onDelete={() => handleDelete(transaction.exp_ts_id)}
+                    >
+                    <TransactionCard {...transaction} showTsTime={value} />
+                  </SwipeableRow>
                 ))}
               </View>
             );

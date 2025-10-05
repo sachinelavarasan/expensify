@@ -21,6 +21,7 @@ const TransactionCard = ({
   exp_st_id,
   exp_tc_icon,
   exp_tc_icon_bg_color,
+  exp_ba_name,
   isStarred,
   showTsTime = true,
 }: Itransaction & { isStarred?: boolean; showTsTime?: boolean }) => {
@@ -80,6 +81,23 @@ const TransactionCard = ({
                       <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
                     </Text>
                   )}
+                </View>
+              </View>
+              <View style={{ alignItems: 'flex-start' }}>
+                <View
+                  style={{
+                    borderColor: colors.borderColor,
+                    borderWidth: 1,
+                    borderRadius: 15,
+                    paddingHorizontal: 10,
+                    paddingVertical: 2,
+                    alignItems: 'center',
+                    marginTop: 5,
+                  }}>
+                  <Text
+                    style={[styles.subText, { fontFamily: 'Inter-600', color: colors.secondary }]}>
+                    {exp_ba_name}
+                  </Text>
                 </View>
               </View>
             </View>

@@ -14,9 +14,9 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
   const { value: showBalance } = useGetSettingsFromStore('balance');
 
   return (
-    <View style={{ marginBottom: 10 }}>
+    <View>
       {/* Income + Expense */}
-      <View style={styles.topContainer}>
+      <View style={[styles.topContainer, !showBalance && { marginBottom: 5 }]}>
         {/* Income Card */}
         <LinearGradient
           colors={['#1D2B64', '#1E1B30']}
@@ -57,7 +57,7 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
           colors={['#2E2654', '#1E1B30']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.balance}>
+          style={[styles.balance, { marginBottom: 0 }]}>
           <Text style={[styles.balanceText, { opacity: 0.8 }]}>Balance:</Text>
           <Text
             style={[styles.balanceText, { fontFamily: 'Inter-600', marginLeft: 6, color: '#FFF' }]}

@@ -93,7 +93,7 @@ export const useDeleteBankAccount = () => {
       if (!res.ok) throw new Error('Failed to delete account');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transaction'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
     },
   });
 };

@@ -5,15 +5,19 @@ import ProfileHeader from '@/components/ProfileHeader';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
+import { showToast } from '@/components/ToastMessage';
 import TransactionCard from '@/components/TransactionCard';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { useAccountGroupedTransactions } from '@/hooks/useBankAccountOperation';
+import {
+  useAccountGroupedTransactions,
+  useDeleteBankAccount,
+} from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { useUser } from '@clerk/clerk-expo';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   Text,
@@ -22,7 +26,8 @@ import {
   SectionList,
   ActivityIndicator,
   RefreshControl,
-  ColorValue,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 const width = deviceWidth();
@@ -35,8 +40,11 @@ export default function AccountScreen() {
   const { account, loading, refetch } = useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
   const { user: currentUser } = useUser();
+  const { mutateAsync: deleteAccount, isPending: isDeleting } = useDeleteBankAccount();
 
   const [refreshing, setRefreshing] = useState(false);
+
+  const router = useRouter();
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -46,6 +54,39 @@ export default function AccountScreen() {
     }, 2000);
   }, [refetch]);
 
+  const handleDelete = async () => {
+    try {
+      const confirm = await new Promise((resolve) =>
+        Alert.alert('Delete this account?', 'Are you sure you want to delete this account?', [
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+        ]),
+      );
+
+      if (!confirm) return;
+
+      if (account?.exp_ba_id)
+        deleteAccount(Number(account?.exp_ba_id))
+          .then(() => {
+            showToast({
+              text1: 'The account has been removed.',
+              type: 'success',
+              position: 'bottom',
+            });
+            router.back()
+          })
+          .catch(() => {
+            showToast({
+              text1: 'Server Error',
+              type: 'error',
+              position: 'bottom',
+            });
+          });
+    } catch (error) {
+      console.error('Error deleting account:', error);
+    }
+  };
+
   return (
     <SafeAreaViewComponent edges={['top']}>
       <ThemedView style={styles.container}>
@@ -53,17 +94,22 @@ export default function AccountScreen() {
           <ProfileHeader title="Account Details" subtitle="All Time" paddingHorizontal={false}>
             <View>
               {!!account?.exp_ba_id && (
-                <AddAccount
-                  account={{
-                    ...account,
-                  }}
-                  exp_ba_id={account.exp_ba_id}
-                />
+                <View style={{gap: 20, flexDirection: 'row', alignItems: 'center'}}>
+                  <AddAccount
+                    account={{
+                      ...account,
+                    }}
+                    exp_ba_id={account.exp_ba_id}
+                  />
+                  <TouchableOpacity onPress={handleDelete} disabled={isDeleting}>
+                    <MaterialIcons name="delete" size={30} color={'#da1616'} />
+                  </TouchableOpacity>
+                </View>
               )}
             </View>
           </ProfileHeader>
         </View>
-        {loading || refreshing || !account ? (
+        {loading || refreshing || !account || isDeleting ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
             <ActivityIndicator size="large" color="#6900FF" />
           </View>
@@ -97,10 +143,10 @@ export default function AccountScreen() {
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 80 }}
-              style={{paddingHorizontal: 15}}
+              style={{ paddingHorizontal: 15 }}
               keyExtractor={(item, index) => item.exp_ts_id.toString()}
               renderItem={({ item }) => (
-                <View style={{paddingHorizontal: 5}}>
+                <View style={{ paddingHorizontal: 5 }}>
                   <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
@@ -118,7 +164,7 @@ export default function AccountScreen() {
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    backgroundColor: colors.themedViewBg[0], 
+                    backgroundColor: colors.themedViewBg[0],
                     paddingVertical: 16,
                     paddingHorizontal: 10,
                     borderRadius: 4,
