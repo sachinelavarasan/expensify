@@ -65,7 +65,10 @@ export default function SwipeableRow({ children, onDelete }: Props) {
         </TouchableOpacity>
       </Animated.View>
 
-      <PanGestureHandler onGestureEvent={gestureHandler}>
+      <PanGestureHandler
+        onGestureEvent={gestureHandler}
+        activeOffsetX={[-10, 10]}
+        failOffsetY={[-5, 5]}>
         <Animated.View style={[rowStyle]}>{children}</Animated.View>
       </PanGestureHandler>
     </View>
@@ -89,7 +92,7 @@ const styles = StyleSheet.create({
     width: 50,
     justifyContent: 'center',
     alignItems: 'flex-end',
-    borderRadius: 4
+    borderRadius: 4,
   },
   actionText: {
     color: 'white',
