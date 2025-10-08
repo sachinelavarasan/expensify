@@ -12,6 +12,7 @@ import BottomSheet, {
 import { IBudget, Itransaction } from '@/types';
 import { ThemeColors } from '@/utils/Colors';
 import { format } from 'date-fns';
+import TransactionCard from './TransactionCard';
 
 const width = deviceWidth();
 const barWidth2 = Math.round((width - 40) * 0.3);
@@ -151,44 +152,11 @@ function CollapsibleCategoryCard({
 
   const renderPreviewItem = useCallback(
     ({ item }: { item: Itransaction }) => (
-      <View style={styles.itemContainer}>
-        <View style={styles.left}>
-          <View>
-            <Text style={styles.name}>{item.exp_ts_title}</Text>
-            <View style={styles.subTextContainer}>
-              <Text
-                style={[
-                  styles.subText,
-                  {
-                    marginRight: 6,
-                    fontFamily: 'Inter-600',
-                    maxWidth: 150,
-                    color: colors.description,
-                  },
-                ]}>
-                {formatToCurrency(item.exp_ts_amount)} <Text>{'\u2022'}</Text>
-              </Text>
-              <Text
-                style={[
-                  styles.subText,
-                  { marginRight: 6, fontFamily: 'Inter-500', color: colors.description },
-                ]}>
-                {item.exp_ts_transaction_type}
-                <Text> {'\u2022'} </Text>
-              </Text>
-              <Text
-                style={[
-                  styles.subText,
-                  { marginRight: 6, fontFamily: 'Inter-400', color: colors.description },
-                ]}>
-                {format(item.exp_ts_date, 'dd/MM/yyyy')}
-              </Text>
-            </View>
-          </View>
-        </View>
+      <View style={{ paddingVertical: 5 }}>
+        <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={true} />
       </View>
     ),
-    [],
+    [colors],
   );
 
   return (
@@ -210,13 +178,21 @@ function CollapsibleCategoryCard({
               />
             </View>
             <View>
-              <View style={{flexDirection:'row', gap: 10 , alignItems:'center'}}>
-                <Text style={[styles.cardTitle, { color: colors.title, flexWrap: 'wrap', maxWidth: 160  }]}>
+              <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    { color: colors.title, flexWrap: 'wrap', maxWidth: 160 },
+                  ]}>
                   {category.category}
                 </Text>
-                <TouchableOpacity onPress={()=> openModal(category)}>
-                <MaterialCommunityIcons name="circle-edit-outline" size={24} color={colors.primary} />
-              </TouchableOpacity>
+                <TouchableOpacity onPress={() => openModal(category)}>
+                  <MaterialCommunityIcons
+                    name="circle-edit-outline"
+                    size={24}
+                    color={colors.primary}
+                  />
+                </TouchableOpacity>
               </View>
 
               <View style={styles.row}>
@@ -272,18 +248,20 @@ function CollapsibleCategoryCard({
 
       <BottomSheetModal
         ref={validSheetRef}
-        snapPoints={['35%', '70%']}
+        snapPoints={['35%', '80%']}
         enablePanDownToClose
         onDismiss={toggleValid}
         backdropComponent={renderBackdrop}
         enableDynamicSizing={false}
-        backgroundStyle={{ backgroundColor: '#20212C' }}
+        backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
-        <Text style={styles.sheetTitle}>{category.category} transactions</Text>
+        <Text style={[styles.sheetTitle, { color: colors.title }]}>
+          {category.category} transactions
+        </Text>
         <Text
           style={[
             styles.subText,
-            { color: colors.description, marginLeft: 16, fontFamily: 'Inter-600' },
+            { color: colors.description, marginLeft: 16, fontFamily: 'Inter-500' },
           ]}>
           {category.transactions.length} transactions
         </Text>

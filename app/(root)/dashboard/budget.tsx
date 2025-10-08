@@ -2,12 +2,11 @@ import {
   View,
   Text,
   FlatList,
-  RefreshControl,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import MonthSwitcher from '@/components/MonthSwitch';
 import useBudgetsForMonth from '@/hooks/useBudget';
@@ -15,7 +14,7 @@ import BudgetTable from '@/components/BudgetTable';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { MaterialIcons, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
 import ReactNativeModal from 'react-native-modal';
 import Spacer from '@/components/Spacer';
@@ -27,7 +26,6 @@ import { showToast } from '@/components/ToastMessage';
 import { useAddBudget, useDeleteBudget, useUpdateBudget } from '@/hooks/useBudgetOperation';
 import { IBudget } from '@/types';
 import { BudgetedCategoriesList } from '@/components/CollapsibleCategoryCard';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import OverlayLoader from '@/components/Overlay';
 
 const width = deviceWidth();
@@ -236,7 +234,6 @@ const Budget = () => {
   return (
     <ThemedView style={{ flex: 1, paddingHorizontal: 15 }}>
       {loading && <OverlayLoader />}
-      <BottomSheetModalProvider>
         <FlatList
           data={[1]}
           bounces={false}
@@ -458,7 +455,6 @@ const Budget = () => {
             </View>
           </View>
         </ReactNativeModal>
-      </BottomSheetModalProvider>
     </ThemedView>
   );
 };

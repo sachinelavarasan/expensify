@@ -203,23 +203,23 @@ export default function ImportTransactions() {
 
   const renderPreviewItem = useCallback(
     ({ item }: any) => (
-      <View style={styles.itemContainer}>
+      <View style={[styles.itemContainer, {backgroundColor: colors.cardBg}]}>
         <View style={styles.left}>
           <View>
-            <Text style={styles.name}>{item.title}</Text>
+            <Text style={[styles.name, { color: colors.description}]}>{item.title}</Text>
             <View style={styles.subTextContainer}>
               <Text
                 style={[
                   styles.subText,
-                  { marginRight: 6, fontFamily: 'Inter-600', maxWidth: 150 },
+                  { marginRight: 6, fontFamily: 'Inter-600', maxWidth: 150, color: colors.description, },
                 ]}>
                 {formatToCurrency(item.amount)} <Text>{'\u2022'}</Text>
               </Text>
-              <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-500' }]}>
+              <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-500', color: colors.description, }]}>
                 {item.transaction_type}
                 <Text> {'\u2022'} </Text>
               </Text>
-              <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-400' }]}>
+              <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-400', color: colors.description, }]}>
                 {item.date}
               </Text>
             </View>
@@ -232,7 +232,7 @@ export default function ImportTransactions() {
         </View>
       </View>
     ),
-    [],
+    [colors],
   );
 
   return (
@@ -496,9 +496,9 @@ export default function ImportTransactions() {
               onChange={onSheetChange}
               backdropComponent={renderBackdrop}
               enableDynamicSizing={false}
-              backgroundStyle={{ backgroundColor: '#20212C' }}
+              backgroundStyle={{ backgroundColor: colors.bottomBarBackground }}
               handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
-              <Text style={styles.sheetTitle}>{validRows.length} valid records</Text>
+              <Text style={[styles.sheetTitle, {color: colors.title}]}>{validRows.length} valid records</Text>
               <BottomSheetFlatList
                 data={validRows}
                 keyExtractor={(_, i) => `v-${i}`}
@@ -520,7 +520,7 @@ export default function ImportTransactions() {
               onChange={onSheetChange}
               backdropComponent={renderBackdrop}
               enableDynamicSizing={false}
-              backgroundStyle={{ backgroundColor: '#20212C' }}
+              backgroundStyle={{ backgroundColor: colors.bottomBarBackground }}
               handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
               <Text style={[styles.sheetTitle, { color: '#E63946' }]}>
                 {invalidRows.length} invalid records

@@ -14,6 +14,7 @@ import ToastMessage from '@/components/ToastMessage';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ThemeProvider } from '@/contexts/ThemedContext';
 import NetworkInfoModal from '@/components/NetworkInfoModal';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -98,6 +99,7 @@ function LayoutBuilder() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
+          <BottomSheetModalProvider>   
           {authLoaded && fontsLoaded ? (
             <Stack screenOptions={{ headerShown: false }} >
               <Stack.Screen name="(root)/(auth)" options={{ headerShown: false }} />
@@ -117,6 +119,7 @@ function LayoutBuilder() {
           ) : null}
           <ToastMessage />
           <NetworkInfoModal />
+          </BottomSheetModalProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
