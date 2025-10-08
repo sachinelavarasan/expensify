@@ -1,8 +1,6 @@
 import {
   ActivityIndicator,
   FlatList,
-  Image,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -13,7 +11,7 @@ import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { AntDesign, FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';

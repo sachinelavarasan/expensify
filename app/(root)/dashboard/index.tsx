@@ -154,9 +154,6 @@ export default function Index() {
   return (
     <ThemedView style={{ flex: 1, paddingHorizontal: 20 }}>
       {loading && <OverlayLoader />}
-      {/* <TouchableOpacity style={styles.floatingButton} onPress={handlePress}>
-        <Entypo name="plus" size={24} color="white" />
-      </TouchableOpacity> */}
       <TouchableOpacity
         style={{
           width: 50,

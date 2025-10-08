@@ -148,12 +148,13 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 14,
     color: '#D1CFE9',
+    fontFamily: 'Inter-400',
   },
   header: {
     backgroundColor: '#2A2740',
   },
   headerText: {
-    fontWeight: '600',
+    fontFamily: 'Inter-600',
     color: '#E6E6FA',
     fontSize: 14,
   },

@@ -1,6 +1,6 @@
 export default {
   "expo": {
-    "name": "Expenix",
+    "name": "Expensify",
     "slug": "expensify",
     "version": "1.0.0",
     "orientation": "portrait",

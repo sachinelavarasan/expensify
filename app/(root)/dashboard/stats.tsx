@@ -55,6 +55,7 @@ export default function Stat() {
 
       <FlatList
         data={[1]}
+        bounces={false}
         keyExtractor={() => 'page-wrapper'}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 50 }}

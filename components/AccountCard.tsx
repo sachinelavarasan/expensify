@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   bankName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Inter-700',
   },
   chip: {
     width: 36,
@@ -181,21 +181,23 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 18,
     letterSpacing: 2,
-    fontWeight: '600',
+    fontFamily: 'Inter-600',
   },
   label: {
     fontSize: 11,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
+    fontFamily: 'Inter-500',
   },
   value: {
     marginTop: 2,
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter-600',
   },
   hint: {
     marginTop: 12,
     fontSize: 11,
     textAlign: 'right',
+    fontFamily: 'Inter-500',
   },
 });

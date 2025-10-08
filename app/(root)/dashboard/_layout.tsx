@@ -7,6 +7,7 @@ import Feather from '@expo/vector-icons/Feather';
 
 import BottomTab from '@/components/BottomTabBar';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
+import { FontAwesome } from '@expo/vector-icons';
 
 const ROUTES: {
   name: string;
@@ -20,12 +21,12 @@ const ROUTES: {
     icon: <Entypo name="home" size={24} color="#999999" />,
     activeIcon: <Entypo name="home" size={24} color="#FFFFFF" />,
   },
-  // {
-  //   name: 'budget',
-  //   title: 'Budget',
-  //   icon: <MaterialIcons name="savings" size={24} color="#999999" />,
-  //   activeIcon: <MaterialIcons name="savings" size={24} color="#FFFFFF" />,
-  // },
+  {
+    name: 'budget',
+    title: 'Budget',
+    icon: <FontAwesome name="get-pocket" size={24} color="#999999" />,
+    activeIcon: <FontAwesome name="get-pocket" size={24} color="#FFFFFF" />,
+  },
   {
     name: 'stats',
     title: 'Stats',

@@ -64,6 +64,18 @@ export interface ICategory {
   exp_tc_transaction_type: number;
   exp_tc_sort_order: number;
 }
+export interface IBudget {
+  category: string;
+  categoryId: number;
+  icon: string;
+  iconBg: string;
+  totalAmount: number;
+  transactionCount: number;
+  transactions: Itransaction[];
+  exp_bg_id: number | null,
+  budgetAmount: string | null,
+  remainingBudget: number,
+}
 
 export interface ICategoryWithCount extends ICategory {
   transaction_count: string;
@@ -119,3 +131,22 @@ export type CreateBankAccountDto = Pick<
   'exp_ba_name' | 'exp_ba_balance' | 'exp_ba_icon'
 >;
 export type UpdateBankAccountDto = Partial<CreateBankAccountDto> & { exp_ba_id: number };
+export interface Budget {
+  exp_bg_id: number;
+  exp_bg_user_id: number | null;
+  exp_bg_amount: string;
+  exp_bg_user_id: number | null;
+  exp_bg_category_id: number | null;
+  exp_bg_date: string;
+  exp_bg_created_at: string;
+  exp_bg_updated_at: string;
+}
+
+export type CreateBudgetDto = Pick<
+  Budget,
+  'exp_bg_amount' | 'exp_bg_category_id' | 'exp_bg_date'
+>;
+export type UpdateBudgetDto = Pick<
+  Budget,
+  'exp_bg_amount' | 'exp_bg_id'
+>;
