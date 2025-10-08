@@ -79,7 +79,7 @@ const TimePickerPaperWithButton = ({
         }}
         disabled={disabled}
         style={{
-          backgroundColor: '#463e75',
+          backgroundColor: '#6B5DE6',
           borderWidth: 1,
           paddingHorizontal: 12,
           paddingVertical: 5,

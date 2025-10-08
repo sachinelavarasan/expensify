@@ -24,10 +24,11 @@ const TransactionCard = ({
   exp_ba_name,
   isStarred,
   showTsTime = true,
-}: Itransaction & { isStarred?: boolean; showTsTime?: boolean }) => {
+  noRedirect = false
+}: Itransaction & { isStarred?: boolean; showTsTime?: boolean, noRedirect?: boolean }) => {
   const { colors } = useThemeContext();
   return (
-    <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild>
+    <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild disabled={noRedirect}>
       <TouchableOpacity
         onPress={() => {}}
         activeOpacity={0.2}
@@ -130,8 +131,8 @@ const styles = StyleSheet.create({
   },
   name: {
     color: '#F1F1F6',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
+    fontSize: 15,
+    fontFamily: 'Inter-600',
     maxWidth: deviceWidth() - 150,
   },
   subText: {

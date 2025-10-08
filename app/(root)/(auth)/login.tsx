@@ -69,7 +69,7 @@ export default function SignIn() {
     try {
       await signOut();
       const signInAttempt = await signIn.create({
-        identifier: data.phone,
+        identifier: '+91'+data.phone,
         password: data.password,
       });
 
@@ -149,7 +149,7 @@ export default function SignIn() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="+91XXXXXXXXXX"
+                      placeholder="Mobile Number"
                       label="Phone Number"
                       keyboardType="numbers-and-punctuation"
                       autoCapitalize="none"
@@ -168,7 +168,7 @@ export default function SignIn() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Enter password"
+                      placeholder="Password"
                       label="Password"
                       autoCapitalize="none"
                       isPassword
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.6,
+    opacity: 0.4,
   },
   textDisable: { opacity: 0 },
   errorContainer: {

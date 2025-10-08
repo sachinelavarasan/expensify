@@ -238,9 +238,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
-  subText: {
+   subText: {
     fontSize: 12,
     color: '#ccc',
+    fontFamily: 'Inter-500',
     marginTop: 2,
   },
 });

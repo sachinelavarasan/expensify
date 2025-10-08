@@ -695,10 +695,10 @@ export const currencyOptions = [
 ];
 
 export const dataGroupingType = [
-  {
-    id: 'day',
-    label: 'Day',
-  },
+  // {
+  //   id: 'day',
+  //   label: 'Day',
+  // },
   {
     id: 'week',
     label: 'Week',
@@ -707,8 +707,8 @@ export const dataGroupingType = [
     id: 'month',
     label: 'Month',
   },
-  {
-    id: 'year',
-    label: 'Year',
-  },
+  // {
+  //   id: 'year',
+  //   label: 'Year',
+  // },
 ];

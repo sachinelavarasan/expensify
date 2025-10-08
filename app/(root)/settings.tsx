@@ -77,7 +77,7 @@ export default function Setting() {
               {/* General Section */}
               <View>
                 <View>
-                  <Text style={{ color: colors.text }}>General</Text>
+                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>General</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <CurrencyModal currency={user?.exp_us_currency} refetch={refetch} />
@@ -106,12 +106,12 @@ export default function Setting() {
               {/* Reminder Section */}
               <View>
                 <View>
-                  <Text style={{ color: colors.text }}>Reminder</Text>
+                  <Text style={{ color: colors.text, fontFamily: 'Inter-500', }}>Reminder</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialIcons name="access-alarm" size={20} color={colors.text} />
+                      <MaterialIcons name="access-alarm" size={22} color={colors.text} />
                       <View>
                         <Text style={[styles.option, { color: colors.title }]}>Daily Reminder</Text>
                         <Text style={[styles.subText, { color: colors.description }]}>
@@ -146,12 +146,12 @@ export default function Setting() {
               {/* Display Customization Section */}
               <View>
                 <View>
-                  <Text style={{ color: colors.text }}>Display Customization</Text>
+                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>Display Customization</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialIcons name="account-balance-wallet" size={20} color={colors.text} />
+                      <MaterialIcons name="account-balance-wallet" size={22} color={colors.text} />
                       <View>
                         <Text style={[styles.option, { color: colors.title }]}>Show Balance</Text>
                         <Text style={[styles.subText, { color: colors.description }]}>Toggle visibility of your total balance</Text>
@@ -166,9 +166,9 @@ export default function Setting() {
                       />
                     </View>
                   </View>
-                  <View style={styles.card}>
+                  {/* <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialCommunityIcons name="calendar-arrow-right" size={20} color={colors.text} />
+                      <MaterialCommunityIcons name="calendar-arrow-right" size={22} color={colors.text} />
                       <View>
                         <Text style={[styles.option, { color: colors.title }]}>Carry Over Balance</Text>
                         <Text style={[styles.subText, { color: colors.description }]}>Move unused balance to the next period</Text>
@@ -182,10 +182,10 @@ export default function Setting() {
                         }}
                       />
                     </View>
-                  </View>
+                  </View> */}
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <Ionicons name="time-outline" size={20} color={colors.text}/>
+                      <Ionicons name="time-outline" size={22} color={colors.text}/>
                       <View>
                         <Text style={[styles.option, { color: colors.title }]}>Show Transaction Time</Text>
                         <Text style={[styles.subText, { color: colors.description }]}>
@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
   subText: {
     fontSize: 12,
     color: '#ccc',
+    fontFamily: 'Inter-500',
     marginTop: 2,
   },
 });

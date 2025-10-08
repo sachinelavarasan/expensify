@@ -66,7 +66,7 @@ const Register = () => {
     setIsLoading(true);
     try {
       await signUp.create({
-        phoneNumber: data.phone,
+        phoneNumber: '+91'+data.phone,
         firstName: data.name,
         password: data.password,
       });
@@ -214,8 +214,8 @@ const Register = () => {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="+91XXXXXXXXXX"
-                      label="Phone no"
+                      placeholder="Mobile Number"
+                      label="Phone number"
                       keyboardType="numbers-and-punctuation"
                       autoCapitalize="none"
                       autoComplete="off"
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   disable: {
-    opacity: 0.6,
+    opacity: 0.4,
   },
   textDisable: { opacity: 0 },
   errorContainer: {

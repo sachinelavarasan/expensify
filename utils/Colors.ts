@@ -16,9 +16,9 @@ export const LightColors = {
   barBackground: '#FFFFFF',
   topBarColor: '#ededf3',
   themedViewBg: ['#FFF', '#FFF'],
-  floatingBtnBg: ['#050506ff', '#705AD4'],
+  floatingBtnBg: ['#6B5DE6', '#705AD4'],
   safeAreaView: "#FFF",
-  cardBg: "#ffffffff"
+  cardBg: "#ffffff"
 };
 
 export const DarkColors = {
@@ -41,7 +41,7 @@ export const DarkColors = {
   themedViewBg: ['#1f003d', '#140029', '#0a0014', '#1f003d'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
   safeAreaView: "#0d001a",
-  cardBg: "#373153ff"
+  cardBg: "#241f3eff"
 };
 
 

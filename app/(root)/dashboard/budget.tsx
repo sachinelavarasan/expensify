@@ -31,7 +31,6 @@ import OverlayLoader from '@/components/Overlay';
 const width = deviceWidth();
 const height = deviceHeight();
 const barWidth = Math.round((width - 30) * 0.7);
-const barWidth2 = Math.round((width - 40) * 0.3);
 
 const schema = z.object({
   exp_bg_amount: z
@@ -275,6 +274,7 @@ const Budget = () => {
                       colors={colors}
                       formatToCurrency={formatToCurrency}
                       openModal={toggleModal}
+                      currentMonth={currentMonth}
                     />
                   </View>
                 </>

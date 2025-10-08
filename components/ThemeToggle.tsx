@@ -23,7 +23,7 @@ const ThemeToggle = () => {
             ) : (
               <Feather name="sun" size={20} color="#ffaa00" style={{ marginRight: 8 }} />
             )}
-            <Text className="text-lg" style={{ color: colors.title, fontWeight: 500 }}>
+            <Text className="text-lg" style={{ color: colors.title, fontFamily: 'Inter-500' }}>
               {isDark ? 'Dark Mode' : 'Light Mode'}
             </Text>
           </View>
@@ -34,7 +34,7 @@ const ThemeToggle = () => {
         <Text
           style={{
             color: colors.description,
-            fontFamily: 'Inter-400',
+            fontFamily: 'Inter-500',
             fontSize: 12,
             paddingHorizontal: 2,
           }}>

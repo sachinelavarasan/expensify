@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Feather, FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { deviceWidth } from '@/utils/functions';
 import CategoryBudgetTable from './CategoryBudgetTable';
 import BottomSheet, {
@@ -13,6 +13,7 @@ import { IBudget, Itransaction } from '@/types';
 import { ThemeColors } from '@/utils/Colors';
 import { format } from 'date-fns';
 import TransactionCard from './TransactionCard';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const width = deviceWidth();
 const barWidth2 = Math.round((width - 40) * 0.3);
@@ -84,11 +85,13 @@ export function BudgetedCategoriesList({
   colors,
   formatToCurrency,
   openModal,
+  currentMonth,
 }: {
   budgetedCategories: IBudget[];
   colors: ThemeColors;
   formatToCurrency: (amount: number | string | bigint) => string;
   openModal: (item: IBudget) => void;
+  currentMonth: string;
 }) {
   return (
     <View>
@@ -99,6 +102,7 @@ export function BudgetedCategoriesList({
           colors={colors}
           formatToCurrency={formatToCurrency}
           openModal={openModal}
+          currentMonth={currentMonth}
         />
       ))}
     </View>
@@ -110,11 +114,13 @@ function CollapsibleCategoryCard({
   colors,
   formatToCurrency,
   openModal,
+  currentMonth,
 }: {
   category: IBudget;
   colors: ThemeColors;
   formatToCurrency: (amount: number | string | bigint) => string;
   openModal: (item: IBudget) => void;
+  currentMonth: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const animatedHeight = useSharedValue(0);
@@ -153,10 +159,10 @@ function CollapsibleCategoryCard({
   const renderPreviewItem = useCallback(
     ({ item }: { item: Itransaction }) => (
       <View style={{ paddingVertical: 5 }}>
-        <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={true} />
+        <TransactionCard key={item.exp_ts_id} {...item} noRedirect showTsTime={true} />
       </View>
     ),
-    [colors],
+    [],
   );
 
   return (
@@ -248,23 +254,55 @@ function CollapsibleCategoryCard({
 
       <BottomSheetModal
         ref={validSheetRef}
-        snapPoints={['35%', '80%']}
+        snapPoints={['80%']}
         enablePanDownToClose
         onDismiss={toggleValid}
         backdropComponent={renderBackdrop}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
-        <Text style={[styles.sheetTitle, { color: colors.title }]}>
-          {category.category} transactions
+        <Text
+          style={[
+            styles.sheetTitle,
+            { color: colors.lighterTitle, flexWrap: 'wrap', marginBottom: 2, textTransform: 'capitalize', },
+          ]}>
+          {category.category}
         </Text>
         <Text
           style={[
-            styles.subText,
-            { color: colors.description, marginLeft: 16, fontFamily: 'Inter-500' },
+            styles.sheetTitle,
+            {
+              color: colors.secondary,
+              flexWrap: 'wrap',
+              fontFamily: 'Inter-500',
+              textTransform: 'uppercase',
+              marginBottom: 8,
+              fontSize: 14
+            },
           ]}>
-          {category.transactions.length} transactions
+          {currentMonth}
         </Text>
+        <View
+          style={[
+            styles.categoryTitleCard,
+            { marginHorizontal: 16,marginBottom: 16, backgroundColor: '#f33f3f40' },
+          ]}>
+          <View>
+            <Text
+              style={[
+                styles.cardTitle,
+                { color: colors.lighterTitle, fontFamily: 'Inter-500', flexWrap: 'wrap' },
+              ]}>
+              Expense
+            </Text>
+            <Text style={[styles.cardSubtitle, { color: colors.title }]} numberOfLines={2}>
+              {formatToCurrency(category.totalAmount)}
+            </Text>
+          </View>
+          <View style={styles.iconBadgeRed}>
+            <Feather name="arrow-up-right" size={16} color="#FF4D4F" />
+          </View>
+        </View>
         <BottomSheetFlatList
           data={category.transactions}
           keyExtractor={(_, i) => `v-${i}`}
@@ -309,14 +347,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-400',
   },
   sheetTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: 'Inter-600',
     color: '#EAEAEA',
     paddingHorizontal: 16,
-    paddingBottom: 8,
-    paddingTop: 6,
   },
-  contentContainer: { padding: 12 },
+  contentContainer: { paddingBottom: 30, paddingHorizontal: 16 },
   itemContainer: {
     padding: 8,
     marginBottom: 12,
@@ -327,4 +363,27 @@ const styles = StyleSheet.create({
   },
   name: { color: '#FFFFFF', fontSize: 14, fontFamily: 'Inter-600' },
   subTextContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' },
+  cardSubtitle: {
+    color: '#E0E0FF',
+    fontSize: 14,
+    fontFamily: 'Inter-700',
+    maxWidth: deviceWidth() - 200,
+    marginTop: 2,
+  },
+  iconBadgeRed: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,77,79,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryTitleCard: {
+    borderRadius: 16,
+    padding: 18,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // elevation: 1,
+  },
 });

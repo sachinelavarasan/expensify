@@ -22,6 +22,8 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import BankCard from '@/components/AccountCard';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useReminderSettings } from '@/hooks/useReminder';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -29,6 +31,7 @@ const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const { colors, theme } = useThemeContext();
+  const {  disableNotification } = useReminderSettings();
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
   const { refetch } = useGetUserData();
@@ -40,8 +43,10 @@ const Profile = () => {
     0,
   );
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     signOut();
+    await disableNotification();
+    await AsyncStorage.clear();
     router.replace('/(root)/(auth)/login');
   };
 
