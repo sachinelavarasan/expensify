@@ -11,14 +11,14 @@ import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { accountIcon } from '@/utils/common-data';
 import { showToast } from './ToastMessage';
-import { LinearGradient } from "expo-linear-gradient";
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAddBankAccount, useUpdateBankAccount } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
@@ -138,19 +138,21 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
   };
   return (
     <>
-     <Pressable onPress={toggleModal} style={{ borderRadius: 40, overflow: 'hidden' }}>
-      <LinearGradient
-        colors={["#6C63FF", "#B388FF"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[exp_ba_id ? styles.iconWrapper : styles.addbutton]}>
+      <Pressable onPress={toggleModal} style={{ borderRadius: 40, overflow: 'hidden' }}>
         {exp_ba_id ? (
-          <FontAwesome name="edit" size={20} color="#FFF" />
+          <View style={styles.iconWrapper}>
+            <MaterialCommunityIcons name="circle-edit-outline" size={28} color={'#fff'} />
+          </View>
         ) : (
-          <Text style={styles.text}>Add New</Text>
+          <LinearGradient
+            colors={['#6C63FF', '#B388FF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.addbutton]}>
+            <Text style={styles.text}>Add New</Text>
+          </LinearGradient>
         )}
-      </LinearGradient>
-    </Pressable>
+      </Pressable>
 
       <Modal
         backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
@@ -340,7 +342,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: "#B388FF",
+    shadowColor: '#B388FF',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -349,14 +351,8 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: "#B388FF",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
   },
   text: {
     color: '#FFF',

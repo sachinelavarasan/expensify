@@ -102,7 +102,7 @@ export default function AccountScreen() {
                     exp_ba_id={account.exp_ba_id}
                   />
                   <TouchableOpacity onPress={handleDelete} disabled={isDeleting}>
-                    <MaterialIcons name="delete" size={30} color={'#da1616'} />
+                    <MaterialIcons name="delete-forever" size={30} color={'#f33f3fd9'} />
                   </TouchableOpacity>
                 </View>
               )}
