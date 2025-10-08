@@ -19,7 +19,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import ProfileHeader from '@/components/ProfileHeader';
-import { categoriesStatic, TransactionType } from '@/utils/common-data';
+import { TransactionType } from '@/utils/common-data';
 import { showToast } from '@/components/ToastMessage';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import {
