@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 const width = deviceWidth();
-const tableWidth = width - 40;
+const tableWidth = width - 30;
 
 export default function TableView({ transactions }: { transactions: Itransaction[] }) {
   const { colors } = useThemeContext();

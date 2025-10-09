@@ -285,7 +285,7 @@ function CollapsibleCategoryCard({
         <View
           style={[
             styles.categoryTitleCard,
-            { marginHorizontal: 16,marginBottom: 16, backgroundColor: '#f33f3f40' },
+            { marginHorizontal: 16,marginBottom: 16, backgroundColor: '#f33f3f48' },
           ]}>
           <View>
             <Text

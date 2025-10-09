@@ -18,7 +18,7 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Entypo, Feather } from '@expo/vector-icons';
+import { Entypo, Feather, FontAwesome5, FontAwesome6 } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
@@ -33,21 +33,24 @@ import { LinearGradient } from 'expo-linear-gradient';
 import SwipeableRow from '@/components/Swippable';
 import { showToast } from '@/components/ToastMessage';
 import { useDeleteTransaction } from '@/hooks/useTransaction';
+import GroupingModal from '@/components/GroupingModal';
 
 export default function Index() {
   const { colors } = useThemeContext();
   const router = useRouter();
   const {
     transactions,
-    currentMonth,
+    formattedTitle,
     loading,
-    goToPreviousMonth,
-    goToNextMonth,
+    goToPrevious,
+    goToNext,
     refetch,
     updateSearch,
     updateTransactionType,
     search,
     transactionType,
+    dateRangeType,
+    updateDateRangeType
   } = useMonthlyTransactions();
   const { mutateAsync: deleteTransaction } = useDeleteTransaction();
   useCategoryList();
@@ -156,8 +159,8 @@ export default function Index() {
       {loading && <OverlayLoader />}
       <TouchableOpacity
         style={{
-          width: 50,
-          height: 50,
+          width: 30,
+          height: 30,
           position: 'absolute',
           bottom: 5,
           right: 0,
@@ -170,7 +173,30 @@ export default function Index() {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.floatingButton}>
-          <Entypo name="plus" size={24} color="white" />
+          <FontAwesome6 name="plus" size={22} color="#FFF" />
+        </LinearGradient>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{
+          width: 30,
+          height: 30,
+          position: 'absolute',
+          bottom: 70,
+          right: 0,
+          zIndex: 2,
+          marginRight: 10,
+        }}
+        onPress={handlePress}>
+        <LinearGradient
+          colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.floatingButton}>
+          <TransactionFilters
+            applyFilters={applyFilters}
+            searchText={search}
+            selectedTransaction={transactionType}
+          />
         </LinearGradient>
       </TouchableOpacity>
       <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
@@ -182,15 +208,11 @@ export default function Index() {
             alignItems: 'center',
           }}>
           <MonthSwitcher
-            nextMonth={goToNextMonth}
-            prevMonth={goToPreviousMonth}
-            currentMonth={currentMonth}
+            nextMonth={goToNext}
+            prevMonth={goToPrevious}
+            currentMonth={formattedTitle}
           />
-          <TransactionFilters
-            applyFilters={applyFilters}
-            searchText={search}
-            selectedTransaction={transactionType}
-          />
+          <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
         </View>
         <HomeHeader income={income} expense={expense} />
         <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
@@ -333,9 +355,9 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     backgroundColor: '#5a4f96',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 45,
+    height: 45,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',

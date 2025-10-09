@@ -50,7 +50,7 @@ const TransactionFilters = ({
           paddingVertical: 5,
           paddingHorizontal: 5,
         }}>
-        <FontAwesome6 name="filter" size={20} color="#6B5DE6" />
+        <FontAwesome6 name="filter" size={20} color="#FFF" />
       </TouchableOpacity>
 
       <Modal

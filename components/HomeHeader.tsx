@@ -7,7 +7,7 @@ import { deviceWidth } from '@/utils/functions';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
-const CARDGAP = 15;
+const CARDGAP = 17;
 const width = deviceWidth();
 const cardWidth = (width - CARDGAP * 3) / 2;
 
@@ -16,9 +16,7 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
   const { colors } = useThemeContext();
   return (
     <View>
-      {/* Income + Expense */}
       <View style={[styles.topContainer, !showBalance && { marginBottom: 5 }]}>
-        {/* Income Card */}
         <LinearGradient
           colors={['#37955e45', '#37955e55']}
           start={{ x: 0, y: 0 }}

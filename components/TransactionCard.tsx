@@ -35,7 +35,7 @@ const TransactionCard = ({
         style={{
           width: '100%',
           borderRadius: 5,
-          paddingVertical: 7,
+          paddingVertical: 4,
         }}>
         <View style={styles.innerContainer}>
           <View style={styles.left}>
@@ -164,6 +164,6 @@ const styles = StyleSheet.create({
   },
   amount: {
     fontSize: 12,
-    fontFamily: 'Inter-500',
+    fontFamily: 'Inter-600',
   },
 });

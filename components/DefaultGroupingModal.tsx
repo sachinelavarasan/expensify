@@ -104,7 +104,7 @@ const DefaultGroupingModal = ({
           <View>
             <Text style={[styles.option, { color: colors.title }]}>Default Grouping</Text>
             <Text style={[styles.subText, { color: colors.description }]}>
-              {grouping || 'Group transactions by month, year, week, day, or custom range'}
+              {grouping || 'Group transactions by month, week, day'}
             </Text>
           </View>
         </View>
@@ -230,8 +230,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    flex: 1,
-    maxWidth: deviceWidth() * 0.65,
   },
   option: {
     color: '#F1F1F6',

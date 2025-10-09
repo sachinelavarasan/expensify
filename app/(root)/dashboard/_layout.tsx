@@ -17,7 +17,7 @@ const ROUTES: {
 }[] = [
   {
     name: 'index',
-    title: 'Transactions',
+    title: 'Home',
     icon: <Entypo name="home" size={24} color="#999999" />,
     activeIcon: <Entypo name="home" size={24} color="#FFFFFF" />,
   },

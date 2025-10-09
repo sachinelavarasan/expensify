@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import MonthSwitcher from '@/components/MonthSwitch';
 import useBudgetsForMonth from '@/hooks/useBudget';
@@ -27,6 +27,8 @@ import { useAddBudget, useDeleteBudget, useUpdateBudget } from '@/hooks/useBudge
 import { IBudget } from '@/types';
 import { BudgetedCategoriesList } from '@/components/CollapsibleCategoryCard';
 import OverlayLoader from '@/components/Overlay';
+import { useFocusEffect } from 'expo-router';
+import { RefreshControl } from 'react-native-gesture-handler';
 
 const width = deviceWidth();
 const height = deviceHeight();

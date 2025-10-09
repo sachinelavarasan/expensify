@@ -9,10 +9,11 @@ import IncomeExpenseTabs from '@/components/StatTab';
 import { useCallback, useState } from 'react';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import GroupingModal from '@/components/GroupingModal';
 
 export default function Stat() {
   const { colors } = useThemeContext();
-  const { transactions, currentMonth, loading, goToNextMonth, goToPreviousMonth, refetch } =
+  const { transactions, formattedTitle, loading, goToNext, goToPrevious, refetch, dateRangeType, updateDateRangeType } =
     useMonthlyTransactions();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -31,12 +32,12 @@ export default function Stat() {
   const pieData: pieDataItem[] = [
     {
       value: divident ? 1 : totalIncome,
-      color: !divident ? '#00C896' : '#3A3A50',
+      color: !divident ? colors.income : colors.arrowColor,
       text: `Income: ${((totalIncome / (divident ? 1 : total)) * 100).toFixed(0)}%`,
     },
     {
       value: divident ? 1 : totalExpense,
-      color: !divident ? '#FF4D4F' : '#3A3A50',
+      color: !divident ? colors.expense : colors.arrowColor,
       text: `Expense: ${((totalExpense / (divident ? 1 : total)) * 100).toFixed(0)}%`,
     },
   ];
@@ -50,7 +51,7 @@ export default function Stat() {
   }, []);
 
   return (
-    <ThemedView style={{ flex: 1, paddingHorizontal: 20 }}>
+    <ThemedView style={{ flex: 1, paddingHorizontal: 15 }}>
       {loading && <OverlayLoader />}
 
       <FlatList
@@ -63,12 +64,13 @@ export default function Stat() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListHeaderComponent={
           <>
-            <View style={{ paddingVertical: 10 }}>
+            <View style={{ paddingVertical: 10, flexDirection:'row', justifyContent:'space-between', alignItems:'center' }}>
               <MonthSwitcher
-                nextMonth={goToNextMonth}
-                prevMonth={goToPreviousMonth}
-                currentMonth={currentMonth}
+                nextMonth={goToNext}
+                prevMonth={goToPrevious}
+                currentMonth={formattedTitle}
               />
+              <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
             </View>
 
             <View
@@ -82,7 +84,7 @@ export default function Stat() {
                 donut
                 isAnimated
                 animationDuration={500}
-                innerCircleColor={colors.background}
+                innerCircleColor={colors.barBackground}
                 innerRadius={65}
                 labelsPosition="mid"
                 textColor="#6B5DE6"
