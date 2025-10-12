@@ -24,11 +24,14 @@ const TransactionCard = ({
   exp_ba_name,
   isStarred,
   showTsTime = true,
-  noRedirect = false
-}: Itransaction & { isStarred?: boolean; showTsTime?: boolean, noRedirect?: boolean }) => {
+  noRedirect = false,
+}: Itransaction & { isStarred?: boolean; showTsTime?: boolean; noRedirect?: boolean }) => {
   const { colors } = useThemeContext();
   return (
-    <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild disabled={noRedirect}>
+    <Link
+      href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`}
+      asChild
+      disabled={noRedirect}>
       <TouchableOpacity
         onPress={() => {}}
         activeOpacity={0.2}
@@ -89,14 +92,17 @@ const TransactionCard = ({
                   style={{
                     borderColor: colors.borderColor,
                     borderWidth: 1,
-                    borderRadius: 15,
-                    paddingHorizontal: 10,
+                    borderRadius: 4,
+                    paddingHorizontal: 5,
                     paddingVertical: 2,
                     alignItems: 'center',
-                    marginTop: 5,
+                    marginTop: 2,
+                    flexDirection:'row',
+                    gap: 4
                   }}>
+                  <MaterialIcons name={'payments'} size={18} color={colors.secondary } />
                   <Text
-                    style={[styles.subText, { fontFamily: 'Inter-600', color: colors.secondary }]}>
+                    style={[styles.subText, { fontFamily: 'Inter-400', color: colors.secondary }]}>
                     {exp_ba_name}
                   </Text>
                 </View>

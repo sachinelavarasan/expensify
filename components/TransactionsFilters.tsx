@@ -9,6 +9,8 @@ import SearchBar from './SearchBar';
 import CustomRadioButton from './CustomRadioButton';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { CustomSelectInput } from './CustomSelectInput';
+import { BankAccount } from '@/types';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -16,26 +18,31 @@ const height = deviceHeight();
 const TransactionFilters = ({
   selectedTransaction,
   searchText,
+  selectedAccount,
   applyFilters,
+  accounts,
 }: {
   selectedTransaction: string;
   searchText: string;
-  applyFilters: (search: string, transactionType: string) => void;
+  applyFilters: (search: string, transactionType: string, bankAccount: number | string) => void;
+  accounts: BankAccount[];
+  selectedAccount: number | string
 }) => {
   const { colors, theme } = useThemeContext();
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState(searchText);
   const [transactionType, setTransactionType] = useState<string>(selectedTransaction);
+  const [bankAccount, setBankAccount] = useState<number | string>(selectedAccount);
 
   const toggleModal = () => {
     setShow(!show);
   };
 
   const handlePress = () => {
-    if (search.trim().length === 0 && transactionType.length === 0) {
+    if (search.trim().length === 0 && transactionType.length === 0 && !bankAccount) {
       return;
     }
-    applyFilters(search, transactionType);
+    applyFilters(search, transactionType, bankAccount);
     toggleModal();
   };
 
@@ -54,7 +61,7 @@ const TransactionFilters = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(14, 14, 16, 0.6)'}
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
         style={{ flex: 1 }}
         isVisible={show}
         hasBackdrop={true}
@@ -79,7 +86,7 @@ const TransactionFilters = ({
               <Text style={[styles.title, { color: colors.title }]}>Apply Filters</Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color={colors.arrowColor} size={20} />
+                <Ionicons name="close" color={'#5a4f96'} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -99,6 +106,18 @@ const TransactionFilters = ({
                 onChange={(data) => {
                   setTransactionType(data as 'income' | 'expense' | 'all');
                 }}
+              />
+            </View>
+            <Spacer height={15} />
+            <View style={{ paddingHorizontal: 5 }}>
+              <CustomSelectInput
+                value={selectedAccount}
+                options={accounts.map((account) => ({
+                  key: account.exp_ba_id,
+                  value: account.exp_ba_name,
+                }))}
+                label="Bank Account"
+                onChange={(selectId)=> setBankAccount(selectId)}
               />
             </View>
             <Spacer height={30} />

@@ -50,12 +50,14 @@ export default function Index() {
     search,
     transactionType,
     dateRangeType,
-    updateDateRangeType
+    bankAccount,
+    updateBankAccount,
+    updateDateRangeType,
   } = useMonthlyTransactions();
   const { mutateAsync: deleteTransaction } = useDeleteTransaction();
   useCategoryList();
   useGetUserData();
-  useBankAccounts();
+  const { accounts } = useBankAccounts();
 
   const [refreshing, setRefreshing] = useState(false);
   const { value } = useGetSettingsFromStore('tt-time');
@@ -73,44 +75,45 @@ export default function Index() {
   };
 
   const handleDelete = async (exp_ts_id: number) => {
-      try {
-        const confirm = await new Promise((resolve) =>
-          Alert.alert(
-            'Delete this transaction?',
-            'Are you sure you want to delete this transaction?',
-            [
-              { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-              { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-            ],
-          ),
-        );
-  
-        if (!confirm) return;
-  
-        if (exp_ts_id)
-          deleteTransaction(Number(exp_ts_id))
-            .then(() => {
-              showToast({
-                text1: 'The transaction has been removed.',
-                type: 'success',
-                position: 'bottom',
-              });
-            })
-            .catch(() => {
-              showToast({
-                text1: 'Server Error',
-                type: 'error',
-                position: 'bottom',
-              });
-            });
-      } catch (error) {
-        console.error('Error deleting transaction:', error);
-      }
-    };
+    try {
+      const confirm = await new Promise((resolve) =>
+        Alert.alert(
+          'Delete this transaction?',
+          'Are you sure you want to delete this transaction?',
+          [
+            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+          ],
+        ),
+      );
 
-  const applyFilters = (search: string, transactionType: string) => {
+      if (!confirm) return;
+
+      if (exp_ts_id)
+        deleteTransaction(Number(exp_ts_id))
+          .then(() => {
+            showToast({
+              text1: 'The transaction has been removed.',
+              type: 'success',
+              position: 'bottom',
+            });
+          })
+          .catch(() => {
+            showToast({
+              text1: 'Server Error',
+              type: 'error',
+              position: 'bottom',
+            });
+          });
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    }
+  };
+
+  const applyFilters = (search: string, transactionType: string, selectedId: number | string) => {
     updateSearch(search);
     updateTransactionType(transactionType);
+    updateBankAccount(selectedId);
   };
   const removeFilter = (type: string) => {
     switch (type) {
@@ -120,9 +123,13 @@ export default function Index() {
       case 't_type':
         updateTransactionType('');
         break;
+      case 'account':
+        updateBankAccount('');
+        break;
       case 'default':
         updateTransactionType('');
         updateSearch('');
+        updateBankAccount('')
         break;
       default:
         break;
@@ -196,6 +203,8 @@ export default function Index() {
             applyFilters={applyFilters}
             searchText={search}
             selectedTransaction={transactionType}
+            selectedAccount={bankAccount}
+            accounts={accounts}
           />
         </LinearGradient>
       </TouchableOpacity>
@@ -212,24 +221,31 @@ export default function Index() {
             prevMonth={goToPrevious}
             currentMonth={formattedTitle}
           />
-          <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
+          <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
         </View>
         <HomeHeader income={income} expense={expense} />
-        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginVertical: 2 }}>
           {!!search && (
             <Pressable
               style={{
                 borderWidth: 1,
                 borderColor: '#5a4f96',
-                paddingVertical: 4,
+                paddingVertical: 2,
                 paddingHorizontal: 10,
                 borderRadius: 50,
                 flexDirection: 'row',
+                alignItems: 'center',
                 gap: 5,
               }}
               onPress={() => removeFilter('search')}>
-              <Text style={{ textTransform: 'capitalize' }}>{search}</Text>
-              <Entypo name="cross" size={18} color="#5a4f96" />
+              <Text
+                style={{
+                  color: colors.secondary,
+                  fontFamily: 'Inter-500',
+                }}>
+                Search: <Text style={{ color: colors.title,                   textTransform: 'capitalize' }}>{search}</Text>
+              </Text>
+              <Entypo name="cross" size={20} color={colors.secondary} />
             </Pressable>
           )}
           {!!transactionType && (
@@ -237,15 +253,45 @@ export default function Index() {
               style={{
                 borderWidth: 1,
                 borderColor: '#5a4f96',
-                paddingVertical: 4,
+                paddingVertical: 2,
                 paddingHorizontal: 10,
                 borderRadius: 50,
                 flexDirection: 'row',
+                alignItems: 'center',
                 gap: 5,
               }}
               onPress={() => removeFilter('t_type')}>
-              <Text style={{ textTransform: 'capitalize' }}>{transactionType}</Text>
-              <Entypo name="cross" size={18} color="#5a4f96" />
+              <Text
+                style={{
+                  color: colors.secondary,
+                  fontFamily: 'Inter-500',
+                }}>
+                Transaction type: <Text style={{ color: colors.title,                   textTransform: 'capitalize' }}>{transactionType}</Text>
+              </Text>
+              <Entypo name="cross" size={20} color={colors.secondary} />
+            </Pressable>
+          )}
+          {!!bankAccount && (
+            <Pressable
+              style={{
+                borderWidth: 1,
+                borderColor: '#5a4f96',
+                paddingVertical: 2,
+                paddingHorizontal: 10,
+                borderRadius: 50,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+              }}
+              onPress={() => removeFilter('account')}>
+              <Text
+                style={{
+                  color: colors.secondary,
+                  fontFamily: 'Inter-500',
+                }}>
+                Account: <Text style={{ color: colors.title,                   textTransform: 'capitalize' }}>{accounts?.find((item)=>item.exp_ba_id == bankAccount)?.exp_ba_name}</Text>
+              </Text>
+              <Entypo name="cross" size={20} color={colors.secondary} />
             </Pressable>
           )}
           {!!search && !!transactionType && (
@@ -253,15 +299,23 @@ export default function Index() {
               style={{
                 borderWidth: 1,
                 borderColor: '#5a4f96',
-                paddingVertical: 4,
+                paddingVertical: 2,
                 paddingHorizontal: 10,
                 borderRadius: 50,
                 flexDirection: 'row',
+                alignItems: 'center',
                 gap: 5,
               }}
               onPress={() => removeFilter('default')}>
-              <Text style={{ textTransform: 'capitalize' }}>Clear All</Text>
-              <Entypo name="cross" size={18} color="#5a4f96" />
+              <Text
+                style={{
+                  textTransform: 'capitalize',
+                  color: colors.secondary,
+                  fontFamily: 'Inter-500',
+                }}>
+                Clear Filters
+              </Text>
+              <Entypo name="cross" size={20} color={colors.secondary} />
             </Pressable>
           )}
         </View>
@@ -311,8 +365,7 @@ export default function Index() {
                 {item.data.map((transaction: Itransaction) => (
                   <SwipeableRow
                     key={transaction.exp_ts_id}
-                    onDelete={() => handleDelete(transaction.exp_ts_id)}
-                    >
+                    onDelete={() => handleDelete(transaction.exp_ts_id)}>
                     <TransactionCard {...transaction} showTsTime={value} />
                   </SwipeableRow>
                 ))}

@@ -74,7 +74,7 @@ const Profile = () => {
                 </View>
                 <View style={styles.subTextContainer}>
                   <Text style={[styles.subText, { color: colors.title, fontFamily: 'Inter-600' }]}>
-                    Over All : {formatToCurrency(overAllAmount)}
+                    Over All :  {formatToCurrency(overAllAmount)}
                   </Text>
                 </View>
               </View>

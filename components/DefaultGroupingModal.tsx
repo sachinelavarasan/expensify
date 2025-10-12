@@ -111,7 +111,7 @@ const DefaultGroupingModal = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -137,7 +137,7 @@ const DefaultGroupingModal = ({
               <TouchableOpacity
                 onPress={toggleModal}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={colors.title} size={20} />
+                <Ionicons name="close" color={"#5a4f96"} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />

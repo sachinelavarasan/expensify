@@ -8,11 +8,12 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 type DateRangeType = 'daily' | 'weekly' | 'monthly';
 
-const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'weekly') => {
+const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'monthly') => {
   const [currentDate, setCurrentDate] = useState(initialDate || new Date());
   const [dateRangeType, setDateRangeType] = useState<DateRangeType>(initialRange);
   const [search, setSearch] = useState('');
   const [transactionType, setTransactionType] = useState<string>('');
+  const [bankAccount, setBankAccount] = useState<number | string>('');
   const { getToken, userId } = useAuth();
 
   const {
@@ -20,7 +21,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'week
     data: transactions,
     refetch,
   } = useQuery({
-    queryKey: ['transactions', currentDate, search, transactionType, dateRangeType],
+    queryKey: ['transactions', currentDate, search, transactionType, dateRangeType, bankAccount],
     queryFn: async ({ queryKey }): Promise<Itransaction[]> => {
       const token = await getToken();
       if (!userId) throw new Error('User is not authenticated');
@@ -34,7 +35,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'week
         start = startOfDay(date);
         end = addDays(start, 1);
       } else if (rangeType === 'weekly') {
-        start = startOfWeek(date, { weekStartsOn: 1 }); // Monday start
+        start = startOfWeek(date, { weekStartsOn: 1 });
         end = addWeeks(start, 1);
       } else {
         start = startOfMonth(date);
@@ -47,6 +48,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'week
       let url = `${API_URL}/expensify/transactions?startDate=${startDate}&endDate=${endDate}`;
       if (searchText) url += `&search=${searchText}`;
       if (txType) url += `&transaction_type=${txType}`;
+      if (bankAccount) url += `&account=${bankAccount}`;
 
       const response = await fetch(url, {
         headers: {
@@ -65,7 +67,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'week
 
   useEffect(() => {
     refetch();
-  }, [currentDate, dateRangeType]);
+  }, [currentDate, dateRangeType, bankAccount]);
 
   const goToPrevious = () => {
     setCurrentDate((prev) => {
@@ -86,6 +88,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'week
   const updateSearch = (newSearch: string) => setSearch(newSearch);
   const updateTransactionType = (type: string) => setTransactionType(type);
   const updateDateRangeType = (range: DateRangeType) => setDateRangeType(range);
+  const updateBankAccount = (account: number | string) => setBankAccount(account);
 
   const refetchData = (customDate?: Date) => {
     if (customDate) {
@@ -112,6 +115,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'week
     search,
     transactionType,
     dateRangeType,
+    bankAccount,
     goToPrevious,
     goToNext,
     updateSearch,
@@ -119,6 +123,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'week
     updateDateRangeType,
     refetch: refetchData,
     refetchManual: refetch,
+    updateBankAccount,
     formattedTitle: getFormattedTitle(),
   };
 };
