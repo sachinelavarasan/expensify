@@ -22,11 +22,7 @@ import { ICategory } from '@/types';
 import OverlayLoader from '@/components/Overlay';
 import Spacer from '@/components/Spacer';
 
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function Category() {
@@ -50,23 +46,35 @@ export default function Category() {
   const incomeCategories = useMemo(
     () =>
       categories
-        .filter((item: { exp_tc_transaction_type: number; exp_tc_user_id: null; }) => item.exp_tc_transaction_type === 2 && item.exp_tc_user_id !== null)
-        .sort((a: { exp_tc_sort_order: any; }, b: { exp_tc_sort_order: any; }) => Number(a.exp_tc_sort_order) - Number(b.exp_tc_sort_order)),
+        .filter(
+          (item: { exp_tc_transaction_type: number; exp_tc_user_id: null }) =>
+            item.exp_tc_transaction_type === 2 && item.exp_tc_user_id !== null,
+        )
+        .sort(
+          (a: { exp_tc_sort_order: any }, b: { exp_tc_sort_order: any }) =>
+            Number(a.exp_tc_sort_order) - Number(b.exp_tc_sort_order),
+        ),
     [categories],
   );
 
   const expenseCategories = useMemo(
     () =>
       categories
-        .filter((item: { exp_tc_transaction_type: number; exp_tc_user_id: null; }) => item.exp_tc_transaction_type === 1 && item.exp_tc_user_id !== null)
-        .sort((a: { exp_tc_sort_order: any; }, b: { exp_tc_sort_order: any; }) => Number(a.exp_tc_sort_order) - Number(b.exp_tc_sort_order)),
+        .filter(
+          (item: { exp_tc_transaction_type: number; exp_tc_user_id: null }) =>
+            item.exp_tc_transaction_type === 1 && item.exp_tc_user_id !== null,
+        )
+        .sort(
+          (a: { exp_tc_sort_order: any }, b: { exp_tc_sort_order: any }) =>
+            Number(a.exp_tc_sort_order) - Number(b.exp_tc_sort_order),
+        ),
     [categories],
   );
 
   useEffect(() => {
     setDataList(activeTab === 'income' ? incomeCategories : expenseCategories);
-    const list = categories.filter(
-      (item: { exp_tc_transaction_type: number; exp_tc_user_id: null; }) =>
+    const list = categories?.filter(
+      (item: { exp_tc_transaction_type: number; exp_tc_user_id: null }) =>
         ((item.exp_tc_transaction_type === 1 && activeTab === 'expense') ||
           (item.exp_tc_transaction_type === 2 && activeTab === 'income')) &&
         item.exp_tc_user_id === null,

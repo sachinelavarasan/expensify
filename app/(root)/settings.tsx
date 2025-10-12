@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import ProfileHeader from '@/components/ProfileHeader';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import Spacer from '@/components/Spacer';
 import CustomSwitch from '@/components/Switch';
 import TimePickerPaperWithButton from '@/components/TimePickerPaperWithButton';
@@ -15,7 +15,7 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import { useReminderSettings } from '@/hooks/useReminder';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { useAsyncStorage} from '@react-native-async-storage/async-storage';
+import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 
 export default function Setting() {
   const { colors } = useThemeContext();
@@ -72,7 +72,6 @@ export default function Setting() {
     }
     if (name !== 'currency') setAsyncValue(name, JSON.stringify(value));
   }, []);
-
 
   useEffect(() => {
     const getValuesFromStore = async () => {
@@ -231,12 +230,20 @@ export default function Setting() {
                       />
                     </View>
                   </View>
-                  {/* <View style={styles.card}>
+                  <View style={styles.card}>
                     <View style={styles.left}>
-                      <MaterialCommunityIcons name="calendar-arrow-right" size={22} color={colors.text} />
+                      <MaterialCommunityIcons
+                        name="calendar-arrow-right"
+                        size={22}
+                        color={colors.text}
+                      />
                       <View>
-                        <Text style={[styles.option, { color: colors.title }]}>Carry Over Balance</Text>
-                        <Text style={[styles.subText, { color: colors.description }]}>Move unused balance to the next period</Text>
+                        <Text style={[styles.option, { color: colors.title }]}>
+                          Carry Over Balance
+                        </Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
+                          Move unused balance to the next period
+                        </Text>
                       </View>
                     </View>
                     <View>
@@ -247,7 +254,7 @@ export default function Setting() {
                         }}
                       />
                     </View>
-                  </View> */}
+                  </View>
                   <View style={styles.card}>
                     <View style={styles.left}>
                       <Ionicons name="time-outline" size={22} color={colors.text} />
