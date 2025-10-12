@@ -27,9 +27,11 @@ type DefaultTGrouping = z.infer<typeof schema>;
 const DefaultGroupingModal = ({
   grouping,
   refetch,
+  updateSettings
 }: {
   grouping?: string;
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
+  updateSettings: (name: string, value: boolean | string)=> void;
 }) => {
   const { theme, colors } = useThemeContext();
   const [show, setShow] = useState(false);
@@ -82,6 +84,7 @@ const DefaultGroupingModal = ({
           type: 'success',
           position: 'bottom',
         });
+        updateSettings('grouping', datas.grouping)
       })
       .catch(() => {
         showToast({

@@ -15,6 +15,7 @@ import { NotificationProvider } from '@/contexts/NotificationContext';
 import { ThemeProvider } from '@/contexts/ThemedContext';
 import NetworkInfoModal from '@/components/NetworkInfoModal';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { loadCurrencySettings } from '@/utils/functions';
 
 const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -88,6 +89,7 @@ function LayoutBuilder() {
     const prepare = async () => {
       if (fontsLoaded && authLoaded) {
         await SplashScreen.hideAsync();
+        await loadCurrencySettings();
         
       }
     };

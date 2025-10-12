@@ -2,9 +2,9 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
-import { deviceHeight, deviceWidth } from '@/utils/functions';
+import { deviceHeight, deviceWidth, getAsyncValue, loadCurrencySettings, setAsyncValue } from '@/utils/functions';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { currencyOptions } from '@/utils/common-data';
@@ -14,9 +14,15 @@ import { IExpUser } from '@/types';
 import { useUserSettingChanges } from '@/hooks/useSettings';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 
 const width = deviceWidth();
 const height = deviceHeight();
+
+const visibleOption = [
+  { id: '1', label: 'Show' },
+  { id: '0', label: "Don't Show" },
+];
 
 const schema = z.object({
   currency: z.string(),
@@ -27,25 +33,41 @@ type CurrencySchema = z.infer<typeof schema>;
 const CurrencyModal = ({
   currency,
   refetch,
+  updateSettings,
 }: {
   currency?: string;
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
+  updateSettings: (name: string, value: boolean | string) => void;
 }) => {
   const { colors, theme } = useThemeContext();
   const [show, setShow] = useState(false);
+  const [currencyVisible, setCurrencyVisible] = useState<string | number>('');
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
+  const showCurrencyAsync = useAsyncStorage('show_currency');
 
   const {
-    control,
     handleSubmit,
-    formState: { isDirty },
+    formState,
+    setValue,
     reset,
+    watch
   } = useForm({
     defaultValues: {
       currency: '',
     },
     resolver: zodResolver(schema),
   });
+  const watchCurrency = watch('currency');
+
+  useEffect(() => {
+    const getValuesFromStore = async () => {
+      const showTransaction = await showCurrencyAsync.getItem();
+       if(showTransaction){
+        setCurrencyVisible(JSON.parse(showTransaction));
+      }
+    };
+    getValuesFromStore();
+  }, [currency]);
 
   useEffect(() => {
     if (currency) {
@@ -80,6 +102,9 @@ const CurrencyModal = ({
           type: 'success',
           position: 'bottom',
         });
+        refetch();
+        updateSettings('currency', datas.currency);
+        showCurrencyAsync.setItem(JSON.stringify(currencyVisible));
       })
       .catch(() => {
         showToast({
@@ -88,10 +113,14 @@ const CurrencyModal = ({
           position: 'bottom',
         });
       })
-      .finally(() => {
+      .finally(async () => {
         toggleModal();
-        refetch();
+        await loadCurrencySettings();
       });
+  };
+
+  const onChange = (id: string | number) => {
+    setCurrencyVisible(id);
   };
 
   return (
@@ -130,29 +159,73 @@ const CurrencyModal = ({
                 justifyContent: 'space-between',
                 alignItems: 'center',
               }}>
-              <Text style={[styles.title, { color: colors.title }]}>Currency</Text>
+              <Text style={[styles.title, { color: colors.title }]}>Select Currency</Text>
 
               <TouchableOpacity
                 onPress={toggleModal}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={"#5a4f96"} size={20} />
+                <Ionicons name="close" color={'#5a4f96'} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
-            <Controller
+            {/* <Controller
               control={control}
               render={({ field }) => (
-                <CustomRadioButton isColumn={true} options={currencyOptions} {...field} />
+                <CustomRadioButton isColumn={false} options={currencyOptions} {...field} />
               )}
               name="currency"
-            />
+            /> */}
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 20,
+                flexWrap: 'wrap',
+                paddingHorizontal: 10,
+              }}>
+              {currencyOptions.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() => {
+                    setValue('currency', item.id, {
+                      shouldDirty: true,
+                    });
+                  }}
+                  style={{
+                    padding: 6,
+                    backgroundColor: watchCurrency === item.id ? '#6B5DE6' : 'transparent',
+                    borderRadius: 20,
+                    width: 100,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Text
+                    style={[
+                      styles.subText,
+                      {
+                        color: watchCurrency === item.id ? '#FFF' : colors.description,
+                        fontSize: 14,
+                      },
+                    ]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              <Spacer height={10} />
+              <CustomRadioButton
+                isColumn={false}
+                options={visibleOption}
+                value={currencyVisible}
+                onChange={onChange}
+              />
+            </View>
+
             <Spacer height={20} />
 
             <View>
               <TouchableOpacity
-                style={[styles.button, !isDirty || isPending ? styles.disable : {}]}
+                style={[styles.button, isPending ? styles.disable : {}]}
                 onPress={handleSubmit(settingChange)}
-                disabled={!isDirty || isPending}>
+                disabled={ isPending}>
                 {isPending ? (
                   <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                 ) : null}
@@ -228,7 +301,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
-   subText: {
+  subText: {
     fontSize: 12,
     color: '#ccc',
     fontFamily: 'Inter-500',

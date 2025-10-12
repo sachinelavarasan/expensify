@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dimensions } from 'react-native';
 
+type SupportedCurrency = '₹' | '$' | '€' | '£' | '¥';
+
 export const deviceWidth = () => {
   return Dimensions.get('screen').width;
 };
@@ -33,3 +35,17 @@ export const setAsyncValue = async (key: string, value: string)=>{
     return null;
   }
 }
+
+
+let appCurrency = '₹';
+let showCurrency = false;
+
+export const loadCurrencySettings = async () => {
+  const storedCurrency = await AsyncStorage.getItem('currency');
+  const storedShowCurrency = await AsyncStorage.getItem('show_currency');
+  appCurrency = storedCurrency || '₹';
+  if(storedShowCurrency) showCurrency = JSON.parse(storedShowCurrency) === "1";
+};
+
+export const getAppCurrency = () => appCurrency as SupportedCurrency;
+export const shouldShowCurrency = () => showCurrency;

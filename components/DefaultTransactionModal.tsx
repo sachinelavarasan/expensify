@@ -28,10 +28,12 @@ const DefaultTransactionModal = ({
   transaction_type,
   label,
   refetch,
+  updateSettings
 }: {
   transaction_type?: number;
   label?: string;
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
+  updateSettings: (name: string, value: boolean | string)=> void;
 }) => {
   const { colors, theme } = useThemeContext();
   const [show, setShow] = useState(false);
@@ -80,6 +82,8 @@ const DefaultTransactionModal = ({
           type: 'success',
           position: 'bottom',
         });
+        refetch();
+        updateSettings('d_transaction', String(datas.transaction_type))
       })
       .catch(() => {
         showToast({

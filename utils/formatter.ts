@@ -1,5 +1,7 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format, parse } from 'date-fns';
 import { Decimal } from 'decimal.js';
+import { getAppCurrency, shouldShowCurrency } from './functions';
 
 export const formattedAmountold = (amount: number) => {
   if (amount >= 1_00_00_000) {
@@ -13,7 +15,18 @@ export const formattedAmountold = (amount: number) => {
   }
 };
 
-type SupportedCurrency = 'INR' | 'USD' | 'EUR' | 'GBP' | 'JPY';
+export const getStringAsyncValue = async (key: string)=>{
+  try {
+    let value = await AsyncStorage.getItem(key)
+    if(value)
+      return value;
+    
+    return '';
+  } catch { return ''}
+}
+
+type SupportedCurrency = '₹' | '$' | '€' | '£' | '¥';
+
 
 interface FormatOptions {
   compact?: boolean;
@@ -31,7 +44,7 @@ export function parseAmountToFloat(amount: string): number {
 export function formatToCurrency2(
   amount: number,
   {
-    currency = 'INR',
+    currency = '₹',
     compact = true,
     locale = 'en-IN',
     minimumFractionDigits = 2,
@@ -122,21 +135,23 @@ export function formatToCurrency2(
 
 export const formatToCurrency = (
   amount: number | string | bigint,
-  currency: SupportedCurrency = 'INR',
+  currency: SupportedCurrency = getAppCurrency(),
 ): string => {
   if (amount === null || amount === undefined || (typeof amount === 'number' && isNaN(amount))) {
     return '-';
   }
 
+  const showCurrency = shouldShowCurrency();  
+
   const currencySymbols: Record<SupportedCurrency, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    JPY: '¥',
-    INR: '₹',
+    '$': '$',
+    '€': '€',
+    '£': '£',
+    '¥': '¥',
+    '₹': '₹',
   };
 
-  const symbol = currencySymbols[currency] || '';
+  const symbol = showCurrency ? currencySymbols[currency] || '' : '';
   let value: Decimal;
 
   try {
@@ -151,7 +166,7 @@ export const formatToCurrency = (
   const formatLabel = (val: Decimal.Value, label: string) =>
     `${prefix}${symbol}${new Decimal(val).toFixed(2)}${label}`;
 
-  if (currency === 'INR') {
+  if (currency === '₹') {
     if (abs.gte('10000000')) return formatLabel(abs.div('10000000'), ' Cr');
     if (abs.gte('100000')) return formatLabel(abs.div('100000'), ' L');
     if (abs.gte('1000')) return `${prefix}${symbol}${abs.toNumber().toLocaleString('en-IN')}`;

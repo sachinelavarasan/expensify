@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import ProfileHeader from '@/components/ProfileHeader';
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import Spacer from '@/components/Spacer';
 import CustomSwitch from '@/components/Switch';
 import TimePickerPaperWithButton from '@/components/TimePickerPaperWithButton';
@@ -15,16 +15,27 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import { useReminderSettings } from '@/hooks/useReminder';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { useAsyncStorage} from '@react-native-async-storage/async-storage';
 
 export default function Setting() {
   const { colors } = useThemeContext();
   const { enabled, time, scheduleNotification, disableNotification } = useReminderSettings();
   const [showBalance, setShowBalance] = useState(false);
   const [carryBalance, setCarryBalance] = useState(false);
+  const [generalSettings, setGeneralSettings] = useState<{
+    currency: string;
+    grouping: string;
+    d_transaction: string;
+  }>({
+    currency: '',
+    grouping: '',
+    d_transaction: '',
+  });
   const [ttime, setTtime] = useState(false);
   const { user, refetch } = useGetUserData();
+  const currencyAsync = useAsyncStorage('currency');
 
-  const updateSettingPreference = useCallback((name: string, value: boolean | string) => {
+  const updateSettingPreference = useCallback(async (name: string, value: boolean | string) => {
     switch (name) {
       case 'balance':
         setShowBalance(value as boolean);
@@ -36,15 +47,41 @@ export default function Setting() {
       case 'tt-time':
         setTtime(value as boolean);
         break;
+      case 'currency':
+        if (typeof value === 'string')
+          setGeneralSettings({
+            ...generalSettings,
+            currency: value,
+          });
+        await currencyAsync.setItem(String(value));
+        break;
+      case 'grouping':
+        if (typeof value === 'string')
+          setGeneralSettings({
+            ...generalSettings,
+            grouping: value,
+          });
+        break;
+      case 'd_transaction':
+        if (typeof value === 'string')
+          setGeneralSettings({
+            ...generalSettings,
+            d_transaction: value,
+          });
+        break;
     }
-    setAsyncValue(name, JSON.stringify(value));
+    if (name !== 'currency') setAsyncValue(name, JSON.stringify(value));
   }, []);
+
 
   useEffect(() => {
     const getValuesFromStore = async () => {
       const balance = await getAsyncValue('balance');
       const overBalance = await getAsyncValue('over-balance');
       const ttTime = await getAsyncValue('tt-time');
+      const currency = await currencyAsync.getItem();
+      const grouping = await getAsyncValue('grouping');
+      const d_transaction = await getAsyncValue('d_transaction');
       if (balance) {
         setShowBalance(JSON.parse(balance));
       }
@@ -54,9 +91,27 @@ export default function Setting() {
       if (ttTime) {
         setTtime(JSON.parse(ttTime));
       }
+      if (currency) {
+        setGeneralSettings((prev) => ({
+          ...prev,
+          currency: user?.exp_us_currency ? user?.exp_us_currency : currency ? currency : '',
+        }));
+      }
+      if (grouping) {
+        setGeneralSettings((prev) => ({
+          ...prev,
+          grouping: JSON.parse(grouping) ? JSON.parse(grouping) : '',
+        }));
+      }
+      if (d_transaction) {
+        setGeneralSettings((prev) => ({
+          ...prev,
+          d_transaction: JSON.parse(d_transaction) ? JSON.parse(d_transaction) : '',
+        }));
+      }
     };
     getValuesFromStore();
-  }, []);
+  }, [user]);
 
   return (
     <KeyboardAvoidingView
@@ -70,7 +125,7 @@ export default function Setting() {
               paddingBottom: 40,
               paddingHorizontal: 20,
             }}>
-            <ProfileHeader title="Settings" paddingHorizontal={false}/>
+            <ProfileHeader title="Settings" paddingHorizontal={false} />
             <Spacer height={20} />
             <View style={{ gap: 20 }}>
               <ThemeToggle />
@@ -80,15 +135,21 @@ export default function Setting() {
                   <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>General</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
-                  <CurrencyModal currency={user?.exp_us_currency} refetch={refetch} />
-                  <DefaultTransactionModal
-                    transaction_type={user?.exp_us_default_transaction}
-                    label={user?.exp_us_default_transaction === 2 ? 'Income' : 'Expense'}
+                  <CurrencyModal
+                    currency={generalSettings?.currency}
                     refetch={refetch}
+                    updateSettings={updateSettingPreference}
+                  />
+                  <DefaultTransactionModal
+                    transaction_type={Number(generalSettings?.d_transaction)}
+                    label={Number(generalSettings?.d_transaction) === 2 ? 'Income' : 'Expense'}
+                    refetch={refetch}
+                    updateSettings={updateSettingPreference}
                   />
                   <DefaultGroupingModal
-                    grouping={user?.exp_us_default_grouping}
+                    grouping={generalSettings?.grouping}
                     refetch={refetch}
+                    updateSettings={updateSettingPreference}
                   />
 
                   {/* <TouchableOpacity style={styles.card}>
@@ -106,7 +167,7 @@ export default function Setting() {
               {/* Reminder Section */}
               <View>
                 <View>
-                  <Text style={{ color: colors.text, fontFamily: 'Inter-500', }}>Reminder</Text>
+                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>Reminder</Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
@@ -146,7 +207,9 @@ export default function Setting() {
               {/* Display Customization Section */}
               <View>
                 <View>
-                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>Display Customization</Text>
+                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>
+                    Display Customization
+                  </Text>
                 </View>
                 <View style={styles.subMenuContainer}>
                   <View style={styles.card}>
@@ -154,7 +217,9 @@ export default function Setting() {
                       <MaterialIcons name="account-balance-wallet" size={22} color={colors.text} />
                       <View>
                         <Text style={[styles.option, { color: colors.title }]}>Show Balance</Text>
-                        <Text style={[styles.subText, { color: colors.description }]}>Toggle visibility of your total balance</Text>
+                        <Text style={[styles.subText, { color: colors.description }]}>
+                          Toggle visibility of your total balance
+                        </Text>
                       </View>
                     </View>
                     <View>
@@ -185,9 +250,11 @@ export default function Setting() {
                   </View> */}
                   <View style={styles.card}>
                     <View style={styles.left}>
-                      <Ionicons name="time-outline" size={22} color={colors.text}/>
+                      <Ionicons name="time-outline" size={22} color={colors.text} />
                       <View>
-                        <Text style={[styles.option, { color: colors.title }]}>Show Transaction Time</Text>
+                        <Text style={[styles.option, { color: colors.title }]}>
+                          Show Transaction Time
+                        </Text>
                         <Text style={[styles.subText, { color: colors.description }]}>
                           Display the time along with each transaction
                         </Text>
