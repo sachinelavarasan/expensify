@@ -57,7 +57,7 @@ const TransactionCard = ({
                       : 'trending-down'
                 }
                 size={24}
-                color="#e0deed"
+                color="#fff"
               />
             </View>
             <View>

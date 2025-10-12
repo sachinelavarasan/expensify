@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Alert,
   ColorValue,
@@ -58,6 +58,9 @@ export default function Index() {
   useCategoryList();
   useGetUserData();
   const { accounts } = useBankAccounts();
+  const [balance, setBalance] = useState<number>(0);
+  const { value: showBalance } = useGetSettingsFromStore('balance');
+  const { value: carryBalance } = useGetSettingsFromStore('over-balance');
 
   const [refreshing, setRefreshing] = useState(false);
   const { value } = useGetSettingsFromStore('tt-time');
@@ -129,7 +132,7 @@ export default function Index() {
       case 'default':
         updateTransactionType('');
         updateSearch('');
-        updateBankAccount('')
+        updateBankAccount('');
         break;
       default:
         break;
@@ -160,6 +163,24 @@ export default function Index() {
   }));
   const income = groupedDataArray.reduce((acc, item) => acc + item.credit, 0);
   const expense = groupedDataArray.reduce((acc, item) => acc + item.debit, 0);
+
+  useEffect(() => {
+    if (!accounts || accounts.length === 0) {
+      setBalance(0);
+      return;
+    }
+    if (carryBalance) {
+      const totalBalance = accounts
+        .filter((acc) => acc.exp_ba_is_active && !acc.exp_ba_is_deleted)
+        .reduce((sum, acc) => sum + (parseFloat(acc.exp_ba_balance) || 0), 0);
+
+      setBalance(totalBalance);
+    } else if (showBalance) {
+      setBalance(income - expense);
+    } else {
+      setBalance(0);
+    }
+  }, [carryBalance, showBalance, accounts, income, expense]);
 
   return (
     <ThemedView style={{ flex: 1, paddingHorizontal: 20 }}>
@@ -223,7 +244,13 @@ export default function Index() {
           />
           <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
         </View>
-        <HomeHeader income={income} expense={expense} />
+        <HomeHeader
+          income={income}
+          expense={expense}
+          carryBalance={carryBalance}
+          showBalance={showBalance}
+          balance={balance}
+        />
         <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginVertical: 2 }}>
           {!!search && (
             <Pressable
@@ -243,7 +270,8 @@ export default function Index() {
                   color: colors.secondary,
                   fontFamily: 'Inter-500',
                 }}>
-                Search: <Text style={{ color: colors.title,                   textTransform: 'capitalize' }}>{search}</Text>
+                Search:{' '}
+                <Text style={{ color: colors.title, textTransform: 'capitalize' }}>{search}</Text>
               </Text>
               <Entypo name="cross" size={20} color={colors.secondary} />
             </Pressable>
@@ -266,7 +294,10 @@ export default function Index() {
                   color: colors.secondary,
                   fontFamily: 'Inter-500',
                 }}>
-                Transaction type: <Text style={{ color: colors.title,                   textTransform: 'capitalize' }}>{transactionType}</Text>
+                Transaction type:{' '}
+                <Text style={{ color: colors.title, textTransform: 'capitalize' }}>
+                  {transactionType}
+                </Text>
               </Text>
               <Entypo name="cross" size={20} color={colors.secondary} />
             </Pressable>
@@ -289,7 +320,10 @@ export default function Index() {
                   color: colors.secondary,
                   fontFamily: 'Inter-500',
                 }}>
-                Account: <Text style={{ color: colors.title,                   textTransform: 'capitalize' }}>{accounts?.find((item)=>item.exp_ba_id == bankAccount)?.exp_ba_name}</Text>
+                Account:{' '}
+                <Text style={{ color: colors.title, textTransform: 'capitalize' }}>
+                  {accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
+                </Text>
               </Text>
               <Entypo name="cross" size={20} color={colors.secondary} />
             </Pressable>

@@ -1,30 +1,44 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+import { ca } from 'react-native-paper-dates';
 
 const CARDGAP = 17;
 const width = deviceWidth();
 const cardWidth = (width - CARDGAP * 3) / 2;
 
-const HomeHeader = ({ income, expense }: { income: number; expense: number }) => {
-  const { value: showBalance } = useGetSettingsFromStore('balance');
+const HomeHeader = ({
+  income,
+  expense,
+  balance,
+  showBalance,
+  carryBalance,
+}: {
+  income: number;
+  expense: number;
+  balance: number;
+  showBalance: boolean;
+  carryBalance: boolean;
+}) => {
   const { colors } = useThemeContext();
+
   return (
     <View>
-      <View style={[styles.topContainer, !showBalance && { marginBottom: 5 }]}>
+      <View style={[styles.topContainer, !balance && { marginBottom: 5 }]}>
         <LinearGradient
           colors={['#37955e45', '#37955e55']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.card, { width: cardWidth }]}>
           <View>
-            <Text style={[styles.cardTitle, { color:'#37955e'}]}>Income</Text>
-            <Text style={[styles.cardSubtitle, { color:colors.title}]} numberOfLines={2}>
+            <Text style={[styles.cardTitle, { color: '#37955e' }]}>Income</Text>
+            <Text style={[styles.cardSubtitle, { color: colors.title }]} numberOfLines={2}>
               {formatToCurrency(income)}
             </Text>
           </View>
@@ -33,15 +47,14 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
           </View>
         </LinearGradient>
 
-        {/* Expense Card */}
         <LinearGradient
           colors={['#f33f3f42', '#f33f3f48']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.card, { width: cardWidth }]}>
           <View>
-            <Text style={[styles.cardTitle, { color: '#F56569',}]}>Expense</Text>
-            <Text style={[styles.cardSubtitle, { color:colors.title}]} numberOfLines={2}>
+            <Text style={[styles.cardTitle, { color: '#F56569' }]}>Expense</Text>
+            <Text style={[styles.cardSubtitle, { color: colors.title }]} numberOfLines={2}>
               {formatToCurrency(expense)}
             </Text>
           </View>
@@ -51,7 +64,7 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
         </LinearGradient>
       </View>
 
-      {!!showBalance && (
+      {(showBalance || carryBalance) && (
         <LinearGradient
           colors={['#6B5DE6', '#705AD4']}
           start={{ x: 0, y: 0 }}
@@ -61,7 +74,7 @@ const HomeHeader = ({ income, expense }: { income: number; expense: number }) =>
           <Text
             style={[styles.balanceText, { fontFamily: 'Inter-600', marginLeft: 6, color: '#FFF' }]}
             numberOfLines={1}>
-            {formatToCurrency(income - expense)}
+            {formatToCurrency(balance)}
           </Text>
         </LinearGradient>
       )}
