@@ -1,84 +1,79 @@
 import React, { useState } from 'react';
 import {
-  StyleSheet,
   View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
-  Text,
   Alert,
 } from 'react-native';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm } from 'react-hook-form';
-
+import AuthLink from '@/components/AuthLink';
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
-import AuthLink from '@/components/AuthLink';
-import SafeAreaViewComponent from '@/components/SafeAreaView';
-
-import { phoneValidation } from '@/utils/Validation-custom';
-import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedView } from '@/components/ThemedView';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { phoneValidation } from '@/utils/Validation-custom';
+import { Controller, useForm } from 'react-hook-form';
+import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const schema = z.object({
-  name: z.string().min(3, { message: 'Minimum 3 characters' }),
-  password: z
-    .string()
-    .min(8, { message: 'Minimum 8 characters' })
-    .max(16, { message: 'Maximun 16 characters' }),
   phone: z
     .string()
     .min(1, { message: 'Must have at least 1 character' })
     .regex(phoneValidation, { message: 'invalid phone number' }),
 });
 
-type SignUpForm = z.infer<typeof schema>;
+type ForgotPasswordForm = z.infer<typeof schema>;
 
-const Register = () => {
+export default function ForgotPasswordScreen() {
+  const { signIn, isLoaded } = useSignIn();
   const router = useRouter();
   const { colors } = useThemeContext();
-  const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
+
   const [isLoading, setIsLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
     formState: { errors, isValid },
   } = useForm({
     defaultValues: {
-      name: '',
       phone: '',
-      password: '',
     },
     resolver: zodResolver(schema),
   });
 
-  const register = async (data: SignUpForm) => {
-    if (!isLoadedSignUp) return;
-    setIsLoading(true);
-    try {
-      await signUp.create({
-        phoneNumber: '+91'+data.phone,
-        firstName: data.name,
-        password: data.password,
-      });
+  const onResetPasswordPress = async (data: ForgotPasswordForm) => {
+    if (!isLoaded) return;
 
-      await signUp.preparePhoneNumberVerification({ strategy: 'phone_code' });
+    setIsLoading(true);
+
+    try {
+      await signIn.create({
+        strategy: 'reset_password_phone_code',
+        identifier: '+91' + data.phone,
+      });
       setIsLoading(false);
       await AsyncStorage.setItem('current-verify-number', data.phone);
-      router.dismissTo('/(root)/(auth)/mobile-verify');
-    } catch (err) {
+      router.dismissTo('/(root)/(auth)/change-password');
+    } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
       if (isClerkAPIResponseError(err)) {
         const errorCode = err.errors[0]?.code;
         switch (errorCode) {
           case 'form_phone_number_invalid':
             Alert.alert('Error', 'The phone number is invalid. Please check and try again.');
+            break;
+          case 'form_identifier_not_found':
+            Alert.alert('Error', 'User not found. Please check your phone number.');
             break;
           case 'form_param_nil':
             Alert.alert('Error', 'Required parameter is missing');
@@ -98,17 +93,8 @@ const Register = () => {
           case 'form_password_invalid':
             Alert.alert('Error', 'Invalid password format.');
             break;
-          case 'form_first_name_missing':
-            Alert.alert('Error', 'First name is required.');
-            break;
           case 'form_rate_limited':
             Alert.alert('Error', 'Too many attempts. Please try again later.');
-            break;
-          case 'form_password_length_too_short':
-            Alert.alert('Error', 'Passwords must be 8 characters or more.');
-            break;
-          case 'form_password_length_too_long':
-            Alert.alert('Error', 'Password length is too long');
             break;
           case 'form_identifier_exists':
             Alert.alert('Error', 'Given phone number already exists');
@@ -123,11 +109,11 @@ const Register = () => {
             Alert.alert('Error', 'Internal error occurred. Please try again later.');
             break;
           default:
-            Alert.alert('Error', 'An error occurred during sign-up.');
+            Alert.alert('Error', 'An error occurred during forgot-password.');
             break;
         }
       } else {
-        Alert.alert('Error', 'An error occurred during sign-up.');
+        Alert.alert('Error', 'An error occurred during forgot-password.');
       }
       setIsLoading(false);
     }
@@ -145,9 +131,7 @@ const Register = () => {
             contentContainerStyle={{ flex: 1 }}
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
-            
               <View style={styles.imageContainer}>
-              
                 <Text
                   style={[
                     styles.label,
@@ -155,31 +139,11 @@ const Register = () => {
                       color: colors.title,
                     },
                   ]}>
-                  Create your account
+                  Forgot Password
                 </Text>
               </View>
-              <Spacer height={25} />
+              <Spacer height={35} />
               <View style={styles.loginContainer}>
-                <Controller
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      placeholder="Name"
-                      label="Name"
-                      keyboardType="default"
-                      autoCapitalize="none"
-                      autoComplete="off"
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      error={errors.name?.message}
-                      borderLess
-                    />
-                  )}
-                  name="name"
-                />
-                <Spacer height={20} />
-              
                 <Controller
                   control={control}
                   render={({ field }) => (
@@ -198,41 +162,26 @@ const Register = () => {
                   )}
                   name="phone"
                 />
-                <Spacer height={20} />
-                <Controller
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      placeholder="Password"
-                      label="Password"
-                      autoCapitalize="none"
-                      isPassword
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      error={errors.password?.message}
-                      borderLess
-                    />
-                  )}
-                  name="password"
-                />
-                <Spacer height={35} />
+
+                <Spacer height={40} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
                     style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
-                    onPress={handleSubmit(register)}
+                    onPress={handleSubmit(onResetPasswordPress)}
                     disabled={!isValid || isLoading}>
                     {isLoading ? (
                       <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                     ) : null}
-                    <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>Sign Up</Text>
+                    <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
+                      Send Verification Code
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <Spacer height={50} />
                 <AuthLink
                   disabled={isLoading}
                   linkText="Sign In"
-                  description="Already have an account? "
+                  description="Back to Login"
                   onPress={() => {
                     router.replace('/login');
                   }}
@@ -245,14 +194,13 @@ const Register = () => {
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   imageContainer: {
-    display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -266,7 +214,8 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    marginTop: 150,
   },
   btnContainer: {
     alignItems: 'center',
@@ -315,5 +264,3 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-800',
   },
 });
-
-export default Register;

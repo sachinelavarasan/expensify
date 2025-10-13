@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import { useEffect, useState } from 'react';
 import OTPTextInput from 'react-native-otp-textinput';
@@ -16,24 +17,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
 
-import { otpValidation } from '@/utils/Validation-custom';
+import { otpValidation, passwordValidation } from '@/utils/Validation-custom';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { useSignIn, useSignUp } from '@clerk/clerk-expo';
+import { useSignIn } from '@clerk/clerk-expo';
 import AuthLink from '@/components/AuthLink';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import Input from '@/components/Input';
 import { showToast } from '@/components/ToastMessage';
 
-const MobileVerify = () => {
+const ChangePassword = () => {
   const [otp, setOtp] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
-  const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
-  const { setActive, isLoaded } = useSignIn();
+  const [newPassword, setNewPassword] = useState('');
+  const { signIn, isLoaded, setActive } = useSignIn();
   const { colors } = useThemeContext();
 
   const router = useRouter();
 
   const [otpVerifyLoading, setIsOtpVerifyLoading] = useState(false);
+
 
   const handleTextChange = (data: string) => {
     setOtp(data);
@@ -47,31 +50,31 @@ const MobileVerify = () => {
   }, []);
 
   const verify = async () => {
-    if (!isLoadedSignUp || !isLoaded) return;
+    if (!isLoaded || !newPassword) return;
     setIsOtpVerifyLoading(true);
     try {
-      const res = await signUp.attemptPhoneNumberVerification({
+      const res = await signIn.attemptFirstFactor({
         code: otp,
+        strategy: 'reset_password_phone_code',
+        password: newPassword,
       });
 
-      if (res.verifications.phoneNumber.status === 'verified') {
+      if (res.status === 'complete') {
         await setActive({ session: res.createdSessionId });
-
-        setTimeout(() => {
-          showToast({
-            text1: 'Your account created successfully',
-            type: 'info',
-            position: 'bottom',
-          });
-          router.dismissTo('/(root)/dashboard');
-        }, 1000);
         await AsyncStorage.removeItem('current-verify-number');
+        router.dismissTo('/(root)/dashboard');
+        showToast({
+          text1: 'Your account password updated successfully',
+          type: 'info',
+          position: 'bottom',
+        });
       } else {
         Alert.alert('Error', 'Verification failed. Please check your code and try again.');
         console.log('error: verification status not verified');
+        router.navigate('/(root)/(auth)/forgot-password');
       }
     } catch (err: any) {
-      console.error('Verification error:', err);
+      console.error('Verification error:', JSON.stringify(err, null, 2));
 
       const errorCode = err?.errors?.[0]?.code || 'unknown_error';
 
@@ -88,10 +91,18 @@ const MobileVerify = () => {
         case 'form_identifier_exists':
           Alert.alert('Error', 'Given phone number already exists');
           break;
+        case 'needs_new_password':
+          Alert.alert('Error', 'Enter valid password');
+          break;
+        case 'form_code_incorrect':
+          Alert.alert('Error', 'Invalid otp code');
+          break;
         default:
           Alert.alert('Error', 'This verification has expired. Go Back and Try again!');
           break;
       }
+      // await AsyncStorage.removeItem('current-verify-number');
+      // router.navigate('/(root)/(auth)/forgot-password');
     } finally {
       setIsOtpVerifyLoading(false);
     }
@@ -109,16 +120,17 @@ const MobileVerify = () => {
             contentContainerStyle={{
               flex: 1,
               display: 'flex',
-              alignItems: 'center',
               paddingHorizontal: 20,
             }}
             keyboardShouldPersistTaps={'always'}>
             <Spacer height={100} />
-            <Text style={[styles.header, { color: colors.title }]}>Verify Phone</Text>
-            <Text style={[styles.subtext, { color: colors.description }]}>
-              Enter the 6-digit code that has been sent to{' '}
-              <Text style={[styles.subtext]}>+91{phone}</Text>
-            </Text>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={[styles.header, { color: colors.title }]}>Change Password</Text>
+              <Text style={[styles.subtext, { color: colors.description }]}>
+                Enter the 6-digit code that has been sent to{' '}
+                <Text style={[styles.subtext]}>+91{phone}</Text>
+              </Text>
+            </View>
             <Spacer height={30} />
             <OTPTextInput
               inputCount={6}
@@ -130,13 +142,32 @@ const MobileVerify = () => {
               keyboardType="numeric"
               autoFocus={true}
               handleTextChange={handleTextChange}></OTPTextInput>
-            
-            <Spacer height={40} />
 
+            <Spacer height={20} />
+
+            <Input
+              placeholder="New Password"
+              label="New Password"
+              autoCapitalize="none"
+              isPassword
+              onChangeText={setNewPassword}
+              borderLess
+              value={newPassword}
+              isRequired
+            />
+
+            <Spacer height={40} />
             <TouchableOpacity
-              style={[styles.button, otpVerifyLoading || !otpValidation(otp) ? styles.disable : {}]}
+              style={[
+                styles.button,
+                otpVerifyLoading || !otpValidation(otp) || !passwordValidation(newPassword)
+                  ? styles.disable
+                  : {},
+              ]}
               onPress={verify}
-              disabled={otpVerifyLoading || !otpValidation(otp)}>
+              disabled={
+                otpVerifyLoading || !otpValidation(otp) || !passwordValidation(newPassword)
+              }>
               {otpVerifyLoading ? (
                 <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
               ) : null}
@@ -146,10 +177,9 @@ const MobileVerify = () => {
             <Spacer height={50} />
             <AuthLink
               disabled={otpVerifyLoading}
-              linkText="SignUp"
-              description="Go Back "
+              linkText="Go Back"
               onPress={() => {
-                router.replace('/sign-up');
+                router.replace('/(root)/(auth)/forgot-password');
               }}
             />
           </ScrollView>
@@ -159,7 +189,7 @@ const MobileVerify = () => {
   );
 };
 
-export default MobileVerify;
+export default ChangePassword;
 
 const styles = StyleSheet.create({
   header: {

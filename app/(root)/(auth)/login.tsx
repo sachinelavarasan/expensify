@@ -132,11 +132,7 @@ export default function SignIn() {
             contentContainerStyle={{ flex: 1 }}
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
-              {/* {error && (
-                <View style={styles.errorContainer}>
-                  <Text style={styles.error}>{error}</Text>
-                </View>
-              )} */}
+              
               <View style={styles.imageContainer}>
                 <Text style={[styles.label, {
                   color: colors.title
@@ -192,8 +188,17 @@ export default function SignIn() {
                     <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>Sign In</Text>
                   </TouchableOpacity>
                 </View>
+                <Spacer height={20} />
+                <AuthLink
+                  disabled={isLoading}
+                  linkText="Forgot password"
+                  onPress={() => {
+                    router.replace('/forgot-password');
+                  }}
+                />
                 <Spacer height={50} />
                 <AuthLink
+                  disabled={isLoading}
                   linkText="Sign Up"
                   description="Don't have an account? "
                   onPress={() => {

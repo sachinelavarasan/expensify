@@ -26,7 +26,7 @@ const toastConfig: ToastConfig = {
     <InfoToast
       {...props}
       style={styles.infoToast}
-      text1Style={styles.text1}
+      text1Style={styles.infoText1}
       text2Style={styles.text2}
     />
   ),
@@ -88,6 +88,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFBF00',
     borderLeftWidth: 0,
     paddingVertical: 15,
+  },
+  infoText1: {
+    padding: 0,
+    fontSize: 14,
+    fontFamily: 'Inter-400',
+    color: '#000',
   },
   text1: {
     padding: 0,
