@@ -15,13 +15,13 @@ const MonthSwitcher = ({
   const { colors } = useThemeContext();
   return (
     <View style={styles.monthSwitch}>
-      <TouchableOpacity onPress={prevMonth} style={{ paddingRight: 12 }}>
+      <TouchableOpacity onPress={prevMonth} style={{ paddingRight: 8 }}>
         <MaterialIcons name="keyboard-arrow-left" size={30} color={colors.arrowColor} />
       </TouchableOpacity>
 
       <Text style={[styles.month, { color: colors.monthSwitcher }]}>{currentMonth}</Text>
 
-      <TouchableOpacity onPress={nextMonth} style={{ paddingLeft: 12 }}>
+      <TouchableOpacity onPress={nextMonth} style={{ paddingLeft: 8 }}>
         <MaterialIcons name="keyboard-arrow-right" size={30} color={colors.arrowColor} />
       </TouchableOpacity>
     </View>
@@ -35,10 +35,10 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase'
   },
   monthSwitch: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 5,
+    flexShrink: 1
   },
 });
 

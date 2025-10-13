@@ -183,7 +183,7 @@ export default function Index() {
   }, [carryBalance, showBalance, accounts, income, expense]);
 
   return (
-    <ThemedView style={{ flex: 1, paddingHorizontal: 20 }}>
+    <ThemedView style={{ flex: 1 }}>
       {loading && <OverlayLoader />}
       <TouchableOpacity
         style={{
@@ -233,9 +233,11 @@ export default function Index() {
         <View
           style={{
             paddingVertical: 10,
+            paddingHorizontal: 15,
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
+            overflow: 'hidden',
           }}>
           <MonthSwitcher
             nextMonth={goToNext}
@@ -244,14 +246,16 @@ export default function Index() {
           />
           <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
         </View>
-        <HomeHeader
-          income={income}
-          expense={expense}
-          carryBalance={carryBalance}
-          showBalance={showBalance}
-          balance={balance}
-        />
-        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginVertical: 2 }}>
+        <View style={{ paddingHorizontal: 15 }}>
+          <HomeHeader
+            income={income}
+            expense={expense}
+            carryBalance={carryBalance}
+            showBalance={showBalance}
+            balance={balance}
+          />
+        </View>
+        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginVertical: 2, paddingHorizontal: 15 }}>
           {!!search && (
             <Pressable
               style={{
@@ -354,7 +358,7 @@ export default function Index() {
           )}
         </View>
       </View>
-      <View>
+      <View style={{ paddingHorizontal: 15 }}>
         <FlatList
           bounces={false}
           showsVerticalScrollIndicator={false}

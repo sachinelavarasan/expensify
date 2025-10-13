@@ -148,7 +148,8 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 50,
-    backgroundColor: '#6B5DE6'
+    backgroundColor: '#6B5DE6',
+    flexShrink: 1
   },
   amount: {
     color: '#A0A0A0',
