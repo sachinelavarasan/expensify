@@ -25,10 +25,8 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const schema = z.object({
-  phone: z
-    .string()
-    .min(1, { message: 'Must have at least 1 character' })
-    .regex(phoneValidation, { message: 'invalid phone number' }),
+  email: z
+    .email({ message: 'Invalid email address'}),
 });
 
 type ForgotPasswordForm = z.infer<typeof schema>;
@@ -46,7 +44,7 @@ export default function ForgotPasswordScreen() {
     formState: { errors, isValid },
   } = useForm({
     defaultValues: {
-      phone: '',
+      email: '',
     },
     resolver: zodResolver(schema),
   });
@@ -58,11 +56,11 @@ export default function ForgotPasswordScreen() {
 
     try {
       await signIn.create({
-        strategy: 'reset_password_phone_code',
-        identifier: '+91' + data.phone,
+        strategy: 'reset_password_email_code',
+        identifier: data.email,
       });
       setIsLoading(false);
-      await AsyncStorage.setItem('current-verify-number', data.phone);
+      await AsyncStorage.setItem('current-verify-email', data.email);
       router.dismissTo('/(root)/(auth)/change-password');
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
@@ -109,11 +107,11 @@ export default function ForgotPasswordScreen() {
             Alert.alert('Error', 'Internal error occurred. Please try again later.');
             break;
           default:
-            Alert.alert('Error', 'An error occurred during forgot-password.');
+            Alert.alert('Error', JSON.stringify(err, null ,2));
             break;
         }
       } else {
-        Alert.alert('Error', 'An error occurred during forgot-password.');
+        Alert.alert('Error', JSON.stringify(err, null, 2));
       }
       setIsLoading(false);
     }
@@ -149,18 +147,18 @@ export default function ForgotPasswordScreen() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Mobile Number"
-                      label="Phone number"
+                      placeholder='Enter your email address'
+                      label="Email address"
                       keyboardType="numbers-and-punctuation"
                       autoCapitalize="none"
                       autoComplete="off"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
-                      error={errors.phone?.message}
+                      error={errors.email?.message}
                       borderLess
                     />
                   )}
-                  name="phone"
+                  name="email"
                 />
 
                 <Spacer height={40} />

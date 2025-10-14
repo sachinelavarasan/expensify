@@ -60,14 +60,14 @@ const Input = forwardRef(function MyInput(
             backgroundColor: colors.background,
             // shadowColor: theme === 'dark' ? '#fff' : '#000',
           },
-          borderLess ? [styles.borderNone, { backgroundColor: colors.background }] : null,
+          borderLess ? [styles.borderNone, { backgroundColor: colors.inputColor }] : null,
           !editable ? { opacity: 0.7 } : null,
         ]}>
         <View
           style={[
             styles.innerView,
             {
-              borderColor: colors.borderColor,
+              borderColor: error? '#64090e' :colors.inputBorder,
               borderRadius: 8,
               borderWidth: 1,
             },
@@ -78,7 +78,7 @@ const Input = forwardRef(function MyInput(
             style={[
               styles.input,
               {
-                backgroundColor: theme === 'light' ? colors.background : 'transparent',
+                backgroundColor:  colors.inputColor,
                 color: colors.text,
               },
               isTitle ? styles.titleText : null,
@@ -90,7 +90,7 @@ const Input = forwardRef(function MyInput(
             selectTextOnFocus={false}
             autoCapitalize="none"
             spellCheck={false}
-            placeholderTextColor={'#6E6E80'}
+            placeholderTextColor={colors.inputPlaceholder}
             selectionColor="#fdfdfd"
             cursorColor={colors.secondary}
             editable={editable}

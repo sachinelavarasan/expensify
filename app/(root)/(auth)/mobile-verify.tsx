@@ -17,7 +17,7 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
 
 import { otpValidation } from '@/utils/Validation-custom';
-import { deviceHeight, deviceWidth } from '@/utils/functions';
+import { deviceWidth } from '@/utils/functions';
 import { useSignIn, useSignUp } from '@clerk/clerk-expo';
 import AuthLink from '@/components/AuthLink';
 import { ThemedView } from '@/components/ThemedView';
@@ -26,7 +26,7 @@ import { showToast } from '@/components/ToastMessage';
 
 const MobileVerify = () => {
   const [otp, setOtp] = useState<string>('');
-  const [phone, setPhone] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
   const { setActive, isLoaded } = useSignIn();
   const { colors } = useThemeContext();
@@ -41,8 +41,8 @@ const MobileVerify = () => {
 
   useEffect(() => {
     (async () => {
-      const storedEnabled = await AsyncStorage.getItem('current-verify-number');
-      if (storedEnabled !== null) setPhone(storedEnabled);
+      const storedEnabled = await AsyncStorage.getItem('current-verify-email');
+      if (storedEnabled !== null) setEmail(storedEnabled);
     })();
   }, []);
 
@@ -50,11 +50,11 @@ const MobileVerify = () => {
     if (!isLoadedSignUp || !isLoaded) return;
     setIsOtpVerifyLoading(true);
     try {
-      const res = await signUp.attemptPhoneNumberVerification({
+      const res = await signUp.attemptEmailAddressVerification({
         code: otp,
       });
 
-      if (res.verifications.phoneNumber.status === 'verified') {
+      if (res.verifications.emailAddress.status === 'verified') {
         await setActive({ session: res.createdSessionId });
 
         setTimeout(() => {
@@ -65,7 +65,7 @@ const MobileVerify = () => {
           });
           router.dismissTo('/(root)/dashboard');
         }, 1000);
-        await AsyncStorage.removeItem('current-verify-number');
+        await AsyncStorage.removeItem('current-verify-email');
       } else {
         Alert.alert('Error', 'Verification failed. Please check your code and try again.');
         console.log('error: verification status not verified');
@@ -89,7 +89,7 @@ const MobileVerify = () => {
           Alert.alert('Error', 'Given phone number already exists');
           break;
         default:
-          Alert.alert('Error', 'This verification has expired. Go Back and Try again!');
+          Alert.alert('Error', JSON.stringify(err, null ,2));
           break;
       }
     } finally {
@@ -114,10 +114,10 @@ const MobileVerify = () => {
             }}
             keyboardShouldPersistTaps={'always'}>
             <Spacer height={100} />
-            <Text style={[styles.header, { color: colors.title }]}>Verify Phone</Text>
+            <Text style={[styles.header, { color: colors.title }]}>Verify Email</Text>
             <Text style={[styles.subtext, { color: colors.description }]}>
               Enter the 6-digit code that has been sent to{' '}
-              <Text style={[styles.subtext]}>+91{phone}</Text>
+              <Text style={[styles.subtext]}>{email}</Text>
             </Text>
             <Spacer height={30} />
             <OTPTextInput

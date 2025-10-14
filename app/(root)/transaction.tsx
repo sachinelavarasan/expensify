@@ -249,16 +249,17 @@ export default function Transaction() {
                                 key: account.exp_ba_id,
                                 value: account.exp_ba_name,
                               }))}
-                              placeholder="Account"
+                              placeholder="Select account"
                               label="Choose Account"
                               onChange={(selectedId) => {
                                 field.onChange(selectedId);
                               }}
+                              error={errors.exp_ts_bank_account_id?.message}
                             />
                           )}
                         />
 
-                        <Spacer height={20} />
+                        <Spacer height={30} />
                         <View
                           style={{
                             display: 'flex',
@@ -296,7 +297,7 @@ export default function Transaction() {
                             name="exp_ts_time"
                           />
                         </View>
-                        <Spacer height={10} />
+                        <Spacer height={20} />
                         <Controller
                           control={control}
                           render={({ field }) => (
@@ -361,12 +362,12 @@ export default function Transaction() {
                       <View style={[styles.sectionContainer]}>
                         <View
                           style={{
-                            borderColor: colors.borderColor,
+                            borderColor: colors.inputBorder,
                             borderWidth: 1,
                             borderRadius: 8,
                             paddingVertical: 5,
                             paddingHorizontal: 8,
-                            backgroundColor: colors.background,
+                            backgroundColor: colors.inputColor,
                           }}>
                           <View
                             style={{

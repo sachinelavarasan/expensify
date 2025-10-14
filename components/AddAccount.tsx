@@ -141,7 +141,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
       <Pressable onPress={toggleModal} style={{ borderRadius: 40, overflow: 'hidden' }}>
         {exp_ba_id ? (
           <View style={styles.iconWrapper}>
-            <MaterialCommunityIcons name="circle-edit-outline" size={28} color={'#fff'} />
+            <MaterialCommunityIcons name="circle-edit-outline" size={28} color={colors.arrowColor} />
           </View>
         ) : (
           <LinearGradient

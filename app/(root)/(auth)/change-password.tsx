@@ -28,7 +28,7 @@ import { showToast } from '@/components/ToastMessage';
 
 const ChangePassword = () => {
   const [otp, setOtp] = useState<string>('');
-  const [phone, setPhone] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [newPassword, setNewPassword] = useState('');
   const { signIn, isLoaded, setActive } = useSignIn();
   const { colors } = useThemeContext();
@@ -45,7 +45,7 @@ const ChangePassword = () => {
   useEffect(() => {
     (async () => {
       const storedEnabled = await AsyncStorage.getItem('current-verify-number');
-      if (storedEnabled !== null) setPhone(storedEnabled);
+      if (storedEnabled !== null) setEmail(storedEnabled);
     })();
   }, []);
 
@@ -55,13 +55,13 @@ const ChangePassword = () => {
     try {
       const res = await signIn.attemptFirstFactor({
         code: otp,
-        strategy: 'reset_password_phone_code',
+        strategy: 'reset_password_email_code',
         password: newPassword,
       });
 
       if (res.status === 'complete') {
         await setActive({ session: res.createdSessionId });
-        await AsyncStorage.removeItem('current-verify-number');
+        await AsyncStorage.removeItem('current-verify-email');
         router.dismissTo('/(root)/dashboard');
         showToast({
           text1: 'Your account password updated successfully',
@@ -89,7 +89,7 @@ const ChangePassword = () => {
           Alert.alert('Error', 'Internal error occurred. Please try again later.');
           break;
         case 'form_identifier_exists':
-          Alert.alert('Error', 'Given phone number already exists');
+          Alert.alert('Error', 'Given email already exists');
           break;
         case 'needs_new_password':
           Alert.alert('Error', 'Enter valid password');
@@ -98,7 +98,7 @@ const ChangePassword = () => {
           Alert.alert('Error', 'Invalid otp code');
           break;
         default:
-          Alert.alert('Error', 'This verification has expired. Go Back and Try again!');
+          Alert.alert('Error', JSON.stringify(err, null ,2));
           break;
       }
       // await AsyncStorage.removeItem('current-verify-number');
@@ -128,7 +128,7 @@ const ChangePassword = () => {
               <Text style={[styles.header, { color: colors.title }]}>Change Password</Text>
               <Text style={[styles.subtext, { color: colors.description }]}>
                 Enter the 6-digit code that has been sent to{' '}
-                <Text style={[styles.subtext]}>+91{phone}</Text>
+                <Text style={[styles.subtext]}>email</Text>
               </Text>
             </View>
             <Spacer height={30} />

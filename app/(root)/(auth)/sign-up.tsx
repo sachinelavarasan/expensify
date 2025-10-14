@@ -20,22 +20,27 @@ import Spacer from '@/components/Spacer';
 import AuthLink from '@/components/AuthLink';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 
-import { phoneValidation } from '@/utils/Validation-custom';
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 const schema = z.object({
-  name: z.string().min(3, { message: 'Minimum 3 characters' }),
+  name: z.string().min(3, { message: 'Name should have a minimum 3 characters' }),
   password: z
     .string()
-    .min(8, { message: 'Minimum 8 characters' })
-    .max(16, { message: 'Maximun 16 characters' }),
-  phone: z
+    .min(8, { message: 'Password should have a minimum 8 characters' })
+    .max(16, { message: 'Password should have a maximum 16 characters' }),
+  // phone: z
+  //   .string()
+  //   .min(1, { message: 'Must have at least 1 character' })
+  //   .regex(phoneValidation, { message: 'invalid phone number' }),
+  email: z
+    .email({ message: 'Invalid email address'}),
+  username: z
     .string()
-    .min(1, { message: 'Must have at least 1 character' })
-    .regex(phoneValidation, { message: 'invalid phone number' }),
+    .min(8, { message: 'Username should have a minimum 8 characters' })
+    .max(20, { message: 'Username should have a maximum 20 characters' }),
 });
 
 type SignUpForm = z.infer<typeof schema>;
@@ -48,12 +53,13 @@ const Register = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm({
     defaultValues: {
       name: '',
-      phone: '',
       password: '',
+      email: '',
+      username: ''
     },
     resolver: zodResolver(schema),
   });
@@ -63,33 +69,28 @@ const Register = () => {
     setIsLoading(true);
     try {
       await signUp.create({
-        phoneNumber: '+91'+data.phone,
+        emailAddress: data.email,
         firstName: data.name,
         password: data.password,
+        username: data.username
       });
 
-      await signUp.preparePhoneNumberVerification({ strategy: 'phone_code' });
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setIsLoading(false);
-      await AsyncStorage.setItem('current-verify-number', data.phone);
+      await AsyncStorage.setItem('current-verify-email', data.email);
       router.dismissTo('/(root)/(auth)/mobile-verify');
     } catch (err) {
       console.error(JSON.stringify(err, null, 2));
       if (isClerkAPIResponseError(err)) {
         const errorCode = err.errors[0]?.code;
         switch (errorCode) {
-          case 'form_phone_number_invalid':
-            Alert.alert('Error', 'The phone number is invalid. Please check and try again.');
-            break;
           case 'form_param_nil':
             Alert.alert('Error', 'Required parameter is missing');
-            break;
-          case 'form_phone_number_already_verified':
-            Alert.alert('Error', 'This phone number is already registered.');
             break;
           case 'form_param_format_invalid':
             Alert.alert(
               'Error',
-              'Please enter a valid phone number including the correct country code.',
+              'Please enter a valid email address',
             );
             break;
           case 'form_password_too_weak':
@@ -111,7 +112,7 @@ const Register = () => {
             Alert.alert('Error', 'Password length is too long');
             break;
           case 'form_identifier_exists':
-            Alert.alert('Error', 'Given phone number already exists');
+            Alert.alert('Error', 'Given email address already exists');
             break;
           case 'form_password_validation_failed':
             Alert.alert('Error', 'Password validation failed. Please try again.');
@@ -119,15 +120,21 @@ const Register = () => {
           case 'form_password_pwned':
             Alert.alert('Error', 'This password has been exposed before. Please choose another');
             break;
+          case 'form_username_invalid_character':
+            Alert.alert('Error', 'Username contains invalid characters (only number,letters)');
+            break;
+          case 'form_username_invalid_length':
+            Alert.alert('Error', 'Username must contains min 8 or max 20 character');
+            break;
           case 'form_internal_error':
             Alert.alert('Error', 'Internal error occurred. Please try again later.');
             break;
           default:
-            Alert.alert('Error', 'An error occurred during sign-up.');
+            Alert.alert('Error', JSON.stringify(err, null ,2));
             break;
         }
       } else {
-        Alert.alert('Error', 'An error occurred during sign-up.');
+        Alert.alert('Error', JSON.stringify(err, null ,2));
       }
       setIsLoading(false);
     }
@@ -155,7 +162,7 @@ const Register = () => {
                       color: colors.title,
                     },
                   ]}>
-                  Create your account
+                  Create your account 👋 
                 </Text>
               </View>
               <Spacer height={25} />
@@ -185,6 +192,43 @@ const Register = () => {
                   render={({ field }) => (
                     <Input
                       {...field}
+                      label="Username"
+                      keyboardType="numbers-and-punctuation"
+                      autoCapitalize="none"
+                      autoComplete="off"
+                      onBlur={field.onBlur}
+                      onChangeText={field.onChange}
+                      error={errors.username?.message}
+                      borderLess
+                    />
+                  )}
+                  name="username"
+                />
+                <Spacer height={20} />
+                <Controller
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      placeholder='Enter your email address'
+                      label="Email address"
+                      keyboardType="numbers-and-punctuation"
+                      autoCapitalize="none"
+                      autoComplete="off"
+                      onBlur={field.onBlur}
+                      onChangeText={field.onChange}
+                      error={errors.email?.message}
+                      borderLess
+                    />
+                  )}
+                  name="email"
+                />
+                {/* <Spacer height={20} />
+                <Controller
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
                       placeholder="Mobile Number"
                       label="Phone number"
                       keyboardType="numbers-and-punctuation"
@@ -197,14 +241,14 @@ const Register = () => {
                     />
                   )}
                   name="phone"
-                />
+                /> */}
                 <Spacer height={20} />
                 <Controller
                   control={control}
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Password"
+                      placeholder="Enter your password"
                       label="Password"
                       autoCapitalize="none"
                       isPassword
@@ -219,9 +263,9 @@ const Register = () => {
                 <Spacer height={35} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
-                    style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
+                    style={[styles.button,  isLoading ? styles.disable : {}]}
                     onPress={handleSubmit(register)}
-                    disabled={!isValid || isLoading}>
+                    disabled={isLoading}>
                     {isLoading ? (
                       <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
                     ) : null}

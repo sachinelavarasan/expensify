@@ -13,6 +13,7 @@ interface CustomSelectInputProps {
   value: string | number;
   isRequired?: boolean;
   isSmall?: boolean;
+  error?: string | null;
 }
 
 export const CustomSelectInput = ({
@@ -23,6 +24,7 @@ export const CustomSelectInput = ({
   value,
   isRequired = false,
   isSmall = false,
+  error
 }: CustomSelectInputProps) => {
   const [selected, setSelected] = useState(value);
   const { colors, theme } = useThemeContext();
@@ -63,10 +65,10 @@ export const CustomSelectInput = ({
           justifyContent: 'space-between',
           borderRadius: 8,
           borderWidth: 1,
-          borderColor: colors.borderColor,
+          borderColor: error ? '#64090e' :colors.inputBorder,
           paddingHorizontal: 12,
           paddingVertical: 10,
-          shadowColor: colors.background,
+          shadowColor: colors.inputColor,
           shadowOffset: {
             width: 0,
             height: 0,
@@ -74,12 +76,12 @@ export const CustomSelectInput = ({
           shadowOpacity: 0.1,
           shadowRadius: 2.84,
           elevation: 1,
-          backgroundColor: colors.background,
+          backgroundColor: colors.inputColor,
         }}
         defaultOption={defaultOption}
         dropdownStyles={{
-          backgroundColor: theme === 'light' ? colors.background : colors.background,
-          borderColor: colors.borderColor,
+          backgroundColor: colors.inputColor,
+          borderColor: colors.inputBorder,
           borderRadius: 8,
           borderWidth: 1,
           shadowOffset: {
@@ -89,13 +91,14 @@ export const CustomSelectInput = ({
           shadowOpacity: 0.1,
           shadowRadius: 2.84,
           elevation: 1,
-          shadowColor: theme === 'light' ? '#fff' : '#000',
+          shadowColor: colors.inputColor,
         }}
-        inputStyles={{ color: colors.title, paddingVertical: Platform.OS === 'android' ? 1 : 6 }}
+        inputStyles={{ color: selected? colors.title: colors.inputPlaceholder, paddingVertical: Platform.OS === 'android' ? 1 : 6 }}
         dropdownTextStyles={{ color: colors.title }}
         maxHeight={150}
         placeholder={placeholder}
       />
+      {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
 };
@@ -133,5 +136,14 @@ const styles = StyleSheet.create({
     color: '#B3B1C4',
     marginBottom: 6,
     fontFamily: 'Inter-500',
+  },
+   error: {
+    fontSize: 12,
+    color: '#D9363E',
+    bottom: 0,
+    position: 'absolute',
+    marginBottom: -20,
+    fontFamily: 'Inter-300',
+    letterSpacing: 0.5,
   },
 });

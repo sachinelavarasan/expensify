@@ -20,8 +20,8 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
       style={[
         styles.container,
         {
-          backgroundColor: theme === 'light' ? colors.background : 'transparent',
-          shadowColor: theme === 'light' ? '#fff' : '#000',
+          backgroundColor:  colors.inputColor,
+          shadowColor: colors.inputColor,
         },
       ]}>
       <View
@@ -30,14 +30,12 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
             ? [
                 styles.searchBar__clicked,
                 {
-                  backgroundColor: theme === 'light' ? colors.background : 'transparent',
                   borderColor: colors.borderSelected,
                 },
               ]
             : [
                 styles.searchBar__unclicked,
                 {
-                  backgroundColor: theme === 'light' ? colors.background : 'transparent',
                   borderColor: colors.borderColor,
                 },
               ]
@@ -47,7 +45,7 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
           style={[
             styles.input,
             {
-              backgroundColor: theme === 'light' ? colors.background : 'transparent',
+              backgroundColor: colors.inputColor,
               color: colors.text,
             },
           ]}
@@ -69,7 +67,7 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
           onBlur={() => {
             setIsClicked(false);
           }}
-          placeholderTextColor={'#6E6E80'}
+          placeholderTextColor={colors.inputPlaceholder}
           selectionColor="#999999"
           cursorColor="#999999"
         />
@@ -168,7 +166,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     paddingVertical: Platform.OS === 'android' ? 8 : 16,
     fontSize: 16,
-    fontFamily: 'Inter-500',
+    fontFamily: 'Inter-400',
     paddingHorizontal: 10,
     borderRadius: 6,
   },
