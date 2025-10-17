@@ -2,7 +2,7 @@ export default {
   "expo": {
     "name": "Expensify",
     "slug": "expensify",
-    "version": "1.0.26",
+    "version": "1.0.27",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "expensify",
