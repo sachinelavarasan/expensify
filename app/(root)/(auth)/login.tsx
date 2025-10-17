@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,20 +20,27 @@ import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 
 
-import { phoneValidation } from '@/utils/Validation-custom';
 import AuthLink from '@/components/AuthLink';
 import { isClerkAPIResponseError, useClerk, useSignIn } from '@clerk/clerk-expo';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 
+const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const usernameValidation = /^[a-zA-Z0-9_]{8,20}$/;
+
 
 const schema = z.object({
-  phone: z
+  username: z
     .string()
-    .min(1, { message: 'Must have at least 1 character' })
-    .regex(phoneValidation, { message: 'invalid phone' }),
-  password: z.string().min(8, { message: 'Minimum 8 characters' }),
+    .min(8, { message: "This field is required" })
+    .refine(
+      (val) =>
+        emailValidation.test(val) ||
+        usernameValidation.test(val),
+      { message: "Enter a valid email or username (8-20 chars)" }
+    ),
+  password: z.string().min(8, { message: 'Password should have a minimum 8 characters' }),
 });
 
 type SignInForm = z.infer<typeof schema>;
@@ -51,7 +58,7 @@ export default function SignIn() {
     reset,
   } = useForm({
     defaultValues: {
-      phone: '',
+      username: '',
       password: '',
     },
     resolver: zodResolver(schema),
@@ -69,7 +76,7 @@ export default function SignIn() {
     try {
       await signOut();
       const signInAttempt = await signIn.create({
-        identifier: '+91'+data.phone,
+        identifier: data.username,
         password: data.password,
       });
 
@@ -87,7 +94,7 @@ export default function SignIn() {
         console.log(errorCode);
         switch (errorCode) {
           case 'form_identifier_not_found':
-            Alert.alert('Error', 'User not found. Please check your phone number.');
+            Alert.alert('Error', 'User not found. Please check your email address.');
             break;
           case 'form_password_incorrect':
             Alert.alert('Error', 'Incorrect password. Please try again.');
@@ -101,20 +108,20 @@ export default function SignIn() {
           case 'form_param_format_invalid':
             Alert.alert(
               'Error',
-              'Please enter a valid phone number including the correct country code.',
+              'Please enter a valid email address'
             );
             break;
           case 'form_identifier_exists':
-            Alert.alert('Error', 'Given phone number already exists');
+            Alert.alert('Error', 'Given email number already exists');
             break;
           case 'form_internal_error':
             Alert.alert('Error', 'Internal error occurred. Please try again later.');
             break;
           default:
-            Alert.alert('Error', 'An error occurred while signing in.');
+            Alert.alert('Error', JSON.stringify(err, null ,2));
         }
       } else {
-        Alert.alert('Error', 'An error occurred during sign-up.');
+        Alert.alert('Error', JSON.stringify(err, null ,2));
       }
       setIsLoading(false);
     }
@@ -145,18 +152,18 @@ export default function SignIn() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Mobile Number"
-                      label="Phone Number"
+                      placeholder="Enter email or username"
+                      label="Email address or username"
                       keyboardType="numbers-and-punctuation"
                       autoCapitalize="none"
                       autoComplete="off"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
-                      error={errors.phone?.message}
+                      error={errors.username?.message}
                       borderLess
                     />
                   )}
-                  name="phone"
+                  name="username"
                 />
                 <Spacer height={20} />
                 <Controller
@@ -164,7 +171,7 @@ export default function SignIn() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Password"
+                      placeholder="Enter your password"
                       label="Password"
                       autoCapitalize="none"
                       isPassword

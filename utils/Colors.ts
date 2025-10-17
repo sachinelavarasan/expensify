@@ -18,7 +18,10 @@ export const LightColors = {
   themedViewBg: ['#FFF', '#FFF'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
   safeAreaView: "#FFF",
-  cardBg: "#ffffff"
+  cardBg: "#ffffff",
+  inputColor:"#ffffff",
+  inputBorder: "#dadae1ff",
+  inputPlaceholder: '#b7b7bcff'
 };
 
 export const DarkColors = {
@@ -41,7 +44,10 @@ export const DarkColors = {
   themedViewBg: ['#1f003d', '#140029', '#0a0014', '#1f003d'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
   safeAreaView: "#0d001a",
-  cardBg: "#241f3eff"
+  cardBg: "#241f3eff",
+  inputColor:"#ffffff04",
+  inputBorder: "#ffffff1e",
+  inputPlaceholder: '#ffffff66'
 };
 
 
