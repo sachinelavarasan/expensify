@@ -86,7 +86,7 @@ const MobileVerify = () => {
           Alert.alert('Error', 'Internal error occurred. Please try again later.');
           break;
         case 'form_identifier_exists':
-          Alert.alert('Error', 'Given phone number already exists');
+          Alert.alert('Error', 'Given email already exists');
           break;
         default:
           Alert.alert('Error', JSON.stringify(err, null ,2));

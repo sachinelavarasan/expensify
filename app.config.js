@@ -2,7 +2,7 @@ export default {
   "expo": {
     "name": "Expensify",
     "slug": "expensify",
-    "version": "1.0.0",
+    "version": "1.0.26",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "expensify",
@@ -17,7 +17,7 @@ export default {
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "package": "com.sachinelavarasan.expensify",
-      "googleServicesFile": process.env.GOOGLE_SERVICES_JSON
+      "googleServicesFile": process.env.GOOGLE_SERVICES_JSON,
     },
     "web": {
       "bundler": "metro",

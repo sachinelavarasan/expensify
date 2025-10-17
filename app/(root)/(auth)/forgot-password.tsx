@@ -23,6 +23,7 @@ import { Controller, useForm } from 'react-hook-form';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { showToast } from '@/components/ToastMessage';
 
 const schema = z.object({
   email: z
@@ -60,6 +61,12 @@ export default function ForgotPasswordScreen() {
         identifier: data.email,
       });
       setIsLoading(false);
+      showToast({
+        text1: 'Your reset password request sent successfully',
+        type: 'info',
+        position: 'bottom',
+        visibilityTime: 3000
+      });
       await AsyncStorage.setItem('current-verify-email', data.email);
       router.dismissTo('/(root)/(auth)/change-password');
     } catch (err: any) {

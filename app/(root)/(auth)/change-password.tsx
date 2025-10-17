@@ -44,7 +44,7 @@ const ChangePassword = () => {
 
   useEffect(() => {
     (async () => {
-      const storedEnabled = await AsyncStorage.getItem('current-verify-number');
+      const storedEnabled = await AsyncStorage.getItem('current-verify-email');
       if (storedEnabled !== null) setEmail(storedEnabled);
     })();
   }, []);
@@ -67,6 +67,7 @@ const ChangePassword = () => {
           text1: 'Your account password updated successfully',
           type: 'info',
           position: 'bottom',
+          visibilityTime: 3000
         });
       } else {
         Alert.alert('Error', 'Verification failed. Please check your code and try again.');
@@ -128,7 +129,7 @@ const ChangePassword = () => {
               <Text style={[styles.header, { color: colors.title }]}>Change Password</Text>
               <Text style={[styles.subtext, { color: colors.description }]}>
                 Enter the 6-digit code that has been sent to{' '}
-                <Text style={[styles.subtext]}>email</Text>
+                <Text style={[styles.subtext]}>{email}</Text>
               </Text>
             </View>
             <Spacer height={30} />
