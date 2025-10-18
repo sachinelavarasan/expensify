@@ -103,7 +103,7 @@ export default function Stat() {
                       </Text>
                     ))
                   ) : (
-                    <Text style={{ fontSize: 16, color: colors.title }}>No data</Text>
+                    <Text style={{ fontSize: 16, color: colors.title, fontFamily: 'Inter-500', }}>No data</Text>
                   )
                 }
               />

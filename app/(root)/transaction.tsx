@@ -325,7 +325,7 @@ export default function Transaction() {
                           render={({ field }) => (
                             <Input
                               {...field}
-                              placeholder="amount"
+                              placeholder="Transaction amount"
                               label="Amount"
                               keyboardType="numeric"
                               onBlur={field.onBlur}
@@ -337,14 +337,14 @@ export default function Transaction() {
                           )}
                           name="exp_ts_amount"
                         />
-                        <Spacer height={20} />
+                        <Spacer height={25} />
                         <Controller
                           control={control}
                           render={({ field }) => (
                             <Input
                               {...field}
                               value={field.value ?? ''}
-                              placeholder="title"
+                              placeholder="Title"
                               label="Title"
                               keyboardType="default"
                               autoCapitalize="none"
@@ -359,6 +359,7 @@ export default function Transaction() {
                           name="exp_ts_title"
                         />
                       </View>
+                      <Spacer height={16}/>
                       <View style={[styles.sectionContainer]}>
                         <View
                           style={{
@@ -439,7 +440,7 @@ export default function Transaction() {
                           <Input
                             {...field}
                             value={field.value ?? ''}
-                            placeholder="notes"
+                            placeholder="Notes"
                             label="Note"
                             keyboardType="default"
                             autoCapitalize="none"
@@ -508,11 +509,11 @@ export default function Transaction() {
               <TouchableOpacity
                 style={[
                   styles.button,
-                  !isValid || !isDirty || isFetching || isDeleting || isLoading
+                   !isDirty || isFetching || isDeleting || isLoading
                     ? styles.disable
                     : {},
                 ]}
-                disabled={!isValid || !isDirty || isFetching || isDeleting || isLoading}
+                disabled={ !isDirty || isFetching || isDeleting || isLoading}
                 onPress={handleSubmit(onSubmit)}>
                 {isLoading ? (
                   <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
@@ -628,6 +629,7 @@ const styles = StyleSheet.create({
   footerText: {
     color: '#fff',
     fontSize: 18,
+    fontFamily: 'Inter-600',
   },
   subText: {
     color: '#282343',

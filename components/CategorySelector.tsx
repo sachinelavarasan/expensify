@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ICategory } from '@/types';
@@ -12,13 +12,21 @@ interface Props {
   setValue: UseFormSetValue<transactionSchemaType>;
 }
 
-const MAX_VISIBLE = 6;
+const MAX_VISIBLE = 7;
 
 export default function CategorySelector({ categories, selected, setValue }: Props) {
   const { colors, theme } = useThemeContext();
   const [showAll, setShowAll] = useState(false);
 
-  const visibleItems = showAll ? categories : categories.slice(0, MAX_VISIBLE);
+    const reorderedCategories = useMemo(() => {
+    if (!selected) return categories;
+    const selectedItem = categories.find((item) => item.exp_tc_id === selected);
+    const otherItems = categories.filter((item) => item.exp_tc_id !== selected);
+    return selectedItem ? [selectedItem, ...otherItems] : categories;
+  }, [categories, selected]);
+
+  const visibleItems = showAll ? reorderedCategories : reorderedCategories.slice(0, MAX_VISIBLE);
+
 
   return (
     <View>

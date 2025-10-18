@@ -1,15 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {  } from 'react';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
-import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { useBankAccounts } from '@/hooks/useBankAccountOperation';
-import { ca } from 'react-native-paper-dates';
 
-const CARDGAP = 17;
+const CARDGAP = 14;
 const width = deviceWidth();
 const cardWidth = (width - CARDGAP * 3) / 2;
 

@@ -45,8 +45,10 @@ const TransactionCard = ({
             <View
               style={{
                 backgroundColor: exp_tc_icon_bg_color ? exp_tc_icon_bg_color : '#282343',
-                padding: 5,
+                padding: 8,
                 borderRadius: 5,
+                marginTop:2,
+                alignSelf: 'flex-start'
               }}>
               <MaterialIcons
                 name={
@@ -100,9 +102,8 @@ const TransactionCard = ({
                     flexDirection:'row',
                     gap: 4
                   }}>
-                  <MaterialIcons name={'payments'} size={18} color={colors.secondary } />
                   <Text
-                    style={[styles.subText, { fontFamily: 'Inter-400', color: colors.secondary }]}>
+                    style={[styles.subText, { fontSize: 10, color: colors.secondary }]}>
                     {exp_ba_name}
                   </Text>
                 </View>
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   },
   name: {
     color: '#F1F1F6',
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Inter-600',
     maxWidth: deviceWidth() - 150,
   },

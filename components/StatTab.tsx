@@ -47,11 +47,13 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
     <View
       style={{
         padding: 10,
-        backgroundColor: colors.bottomBarBackground,
+        // backgroundColor: colors.bottomBarBackground,
         borderWidth: 1,
-        borderColor: colors.borderColor,
+        // borderColor: colors.borderColor,
         borderRadius: 6,
         marginBottom: 10,
+        backgroundColor: colors.inputColor, 
+        borderColor: colors.inputBorder
       }}>
       <Text
         style={{
@@ -178,7 +180,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.background, borderColor: colors.borderColor },
+        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
       ]}>
       <View style={[styles.tabContainer, { backgroundColor: colors.topBarColor }]}>
         <TouchableOpacity
@@ -283,7 +285,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     // color: '#B3B1C4',
-    fontWeight: '500',
+    fontFamily: 'Inter-500',
   },
   activeTabText: {
     color: '#fff',
@@ -297,7 +299,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-600',
     // color: '#333',
   },
   amount: {
@@ -358,5 +360,6 @@ const styles = StyleSheet.create({
   legendText: {
     color: '#ccc',
     fontSize: 12,
+    fontFamily: 'Inter-400',
   },
 });

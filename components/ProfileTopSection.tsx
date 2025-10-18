@@ -8,7 +8,6 @@ import Animated, {
   useScrollViewOffset,
 } from 'react-native-reanimated';
 import { ThemedView } from './ThemedView';
-import { deviceWidth } from '@/utils/functions';
 import UpdateProfile from './UpdateProfile';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
@@ -33,11 +32,10 @@ export default function AnimatedTopSection({
   title,
   subtitle,
   avatar,
-  backgroundImage,
   refetch,
   children,
 }: Props) {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
 
@@ -130,7 +128,7 @@ export default function AnimatedTopSection({
               {title}
             </Text>
             {subtitle && (
-              <Text style={[styles.subtitleTextInHeader, { color: colors.lighterTitle }]}>
+              <Text style={[styles.subtitleTextInHeader, { color: colors.lighterTitle }]} numberOfLines={1}>
                 {subtitle}
               </Text>
             )}
@@ -219,11 +217,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
-    maxWidth: 150,
+    fontFamily: 'Inter-700',
   },
   subtitle: {
     fontSize: 14,
+    fontFamily: 'Inter-500',
   },
   actionButton: {
     paddingVertical: 6,
@@ -231,7 +229,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   actionText: {
-    fontWeight: '600',
+    fontFamily: 'Inter-600',
     fontSize: 14,
   },
   content: {
@@ -276,14 +274,14 @@ const styles = StyleSheet.create({
 
   titleTextInHeader: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Inter-700',
     color: '#FFF',
-    maxWidth: 100,
   },
 
   subtitleTextInHeader: {
     fontSize: 14,
     marginTop: 4,
+    fontFamily: 'Inter-500',
   },
   avatarContainer: {
     position: 'absolute',

@@ -27,7 +27,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
       style={{
         flex: 1,
       }}>
-      <View style={[styles.table, { borderColor: colors.borderColor }]}>
+      <View style={[styles.table, { borderColor: colors.inputBorder }]}>
         {/* Table Header with Gradient */}
         <LinearGradient
           colors={['#705AD4', '#6B5DE6']}
@@ -50,10 +50,10 @@ export default function TableView({ transactions }: { transactions: Itransaction
           key={'income'}
           style={[
             styles.row,
-            { backgroundColor: colors.bottomBarBackground, borderBottomColor: colors.borderColor },
+            { backgroundColor: colors.inputColor, borderBottomColor: colors.inputBorder },
           ]}>
           <View style={{ width: firstColumnWidth }}>
-            <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-300' }]}>
+            <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-400' }]}>
               Income
             </Text>
           </View>
@@ -74,10 +74,10 @@ export default function TableView({ transactions }: { transactions: Itransaction
           key={'expense'}
           style={[
             styles.row,
-            { backgroundColor: colors.bottomBarBackground, borderBottomColor: colors.borderColor },
+            { backgroundColor: colors.inputColor, borderBottomColor: colors.inputBorder },
           ]}>
           <View style={{ width: firstColumnWidth }}>
-            <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-300' }]}>
+            <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-400' }]}>
               Expense
             </Text>
           </View>
@@ -98,7 +98,7 @@ export default function TableView({ transactions }: { transactions: Itransaction
           key={'overall'}
           style={[
             styles.row,
-            { backgroundColor: colors.bottomBarBackground, borderBottomColor: colors.borderColor },
+            { backgroundColor: colors.inputColor, borderBottomColor: colors.inputBorder },
           ]}>
           <View style={{ width: firstColumnWidth }}>
             <Text style={[styles.cell, { color: colors.text, fontFamily: 'Inter-600' }]}>
@@ -126,14 +126,12 @@ export default function TableView({ transactions }: { transactions: Itransaction
 const styles = StyleSheet.create({
   table: {
     borderWidth: 1,
-    borderColor: '#2D2A40',
     borderRadius: 2,
     marginVertical: 16,
     height: 'auto',
     borderBottomWidth: 0,
-    backgroundColor: '#161421',
     width: tableWidth,
-    overflow: 'hidden', // important to keep gradient corners rounded
+    overflow: 'hidden',
   },
   row: {
     flexDirection: 'row',
@@ -149,9 +147,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#D1CFE9',
     fontFamily: 'Inter-400',
-  },
-  header: {
-    backgroundColor: '#2A2740',
   },
   headerText: {
     fontFamily: 'Inter-600',

@@ -150,7 +150,7 @@ function CollapsibleCategoryCard({
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={1}
-        style={{ backgroundColor: '#0000007f' }}
+        style={{ backgroundColor: '#00000088' }}
       />
     ),
     [],

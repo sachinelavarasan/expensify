@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import { deviceWidth } from '@/utils/functions';
 
-import { useUser, useAuth } from '@clerk/clerk-expo';
+import { useUser } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
@@ -22,8 +22,7 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import BankCard from '@/components/AccountCard';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useReminderSettings } from '@/hooks/useReminder';
+import AnimatedLogoutIcon from '@/components/LogOutModal';
 
 const deviceWidthAsNumber = deviceWidth() - 67;
 
@@ -31,24 +30,15 @@ const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const { colors, theme } = useThemeContext();
-  const {  disableNotification } = useReminderSettings();
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
   const { refetch } = useGetUserData();
-  const { signOut } = useAuth();
   const { user: currentUser } = useUser();
 
   const overAllAmount = accounts.reduce(
     (previous, current) => Number(previous) + Number(current.exp_ba_balance) || 0,
     0,
   );
-
-  const onSubmit = async () => {
-    signOut();
-    await disableNotification();
-    await AsyncStorage.clear();
-    router.replace('/(root)/(auth)/login');
-  };
 
   return (
     <AnimatedTopSection
@@ -120,36 +110,6 @@ const Profile = () => {
               }}
               otherStyle={{ width: deviceWidth() - 60 }}
             />
-            // <Link
-            //   href={{
-            //     pathname: '/accounts/[id]',
-            //     params: { id: item.exp_ba_id },
-            //   }}
-            //   asChild>
-            //   {/* <TouchableOpacity style={styles.accountCard}>
-            //     <View
-            //       style={[
-            //         styles.left,
-            //         {
-            //           flexDirection: 'row',
-            //           justifyContent: 'space-between',
-            //           alignItems: 'center',
-            //         },
-            //       ]}>
-            //       <View>
-            //         <Text style={styles.accountlabel}>{item.exp_ba_name}</Text>
-            //       </View>
-            //       <View style={{ backgroundColor: '#282343', padding: 2, borderRadius: 2 }}>
-            //         <MaterialIcons name="account-balance-wallet" size={16} color="#FFF" />
-            //       </View>
-            //     </View>
-
-            //     <View>
-            //       <Text style={styles.amount}>{item.exp_ba_balance}</Text>
-            //     </View>
-            //   </TouchableOpacity> */}
-
-            // </Link>
           )}
         />
         <Link href={'/(root)/categories'} asChild>
@@ -157,7 +117,6 @@ const Profile = () => {
             <View
               style={[
                 styles.card,
-                // { backgroundColor: colors.bottomBarBackground},
               ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
@@ -265,13 +224,9 @@ const Profile = () => {
             </View>
           </TouchableOpacity>
         </Link>
-        <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
-          <TouchableOpacity
-            style={[styles.button, styles.logoutBg, { backgroundColor: '#cc1928' }]}
-            onPress={onSubmit}>
-            <Feather name="log-out" size={20} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={[styles.title, styles.logoutText, { color: '#fff' }]}>Logout</Text>
-          </TouchableOpacity>
+        <Spacer height={40}/>
+        <View style={[styles.btnContainer, { paddingHorizontal: 5, flex: 1 }]}>
+            <AnimatedLogoutIcon/>
         </View>
       </>
     </AnimatedTopSection>
@@ -295,12 +250,13 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 10,
+    fontFamily: 'Inter-800',
   },
   email: {
     fontSize: 16,
     color: 'gray',
+    fontFamily: 'Inter-500',
   },
   btnContainer: {
     alignItems: 'center',
@@ -347,7 +303,7 @@ const styles = StyleSheet.create({
   },
   card: {
     paddingVertical: 8,
-    marginBottom: 12,
+    marginBottom: 25,
     borderRadius: 4,
     flexDirection: 'row',
     justifyContent: 'space-between',

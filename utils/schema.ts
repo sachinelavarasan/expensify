@@ -4,7 +4,7 @@ export const transactionSchema = z.object({
   exp_ts_title: z.string().trim().min(3, { message: 'Name should be minimum 3 characters' }),
   exp_ts_note: z.string().trim().nullable().optional(),
   exp_ts_amount: z
-    .string()
+    .string({message: 'This field is required'})
     .refine((val) => /^(\d{1,13})(\.\d{1,2})?$/.test(val) && parseFloat(val) > 0, {
       message: 'Amount must be up to 15 digits total (13 before, 2 after decimal)',
     }),
@@ -13,7 +13,7 @@ export const transactionSchema = z.object({
   exp_ts_time: z.string().min(1, { message: 'Choose time' }),
   exp_tt_id: z.number({ message: 'Select transaction type' }),
   exp_st_id: z.boolean().optional(),
-  exp_ts_bank_account_id: z.number({ message: 'Select Account' }),
+  exp_ts_bank_account_id: z.number({ message: 'Choose Account' }),
 });
 
 export type transactionSchemaType = z.infer<typeof transactionSchema>;

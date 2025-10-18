@@ -71,7 +71,7 @@ const CustomTimePicker = ({
           alignItems: 'center',
         }}>
         <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />
-        <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
+        <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
           {value || placeholder || 'Select Time'}
         </Text>
       </TouchableOpacity>

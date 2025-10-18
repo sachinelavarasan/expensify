@@ -185,7 +185,7 @@ const Register = () => {
                   )}
                   name="name"
                 />
-                <Spacer height={20} />
+                <Spacer height={30} />
               
                 <Controller
                   control={control}
@@ -204,7 +204,7 @@ const Register = () => {
                   )}
                   name="username"
                 />
-                <Spacer height={20} />
+                <Spacer height={30} />
                 <Controller
                   control={control}
                   render={({ field }) => (
@@ -242,7 +242,7 @@ const Register = () => {
                   )}
                   name="phone"
                 /> */}
-                <Spacer height={20} />
+                <Spacer height={30} />
                 <Controller
                   control={control}
                   render={({ field }) => (

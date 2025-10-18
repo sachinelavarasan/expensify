@@ -83,15 +83,15 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 20,
-              borderColor: colors.borderColor,
+              borderColor: colors.inputBorder,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: colors.background,
+              backgroundColor: colors.inputColor,
               gap: 15,
             }}>
             <Entypo name="calendar" size={14} color={colors.title} />
-            <Text style={{ color: colors.title, fontWeight: '500', fontFamily: 'Inter-500' }}>
+            <Text style={{ color: colors.title,  fontFamily: 'Inter-500' }}>
               {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
             </Text>
           </TouchableOpacity>

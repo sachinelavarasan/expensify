@@ -195,7 +195,7 @@ export default function ImportTransactions() {
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={1}
-        style={{ backgroundColor: '#0000007f' }}
+        style={{ backgroundColor: '#00000088' }}
       />
     ),
     [],
@@ -203,23 +203,36 @@ export default function ImportTransactions() {
 
   const renderPreviewItem = useCallback(
     ({ item }: any) => (
-      <View style={[styles.itemContainer, {backgroundColor: colors.cardBg}]}>
+      <View style={[styles.itemContainer, { backgroundColor: colors.bottomBarBackground }]}>
         <View style={styles.left}>
           <View>
-            <Text style={[styles.name, { color: colors.description}]}>{item.title}</Text>
+            <Text style={[styles.name, { color: colors.description }]}>{item.title}</Text>
             <View style={styles.subTextContainer}>
               <Text
                 style={[
                   styles.subText,
-                  { marginRight: 6, fontFamily: 'Inter-600', maxWidth: 150, color: colors.description, },
+                  {
+                    marginRight: 6,
+                    fontFamily: 'Inter-600',
+                    maxWidth: 150,
+                    color: colors.description,
+                  },
                 ]}>
                 {formatToCurrency(item.amount)} <Text>{'\u2022'}</Text>
               </Text>
-              <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-500', color: colors.description, }]}>
+              <Text
+                style={[
+                  styles.subText,
+                  { marginRight: 6, fontFamily: 'Inter-500', color: colors.description },
+                ]}>
                 {item.transaction_type}
                 <Text> {'\u2022'} </Text>
               </Text>
-              <Text style={[styles.subText, { marginRight: 6, fontFamily: 'Inter-400', color: colors.description, }]}>
+              <Text
+                style={[
+                  styles.subText,
+                  { marginRight: 6, fontFamily: 'Inter-400', color: colors.description },
+                ]}>
                 {item.date}
               </Text>
             </View>
@@ -255,14 +268,16 @@ export default function ImportTransactions() {
                         styles.stepDot,
                         active
                           ? { ...styles.stepDotActive, backgroundColor: colors.primary }
-                          : { ...styles.stepDotInactive, backgroundColor: colors.lighterTitle },
+                          : { ...styles.stepDotInactive, backgroundColor: '#ccccccb8' },
                       ]}>
                       <Text style={styles.stepDotText}>{idx + 1}</Text>
                     </View>
                     <Text
                       style={[
                         styles.stepLabel,
-                        active ? {...styles.stepLabelActive, color: colors.primary} : {...styles.stepLabelInactive, color: colors.secondary},
+                        active
+                          ? { ...styles.stepLabelActive, color: colors.primary }
+                          : { ...styles.stepLabelInactive, color: colors.secondary },
                       ]}>
                       {label}
                     </Text>
@@ -270,7 +285,9 @@ export default function ImportTransactions() {
                       <View
                         style={[
                           styles.stepLine,
-                          active ? {...styles.stepLineActive, backgroundColor: colors.primary} : {...styles.stepLineInactive, backgroundColor: colors.secondary},
+                          active
+                            ? { ...styles.stepLineActive, backgroundColor: colors.primary }
+                            : { ...styles.stepLineInactive, backgroundColor: colors.secondary },
                         ]}
                       />
                     )}
@@ -281,20 +298,28 @@ export default function ImportTransactions() {
 
             {step === 0 && (
               <View style={{ paddingHorizontal: 5 }}>
-                <Text style={[styles.subText, { lineHeight: 20, marginBottom: 10, color: colors.description }]}>
+                <Text
+                  style={[
+                    styles.subText,
+                    { lineHeight: 20, marginBottom: 10, color: colors.description },
+                  ]}>
                   Make sure your file includes the required columns like{' '}
-                  <Text style={{ fontWeight: '600', color: colors.description }}>Title</Text>,{' '}
-                  <Text style={{ fontWeight: '600', color: colors.description }}>Date</Text>,{' '}
-                  <Text style={{ fontWeight: '600', color: colors.description }}>Amount</Text>, and{' '}
-                  <Text style={{ fontWeight: '600', color: colors.description }}>Transaction Type</Text>.
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>Title</Text>,{' '}
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>Date</Text>,{' '}
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>Amount</Text>,
+                  and{' '}
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>
+                    Transaction Type
+                  </Text>
+                  .
                 </Text>
                 <Text style={[styles.subText, { color: colors.description }]}>
-                  Supported format <Text style={{ fontWeight: '800', color: colors.description }}>.xlsx</Text>{' '}
-                  only
+                  Supported format{' '}
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>.xlsx</Text> only
                 </Text>
                 <Text style={[styles.subText, { color: colors.description }]}>
                   Please upload a file smaller than{' '}
-                  <Text style={{ fontWeight: '800', color: colors.description  }}>1MB</Text>.
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>1MB</Text>.
                 </Text>
                 <Spacer height={20} />
                 <TouchableOpacity
@@ -373,7 +398,7 @@ export default function ImportTransactions() {
                       styles.button,
                       styles.accent,
                       {
-                      backgroundColor: '#2E8B57',
+                        backgroundColor: '#2E8B57',
                       },
                       (!canGoNextFromMap || processing) && styles.disable,
                     ]}
@@ -385,14 +410,23 @@ export default function ImportTransactions() {
                   </TouchableOpacity>
                   <Spacer height={20} />
                   <TouchableOpacity
-                    style={[styles.button, {
-                      borderColor: colors.primary,
-                      borderWidth: 1
-                    },]}
+                    style={[
+                      styles.button,
+                      {
+                        borderColor: colors.secondary,
+                        borderWidth: 1,
+                      },
+                    ]}
                     onPress={() => setStep(0)}>
-                    <Text style={[styles.title, {
-                      color: colors.primary
-                    }]}>Back</Text>
+                    <Text
+                      style={[
+                        styles.title,
+                        {
+                          color: colors.secondary,
+                        },
+                      ]}>
+                      Back
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -405,30 +439,30 @@ export default function ImportTransactions() {
                 </Text>
 
                 <View style={styles.previewCards}>
-                  <View style={styles.previewCard}>
-                    <Text style={styles.previewTitle}>Valid</Text>
+                  <View style={[styles.previewCard, {backgroundColor: colors.inputColor, borderColor: colors.inputBorder}]}>
+                    <Text style={[styles.previewTitle, {color: colors.description}]}>Valid</Text>
                     <Text style={styles.previewCount}>{validRows.length}</Text>
-                    {validRows.length > 0 && (
+                    {validRows.length > 0 ? (
                       <TouchableOpacity
                         style={[styles.button, styles.accent]}
                         onPress={toggleValid}>
-                        <Text style={styles.title}>View valid</Text>
+                        <Text style={[styles.title]}>View valid</Text>
                       </TouchableOpacity>
-                    )}
+                    ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
                   </View>
 
-                  <View style={styles.previewCard}>
+                  <View style={[styles.previewCard, {backgroundColor: colors.inputColor, borderColor: colors.inputBorder}]}>
                     <Text style={[styles.previewTitle, { color: '#E63946' }]}>Invalid</Text>
                     <Text style={[styles.previewCount, { color: '#E63946' }]}>
                       {invalidRows.length}
                     </Text>
-                    {invalidRows.length > 0 && (
+                    {invalidRows.length > 0 ? (
                       <TouchableOpacity
                         style={[styles.button, styles.danger]}
                         onPress={toggleInvalid}>
                         <Text style={styles.title}>View invalid</Text>
                       </TouchableOpacity>
-                    )}
+                    ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
                   </View>
                 </View>
 
@@ -438,9 +472,11 @@ export default function ImportTransactions() {
                   <View style={{ paddingHorizontal: 5 }}>
                     <Text style={[styles.subText, { marginBottom: 10, color: colors.description }]}>
                       Ready to import{' '}
-                      <Text style={{ color: colors.description, fontWeight: '700' }}>{validRows.length}</Text>{' '}
+                      <Text style={{ color: colors.primary, fontFamily: 'Inter-600' }}>
+                        {validRows.length}
+                      </Text>{' '}
                       valid records into{' '}
-                      <Text style={{ color: colors.description, fontWeight: '700' }}>
+                      <Text style={{ color: colors.primary, fontFamily: 'Inter-600' }}>
                         {
                           accounts.find((a) => String(a.exp_ba_id) === String(headersMap.account))
                             ?.exp_ba_name
@@ -448,36 +484,51 @@ export default function ImportTransactions() {
                       </Text>
                       .
                     </Text>
-                    <View style={{ flexDirection: 'row', gap: 10 }}>                    
+                    <View style={{ flexDirection: 'row', gap: 10 }}>
                       <TouchableOpacity
                         disabled={saving || validRows.length === 0}
                         style={[
                           styles.button,
                           styles.accent,
                           { flex: 1 },
-                          {backgroundColor: colors.primary},
+                          { backgroundColor: colors.primary },
                           (saving || validRows.length === 0) && styles.disable,
                         ]}
                         onPress={finalizeImport}>
-                        {saving && <ActivityIndicator color={colors.primary} style={styles.loader} />}
+                        {saving && (
+                          <ActivityIndicator color={colors.primary} style={styles.loader} />
+                        )}
                         <Text style={[styles.title, saving && styles.textDisable]}>Import Now</Text>
                       </TouchableOpacity>
-                      
+
                       <TouchableOpacity
-                      style={[styles.button, {
-                        borderColor: colors.primary,
-                        borderWidth: 1
-                      },]}
-                      onPress={() => setStep(2)}>
-                      <Text style={[styles.title, {
-                        color: colors.primary
-                      }]}>Back</Text>
-                    </TouchableOpacity>
+                        style={[
+                          styles.button,
+                          {
+                            borderColor: colors.primary,
+                            borderWidth: 1,
+                            paddingVertical: 8,
+                            paddingHorizontal: 12,
+                          },
+                        ]}
+                        onPress={() => setStep(1)}>
+                        <Text
+                          style={[
+                            styles.title,
+                            {
+                              color: colors.primary,
+                            },
+                          ]}>
+                          Back
+                        </Text>
+                      </TouchableOpacity>
                     </View>
 
                     <Spacer height={16} />
-                    <TouchableOpacity style={[styles.button, {backgroundColor: colors.secondary}]} onPress={resetAll}>
-                      <Text style={styles.title}>Start Over</Text>
+                    <TouchableOpacity
+                      style={[styles.button, { borderColor: colors.inputBorder, borderWidth: 1 }]}
+                      onPress={resetAll}>
+                      <Text style={[styles.title,{color: colors.description}]}>Start Over</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -496,9 +547,11 @@ export default function ImportTransactions() {
               onChange={onSheetChange}
               backdropComponent={renderBackdrop}
               enableDynamicSizing={false}
-              backgroundStyle={{ backgroundColor: colors.bottomBarBackground }}
+              backgroundStyle={{ backgroundColor: colors.cardBg }}
               handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
-              <Text style={[styles.sheetTitle, {color: colors.title}]}>{validRows.length} valid records</Text>
+              <Text style={[styles.sheetTitle, { color: colors.title }]}>
+                {validRows.length} valid records
+              </Text>
               <BottomSheetFlatList
                 data={validRows}
                 keyExtractor={(_, i) => `v-${i}`}
@@ -520,7 +573,7 @@ export default function ImportTransactions() {
               onChange={onSheetChange}
               backdropComponent={renderBackdrop}
               enableDynamicSizing={false}
-              backgroundStyle={{ backgroundColor: colors.bottomBarBackground }}
+              backgroundStyle={{ backgroundColor: colors.cardBg }}
               handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
               <Text style={[styles.sheetTitle, { color: '#E63946' }]}>
                 {invalidRows.length} invalid records
@@ -557,11 +610,11 @@ const styles = StyleSheet.create({
   secondary: { backgroundColor: '#282343' },
   accent: { backgroundColor: '#2E8B57' },
   danger: { backgroundColor: '#7A1F1F' },
-  disable: { opacity: 0.6 },
+  disable: { opacity: 0.4 },
   textDisable: { opacity: 0 },
   loader: { position: 'absolute' },
 
-  subText: { fontSize: 14, color: '#ccc', marginTop: 2 },
+  subText: { fontSize: 14, color: '#ccc', marginTop: 2, fontFamily: 'Inter-500' },
 
   // stepper
   stepper: {
@@ -582,7 +635,7 @@ const styles = StyleSheet.create({
   stepDotActive: { backgroundColor: '#076ae3' },
   stepDotInactive: { backgroundColor: '#282343' },
   stepDotText: { color: '#fff', fontSize: 12, fontFamily: 'Inter-700' },
-  stepLabel: { fontSize: 12 },
+  stepLabel: { fontSize: 12, fontFamily: 'Inter-500' },
   stepLabelActive: { color: '#EAEAEA', fontFamily: 'Inter-600' },
   stepLabelInactive: { color: '#8B8AA0', fontFamily: 'Inter-500' },
   stepLine: { width: 20, height: 2, marginHorizontal: 8, borderRadius: 2 },

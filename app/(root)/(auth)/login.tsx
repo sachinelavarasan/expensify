@@ -165,7 +165,7 @@ export default function SignIn() {
                   )}
                   name="username"
                 />
-                <Spacer height={20} />
+                <Spacer height={30} />
                 <Controller
                   control={control}
                   render={({ field }) => (

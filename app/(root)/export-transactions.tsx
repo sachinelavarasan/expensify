@@ -89,7 +89,7 @@ export default function ExportData() {
             <ProfileHeader title="Export Transactions" paddingHorizontal={false} />
             <Spacer height={20} />
             <View style={{ alignItems: 'flex-start' }}>
-              <View style={[styles.card, { width: '100%', backgroundColor: colors.background, borderColor: colors.borderColor }]}>
+              <View style={[styles.card, { width: '100%', backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}>
                 <DatePickerWithOutValue
                   label="From:"
                   onChange={(data: string) => setStart(data)}
@@ -109,7 +109,7 @@ export default function ExportData() {
               </View>
             </View>
             <Spacer height={20} />
-            <View style={[styles.card,{ backgroundColor: colors.background, borderColor: colors.borderColor }]}>
+            <View style={[styles.card,{ backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}>
               <CustomRadioButton
                 label="Format"
                 value={docType}
@@ -120,7 +120,7 @@ export default function ExportData() {
               />
             </View>
             <Spacer height={20} />
-            <View style={[styles.card,{ backgroundColor: colors.background, borderColor: colors.borderColor }]}>
+            <View style={[styles.card,{ backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}>
               <CustomRadioButton
                 label="Transaction Type"
                 value={tranType}
@@ -161,8 +161,8 @@ export default function ExportData() {
             <View style={[{ paddingHorizontal: 5 }]}>
               <Text style={[styles.subText, { lineHeight: 20, color: colors.description }]}>
                 If you want to add multiple transactions at once, simply click the{' '}
-                <Text style={{ fontWeight: '800', color: colors.description }}>Import Transations</Text> button and upload
-                your <Text style={{ fontWeight: '800', color: colors.description }}>.xlsx</Text> file.
+                <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>Import Transations</Text> button and upload
+                your <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>.xlsx</Text> file.
               </Text>
               <Spacer height={10} />
               <TouchableOpacity
@@ -234,6 +234,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#ccc',
     marginTop: 2,
+    fontFamily: 'Inter-500',
   },
   contentContainer: {
     padding: 12,

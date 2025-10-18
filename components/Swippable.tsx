@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontFamily: 'Inter-700',
     fontSize: 16,
   },
 });

@@ -47,7 +47,7 @@ export default function Category() {
     () =>
       categories
         .filter(
-          (item: { exp_tc_transaction_type: number; exp_tc_user_id: null }) =>
+          (item: ICategory) =>
             item.exp_tc_transaction_type === 2 && item.exp_tc_user_id !== null,
         )
         .sort(
@@ -61,7 +61,7 @@ export default function Category() {
     () =>
       categories
         .filter(
-          (item: { exp_tc_transaction_type: number; exp_tc_user_id: null }) =>
+          (item: ICategory) =>
             item.exp_tc_transaction_type === 1 && item.exp_tc_user_id !== null,
         )
         .sort(
@@ -72,14 +72,16 @@ export default function Category() {
   );
 
   useEffect(() => {
-    setDataList(activeTab === 'income' ? incomeCategories : expenseCategories);
+    if(categories?.length){
+      setDataList(activeTab === 'income' ? incomeCategories : expenseCategories);
     const list = categories?.filter(
-      (item: { exp_tc_transaction_type: number; exp_tc_user_id: null }) =>
+      (item: ICategory) =>
         ((item.exp_tc_transaction_type === 1 && activeTab === 'expense') ||
           (item.exp_tc_transaction_type === 2 && activeTab === 'income')) &&
         item.exp_tc_user_id === null,
     );
     setSystemList(list);
+    }
   }, [activeTab, categories, expenseCategories, incomeCategories]);
 
   const reArrangeOrder = (data: ICategory[]) => {
@@ -325,7 +327,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tabText: {
-    fontWeight: '500',
+    fontFamily: 'Inter-500',
   },
   activeTabText: {
     color: '#FFFFFF',

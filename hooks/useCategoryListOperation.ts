@@ -1,5 +1,4 @@
 import { ICategory } from '@/types';
-import { categoriesStatic } from '@/utils/common-data';
 import { useAuth } from '@clerk/clerk-expo';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -42,7 +41,7 @@ export const useCategoryList = () => {
   });
 
   return {
-    categories: categories || categoriesStatic,
+    categories: categories || [],
     loading,
     error: isError ? error?.message : null,
     refetch,

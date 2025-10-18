@@ -37,22 +37,26 @@ const styles = StyleSheet.create({
   default: {
     fontSize: 16,
     lineHeight: 24,
+    fontFamily: 'Inter-500',
   },
   defaultSemiBold: {
     fontSize: 16,
     lineHeight: 24,
+    fontFamily: 'Inter-700',
   },
   title: {
     fontSize: 32,
-
+    fontFamily: 'Inter-700',
     lineHeight: 32,
   },
   subtitle: {
     fontSize: 20,
+    fontFamily: 'Inter-500',
   },
   link: {
     lineHeight: 30,
     fontSize: 16,
     color: '#0a7ea4',
+    fontFamily: 'Inter-500',
   },
 });

@@ -357,7 +357,7 @@ const Budget = () => {
                                 styles.cardTitle,
                                 {
                                   color: colors.secondary,
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontFamily: 'Inter-600',
                                 },
                               ]}>
@@ -492,6 +492,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#ccc',
     marginTop: 2,
+    fontFamily: 'Inter-500',
   },
   card: {
     paddingVertical: 20,

@@ -14,7 +14,7 @@ export const LightColors = {
   expense: '#f33f3f',
   bottomBarBackground: '#FFF',
   barBackground: '#FFFFFF',
-  topBarColor: '#ededf3',
+  topBarColor: '#ededf3bf',
   themedViewBg: ['#FFF', '#FFF'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
   safeAreaView: "#FFF",
@@ -40,13 +40,13 @@ export const DarkColors = {
   expense: '#F56565',
   bottomBarBackground: '#0d001a',
   barBackground: '#1a0033',
-  topBarColor: '#140029',
+  topBarColor: '#2f0b569c',
   themedViewBg: ['#1f003d', '#140029', '#0a0014', '#1f003d'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
   safeAreaView: "#0d001a",
   cardBg: "#241f3eff",
   inputColor:"#ffffff04",
-  inputBorder: "#ffffff1e",
+  inputBorder: "#ffffff33",
   inputPlaceholder: '#ffffff66'
 };
 

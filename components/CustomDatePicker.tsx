@@ -73,7 +73,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             justifyContent: 'center',
           }}>
           <Entypo name="calendar" size={14} color="#1E1E1E" style={{ marginRight: 5 }} />
-          <Text style={{ color: '#fff', fontWeight: '500', fontFamily: 'Inter-500' }}>
+          <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
             {date ? formatDateForDisplay(date) : placeholder || 'Pick a date'}
           </Text>
         </TouchableOpacity>

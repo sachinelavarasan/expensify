@@ -211,9 +211,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     backgroundColor: '#fff',
     color: 'red',
+    fontFamily: 'Inter-600',
   },
   title: {
     fontSize: 24,
+    fontFamily: 'Inter-600',
   },
   totalAmount: {
     color: '#D5D5D5',
