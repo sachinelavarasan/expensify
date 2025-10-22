@@ -25,7 +25,8 @@ const Input = forwardRef(function MyInput(
   props: ExtraInputProps & TextInputProps,
   ref: React.Ref<TextInput>,
 ) {
-  const { theme, colors } = useThemeContext();
+  const { colors } = useThemeContext();
+  const [inputHeight, setInputHeight] = useState(0);
   const {
     label,
     borderLess,
@@ -39,7 +40,7 @@ const Input = forwardRef(function MyInput(
   } = props;
   const [show, setShow] = useState(false);
   return (
-    <View>
+    <View style={{position:'relative'}} onLayout={(e) => setInputHeight(e.nativeEvent.layout.height)}>
       {label ? (
         <View style={{ display: 'flex', flexDirection: 'row' }}>
           <Text style={[styles.label, { color: colors.title }]}>{label}</Text>
@@ -58,7 +59,6 @@ const Input = forwardRef(function MyInput(
           styles.inputContainer,
           {
             backgroundColor: colors.background,
-            // shadowColor: theme === 'dark' ? '#fff' : '#000',
           },
           borderLess ? [styles.borderNone, { backgroundColor: colors.inputColor }] : null,
           !editable ? { opacity: 0.7 } : null,
@@ -111,7 +111,7 @@ const Input = forwardRef(function MyInput(
           ) : null}
         </View>
       </View>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { top: inputHeight + 0 }]}>{error}</Text> : null}
     </View>
   );
 });
@@ -159,9 +159,7 @@ const styles = StyleSheet.create({
   error: {
     fontSize: 12,
     color: '#D9363E',
-    bottom: 0,
     position: 'absolute',
-    marginBottom: -20,
     fontFamily: 'Inter-300',
     letterSpacing: 0.5,
   },

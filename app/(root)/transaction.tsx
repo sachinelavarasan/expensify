@@ -57,7 +57,7 @@ export default function Transaction() {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isDirty },
     watch,
     reset,
     getValues,
@@ -337,7 +337,7 @@ export default function Transaction() {
                           )}
                           name="exp_ts_amount"
                         />
-                        <Spacer height={25} />
+                        <Spacer height={30} />
                         <Controller
                           control={control}
                           render={({ field }) => (
