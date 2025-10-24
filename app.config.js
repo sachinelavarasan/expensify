@@ -2,7 +2,7 @@ export default {
   "expo": {
     "name": "Expensify",
     "slug": "expensify",
-    "version": "1.0.29",
+    "version": "1.0.30",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "expensify",
@@ -47,6 +47,12 @@ export default {
         {
           "defaultChannel": "default",
           "enableBackgroundRemoteNotifications": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Expensify wants access to your photos"
         }
       ]
     ],

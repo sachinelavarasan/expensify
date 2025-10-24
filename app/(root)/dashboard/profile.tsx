@@ -44,7 +44,7 @@ const Profile = () => {
     <AnimatedTopSection
       title={currentUser?.firstName || ''}
       subtitle={currentUser?.emailAddresses?.[0]?.emailAddress || ''}
-      avatar={require('@/assets/images/user-default.png')}
+      avatar={currentUser?.imageUrl}
       backgroundImage={require('@/assets/images/profile.png')}
       refetch={refetch}>
       <>

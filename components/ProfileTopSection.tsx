@@ -13,6 +13,7 @@ import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import ProfileImageUploader from './ProfileUpload';
 
 const HEADER_MAX_HEIGHT = 350;
 const HEADER_MIN_HEIGHT = 90;
@@ -120,8 +121,7 @@ export default function AnimatedTopSection({
             borderColor: colors.background,
           },
         ]}>
-        <Image source={avatar} style={styles.avatarFull} />
-
+        <ProfileImageUploader />
         <View style={styles.headerContent}>
           <View style={styles.headerTextOverlay}>
             <Text style={[styles.titleTextInHeader, { color: colors.title }]} numberOfLines={1}>
@@ -162,7 +162,7 @@ export default function AnimatedTopSection({
           },
         ]}>
         <Animated.View style={[styles.headerAvatarSmall]}>
-          <Image source={avatar} style={styles.avatar} resizeMode="contain" />
+          <ProfileImageUploader isSmall/>
         </Animated.View>
 
         <View style={styles.titleTextContainer}>
@@ -238,39 +238,14 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
   headerAvatarSmall: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 45,
+    height: 45,
+    borderRadius: 23,
     marginRight: 10,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#E2E2EA',
+    borderColor: '#6900FF',
   },
-  // avatarContainer: {
-  //   position: 'absolute',
-  //   top: HEADER_MAX_HEIGHT - (AVATAR_SIZE + 460) / 2,
-  //   left: 40,
-  //   zIndex: 3,
-  //   borderRadius: AVATAR_SIZE / 2,
-  //   overflow: 'hidden',
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   width: deviceWidth() * 0.8,
-  //   height: AVATAR_SIZE,
-  //   backgroundColor: '#0F0E17',
-  //   borderWidth: 3,
-  //   borderColor: '#463e75',
-  // },
-  // avatarFull: {
-  //   width: AVATAR_SIZE,
-  //   height: AVATAR_SIZE,
-  //   borderRadius: AVATAR_SIZE / 2,
-  // },
-  // headerTextOverlay: {
-  //   marginLeft: 15,
-  //   justifyContent: 'center',
-  //   flexShrink: 1,
-  // },
 
   titleTextInHeader: {
     fontSize: 16,
