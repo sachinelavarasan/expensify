@@ -212,17 +212,17 @@ export default function Transaction() {
   );
 
   return (
-    <KeyboardAvoidingView
-      {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
-      style={{ flex: 1 }}>
-      <SafeAreaViewComponent>
-        <View style={{ flex: 1 }}>
-          {(isFetching || isDeleting || isLoading) && <OverlayLoader />}
-          <ThemedView
-            style={{
-              flex: 1,
-              paddingHorizontal: 5,
-            }}>
+    <SafeAreaViewComponent>
+      <View style={{ flex: 1 }}>
+        {(isFetching || isDeleting || isLoading) && <OverlayLoader />}
+        <ThemedView
+          style={{
+            flex: 1,
+            paddingHorizontal: 5,
+          }}>
+          <KeyboardAvoidingView
+            {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height'})}
+            style={{ flex: 1 }}>
             <FlatList
               bounces={false}
               showsVerticalScrollIndicator={false}
@@ -359,7 +359,7 @@ export default function Transaction() {
                           name="exp_ts_title"
                         />
                       </View>
-                      <Spacer height={16}/>
+                      <Spacer height={16} />
                       <View style={[styles.sectionContainer]}>
                         <View
                           style={{
@@ -459,14 +459,12 @@ export default function Transaction() {
                       <View style={styles.subTextContainer}>
                         {!!data?.exp_ts_created_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
-                            Created:{' '}
-                            {format(data.exp_ts_created_at, 'do MMMM yyyy HH:mm')}
+                            Created: {format(data.exp_ts_created_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
                         {!!data?.exp_ts_updated_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
-                            Modified:{' '}
-                            {format(data.exp_ts_updated_at, 'do MMMM yyyy HH:mm')}
+                            Modified: {format(data.exp_ts_updated_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
                       </View>
@@ -477,56 +475,54 @@ export default function Transaction() {
               }}
               keyExtractor={() => 'form-transaction'}
             />
-          </ThemedView>
-          <View style={[styles.footer, { backgroundColor: colors.barBackground }]}>
-            <View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 40,
-                }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setValue('exp_st_id', !exp_st_id, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                  }}>
-                  <AntDesign name={exp_st_id ? 'star' : 'staro'} size={20} color="#FFB347" />
-                </TouchableOpacity>
-
-                {exp_ts_id && (
-                  <>
-                    <TouchableOpacity onPress={handleDelete} disabled={isLoading}>
-                      <FontAwesome5 name="trash" size={20} color={colors.text} />
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-            </View>
-
-            <View>
+          </KeyboardAvoidingView>
+        </ThemedView>
+        <View style={[styles.footer, { backgroundColor: colors.barBackground }]}>
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: 40,
+              }}>
               <TouchableOpacity
-                style={[
-                  styles.button,
-                   !isDirty || isFetching || isDeleting || isLoading
-                    ? styles.disable
-                    : {},
-                ]}
-                disabled={ !isDirty || isFetching || isDeleting || isLoading}
-                onPress={handleSubmit(onSubmit)}>
-                {isLoading ? (
-                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
-                ) : null}
-                <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
-                  {exp_ts_id ? 'Update' : 'Add'}
-                </Text>
+                onPress={() => {
+                  setValue('exp_st_id', !exp_st_id, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+                }}>
+                <AntDesign name={exp_st_id ? 'star' : 'staro'} size={20} color="#FFB347" />
               </TouchableOpacity>
+
+              {exp_ts_id && (
+                <>
+                  <TouchableOpacity onPress={handleDelete} disabled={isLoading}>
+                    <FontAwesome5 name="trash" size={20} color={colors.text} />
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
           </View>
+
+          <View>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                !isDirty || isFetching || isDeleting || isLoading ? styles.disable : {},
+              ]}
+              disabled={!isDirty || isFetching || isDeleting || isLoading}
+              onPress={handleSubmit(onSubmit)}>
+              {isLoading ? (
+                <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+              ) : null}
+              <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
+                {exp_ts_id ? 'Update' : 'Add'}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </SafeAreaViewComponent>
-    </KeyboardAvoidingView>
+      </View>
+    </SafeAreaViewComponent>
   );
 }
 

@@ -4,11 +4,9 @@ import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   cancelAnimation,
   withTiming,
   withRepeat,
-  runOnJS,
   Easing,
   withSequence,
 } from 'react-native-reanimated';
@@ -37,9 +35,15 @@ const AnimatedLogoutIcon = () => {
     transform: [{ translateX: translateX.value }],
   }));
 
-  const toggleValid = useCallback(() => {
-    // eslint-disable-next-line no-unused-expressions
-    isSheetOpen ? bottomSheetModalRef.current?.dismiss() : bottomSheetModalRef.current?.present();
+  const openModal = useCallback(() => {
+     
+    bottomSheetModalRef.current?.present();
+    setIsSheetOpen((prev) => !prev);
+  }, [isSheetOpen]);
+
+  const closeModal = useCallback(() => {
+     
+    bottomSheetModalRef.current?.dismiss()
     setIsSheetOpen((prev) => !prev);
   }, [isSheetOpen]);
 
@@ -100,7 +104,7 @@ const AnimatedLogoutIcon = () => {
 
   const onDismiss = () => {
     if(loading) return;
-    toggleValid();
+    closeModal();
     cancelAnimation(translateX);
     translateX.value = 0;
   };
@@ -157,14 +161,14 @@ const AnimatedLogoutIcon = () => {
         </View>
       </View>
     ),
-    [loading],
+    [animatedStyles1, colors, loading],
   );
 
   return (
     <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
       <TouchableOpacity
         style={[styles.button, { backgroundColor: '#cc1928' }]}
-        onPress={toggleValid}
+        onPress={openModal}
         disabled={loading}>
         <Ionicons name="log-out-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
         <Text style={styles.logoutText}>Logout</Text>

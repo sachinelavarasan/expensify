@@ -25,22 +25,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
+const usernameValidation = /^[a-z0-9]{8,20}$/;
+
 const schema = z.object({
   name: z.string().min(3, { message: 'Name should have a minimum 3 characters' }),
   password: z
     .string()
     .min(8, { message: 'Password should have a minimum 8 characters' })
     .max(16, { message: 'Password should have a maximum 16 characters' }),
-  // phone: z
-  //   .string()
-  //   .min(1, { message: 'Must have at least 1 character' })
-  //   .regex(phoneValidation, { message: 'invalid phone number' }),
-  email: z
-    .email({ message: 'Invalid email address'}),
+  email: z.email({ message: 'Invalid email address' }),
   username: z
     .string()
     .min(8, { message: 'Username should have a minimum 8 characters' })
-    .max(20, { message: 'Username should have a maximum 20 characters' }),
+    .refine((val) => usernameValidation.test(val), {
+      message: 'Username must contain only lowercase letters and numbers (between 8 to 20 chars).',
+    }),
 });
 
 type SignUpForm = z.infer<typeof schema>;
@@ -59,7 +58,7 @@ const Register = () => {
       name: '',
       password: '',
       email: '',
-      username: ''
+      username: '',
     },
     resolver: zodResolver(schema),
   });
@@ -72,7 +71,7 @@ const Register = () => {
         emailAddress: data.email,
         firstName: data.name,
         password: data.password,
-        username: data.username
+        username: data.username,
       });
 
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
@@ -88,10 +87,7 @@ const Register = () => {
             Alert.alert('Error', 'Required parameter is missing');
             break;
           case 'form_param_format_invalid':
-            Alert.alert(
-              'Error',
-              'Please enter a valid email address',
-            );
+            Alert.alert('Error', 'Please enter a valid email address');
             break;
           case 'form_password_too_weak':
             Alert.alert('Error', 'Password is too weak. Please use a stronger password.');
@@ -130,31 +126,29 @@ const Register = () => {
             Alert.alert('Error', 'Internal error occurred. Please try again later.');
             break;
           default:
-            Alert.alert('Error', JSON.stringify(err, null ,2));
+            Alert.alert('Error', JSON.stringify(err, null, 2));
             break;
         }
       } else {
-        Alert.alert('Error', JSON.stringify(err, null ,2));
+        Alert.alert('Error', JSON.stringify(err, null, 2));
       }
       setIsLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
-      style={{ flex: 1 }}>
-      <SafeAreaViewComponent>
-        <ThemedView style={styles.container}>
+    <SafeAreaViewComponent>
+      <ThemedView style={styles.container}>
+        <KeyboardAvoidingView
+          {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
+          style={{ flex: 1 }}>
           <ScrollView
             bounces={false}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ flex: 1 }}
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
-            
               <View style={styles.imageContainer}>
-              
                 <Text
                   style={[
                     styles.label,
@@ -162,7 +156,7 @@ const Register = () => {
                       color: colors.title,
                     },
                   ]}>
-                  Create your account 👋 
+                  Create your account 👋
                 </Text>
               </View>
               <Spacer height={25} />
@@ -186,7 +180,7 @@ const Register = () => {
                   name="name"
                 />
                 <Spacer height={30} />
-              
+
                 <Controller
                   control={control}
                   render={({ field }) => (
@@ -210,7 +204,7 @@ const Register = () => {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder='Enter your email address'
+                      placeholder="Enter your email address"
                       label="Email address"
                       keyboardType="numbers-and-punctuation"
                       autoCapitalize="none"
@@ -263,7 +257,7 @@ const Register = () => {
                 <Spacer height={35} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
-                    style={[styles.button,  isLoading ? styles.disable : {}]}
+                    style={[styles.button, isLoading ? styles.disable : {}]}
                     onPress={handleSubmit(register)}
                     disabled={isLoading}>
                     {isLoading ? (
@@ -285,9 +279,9 @@ const Register = () => {
               </View>
             </View>
           </ScrollView>
-        </ThemedView>
-      </SafeAreaViewComponent>
-    </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </ThemedView>
+    </SafeAreaViewComponent>
   );
 };
 

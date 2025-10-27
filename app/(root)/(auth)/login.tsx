@@ -19,27 +19,22 @@ import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 
-
 import AuthLink from '@/components/AuthLink';
 import { isClerkAPIResponseError, useClerk, useSignIn } from '@clerk/clerk-expo';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
-
 const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const usernameValidation = /^[a-zA-Z0-9_]{8,20}$/;
-
+const usernameValidation = /^[a-z0-9]{8,20}$/;
 
 const schema = z.object({
   username: z
     .string()
-    .min(8, { message: "This field is required" })
-    .refine(
-      (val) =>
-        emailValidation.test(val) ||
-        usernameValidation.test(val),
-      { message: "Enter a valid email or username (8-20 chars)" }
-    ),
+    .min(8, { message: 'This field is required' })
+    .refine((val) => emailValidation.test(val) || usernameValidation.test(val), {
+      message:
+        'Enter a valid email or username contains only lowercase letters and numbers (between 8 to 20 chars)',
+    }),
   password: z.string().min(8, { message: 'Password should have a minimum 8 characters' }),
 });
 
@@ -54,7 +49,7 @@ export default function SignIn() {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
     reset,
   } = useForm({
     defaultValues: {
@@ -106,10 +101,7 @@ export default function SignIn() {
             Alert.alert('Error', 'No user found with your detail.');
             break;
           case 'form_param_format_invalid':
-            Alert.alert(
-              'Error',
-              'Please enter a valid email address'
-            );
+            Alert.alert('Error', 'Please enter a valid email address');
             break;
           case 'form_identifier_exists':
             Alert.alert('Error', 'Given email number already exists');
@@ -118,32 +110,37 @@ export default function SignIn() {
             Alert.alert('Error', 'Internal error occurred. Please try again later.');
             break;
           default:
-            Alert.alert('Error', JSON.stringify(err, null ,2));
+            Alert.alert('Error', JSON.stringify(err, null, 2));
         }
       } else {
-        Alert.alert('Error', JSON.stringify(err, null ,2));
+        Alert.alert('Error', JSON.stringify(err, null, 2));
       }
       setIsLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
-      style={{ flex: 1 }}>
-      <SafeAreaViewComponent>
-        <ThemedView style={styles.container}>
+    <SafeAreaViewComponent>
+      <ThemedView style={styles.container}>
+        <KeyboardAvoidingView
+          {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
+          style={{ flex: 1 }}>
           <ScrollView
             bounces={false}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ flex: 1 }}
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
-              
               <View style={styles.imageContainer}>
-                <Text style={[styles.label, {
-                  color: colors.title
-                }]}>Welcome Back! 👋 </Text>
+                <Text
+                  style={[
+                    styles.label,
+                    {
+                      color: colors.title,
+                    },
+                  ]}>
+                  Welcome Back! 👋{' '}
+                </Text>
               </View>
               <Spacer height={25} />
               <View style={styles.loginContainer}>
@@ -186,8 +183,8 @@ export default function SignIn() {
                 <Spacer height={35} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
-                    style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
-                    disabled={!isValid || isLoading}
+                    style={[styles.button, isLoading ? styles.disable : {}]}
+                    disabled={isLoading}
                     onPress={handleSubmit(onSubmit)}>
                     {isLoading ? (
                       <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
@@ -216,9 +213,9 @@ export default function SignIn() {
               </View>
             </View>
           </ScrollView>
-        </ThemedView>
-      </SafeAreaViewComponent>
-    </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </ThemedView>
+    </SafeAreaViewComponent>
   );
 }
 

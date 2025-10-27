@@ -37,7 +37,6 @@ const ChangePassword = () => {
 
   const [otpVerifyLoading, setIsOtpVerifyLoading] = useState(false);
 
-
   const handleTextChange = (data: string) => {
     setOtp(data);
   };
@@ -67,7 +66,7 @@ const ChangePassword = () => {
           text1: 'Your account password updated successfully',
           type: 'info',
           position: 'bottom',
-          visibilityTime: 3000
+          visibilityTime: 3000,
         });
       } else {
         Alert.alert('Error', 'Verification failed. Please check your code and try again.');
@@ -99,7 +98,7 @@ const ChangePassword = () => {
           Alert.alert('Error', 'Invalid otp code');
           break;
         default:
-          Alert.alert('Error', JSON.stringify(err, null ,2));
+          Alert.alert('Error', JSON.stringify(err, null, 2));
           break;
       }
       // await AsyncStorage.removeItem('current-verify-number');
@@ -110,11 +109,11 @@ const ChangePassword = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
-      style={{ flex: 1 }}>
-      <SafeAreaViewComponent>
-        <ThemedView style={{ flex: 1 }}>
+    <SafeAreaViewComponent>
+      <ThemedView style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
+          style={{ flex: 1 }}>
           <ScrollView
             bounces={false}
             showsVerticalScrollIndicator={false}
@@ -184,9 +183,9 @@ const ChangePassword = () => {
               }}
             />
           </ScrollView>
-        </ThemedView>
-      </SafeAreaViewComponent>
-    </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </ThemedView>
+    </SafeAreaViewComponent>
   );
 };
 

@@ -26,8 +26,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { showToast } from '@/components/ToastMessage';
 
 const schema = z.object({
-  email: z
-    .email({ message: 'Invalid email address'}),
+  email: z.email({ message: 'Invalid email address' }),
 });
 
 type ForgotPasswordForm = z.infer<typeof schema>;
@@ -65,7 +64,7 @@ export default function ForgotPasswordScreen() {
         text1: 'Your reset password request sent successfully',
         type: 'info',
         position: 'bottom',
-        visibilityTime: 3000
+        visibilityTime: 3000,
       });
       await AsyncStorage.setItem('current-verify-email', data.email);
       router.dismissTo('/(root)/(auth)/change-password');
@@ -114,7 +113,7 @@ export default function ForgotPasswordScreen() {
             Alert.alert('Error', 'Internal error occurred. Please try again later.');
             break;
           default:
-            Alert.alert('Error', JSON.stringify(err, null ,2));
+            Alert.alert('Error', JSON.stringify(err, null, 2));
             break;
         }
       } else {
@@ -125,11 +124,11 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
-      style={{ flex: 1 }}>
-      <SafeAreaViewComponent>
-        <ThemedView style={styles.container}>
+    <SafeAreaViewComponent>
+      <ThemedView style={styles.container}>
+        <KeyboardAvoidingView
+          {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
+          style={{ flex: 1 }}>
           <ScrollView
             bounces={false}
             showsVerticalScrollIndicator={false}
@@ -154,7 +153,7 @@ export default function ForgotPasswordScreen() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder='Enter your email address'
+                      placeholder="Enter your email address"
                       label="Email address"
                       keyboardType="numbers-and-punctuation"
                       autoCapitalize="none"
@@ -195,9 +194,9 @@ export default function ForgotPasswordScreen() {
               </View>
             </View>
           </ScrollView>
-        </ThemedView>
-      </SafeAreaViewComponent>
-    </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </ThemedView>
+    </SafeAreaViewComponent>
   );
 }
 
