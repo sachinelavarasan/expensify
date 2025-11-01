@@ -25,7 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
-const usernameValidation = /^[a-z0-9]{8,20}$/;
+const usernameValidation = /^[a-z0-9]{6,25}$/;
 
 const schema = z.object({
   name: z.string().min(3, { message: 'Name should have a minimum 3 characters' }),
@@ -36,9 +36,10 @@ const schema = z.object({
   email: z.email({ message: 'Invalid email address' }),
   username: z
     .string()
-    .min(8, { message: 'Username should have a minimum 8 characters' })
+    .min(6, { message: 'Username should have a minimum 6 characters' })
+    .max(25, { message: 'Username should have a maximum 25 characters' })
     .refine((val) => usernameValidation.test(val), {
-      message: 'Username must contain only lowercase letters and numbers (between 8 to 20 chars).',
+      message: 'Username must contain only lowercase letters and numbers (between 6 to 25 chars).',
     }),
 });
 
@@ -54,6 +55,7 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
   } = useForm({
+    mode: 'onChange',
     defaultValues: {
       name: '',
       password: '',

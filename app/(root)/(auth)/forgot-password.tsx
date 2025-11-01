@@ -18,7 +18,6 @@ import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { phoneValidation } from '@/utils/Validation-custom';
 import { Controller, useForm } from 'react-hook-form';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { useThemeContext } from '@/contexts/ThemedContext';

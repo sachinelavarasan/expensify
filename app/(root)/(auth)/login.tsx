@@ -30,12 +30,12 @@ const usernameValidation = /^[a-z0-9]{8,20}$/;
 const schema = z.object({
   username: z
     .string()
-    .min(8, { message: 'This field is required' })
+    .min(8, { message: 'Username or email required' })
     .refine((val) => emailValidation.test(val) || usernameValidation.test(val), {
       message:
-        'Enter a valid email or username contains only lowercase letters and numbers (between 8 to 20 chars)',
+        'Enter a valid email or username contains only lowercase letters and numbers (between 6 to 25 chars)',
     }),
-  password: z.string().min(8, { message: 'Password should have a minimum 8 characters' }),
+  password: z.string(),
 });
 
 type SignInForm = z.infer<typeof schema>;
@@ -89,7 +89,7 @@ export default function SignIn() {
         console.log(errorCode);
         switch (errorCode) {
           case 'form_identifier_not_found':
-            Alert.alert('Error', 'User not found. Please check your email address.');
+            Alert.alert('Error', 'User not found. Please check your username or email address ');
             break;
           case 'form_password_incorrect':
             Alert.alert('Error', 'Incorrect password. Please try again.');

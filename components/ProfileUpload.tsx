@@ -56,11 +56,11 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
 
   return (
     <TouchableOpacity onPress={pickImage} disabled={uploading}>
-      <Image
+      {!!user?.imageUrl &&<Image
         source={{ uri: user?.imageUrl }}
         style={isSmall ? [styles.avatar] : styles.avatarFull}
         resizeMode={isSmall ? 'contain' : 'cover'}
-      />
+      />}
       {!isSmall && (
         <View
           style={{
