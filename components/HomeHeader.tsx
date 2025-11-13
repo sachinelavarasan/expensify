@@ -61,7 +61,7 @@ const HomeHeader = ({
         </LinearGradient>
       </View>
 
-      {(showBalance || carryBalance) && (
+      {(!showBalance || carryBalance) && (
         <LinearGradient
           colors={['#6B5DE6', '#705AD4']}
           start={{ x: 0, y: 0 }}

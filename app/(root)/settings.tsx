@@ -215,7 +215,7 @@ export default function Setting() {
                     <View style={styles.left}>
                       <MaterialIcons name="account-balance-wallet" size={22} color={colors.text} />
                       <View>
-                        <Text style={[styles.option, { color: colors.title }]}>Show Balance</Text>
+                        <Text style={[styles.option, { color: colors.title }]}>Hide Balance</Text>
                         <Text style={[styles.subText, { color: colors.description }]}>
                           Toggle visibility of your total balance
                         </Text>

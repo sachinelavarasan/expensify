@@ -175,7 +175,7 @@ export default function Index() {
         .reduce((sum, acc) => sum + (parseFloat(acc.exp_ba_balance) || 0), 0);
 
       setBalance(totalBalance);
-    } else if (showBalance) {
+    } else if (!showBalance) {
       setBalance(income - expense);
     } else {
       setBalance(0);
