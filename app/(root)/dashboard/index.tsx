@@ -18,7 +18,7 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Entypo, Feather, FontAwesome5, FontAwesome6 } from '@expo/vector-icons';
+import { Entypo, Feather, FontAwesome6 } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeHeader from '../../../components/HomeHeader';
@@ -255,7 +255,14 @@ export default function Index() {
             balance={balance}
           />
         </View>
-        <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap', marginVertical: 2, paddingHorizontal: 15 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 10,
+            flexWrap: 'wrap',
+            marginVertical: 6,
+            paddingHorizontal: 15,
+          }}>
           {!!search && (
             <Pressable
               style={{

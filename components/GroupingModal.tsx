@@ -41,10 +41,8 @@ const GroupingModal = ({
     <>
       <TouchableOpacity style={styles.card} onPress={toggleModal}>
         <View style={styles.chip}>
-          <Text style={[styles.subText, { color:  "#ffffff" }]}>
-            {grouping} 
-          </Text>
-          <Entypo name="chevron-small-down" size={24} color="#fff" />
+          <Text style={[styles.subText, { color: '#ffffff' }]}>{grouping}</Text>
+          <Entypo name="chevron-small-down" size={20} color="#fff" />
         </View>
       </TouchableOpacity>
 
@@ -75,7 +73,7 @@ const GroupingModal = ({
               <TouchableOpacity
                 onPress={toggleModal}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={"#5a4f96"} size={20} />
+                <Ionicons name="close" color={'#5a4f96'} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -149,7 +147,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 50,
     backgroundColor: '#6B5DE6',
-    flexShrink: 1
+    flexShrink: 1,
   },
   amount: {
     color: '#A0A0A0',
@@ -157,10 +155,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
   },
   chip: {
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent:'center',
-    gap: 3,
+    justifyContent: 'center',
+    gap: 2,
   },
   option: {
     color: '#F1F1F6',
@@ -170,6 +169,6 @@ const styles = StyleSheet.create({
   subText: {
     fontSize: 14,
     fontFamily: 'Inter-600',
-    textTransform: 'capitalize'
+    textTransform: 'capitalize',
   },
 });

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -39,8 +39,11 @@ import TimePickerPaper from '@/components/TimePickerPaper';
 import { CustomSelectInput } from '@/components/CustomSelectInput';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import CustomSwitch from '@/components/Switch';
 
 export default function Transaction() {
+  const [isBulk, setIsBulk] = useState(false);
+
   const { colors } = useThemeContext();
   const { categories } = useGetCategoryCache();
   const { accounts } = useGetUserBankAccounts();
@@ -129,7 +132,26 @@ export default function Transaction() {
             type: 'success',
             position: 'bottom',
           });
-          router.back();
+          if (!isBulk) {
+            router.back();
+          } else {
+            const primary = accounts.find((a) => a.exp_ba_is_primary);
+            reset(
+              {
+                exp_ts_title: '',
+                exp_ts_note: '',
+                exp_ts_amount: undefined,
+                exp_tc_id: undefined,
+                exp_tt_id: 1,
+                exp_st_id: false,
+                exp_ts_bank_account_id: primary?.exp_ba_id || undefined,
+              },
+              {
+                keepDirty: false,
+                keepIsValidating: true,
+              },
+            );
+          }
         })
         .catch(() => {
           showToast({
@@ -221,7 +243,7 @@ export default function Transaction() {
             paddingHorizontal: 5,
           }}>
           <KeyboardAvoidingView
-            {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height'})}
+            {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
             style={{ flex: 1 }}>
             <FlatList
               bounces={false}
@@ -482,6 +504,7 @@ export default function Transaction() {
             <View
               style={{
                 flexDirection: 'row',
+                alignItems: 'center',
                 gap: 40,
               }}>
               <TouchableOpacity
@@ -494,12 +517,28 @@ export default function Transaction() {
                 <AntDesign name={exp_st_id ? 'star' : 'staro'} size={20} color="#FFB347" />
               </TouchableOpacity>
 
-              {exp_ts_id && (
+              {exp_ts_id ? (
                 <>
                   <TouchableOpacity onPress={handleDelete} disabled={isLoading}>
                     <FontAwesome5 name="trash" size={20} color={colors.text} />
                   </TouchableOpacity>
                 </>
+              ) : (
+                <View
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: 2,
+                  }}>
+                  <Text style={[styles.subText, { color: colors.title }]}>Bulk Add</Text>
+                  <CustomSwitch
+                    value={isBulk}
+                    onChange={(value) => {
+                      setIsBulk(value);
+                    }}
+                  />
+                </View>
               )}
             </View>
           </View>
