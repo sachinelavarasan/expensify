@@ -22,7 +22,7 @@ export interface User {
 
 export interface IExpUser {
   exp_us_id: number;
-  exp_us_clerk_id: string;
+  exp_us_clerk_id?: string;
   exp_us_name: string;
   exp_us_email: string;
   exp_us_phone_no: string;
@@ -31,6 +31,7 @@ export interface IExpUser {
   exp_us_default_transaction: number;
   exp_us_default_grouping: string;
   exp_us_profile_url: string;
+  exp_us_email_verified: boolean;
   exp_us_created_at: string;
   exp_us_updated_at: string;
   reminder_status?: number;

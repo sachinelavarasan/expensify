@@ -1,6 +1,5 @@
 import { LogBox } from 'react-native';
 import { Stack } from 'expo-router';
-import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,22 +7,14 @@ import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
-import { tokenCache } from '@clerk/clerk-expo/token-cache';
 // import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ToastMessage from '@/components/ToastMessage';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { AuthProvider, useAuthContext } from '@/contexts/AuthContext';
 import { ThemeProvider, useThemeContext } from '@/contexts/ThemedContext';
 import NetworkInfoModal from '@/components/NetworkInfoModal';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { loadCurrencySettings } from '@/utils/functions';
-
-const EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
-if (!EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-  throw new Error(
-    'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env',
-  );
-}
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -62,16 +53,18 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
-    <NotificationProvider>
-      <ClerkProvider publishableKey={EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
-        <LayoutBuilder />
-      </ClerkProvider>
-    </NotificationProvider>
+    <QueryClientProvider client={queryClient}>
+      <NotificationProvider>
+        <AuthProvider>
+          <LayoutBuilder />
+        </AuthProvider>
+      </NotificationProvider>
+    </QueryClientProvider>
   );
 }
 
 function LayoutBuilder() {
-  const { isLoaded: authLoaded } = useAuth();
+  const { isBootstrapping } = useAuthContext();
 
   const [fontsLoaded] = useFonts({
     'Inter-100': require('../assets/fonts/Inter-Thin.ttf'),
@@ -87,32 +80,28 @@ function LayoutBuilder() {
 
   useEffect(() => {
     const prepare = async () => {
-      if (fontsLoaded && authLoaded) {
+      if (fontsLoaded && !isBootstrapping) {
         await SplashScreen.hideAsync();
         await loadCurrencySettings();
-        
       }
     };
     prepare();
-  }, [fontsLoaded, authLoaded]);
-  
+  }, [fontsLoaded, isBootstrapping]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider>
-          <BottomSheetModalProvider>
-          {authLoaded && fontsLoaded ? (
-            <>
-              <AppStack />
-              <NetworkInfoModal />
-            </>
-          ) : null}
-          <ToastMessage />
-          </BottomSheetModalProvider>
-        </ThemeProvider>
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <BottomSheetModalProvider>
+        {!isBootstrapping && fontsLoaded ? (
+          <>
+            <AppStack />
+            <NetworkInfoModal />
+          </>
+        ) : null}
+        <ToastMessage />
+        </BottomSheetModalProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 

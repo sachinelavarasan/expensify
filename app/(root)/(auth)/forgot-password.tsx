@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import AuthLink from '@/components/AuthLink';
 import Input from '@/components/Input';
@@ -23,6 +22,7 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { showToast } from '@/components/ToastMessage';
+import { apiClient, getApiErrorMessage } from '@/lib/apiClient';
 
 const schema = z.object({
   email: z.email({ message: 'Invalid email address' }),
@@ -31,7 +31,6 @@ const schema = z.object({
 type ForgotPasswordForm = z.infer<typeof schema>;
 
 export default function ForgotPasswordScreen() {
-  const { signIn, isLoaded } = useSignIn();
   const router = useRouter();
   const { colors } = useThemeContext();
 
@@ -49,15 +48,9 @@ export default function ForgotPasswordScreen() {
   });
 
   const onResetPasswordPress = async (data: ForgotPasswordForm) => {
-    if (!isLoaded) return;
-
     setIsLoading(true);
-
     try {
-      await signIn.create({
-        strategy: 'reset_password_email_code',
-        identifier: data.email,
-      });
+      await apiClient.post('/expensify/auth/forgot-password', { email: data.email });
       setIsLoading(false);
       showToast({
         text1: 'Your reset password request sent successfully',
@@ -67,57 +60,8 @@ export default function ForgotPasswordScreen() {
       });
       await AsyncStorage.setItem('current-verify-email', data.email);
       router.dismissTo('/(root)/(auth)/change-password');
-    } catch (err: any) {
-      console.error(JSON.stringify(err, null, 2));
-      if (isClerkAPIResponseError(err)) {
-        const errorCode = err.errors[0]?.code;
-        switch (errorCode) {
-          case 'form_phone_number_invalid':
-            Alert.alert('Error', 'The phone number is invalid. Please check and try again.');
-            break;
-          case 'form_identifier_not_found':
-            Alert.alert('Error', 'User not found. Please check your phone number.');
-            break;
-          case 'form_param_nil':
-            Alert.alert('Error', 'Required parameter is missing');
-            break;
-          case 'form_phone_number_already_verified':
-            Alert.alert('Error', 'This phone number is already registered.');
-            break;
-          case 'form_param_format_invalid':
-            Alert.alert(
-              'Error',
-              'Please enter a valid phone number including the correct country code.',
-            );
-            break;
-          case 'form_password_too_weak':
-            Alert.alert('Error', 'Password is too weak. Please use a stronger password.');
-            break;
-          case 'form_password_invalid':
-            Alert.alert('Error', 'Invalid password format.');
-            break;
-          case 'form_rate_limited':
-            Alert.alert('Error', 'Too many attempts. Please try again later.');
-            break;
-          case 'form_identifier_exists':
-            Alert.alert('Error', 'Given phone number already exists');
-            break;
-          case 'form_password_validation_failed':
-            Alert.alert('Error', 'Password validation failed. Please try again.');
-            break;
-          case 'form_password_pwned':
-            Alert.alert('Error', 'This password has been exposed before. Please choose another');
-            break;
-          case 'form_internal_error':
-            Alert.alert('Error', 'Internal error occurred. Please try again later.');
-            break;
-          default:
-            Alert.alert('Error', JSON.stringify(err, null, 2));
-            break;
-        }
-      } else {
-        Alert.alert('Error', JSON.stringify(err, null, 2));
-      }
+    } catch (err) {
+      Alert.alert('Error', getApiErrorMessage(err, 'Could not send reset code'));
       setIsLoading(false);
     }
   };
@@ -154,7 +98,7 @@ export default function ForgotPasswordScreen() {
                       {...field}
                       placeholder="Enter your email address"
                       label="Email address"
-                      keyboardType="numbers-and-punctuation"
+                      keyboardType="email-address"
                       autoCapitalize="none"
                       autoComplete="off"
                       onBlur={field.onBlur}

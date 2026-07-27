@@ -14,28 +14,22 @@ import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 
 import AuthLink from '@/components/AuthLink';
-import { isClerkAPIResponseError, useClerk, useSignIn } from '@clerk/clerk-expo';
+import { apiClient, getApiErrorCode, getApiErrorMessage } from '@/lib/apiClient';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
-
-const emailValidation = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const usernameValidation = /^[a-z0-9]{8,20}$/;
+import { showToast } from '@/components/ToastMessage';
 
 const schema = z.object({
-  username: z
-    .string()
-    .min(8, { message: 'Username or email required' })
-    .refine((val) => emailValidation.test(val) || usernameValidation.test(val), {
-      message:
-        'Enter a valid email or username contains only lowercase letters and numbers (between 6 to 25 chars)',
-    }),
-  password: z.string(),
+  email: z.email({ message: 'Invalid email address' }),
+  password: z.string().min(1, { message: 'Password is required' }),
 });
 
 type SignInForm = z.infer<typeof schema>;
@@ -43,8 +37,7 @@ type SignInForm = z.infer<typeof schema>;
 export default function SignIn() {
   const { colors } = useThemeContext();
   const router = useRouter();
-  const { signIn, setActive, isLoaded } = useSignIn();
-  const { signOut } = useClerk();
+  const { signIn } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
   const {
     control,
@@ -53,68 +46,56 @@ export default function SignIn() {
     reset,
   } = useForm({
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
     resolver: zodResolver(schema),
   });
 
-  // useEffect(() => {
-  //   return () => {
-  //     setError(null);
-  //   };
-  // }, [isFocused]);
-
   const onSubmit = async (data: SignInForm) => {
-    if (!isLoaded) return;
     setIsLoading(true);
     try {
-      await signOut();
-      const signInAttempt = await signIn.create({
-        identifier: data.username,
-        password: data.password,
-      });
-
-      if (signInAttempt.status === 'complete') {
-        await setActive({ session: signInAttempt.createdSessionId });
-        router.dismissTo('/(root)/dashboard');
-      } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
-      }
-      setIsLoading(false);
+      const response = await apiClient.post('/expensify/auth/login', data);
+      await signIn(response.data);
       reset();
+      router.dismissTo('/(root)/dashboard');
     } catch (err) {
-      if (isClerkAPIResponseError(err)) {
-        const errorCode = err.errors[0].code;
-        console.log(errorCode);
-        switch (errorCode) {
-          case 'form_identifier_not_found':
-            Alert.alert('Error', 'User not found. Please check your username or email address ');
-            break;
-          case 'form_password_incorrect':
-            Alert.alert('Error', 'Incorrect password. Please try again.');
-            break;
-          case 'form_verification_invalid':
-            Alert.alert('Error', 'Verification token is invalid or expired.');
-            break;
-          case 'form_identity_not_found':
-            Alert.alert('Error', 'No user found with your detail.');
-            break;
-          case 'form_param_format_invalid':
-            Alert.alert('Error', 'Please enter a valid email address');
-            break;
-          case 'form_identifier_exists':
-            Alert.alert('Error', 'Given email number already exists');
-            break;
-          case 'form_internal_error':
-            Alert.alert('Error', 'Internal error occurred. Please try again later.');
-            break;
-          default:
-            Alert.alert('Error', JSON.stringify(err, null, 2));
+      const errorCode = getApiErrorCode(err);
+      if (errorCode === 'PASSWORD_SETUP_REQUIRED') {
+        try {
+          await apiClient.post('/expensify/auth/forgot-password', { email: data.email });
+          await AsyncStorage.setItem('current-verify-email', data.email);
+          showToast({
+            text1: 'Please check your email to set a new password for your account',
+            type: 'info',
+            position: 'bottom',
+            visibilityTime: 4000,
+          });
+          router.dismissTo('/(root)/(auth)/change-password');
+        } catch (sendErr) {
+          Alert.alert('Error', getApiErrorMessage(sendErr));
+        }
+      } else if (errorCode === 'EMAIL_NOT_VERIFIED') {
+        try {
+          await apiClient.post('/expensify/auth/resend-otp', {
+            email: data.email,
+            purpose: 'signup_verify',
+          });
+          await AsyncStorage.setItem('current-verify-email', data.email);
+          showToast({
+            text1: 'Please verify your email to continue',
+            type: 'info',
+            position: 'bottom',
+            visibilityTime: 4000,
+          });
+          router.dismissTo('/(root)/(auth)/mobile-verify');
+        } catch (sendErr) {
+          Alert.alert('Error', getApiErrorMessage(sendErr));
         }
       } else {
-        Alert.alert('Error', JSON.stringify(err, null, 2));
+        Alert.alert('Error', getApiErrorMessage(err, 'Invalid email or password'));
       }
+    } finally {
       setIsLoading(false);
     }
   };
@@ -149,18 +130,18 @@ export default function SignIn() {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Enter email or username"
-                      label="Email address or username"
-                      keyboardType="numbers-and-punctuation"
+                      placeholder="Enter your email address"
+                      label="Email address"
+                      keyboardType="email-address"
                       autoCapitalize="none"
                       autoComplete="off"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
-                      error={errors.username?.message}
+                      error={errors.email?.message}
                       borderLess
                     />
                   )}
-                  name="username"
+                  name="email"
                 />
                 <Spacer height={30} />
                 <Controller

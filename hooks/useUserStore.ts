@@ -1,18 +1,14 @@
-import { useAuth } from '@clerk/clerk-expo';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { apiClient } from '@/lib/apiClient';
 import { IExpUser } from '@/types';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const queryKeys = {
   currentuser: ['currentuser'] as const,
 };
 
 export const useGetUserData = () => {
-  const { getToken, userId } = useAuth();
-  
-
   const {
     data,
     isLoading: loading,
@@ -21,24 +17,9 @@ export const useGetUserData = () => {
     refetch,
   } = useQuery<IExpUser, Error>({
     queryKey: queryKeys.currentuser,
-    queryFn: async ({ queryKey }): Promise<IExpUser> => {
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const token = await getToken();
-
-      const response = await fetch(`${API_URL}/expensify/getme`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-
-      return (await response.json()) as IExpUser;
+    queryFn: async (): Promise<IExpUser> => {
+      const response = await apiClient.get<IExpUser>('/expensify/getme');
+      return response.data;
     },
   });
 
@@ -48,4 +29,63 @@ export const useGetUserData = () => {
     error: isError ? error?.message : null,
     refetch,
   };
+};
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const response = await apiClient.put<IExpUser>('/expensify/profile', { name });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.currentuser });
+    },
+  });
+};
+
+export const useUploadProfileImage = () => {
+  const queryClient = useQueryClient();
+  const [progress, setProgress] = useState(0);
+
+  const mutation = useMutation({
+    mutationFn: async (imageBase64: string) => {
+      setProgress(0);
+      const response = await apiClient.post<IExpUser>(
+        '/expensify/profile/image',
+        { imageBase64 },
+        {
+          onUploadProgress: (event) => {
+            if (event.total) {
+              setProgress(Math.round((event.loaded / event.total) * 100));
+            }
+          },
+        },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.currentuser });
+    },
+    onSettled: () => {
+      setProgress(0);
+    },
+  });
+
+  return { ...mutation, progress };
+};
+
+export const useRemoveProfileImage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.delete<IExpUser>('/expensify/profile/image');
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.currentuser });
+    },
+  });
 };

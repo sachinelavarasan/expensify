@@ -7,11 +7,11 @@ import { Controller, useForm } from 'react-hook-form';
 import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useUser } from '@clerk/clerk-expo';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
 import { showToast } from './ToastMessage';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { useGetUserData, useUpdateProfile } from '@/hooks/useUserStore';
 
 const schema = z.object({
   name: z.string().min(3, { message: 'Minimum 3 characters' }),
@@ -25,9 +25,9 @@ const UpdateProfile = ({
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 }) => {
   const { colors, theme } = useThemeContext();
-  const { user } = useUser();
+  const { user } = useGetUserData();
+  const { mutateAsync: updateProfile, isPending: isLoading } = useUpdateProfile();
   const [show, setShow] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const toggleModal = () => {
     setShow(!show);
   };
@@ -44,10 +44,10 @@ const UpdateProfile = ({
   });
 
   useEffect(() => {
-    if (user?.firstName) {
+    if (user?.exp_us_name) {
       reset(
         {
-          name: user?.firstName,
+          name: user.exp_us_name,
         },
         {
           keepDirty: false,
@@ -57,35 +57,24 @@ const UpdateProfile = ({
     }
   }, [user]);
 
-  const onSubmit = (data: EditProfileForm) => {
-    setIsLoading(true);
+  const onSubmit = async (data: EditProfileForm) => {
     try {
-      user
-        ?.update({ firstName: data.name })
-        .then(() => {
-          showToast({
-            text1: 'Profile updated successfully!',
-            type: 'success',
-            position: 'bottom',
-          });
-        })
-        .catch(() => {
-          showToast({
-            text1: 'Server Error',
-            type: 'error',
-            position: 'bottom',
-          });
-        })
-        .finally(() => {
-          setTimeout(() => {
-            setIsLoading(false);
-            refetch();
-            setShow(false);
-          }, 1000);
-        });
+      await updateProfile(data.name);
+      showToast({
+        text1: 'Profile updated successfully!',
+        type: 'success',
+        position: 'bottom',
+      });
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Failed to update profile.');
+      showToast({
+        text1: 'Server Error',
+        type: 'error',
+        position: 'bottom',
+      });
+    } finally {
+      await refetch();
+      setShow(false);
     }
   };
   return (

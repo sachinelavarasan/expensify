@@ -18,7 +18,8 @@ import Spacer from '@/components/Spacer';
 
 import { otpValidation } from '@/utils/Validation-custom';
 import { deviceWidth } from '@/utils/functions';
-import { useSignIn, useSignUp } from '@clerk/clerk-expo';
+import { apiClient, getApiErrorMessage } from '@/lib/apiClient';
+import { useAuthContext } from '@/contexts/AuthContext';
 import AuthLink from '@/components/AuthLink';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -27,14 +28,14 @@ import { showToast } from '@/components/ToastMessage';
 const MobileVerify = () => {
   const [otp, setOtp] = useState<string>('');
   const [email, setEmail] = useState<string>('');
-  const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
-  const { setActive, isLoaded } = useSignIn();
+  const { signIn } = useAuthContext();
   const { colors } = useThemeContext();
   const otpTextInputStyle = { ...styles.roundedTextInput, color: colors.arrowColor };
 
   const router = useRouter();
 
   const [otpVerifyLoading, setIsOtpVerifyLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const handleTextChange = (data: string) => {
     setOtp(data);
@@ -48,53 +49,40 @@ const MobileVerify = () => {
   }, []);
 
   const verify = async () => {
-    if (!isLoadedSignUp || !isLoaded) return;
     setIsOtpVerifyLoading(true);
     try {
-      const res = await signUp.attemptEmailAddressVerification({
+      const response = await apiClient.post('/expensify/auth/verify-signup-otp', {
+        email,
         code: otp,
       });
-
-      if (res.verifications.emailAddress.status === 'verified') {
-        await setActive({ session: res.createdSessionId });
-
-        setTimeout(() => {
-          showToast({
-            text1: 'Your account created successfully',
-            type: 'info',
-            position: 'bottom',
-          });
-          router.dismissTo('/(root)/dashboard');
-        }, 1000);
-        await AsyncStorage.removeItem('current-verify-email');
-      } else {
-        Alert.alert('Error', 'Verification failed. Please check your code and try again.');
-        console.log('error: verification status not verified');
-      }
-    } catch (err: any) {
-      console.error('Verification error:', err);
-
-      const errorCode = err?.errors?.[0]?.code || 'unknown_error';
-
-      switch (errorCode) {
-        case 'form_verification_invalid':
-          Alert.alert('Error', 'Verification token is invalid or expired.');
-          break;
-        case 'form_rate_limited':
-          Alert.alert('Error', 'Too many attempts. Please try again later.');
-          break;
-        case 'form_internal_error':
-          Alert.alert('Error', 'Internal error occurred. Please try again later.');
-          break;
-        case 'form_identifier_exists':
-          Alert.alert('Error', 'Given email already exists');
-          break;
-        default:
-          Alert.alert('Error', JSON.stringify(err, null ,2));
-          break;
-      }
+      await signIn(response.data);
+      await AsyncStorage.removeItem('current-verify-email');
+      showToast({
+        text1: 'Your account created successfully',
+        type: 'info',
+        position: 'bottom',
+      });
+      router.dismissTo('/(root)/dashboard');
+    } catch (err) {
+      Alert.alert('Error', getApiErrorMessage(err, 'Verification failed. Please try again.'));
     } finally {
       setIsOtpVerifyLoading(false);
+    }
+  };
+
+  const resendCode = async () => {
+    setResendLoading(true);
+    try {
+      await apiClient.post('/expensify/auth/resend-otp', { email, purpose: 'signup_verify' });
+      showToast({
+        text1: 'A new code has been sent to your email',
+        type: 'info',
+        position: 'bottom',
+      });
+    } catch (err) {
+      Alert.alert('Error', getApiErrorMessage(err, 'Could not resend code'));
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -131,7 +119,7 @@ const MobileVerify = () => {
               keyboardType="numeric"
               autoFocus={true}
               handleTextChange={handleTextChange}></OTPTextInput>
-            
+
             <Spacer height={40} />
 
             <TouchableOpacity
@@ -155,7 +143,15 @@ const MobileVerify = () => {
               </Text>
             </TouchableOpacity>
 
-            <Spacer height={50} />
+            <Spacer height={30} />
+            <AuthLink
+              disabled={resendLoading}
+              linkText="Resend code"
+              description="Didn't receive a code? "
+              onPress={resendCode}
+            />
+
+            <Spacer height={30} />
             <AuthLink
               disabled={otpVerifyLoading}
               linkText="SignUp"

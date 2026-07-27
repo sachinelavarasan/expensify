@@ -18,8 +18,9 @@ import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
 
 import { otpValidation, passwordValidation } from '@/utils/Validation-custom';
-import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { useSignIn } from '@clerk/clerk-expo';
+import { deviceWidth } from '@/utils/functions';
+import { apiClient, getApiErrorMessage } from '@/lib/apiClient';
+import { useAuthContext } from '@/contexts/AuthContext';
 import AuthLink from '@/components/AuthLink';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -30,7 +31,7 @@ const ChangePassword = () => {
   const [otp, setOtp] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [newPassword, setNewPassword] = useState('');
-  const { signIn, isLoaded, setActive } = useSignIn();
+  const { signIn } = useAuthContext();
   const { colors } = useThemeContext();
   const otpTextInputStyle = { ...styles.roundedTextInput, color: colors.arrowColor };
 
@@ -50,60 +51,25 @@ const ChangePassword = () => {
   }, []);
 
   const verify = async () => {
-    if (!isLoaded || !newPassword) return;
+    if (!newPassword) return;
     setIsOtpVerifyLoading(true);
     try {
-      const res = await signIn.attemptFirstFactor({
+      const response = await apiClient.post('/expensify/auth/reset-password', {
+        email,
         code: otp,
-        strategy: 'reset_password_email_code',
-        password: newPassword,
+        newPassword,
       });
-
-      if (res.status === 'complete') {
-        await setActive({ session: res.createdSessionId });
-        await AsyncStorage.removeItem('current-verify-email');
-        router.dismissTo('/(root)/dashboard');
-        showToast({
-          text1: 'Your account password updated successfully',
-          type: 'info',
-          position: 'bottom',
-          visibilityTime: 3000,
-        });
-      } else {
-        Alert.alert('Error', 'Verification failed. Please check your code and try again.');
-        console.log('error: verification status not verified');
-        router.navigate('/(root)/(auth)/forgot-password');
-      }
-    } catch (err: any) {
-      console.error('Verification error:', JSON.stringify(err, null, 2));
-
-      const errorCode = err?.errors?.[0]?.code || 'unknown_error';
-
-      switch (errorCode) {
-        case 'form_verification_invalid':
-          Alert.alert('Error', 'Verification token is invalid or expired.');
-          break;
-        case 'form_rate_limited':
-          Alert.alert('Error', 'Too many attempts. Please try again later.');
-          break;
-        case 'form_internal_error':
-          Alert.alert('Error', 'Internal error occurred. Please try again later.');
-          break;
-        case 'form_identifier_exists':
-          Alert.alert('Error', 'Given email already exists');
-          break;
-        case 'needs_new_password':
-          Alert.alert('Error', 'Enter valid password');
-          break;
-        case 'form_code_incorrect':
-          Alert.alert('Error', 'Invalid otp code');
-          break;
-        default:
-          Alert.alert('Error', JSON.stringify(err, null, 2));
-          break;
-      }
-      // await AsyncStorage.removeItem('current-verify-number');
-      // router.navigate('/(root)/(auth)/forgot-password');
+      await signIn(response.data);
+      await AsyncStorage.removeItem('current-verify-email');
+      router.dismissTo('/(root)/dashboard');
+      showToast({
+        text1: 'Your account password updated successfully',
+        type: 'info',
+        position: 'bottom',
+        visibilityTime: 3000,
+      });
+    } catch (err) {
+      Alert.alert('Error', getApiErrorMessage(err, 'Verification failed. Please check your code and try again.'));
     } finally {
       setIsOtpVerifyLoading(false);
     }

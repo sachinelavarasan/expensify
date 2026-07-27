@@ -1,4 +1,5 @@
-import { useAuth } from '@clerk/clerk-expo';
+import { apiClient } from '@/lib/apiClient';
+import { getAccessToken } from '@/lib/tokenStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -22,8 +23,6 @@ interface ExportParams {
 }
 
 export const useExportExcelTransactions = () => {
-  const { getToken, userId } = useAuth();
-
   return useMutation({
     mutationFn: async ({
       startDate,
@@ -31,10 +30,7 @@ export const useExportExcelTransactions = () => {
       fileType = 'xlsx',
       tranType = 'all',
     }: ExportParams) => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
+      const token = getAccessToken();
       const url = `${API_URL}/expensify/export-excel?format=${fileType}&startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
       const response = await fetch(url, {
         method: 'GET',
@@ -80,8 +76,6 @@ export const useExportExcelTransactions = () => {
 };
 
 export const useExportPdfTransactions = () => {
-  const { getToken, userId } = useAuth();
-
   return useMutation({
     mutationFn: async ({
       startDate,
@@ -92,10 +86,7 @@ export const useExportPdfTransactions = () => {
       endDate: string;
       tranType?: string;
     }) => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
+      const token = getAccessToken();
       const url = `${API_URL}/expensify/export-pdf?startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
       const response = await fetch(url, {
         method: 'GET',
@@ -185,57 +176,20 @@ interface ExcelPayload {
 }
 
 export const useImportExcel = () => {
-  const { getToken, userId } = useAuth();
   return useMutation({
     mutationFn: async (payload: ExcelPayload) => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const url = `${API_URL}/expensify/import-data`;
-      const response = await fetch(`${url}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to process Excel file");
-      }
-
-      return response.json();
+      const res = await apiClient.post('/expensify/import-data', payload);
+      return res.data;
     },
   });
 };
 export const useImportBulkTransaction = () => {
-  const { getToken, userId } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: ExcelPayload) => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const url = `${API_URL}/expensify/bulk-transactions`;
-      const response = await fetch(`${url}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to process Excel file");
-      }
-
+      const res = await apiClient.post('/expensify/bulk-transactions', payload);
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
-
-      return response.json();
+      return res.data;
     },
   });
 };

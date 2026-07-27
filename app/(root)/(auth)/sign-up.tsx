@@ -20,12 +20,10 @@ import Spacer from '@/components/Spacer';
 import AuthLink from '@/components/AuthLink';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 
-import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
+import { apiClient, getApiErrorMessage } from '@/lib/apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeContext } from '@/contexts/ThemedContext';
-
-const usernameValidation = /^[a-z0-9]{6,25}$/;
 
 const schema = z.object({
   name: z.string().min(3, { message: 'Name should have a minimum 3 characters' }),
@@ -34,13 +32,6 @@ const schema = z.object({
     .min(8, { message: 'Password should have a minimum 8 characters' })
     .max(16, { message: 'Password should have a maximum 16 characters' }),
   email: z.email({ message: 'Invalid email address' }),
-  username: z
-    .string()
-    .min(6, { message: 'Username should have a minimum 6 characters' })
-    .max(25, { message: 'Username should have a maximum 25 characters' })
-    .refine((val) => usernameValidation.test(val), {
-      message: 'Username must contain only lowercase letters and numbers (between 6 to 25 chars).',
-    }),
 });
 
 type SignUpForm = z.infer<typeof schema>;
@@ -48,7 +39,6 @@ type SignUpForm = z.infer<typeof schema>;
 const Register = () => {
   const router = useRouter();
   const { colors } = useThemeContext();
-  const { signUp, isLoaded: isLoadedSignUp } = useSignUp();
   const [isLoading, setIsLoading] = useState(false);
   const {
     control,
@@ -60,80 +50,19 @@ const Register = () => {
       name: '',
       password: '',
       email: '',
-      username: '',
     },
     resolver: zodResolver(schema),
   });
 
   const register = async (data: SignUpForm) => {
-    if (!isLoadedSignUp) return;
     setIsLoading(true);
     try {
-      await signUp.create({
-        emailAddress: data.email,
-        firstName: data.name,
-        password: data.password,
-        username: data.username,
-      });
-
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-      setIsLoading(false);
+      await apiClient.post('/expensify/auth/signup', data);
       await AsyncStorage.setItem('current-verify-email', data.email);
+      setIsLoading(false);
       router.dismissTo('/(root)/(auth)/mobile-verify');
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-      if (isClerkAPIResponseError(err)) {
-        const errorCode = err.errors[0]?.code;
-        switch (errorCode) {
-          case 'form_param_nil':
-            Alert.alert('Error', 'Required parameter is missing');
-            break;
-          case 'form_param_format_invalid':
-            Alert.alert('Error', 'Please enter a valid email address');
-            break;
-          case 'form_password_too_weak':
-            Alert.alert('Error', 'Password is too weak. Please use a stronger password.');
-            break;
-          case 'form_password_invalid':
-            Alert.alert('Error', 'Invalid password format.');
-            break;
-          case 'form_first_name_missing':
-            Alert.alert('Error', 'First name is required.');
-            break;
-          case 'form_rate_limited':
-            Alert.alert('Error', 'Too many attempts. Please try again later.');
-            break;
-          case 'form_password_length_too_short':
-            Alert.alert('Error', 'Passwords must be 8 characters or more.');
-            break;
-          case 'form_password_length_too_long':
-            Alert.alert('Error', 'Password length is too long');
-            break;
-          case 'form_identifier_exists':
-            Alert.alert('Error', 'Given email address already exists');
-            break;
-          case 'form_password_validation_failed':
-            Alert.alert('Error', 'Password validation failed. Please try again.');
-            break;
-          case 'form_password_pwned':
-            Alert.alert('Error', 'This password has been exposed before. Please choose another');
-            break;
-          case 'form_username_invalid_character':
-            Alert.alert('Error', 'Username contains invalid characters (only number,letters)');
-            break;
-          case 'form_username_invalid_length':
-            Alert.alert('Error', 'Username must contains min 8 or max 20 character');
-            break;
-          case 'form_internal_error':
-            Alert.alert('Error', 'Internal error occurred. Please try again later.');
-            break;
-          default:
-            Alert.alert('Error', JSON.stringify(err, null, 2));
-            break;
-        }
-      } else {
-        Alert.alert('Error', JSON.stringify(err, null, 2));
-      }
+      Alert.alert('Error', getApiErrorMessage(err, 'Could not create your account'));
       setIsLoading(false);
     }
   };
@@ -182,25 +111,6 @@ const Register = () => {
                   name="name"
                 />
                 <Spacer height={30} />
-
-                <Controller
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      label="Username"
-                      keyboardType="numbers-and-punctuation"
-                      autoCapitalize="none"
-                      autoComplete="off"
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      error={errors.username?.message}
-                      borderLess
-                    />
-                  )}
-                  name="username"
-                />
-                <Spacer height={30} />
                 <Controller
                   control={control}
                   render={({ field }) => (
@@ -208,7 +118,7 @@ const Register = () => {
                       {...field}
                       placeholder="Enter your email address"
                       label="Email address"
-                      keyboardType="numbers-and-punctuation"
+                      keyboardType="email-address"
                       autoCapitalize="none"
                       autoComplete="off"
                       onBlur={field.onBlur}
@@ -219,25 +129,6 @@ const Register = () => {
                   )}
                   name="email"
                 />
-                {/* <Spacer height={20} />
-                <Controller
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      placeholder="Mobile Number"
-                      label="Phone number"
-                      keyboardType="numbers-and-punctuation"
-                      autoCapitalize="none"
-                      autoComplete="off"
-                      onBlur={field.onBlur}
-                      onChangeText={field.onChange}
-                      error={errors.phone?.message}
-                      borderLess
-                    />
-                  )}
-                  name="phone"
-                /> */}
                 <Spacer height={30} />
                 <Controller
                   control={control}

@@ -1,33 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
-import { useAuth } from '@clerk/clerk-expo';
+import { apiClient } from '@/lib/apiClient';
 import { IExpUser } from '@/types';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
 export const useEnableNotificationToken = () => {
-  const { getToken, userId } = useAuth();
-
   return useMutation({
     mutationFn: async (data: { token: string }) => {
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
       if (!data.token) throw new Error('Notification token not found');
 
-      const authToken = await getToken();
-
-      const res = await fetch(`${API_URL}/expensify/enable-notification`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...data }),
-      });
-
-      if (!res.ok) throw new Error('Failed to enable notification');
-
-      return await res.json();
+      const res = await apiClient.post('/expensify/enable-notification', data);
+      return res.data;
     },
 
     onSuccess: () => {
@@ -41,30 +22,12 @@ export const useEnableNotificationToken = () => {
 };
 
 export const useDisableNotificationToken = () => {
-  const { getToken, userId } = useAuth();
-
   return useMutation({
     mutationFn: async (token: string) => {
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
       if (!token) throw new Error('Notification token not found');
 
-      const authToken = await getToken();
-
-      const res = await fetch(`${API_URL}/expensify/disable-notification`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-
-      if (!res.ok) throw new Error('Failed to enable notification');
-
-      return await res.json();
+      const res = await apiClient.put('/expensify/disable-notification', { token });
+      return res.data;
     },
 
     onSuccess: () => {
@@ -78,28 +41,10 @@ export const useDisableNotificationToken = () => {
 };
 
 export const useUserSettingChanges = () => {
-  const { getToken, userId } = useAuth();
-
   return useMutation({
     mutationFn: async (data: Partial<IExpUser>) => {
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-
-      const authToken = await getToken();
-
-      const res = await fetch(`${API_URL}/expensify/setting-changes`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...data }),
-      });
-
-      if (!res.ok) throw new Error('Failed to update user setting');
-
-      return await res.json();
+      const res = await apiClient.post('/expensify/setting-changes', data);
+      return res.data;
     },
 
     onSuccess: () => {

@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { startOfDay, addDays, startOfWeek, addWeeks, startOfMonth, addMonths, format } from 'date-fns';
-import { useAuth } from '@clerk/clerk-expo';
+import { apiClient } from '@/lib/apiClient';
 import { Itransaction } from '@/types';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 type DateRangeType = 'daily' | 'weekly' | 'monthly';
 
@@ -18,7 +16,6 @@ const useTransactions = (
   const [search, setSearch] = useState('');
   const [transactionType, setTransactionType] = useState<string>('');
   const [bankAccount, setBankAccount] = useState<number | string>('');
-  const { getToken, userId } = useAuth();
 
   const {
     isLoading,
@@ -28,9 +25,6 @@ const useTransactions = (
     queryKey: ['transactions', currentDate, search, transactionType, dateRangeType, bankAccount],
     enabled,
     queryFn: async ({ queryKey }): Promise<Itransaction[]> => {
-      const token = await getToken();
-      if (!userId) throw new Error('User is not authenticated');
-
       const [_, date, searchText, txType, rangeType] = queryKey as [string, Date, string, string, DateRangeType];
 
       let start: Date;
@@ -50,23 +44,17 @@ const useTransactions = (
       const startDate = format(start, 'yyyy-MM-dd');
       const endDate = format(end, 'yyyy-MM-dd');
 
-      let url = `${API_URL}/expensify/transactions?startDate=${startDate}&endDate=${endDate}`;
-      if (searchText) url += `&search=${searchText}`;
-      if (txType) url += `&transaction_type=${txType}`;
-      if (bankAccount) url += `&account=${bankAccount}`;
-
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const response = await apiClient.get<Itransaction[]>('/expensify/transactions', {
+        params: {
+          startDate,
+          endDate,
+          search: searchText || undefined,
+          transaction_type: txType || undefined,
+          account: bankAccount || undefined,
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-
-      return (await response.json()) as Itransaction[];
+      return response.data;
     },
   });
 
