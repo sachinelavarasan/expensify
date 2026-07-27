@@ -9,12 +9,19 @@ export type ThemedViewProps = ViewProps & {
 };
 
 export function ThemedView({ style, children, ...otherProps }: ThemedViewProps) {
-  const { colors } = useThemeContext();
+  const { theme, colors } = useThemeContext();
+
+  if (theme === 'light') {
+    return (
+      <View style={[{ flex: 1, backgroundColor: colors.background }, style]} {...otherProps}>
+        {children}
+      </View>
+    );
+  }
+
   return (
     <LinearGradient
-      colors={
-        colors.themedViewBg as [ColorValue, ColorValue]
-      }
+      colors={colors.themedViewBg as [ColorValue, ColorValue, ...ColorValue[]]}
       start={{ x: 2, y: 0 }}
       end={{ x: 0, y: 2 }}
       style={[{ flex: 1 }, style]}

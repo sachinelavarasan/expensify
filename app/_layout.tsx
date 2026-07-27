@@ -12,7 +12,7 @@ import { tokenCache } from '@clerk/clerk-expo/token-cache';
 // import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ToastMessage from '@/components/ToastMessage';
 import { NotificationProvider } from '@/contexts/NotificationContext';
-import { ThemeProvider } from '@/contexts/ThemedContext';
+import { ThemeProvider, useThemeContext } from '@/contexts/ThemedContext';
 import NetworkInfoModal from '@/components/NetworkInfoModal';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { loadCurrencySettings } from '@/utils/functions';
@@ -101,23 +101,9 @@ function LayoutBuilder() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-          <BottomSheetModalProvider>   
+          <BottomSheetModalProvider>
           {authLoaded && fontsLoaded ? (
-            <Stack screenOptions={{ headerShown: false }} >
-              <Stack.Screen name="(root)/(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(root)/dashboard" options={{ headerShown: false }} />
-              <Stack.Screen name="(root)/transaction" options={{ headerShown: false }} />
-
-              <Stack.Screen name="(root)/settings" />
-              <Stack.Screen name="(root)/categories/index" />
-              <Stack.Screen name="(root)/starred" />
-              <Stack.Screen name="(root)/export-transactions" />
-              <Stack.Screen name="(root)/import-transactions" options={{
-                presentation: 'fullScreenModal'
-              }}/>
-              <Stack.Screen name="(root)/accounts/[id]" />
-              <Stack.Screen name="(root)/categories/[id]" />
-            </Stack>
+            <AppStack />
           ) : null}
           <ToastMessage />
           <NetworkInfoModal />
@@ -125,5 +111,27 @@ function LayoutBuilder() {
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
+  );
+}
+
+function AppStack() {
+  const { colors } = useThemeContext();
+
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+      <Stack.Screen name="(root)/(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(root)/dashboard" options={{ headerShown: false }} />
+      <Stack.Screen name="(root)/transaction" options={{ headerShown: false }} />
+
+      <Stack.Screen name="(root)/settings" />
+      <Stack.Screen name="(root)/categories/index" />
+      <Stack.Screen name="(root)/starred" />
+      <Stack.Screen name="(root)/export-transactions" />
+      <Stack.Screen name="(root)/import-transactions" options={{
+        presentation: 'fullScreenModal'
+      }}/>
+      <Stack.Screen name="(root)/accounts/[id]" />
+      <Stack.Screen name="(root)/categories/[id]" />
+    </Stack>
   );
 }

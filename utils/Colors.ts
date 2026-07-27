@@ -1,5 +1,5 @@
 export const LightColors = {
-  background: '#F7F7FA',
+  background: '#FFFFFF',
   text: '#1E1E1E',
   primary: '#6B5DE6',
   secondary: '#3D3A45',
@@ -12,14 +12,14 @@ export const LightColors = {
   borderSelected: '#6B5DE6',
   income: '#37955E',
   expense: '#F33F3F',
-  bottomBarBackground: '#F7F7FA',
+  bottomBarBackground: '#F5F4FA',
   barBackground: '#EDEBFA',
-  topBarColor: '#f5f4fabf',
-  themedViewBg: ['#F7F7FA', '#F2F1F8', '#ECEAF5', '#F7F7FA'],
+  topBarColor: '#ffffffbf',
+  themedViewBg: ['#FFFFFF', '#F8F7FC', '#F2F1F8', '#FFFFFF'],
   floatingBtnBg: ['#6B5DE6', '#8A7CFF'],
-  cardBg: "#ffffff",
-  inputColor:"#F1F0F8",
-  inputBorder: "#DEDCEA",
+  cardBg: '#ffffff',
+  inputColor: '#F1F0F8',
+  inputBorder: '#DEDCEA',
   inputPlaceholder: '#A6A4B8',
   scrim: 'rgba(0, 0, 0, 0.5)',
   accent: '#FFC83A',
@@ -33,7 +33,7 @@ export const LightColors = {
 };
 
 export const DarkColors = {
-  background: '#0D001A',
+  background: '#16141F',
   text: '#F2F2F2',
   primary: '#8A7CFF',
   secondary: '#B3ACC4',
@@ -46,14 +46,14 @@ export const DarkColors = {
   borderColor: '#333333',
   borderSelected: '#6B5DE6',
   expense: '#F56565',
-  bottomBarBackground: '#0A0015',
-  barBackground: '#1A0033',
-  topBarColor: '#1a00339c',
-  themedViewBg: ['#160029', '#0D001A', '#090012', '#160029'],
+  bottomBarBackground: '#1E1633',
+  barBackground: '#211D30',
+  topBarColor: '#16141f9c',
+  themedViewBg: ['#1f003d', '#140029', '#0a0014', '#1f003d'],
   floatingBtnBg: ['#6B5DE6', '#8A7CFF'],
-  cardBg: "#241F3Eff",
-  inputColor:"#ffffff04",
-  inputBorder: "#ffffff33",
+  cardBg: '#241F3Eff',
+  inputColor: '#ffffff04',
+  inputBorder: '#ffffff33',
   inputPlaceholder: '#ffffff66',
   scrim: 'rgba(0, 0, 0, 0.6)',
   accent: '#FFC83A',
@@ -65,7 +65,6 @@ export const DarkColors = {
   categoryFallbackIcon: '#E0DEED',
   danger: '#CC1928',
 };
-
 
 export type ThemeColors = typeof LightColors;
 

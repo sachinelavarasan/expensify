@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
-  const { colors } = useThemeContext();
+  const { theme, colors } = useThemeContext();
 
   return (
     <View
@@ -12,14 +12,17 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        elevation: 10,
         backgroundColor: colors.bottomBarBackground,
         paddingBottom: 0,
         paddingTop: 5,
-        position: 'static',
         bottom: 0,
         borderTopColor: colors.borderColor,
-        borderTopWidth: 0.2,
+        borderTopWidth: 1,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: theme === 'dark' ? 0.45 : 0.15,
+        shadowRadius: 8,
+        elevation: 10,
       }}>
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];

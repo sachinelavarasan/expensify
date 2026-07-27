@@ -19,10 +19,11 @@ const SafeAreaViewComponent = ({
   ...otherProps
 }: SafeAreaViewComponentProps) => {
   const { colors, theme } = useThemeContext();
+  const edgeColor = theme === 'light' ? colors.background : colors.themedViewBg[0];
   return (
     <SafeAreaProvider>
       <SafeAreaView
-        style={[styles.container, style, { backgroundColor: colors.bottomBarBackground }]}
+        style={[styles.container, style, { backgroundColor: edgeColor }]}
         {...otherProps}>
         <ExpoStatus style={theme === 'dark' ? 'light' : 'dark'} />
         {children}
