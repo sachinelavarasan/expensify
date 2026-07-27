@@ -28,7 +28,7 @@ const NetworkInfoModal = () => {
     };
   }, []);
 
-  if ((netInfo.type === 'cellular' || 'wifi') && netInfo.connected) {
+  if (netInfo.connected !== false) {
     return null;
   }
   return (

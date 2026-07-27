@@ -103,10 +103,12 @@ function LayoutBuilder() {
         <ThemeProvider>
           <BottomSheetModalProvider>
           {authLoaded && fontsLoaded ? (
-            <AppStack />
+            <>
+              <AppStack />
+              <NetworkInfoModal />
+            </>
           ) : null}
           <ToastMessage />
-          <NetworkInfoModal />
           </BottomSheetModalProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
