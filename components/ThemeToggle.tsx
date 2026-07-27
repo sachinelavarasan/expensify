@@ -19,7 +19,7 @@ const ThemeToggle = () => {
         <View style={{ flex: 1, flexDirection: 'row' }}>
           <View style={{ flex: 1, flexDirection: 'row' }}>
             {isDark ? (
-              <Feather name="moon" size={20} color="#fff" style={{ marginRight: 8 }} />
+              <Feather name="moon" size={20} color={colors.title} style={{ marginRight: 8 }} />
             ) : (
               <Feather name="sun" size={20} color="#ffaa00" style={{ marginRight: 8 }} />
             )}

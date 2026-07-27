@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface HeaderWithCountProps {
   title: string;
@@ -9,6 +10,7 @@ interface HeaderWithCountProps {
 }
 
 const HeaderWithCount = ({ title, count, countText, subTitle }: HeaderWithCountProps) => {
+  const { colors } = useThemeContext();
   return (
     <View
       style={{
@@ -18,11 +20,21 @@ const HeaderWithCount = ({ title, count, countText, subTitle }: HeaderWithCountP
         marginTop: 10,
         justifyContent: 'space-between',
       }}>
-      <Text style={subTitle ? styles.subTitle : styles.header}>{title}</Text>
+      <Text
+        style={[
+          subTitle ? styles.subTitle : styles.header,
+          { color: subTitle ? colors.lighterTitle : colors.title },
+        ]}>
+        {title}
+      </Text>
       {count && count > 0 ? (
         <View style={styles.countSpan}>
-          <Text style={[styles.count]}>{String(count).padStart(2, '0')}</Text>
-          {countText ? <Text style={styles.countText}>{countText}</Text> : null}
+          <Text style={[styles.count, { color: colors.accent }]}>
+            {String(count).padStart(2, '0')}
+          </Text>
+          {countText ? (
+            <Text style={[styles.countText, { color: colors.lighterTitle }]}>{countText}</Text>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -41,7 +53,6 @@ const styles = StyleSheet.create({
   count: {
     fontSize: 24,
     fontFamily: 'Inter-500',
-    color: 'rgba(255,200,58,0.78)',
   },
   countSpan: {
     // backgroundColor: 'rgba(255,200,58,0.78)',

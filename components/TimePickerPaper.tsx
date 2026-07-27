@@ -81,7 +81,7 @@ const TimePickerPaper = ({
           onBlur?.();
         }}
         style={{
-          backgroundColor: '#6B5DE6',
+          backgroundColor: colors.primary,
           borderWidth: 1,
           paddingHorizontal: 12,
           paddingVertical: 5,
@@ -112,7 +112,7 @@ const TimePickerPaper = ({
         <Text
           style={{
             fontSize: 12,
-            color: '#f02d3a',
+            color: colors.expense,
             marginTop: 4,
             fontFamily: 'Inter-300',
             maxWidth: 100,

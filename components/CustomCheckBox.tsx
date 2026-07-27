@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleProp, TextProps, ViewStyle } from 'react-native';
 import BouncyCheckbox from 'react-native-bouncy-checkbox';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface CustomCheckBoxProps {
   label?: string;
@@ -23,6 +24,7 @@ export default function CustomCheckBox({
   isChecked,
   size,
 }: CustomCheckBoxProps) {
+  const { colors } = useThemeContext();
   return (
     <BouncyCheckbox
       size={size || 24}
@@ -31,7 +33,7 @@ export default function CustomCheckBox({
       text={label}
       innerIconStyle={{ borderWidth: 1, borderRadius: 4 }}
       iconStyle={{ borderRadius: 4 }}
-      textStyle={{ fontFamily: 'Inter-400', textDecorationLine: 'none', color: '#c7c7c7' }}
+      textStyle={{ fontFamily: 'Inter-400', textDecorationLine: 'none', color: colors.lighterTitle }}
       disabled={disabled}
       onPress={(checked: boolean) => {
         onChange(checked);

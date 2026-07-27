@@ -4,10 +4,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { useUser } from '@clerk/clerk-expo';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { showToast } from './ToastMessage';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const AVATAR_SIZE = 70;
 
 export default function ProfileImageUploader({ isSmall = false }: { isSmall?: boolean }) {
+  const { colors } = useThemeContext();
   const { user, isLoaded } = useUser();
   const [uploading, setUploading] = useState(false);
 
@@ -58,7 +60,7 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
     <TouchableOpacity onPress={pickImage} disabled={uploading}>
       {!!user?.imageUrl &&<Image
         source={{ uri: user?.imageUrl }}
-        style={isSmall ? [styles.avatar] : styles.avatarFull}
+        style={isSmall ? [styles.avatar] : [styles.avatarFull, { borderColor: colors.primary }]}
         resizeMode={isSmall ? 'contain' : 'cover'}
       />}
       {!isSmall && (
@@ -90,6 +92,5 @@ const styles = StyleSheet.create({
     borderRadius: AVATAR_SIZE / 2,
     marginRight: 12,
     borderWidth: 2,
-    borderColor: '#6900FF',
   },
 });

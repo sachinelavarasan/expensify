@@ -114,7 +114,7 @@ const DatePickerWithOutValue = forwardRef<any, Props>(
           <Text
             style={{
               fontSize: 12,
-              color: '#f02d3a',
+              color: colors.expense,
               marginTop: 4,
               fontFamily: 'Inter-300',
               maxWidth: 100,

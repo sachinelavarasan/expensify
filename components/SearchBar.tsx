@@ -40,7 +40,7 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
                 },
               ]
         }>
-        <Feather name="search" size={18} color="#999999" style={{ marginLeft: 10 }} />
+        <Feather name="search" size={18} color={colors.inputPlaceholder} style={{ marginLeft: 10 }} />
         <TextInput
           style={[
             styles.input,
@@ -68,8 +68,8 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
             setIsClicked(false);
           }}
           placeholderTextColor={colors.inputPlaceholder}
-          selectionColor="#999999"
-          cursorColor="#999999"
+          selectionColor={colors.inputPlaceholder}
+          cursorColor={colors.inputPlaceholder}
         />
 
         {actionsNeeded && (

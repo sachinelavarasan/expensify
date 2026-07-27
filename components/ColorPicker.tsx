@@ -12,17 +12,22 @@ const ColorSwatch = ({
   color: (typeof customColors)[0];
   onSelect: (data: string) => void;
   isSelected: boolean;
-}) => (
-  <View
-    style={[
-      { width: 40, height: 40, padding: 5, justifyContent: 'center', alignItems: 'center' },
-      isSelected ? { borderColor: '#F0f0f0', borderWidth: 2, borderRadius: 7 } : undefined,
-    ]}>
-    <Pressable
-      style={[styles.swatch, { backgroundColor: color.hex, margin: isSelected ? 2 : 0 }]}
-      onPress={() => onSelect(color.hex)}></Pressable>
-  </View>
-);
+}) => {
+  const { colors } = useThemeContext();
+  return (
+    <View
+      style={[
+        { width: 40, height: 40, padding: 5, justifyContent: 'center', alignItems: 'center' },
+        isSelected
+          ? { borderColor: colors.borderSelected, borderWidth: 2, borderRadius: 7 }
+          : undefined,
+      ]}>
+      <Pressable
+        style={[styles.swatch, { backgroundColor: color.hex, margin: isSelected ? 2 : 0 }]}
+        onPress={() => onSelect(color.hex)}></Pressable>
+    </View>
+  );
+};
 
 export const CustomColorSwatches = ({
   currentValue,

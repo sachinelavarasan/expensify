@@ -22,10 +22,12 @@ function CategoryProgressBar({
   spentAmount,
   budgetAmount,
   exceeded,
+  colors,
 }: {
   spentAmount: number;
   budgetAmount: number;
   exceeded: boolean;
+  colors: ThemeColors;
 }) {
   const percentage = Math.min((spentAmount / budgetAmount) * 100, 100);
   const progress = useSharedValue(0);
@@ -42,7 +44,7 @@ function CategoryProgressBar({
     <View
       style={{
         height: 20,
-        backgroundColor: '#6e6c706c',
+        backgroundColor: colors.borderColor,
         borderRadius: 10,
         overflow: 'hidden',
         marginTop: 6,
@@ -52,7 +54,7 @@ function CategoryProgressBar({
         style={[
           {
             height: '100%',
-            backgroundColor: exceeded ? '#d12222' : '#6C63FF',
+            backgroundColor: exceeded ? colors.expense : colors.primary,
             borderRadius: 0,
           },
           animatedStyle,
@@ -150,10 +152,10 @@ function CollapsibleCategoryCard({
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={1}
-        style={{ backgroundColor: '#00000088' }}
+        style={{ backgroundColor: colors.scrim }}
       />
     ),
-    [],
+    [colors],
   );
 
   const renderPreviewItem = useCallback(
@@ -207,7 +209,7 @@ function CollapsibleCategoryCard({
                   style={[
                     styles.subText,
                     {
-                      color: category.remainingBudget > 0 ? colors.title : '#d12222',
+                      color: category.remainingBudget > 0 ? colors.title : colors.expense,
                       fontFamily: 'Inter-600',
                     },
                   ]}>
@@ -226,6 +228,7 @@ function CollapsibleCategoryCard({
               spentAmount={category.totalAmount}
               budgetAmount={Number(category.budgetAmount)}
               exceeded={category.remainingBudget < 0}
+              colors={colors}
             />
           </View>
         </View>
@@ -260,7 +263,7 @@ function CollapsibleCategoryCard({
         backdropComponent={renderBackdrop}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
-        handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
+        handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         <Text
           style={[
             styles.sheetTitle,
@@ -285,7 +288,7 @@ function CollapsibleCategoryCard({
         <View
           style={[
             styles.categoryTitleCard,
-            { marginHorizontal: 16,marginBottom: 16, backgroundColor: '#f33f3f48' },
+            { marginHorizontal: 16,marginBottom: 16, backgroundColor: `${colors.expense}48` },
           ]}>
           <View>
             <Text
@@ -299,8 +302,8 @@ function CollapsibleCategoryCard({
               {formatToCurrency(category.totalAmount)}
             </Text>
           </View>
-          <View style={styles.iconBadgeRed}>
-            <Feather name="arrow-up-right" size={16} color="#FF4D4F" />
+          <View style={[styles.iconBadgeRed, { backgroundColor: `${colors.expense}26` }]}>
+            <Feather name="arrow-up-right" size={16} color={colors.expense} />
           </View>
         </View>
         <BottomSheetFlatList

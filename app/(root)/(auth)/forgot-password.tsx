@@ -169,7 +169,11 @@ export default function ForgotPasswordScreen() {
                 <Spacer height={40} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
-                    style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
+                    style={[
+                      styles.button,
+                      { backgroundColor: colors.primary },
+                      !isValid || isLoading ? styles.disable : {},
+                    ]}
                     onPress={handleSubmit(onResetPasswordPress)}
                     disabled={!isValid || isLoading}>
                     {isLoading ? (
@@ -227,7 +231,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: 8,
     width: '100%',

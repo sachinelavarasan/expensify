@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const BUTTON_WIDTH = 100;
 const SWIPE_THRESHOLD = BUTTON_WIDTH / 2;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export default function SwipeableRow({ children, onDelete }: Props) {
+  const { colors } = useThemeContext();
   const translateX = useSharedValue(0);
   const startX = useSharedValue(0);
 
@@ -62,7 +64,7 @@ export default function SwipeableRow({ children, onDelete }: Props) {
     <View style={styles.container}>
       <Animated.View style={[styles.deleteContainer, deleteStyle]}>
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <MaterialIcons name="delete" size={30} color={'#da1616'} />
+          <MaterialIcons name="delete" size={30} color={colors.expense} />
         </TouchableOpacity>
       </Animated.View>
 

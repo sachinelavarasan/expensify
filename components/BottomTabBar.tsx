@@ -49,7 +49,7 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
             target: route.key,
           });
         };
-        const focusedColor = colors.primary || '#6B5DE6';
+        const focusedColor = colors.primary;
         
 
         return (

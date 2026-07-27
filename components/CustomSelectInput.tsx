@@ -65,7 +65,7 @@ export const CustomSelectInput = ({
           justifyContent: 'space-between',
           borderRadius: 8,
           borderWidth: 1,
-          borderColor: error ? '#64090e' :colors.inputBorder,
+          borderColor: error ? colors.expense :colors.inputBorder,
           paddingHorizontal: 12,
           paddingVertical: 10,
           shadowColor: colors.inputColor,
@@ -98,7 +98,7 @@ export const CustomSelectInput = ({
         maxHeight={150}
         placeholder={placeholder}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: colors.expense }]}>{error}</Text> : null}
     </View>
   );
 };

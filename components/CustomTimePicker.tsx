@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import DatePicker, { getFormatedDate } from 'react-native-modern-datepicker';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function CustomTimePicker({
   onDateChange,
@@ -19,6 +20,7 @@ export default function CustomTimePicker({
   error?: string;
   isRequired?: boolean;
 }) {
+  const { colors } = useThemeContext();
   const getCurrentTime = () => {
     const now = new Date();
     const hours = now.getHours();
@@ -50,7 +52,7 @@ export default function CustomTimePicker({
     <View>
       {label ? (
         <View style={{ display: 'flex', flexDirection: 'row' }}>
-          <Text style={styles.label}>{label}</Text>
+          <Text style={[styles.label, { color: colors.title }]}>{label}</Text>
           {/* {isRequired ? (
             <View style={{ marginLeft: 5, marginTop: 5 }}>
               <Image
@@ -65,14 +67,21 @@ export default function CustomTimePicker({
         onPress={() => {
           toggleDatePicker();
         }}
-        style={[styles.inputContainer, borderLess ? styles.borderNone : null, styles.innerView]}>
+        style={[
+          styles.inputContainer,
+          { borderColor: colors.inputBorder },
+          borderLess ? [styles.borderNone, { backgroundColor: colors.inputColor }] : null,
+          styles.innerView,
+        ]}>
         {selectedDate ? (
-          <Text style={styles.input}>{selectedDate}</Text>
+          <Text style={[styles.input, { color: colors.title }]}>{selectedDate}</Text>
         ) : (
-          <Text style={[styles.input, styles.placeholder]}>{placeholder}</Text>
+          <Text style={[styles.input, styles.placeholder, { color: colors.inputPlaceholder }]}>
+            {placeholder}
+          </Text>
         )}
       </Pressable>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: colors.expense }]}>{error}</Text> : null}
       {datePickerVisible && (
         <View style={{ bottom: -10 }}>
           <DatePicker
@@ -90,7 +99,7 @@ export default function CustomTimePicker({
             current={selectedDate}
             selected={selectedDate}
             mode="time"
-            style={{ borderRadius: 10, borderColor: '#3A3A54', borderWidth: 1 }}
+            style={{ borderRadius: 10, borderColor: colors.borderColor, borderWidth: 1 }}
           />
         </View>
       )}

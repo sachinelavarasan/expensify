@@ -102,7 +102,7 @@ export default function AccountScreen() {
                     exp_ba_id={account.exp_ba_id}
                   />
                   <TouchableOpacity onPress={handleDelete} disabled={isDeleting}>
-                    <MaterialIcons name="delete-forever" size={30} color={'#f33f3fd9'} />
+                    <MaterialIcons name="delete-forever" size={30} color={colors.expense} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -111,7 +111,7 @@ export default function AccountScreen() {
         </View>
         {loading || refreshing || !account || isDeleting ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator size="large" color="#6900FF" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
           <>
@@ -174,13 +174,13 @@ export default function AccountScreen() {
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!expense && (
                       <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
-                        <Feather name="arrow-up-right" size={14} color="#FF4D4F" />
+                        <Feather name="arrow-up-right" size={14} color={colors.expense} />
                         {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
                       <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
-                        <Feather name="arrow-down-left" size={14} color="#00C896" />
+                        <Feather name="arrow-down-left" size={14} color={colors.income} />
                         {formatToCurrency(income)}
                       </Text>
                     )}

@@ -54,10 +54,10 @@ const AnimatedLogoutIcon = () => {
         pressBehavior="none"
         disappearsOnIndex={-1}
         appearsOnIndex={1}
-        style={{ backgroundColor: '#00000088' }}
+        style={{ backgroundColor: colors.scrim }}
       />
     ),
-    [],
+    [colors],
   );
 
   const onSubmit = async () => {
@@ -113,7 +113,7 @@ const AnimatedLogoutIcon = () => {
     () => (
       <View style={styles.contentContainer}>
         <Animated.View style={[animatedStyles1]}>
-          <AnimatedIcon name="log-out-outline" size={60} color={'#aaa'} />
+          <AnimatedIcon name="log-out-outline" size={60} color={colors.lighterTitle} />
         </Animated.View>
 
         <Text style={[styles.description, { color: colors.text }]}>
@@ -182,7 +182,7 @@ const AnimatedLogoutIcon = () => {
         backdropComponent={renderBackdrop}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
-        handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
+        handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         {renderBottomSheetContent()}
       </BottomSheetModal>
     </View>

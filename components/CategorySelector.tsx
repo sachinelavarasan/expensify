@@ -71,7 +71,8 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
                   fontFamily: 'Inter-500',
                   fontSize: 12,
                   padding: 5,
-                  color: selected === item.exp_tc_id || theme !== 'light' ? '#FFFFFF' : '#1E1E1E',
+                  color:
+                    selected === item.exp_tc_id || theme !== 'light' ? '#FFFFFF' : colors.title,
                 }}>
                 {item.exp_tc_label}
               </Text>

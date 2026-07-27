@@ -35,7 +35,7 @@ const DefaultTransactionModal = ({
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
   updateSettings: (name: string, value: boolean | string)=> void;
 }) => {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
 
@@ -113,7 +113,7 @@ const DefaultTransactionModal = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
+        backdropColor={colors.scrim}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -139,7 +139,7 @@ const DefaultTransactionModal = ({
               <TouchableOpacity
                 onPress={toggleModal}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={"#5a4f96"} size={20} />
+                <Ionicons name="close" color={colors.primary} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -154,7 +154,11 @@ const DefaultTransactionModal = ({
             <Spacer height={20} />
             <View>
               <TouchableOpacity
-                style={[styles.button, !isDirty || isPending ? styles.disable : {}]}
+                style={[
+                  styles.button,
+                  { backgroundColor: colors.primary },
+                  !isDirty || isPending ? styles.disable : {},
+                ]}
                 onPress={handleSubmit(settingChange)}
                 disabled={!isDirty || isPending}>
                 {isPending ? (
@@ -188,7 +192,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,

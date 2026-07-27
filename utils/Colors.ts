@@ -13,15 +13,16 @@ export const LightColors = {
   income: '#37955e',
   expense: '#f33f3f',
   bottomBarBackground: '#FFF',
-  barBackground: '#FFFFFF',
+  barBackground: '#EDEBFA',
   topBarColor: '#ededf3bf',
   themedViewBg: ['#FFFFFF', '#F8F7FF', '#F1EFFF', '#FFFFFF'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
-  safeAreaView: "#FFF",
   cardBg: "#ffffff",
   inputColor:"#F4F3FF",
   inputBorder: "#dadae1ff",
-  inputPlaceholder: '#b7b7bcff'
+  inputPlaceholder: '#b7b7bcff',
+  scrim: 'rgba(0, 0, 0, 0.5)',
+  accent: '#FFC83A',
 };
 
 export const DarkColors = {
@@ -43,11 +44,12 @@ export const DarkColors = {
   topBarColor: '#2f0b569c',
   themedViewBg: ['#1f003d', '#140029', '#0a0014', '#1f003d'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
-  safeAreaView: "#0d001a",
   cardBg: "#241f3eff",
   inputColor:"#ffffff04",
   inputBorder: "#ffffff33",
-  inputPlaceholder: '#ffffff66'
+  inputPlaceholder: '#ffffff66',
+  scrim: 'rgba(0, 0, 0, 0.6)',
+  accent: '#FFC83A',
 };
 
 

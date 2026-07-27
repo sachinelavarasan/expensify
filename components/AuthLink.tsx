@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface ExtraButtonProps {
   linkText: string;
@@ -11,11 +12,12 @@ const AuthLink: React.FC<ExtraButtonProps & TouchableOpacityProps> = ({
   description,
   ...props
 }) => {
+  const { colors } = useThemeContext();
   return (
     <View style={styles.container}>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={[styles.description, { color: colors.description }]}>{description}</Text>
       <TouchableOpacity {...props}>
-        <Text style={styles.linkText}>{linkText}</Text>
+        <Text style={[styles.linkText, { color: colors.primary }]}>{linkText}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -30,13 +32,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   linkText: {
-    color: '#7A08FA',
     fontSize: 16,
     textDecorationLine: 'underline',
     fontFamily: 'Inter-500',
   },
   description: {
-    color: '#7A7A8C',
     fontSize: 16,
     marginRight: 15,
     fontFamily: 'Inter-400',

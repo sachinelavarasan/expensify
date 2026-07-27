@@ -131,7 +131,8 @@ export default function Category() {
           paddingHorizontal: 10,
         }}>
         {(loading || isLoading) && <OverlayLoader />}
-        <Animated.View style={[styles.floatingButton, animatedButtonStyle]}>
+        <Animated.View
+          style={[styles.floatingButton, { backgroundColor: colors.primary }, animatedButtonStyle]}>
           <TouchableOpacity
             style={{
               width: '100%',
@@ -146,7 +147,11 @@ export default function Category() {
         <ProfileHeader title="Categories" />
         <View style={[styles.tabContainer, { backgroundColor: colors.topBarColor }]}>
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'income' && styles.activeTab]}
+            style={[
+              styles.tab,
+              activeTab === 'income' && styles.activeTab,
+              activeTab === 'income' && { backgroundColor: colors.primary },
+            ]}
             onPress={() => {
               setActiveTab('income');
               setDataList(incomeCategories);
@@ -162,7 +167,11 @@ export default function Category() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.tab, activeTab === 'expense' && styles.activeTab]}
+            style={[
+              styles.tab,
+              activeTab === 'expense' && styles.activeTab,
+              activeTab === 'expense' && { backgroundColor: colors.primary },
+            ]}
             onPress={() => {
               setActiveTab('expense');
               setDataList(expenseCategories);
@@ -294,7 +303,7 @@ export default function Category() {
                             height: 35,
                             width: 35,
                           }}>
-                          <Ionicons name="reorder-two" size={24} color="#A0A0A0" />
+                          <Ionicons name="reorder-two" size={24} color={colors.description} />
                         </Pressable>
                       )}
                     </View>
@@ -323,7 +332,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#6B5DE6',
     borderRadius: 8,
   },
   tabText: {
@@ -356,7 +364,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
   },
   floatingButton: {
-    backgroundColor: '#6B5DE6',
     width: 50,
     height: 50,
     borderRadius: 25,

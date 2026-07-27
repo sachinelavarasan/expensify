@@ -72,8 +72,8 @@ export default function CustomRadioButton({
             labelStyle={[styles.labelStyle, { color: colors.title }]}
             selected={button.id == selectedId}
             onPress={handlePress}
-            borderColor="#6B5DE6"
-            color="#6B5DE6"
+            borderColor={colors.primary}
+            color={colors.primary}
             containerStyle={{ marginHorizontal: 0 }}
             disabled={disabled}
           />

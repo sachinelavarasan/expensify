@@ -28,7 +28,7 @@ const TransactionFilters = ({
   accounts: BankAccount[];
   selectedAccount: number | string
 }) => {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState(searchText);
   const [transactionType, setTransactionType] = useState<string>(selectedTransaction);
@@ -61,7 +61,7 @@ const TransactionFilters = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
+        backdropColor={colors.scrim}
         style={{ flex: 1 }}
         isVisible={show}
         hasBackdrop={true}
@@ -86,7 +86,7 @@ const TransactionFilters = ({
               <Text style={[styles.title, { color: colors.title }]}>Apply Filters</Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color={'#5a4f96'} size={20} />
+                <Ionicons name="close" color={colors.primary} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={20} />

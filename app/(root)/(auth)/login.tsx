@@ -183,7 +183,11 @@ export default function SignIn() {
                 <Spacer height={35} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
-                    style={[styles.button, isLoading ? styles.disable : {}]}
+                    style={[
+                      styles.button,
+                      { backgroundColor: colors.primary },
+                      isLoading ? styles.disable : {},
+                    ]}
                     disabled={isLoading}
                     onPress={handleSubmit(onSubmit)}>
                     {isLoading ? (
@@ -247,7 +251,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: 8,
     width: '100%',

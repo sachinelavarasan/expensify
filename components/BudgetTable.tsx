@@ -84,13 +84,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 3,
     fontSize: 14,
-    color: '#D1CFE9',
     textAlign: 'center',
     fontFamily: 'Inter-400',
   },
   headerText: {
     fontFamily: 'Inter-600',
-    color: '#E6E6FA',
     fontSize: 14,
   },
 });

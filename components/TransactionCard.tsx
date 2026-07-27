@@ -137,13 +137,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   name: {
-    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
     maxWidth: deviceWidth() - 150,
   },
   subText: {
-    color: '#B3B1C4',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },

@@ -161,7 +161,7 @@ export default function AnimatedTopSection({
             borderBottomColor: colors.borderColor,
           },
         ]}>
-        <Animated.View style={[styles.headerAvatarSmall]}>
+        <Animated.View style={[styles.headerAvatarSmall, { borderColor: colors.primary }]}>
           <ProfileImageUploader isSmall/>
         </Animated.View>
 
@@ -244,7 +244,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#6900FF',
   },
 
   titleTextInHeader: {

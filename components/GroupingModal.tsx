@@ -18,7 +18,7 @@ const GroupingModal = ({
   grouping: 'daily' | 'weekly' | 'monthly';
   update: (date: 'daily' | 'weekly' | 'monthly') => void;
 }) => {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const [selection, setSelection] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
 
@@ -39,7 +39,7 @@ const GroupingModal = ({
 
   return (
     <>
-      <TouchableOpacity style={styles.card} onPress={toggleModal}>
+      <TouchableOpacity style={[styles.card, { backgroundColor: colors.primary }]} onPress={toggleModal}>
         <View style={styles.chip}>
           <Text style={[styles.subText, { color: '#ffffff' }]}>{grouping}</Text>
           <Entypo name="chevron-small-down" size={20} color="#fff" />
@@ -47,7 +47,7 @@ const GroupingModal = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
+        backdropColor={colors.scrim}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -73,7 +73,7 @@ const GroupingModal = ({
               <TouchableOpacity
                 onPress={toggleModal}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={'#5a4f96'} size={20} />
+                <Ionicons name="close" color={colors.arrowColor} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -87,7 +87,9 @@ const GroupingModal = ({
 
             <Spacer height={20} />
             <View>
-              <TouchableOpacity style={[styles.button]} onPress={settingChange}>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.primary }]}
+                onPress={settingChange}>
                 <Text style={[styles.btntitle]}>Apply</Text>
               </TouchableOpacity>
             </View>

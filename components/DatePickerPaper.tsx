@@ -3,6 +3,7 @@ import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { format, parseISO } from 'date-fns';
 import { DatePickerModal, en, registerTranslation } from 'react-native-paper-dates';
+import { useThemeContext } from '@/contexts/ThemedContext';
 registerTranslation('en', en);
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
 
 const DatePickerPaper = forwardRef<any, Props>(
   ({ value, onChange, onBlur, error, placeholder, isRequired, label, minimumDate }, ref) => {
+    const { colors } = useThemeContext();
     const [open, setOpen] = useState(false);
     const [minimum, setMinimumDate] = useState<Date>();
     const [pickerDate, setPickerDate] = useState<Date>(new Date());
@@ -63,7 +65,7 @@ const DatePickerPaper = forwardRef<any, Props>(
             <Text
               style={{
                 fontSize: 12,
-                color: '#B3B1C4',
+                color: colors.title,
                 marginBottom: 6,
                 fontFamily: 'Inter-400',
               }}>
@@ -77,7 +79,7 @@ const DatePickerPaper = forwardRef<any, Props>(
             if (onBlur) onBlur();
           }}
           style={{
-            backgroundColor: '#6B5DE6',
+            backgroundColor: colors.primary,
             borderWidth: 1,
             paddingHorizontal: 12,
             paddingVertical: 5,
@@ -109,7 +111,7 @@ const DatePickerPaper = forwardRef<any, Props>(
           <Text
             style={{
               fontSize: 12,
-              color: '#f02d3a',
+              color: colors.expense,
               marginTop: 4,
               fontFamily: 'Inter-300',
               maxWidth: 100,

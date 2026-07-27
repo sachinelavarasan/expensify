@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { format, parse } from 'date-fns';
 import { TimePickerModal } from 'react-native-paper-dates';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   value: string;
@@ -25,6 +26,7 @@ const TimePickerPaperWithButton = ({
   label,
   disabled = false,
 }: Props) => {
+  const { colors } = useThemeContext();
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<Date>(new Date());
 
@@ -64,7 +66,7 @@ const TimePickerPaperWithButton = ({
           <Text
             style={{
               fontSize: 14,
-              color: '#6B5DE6',
+              color: colors.primary,
               marginBottom: 6,
               fontFamily: 'Inter-400',
             }}>
@@ -79,7 +81,7 @@ const TimePickerPaperWithButton = ({
         }}
         disabled={disabled}
         style={{
-          backgroundColor: '#6B5DE6',
+          backgroundColor: colors.primary,
           borderWidth: 1,
           paddingHorizontal: 12,
           paddingVertical: 5,
@@ -112,7 +114,7 @@ const TimePickerPaperWithButton = ({
         <Text
           style={{
             fontSize: 12,
-            color: '#f02d3a',
+            color: colors.expense,
             marginTop: 4,
             fontFamily: 'Inter-300',
             maxWidth: 100,

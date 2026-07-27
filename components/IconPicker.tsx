@@ -78,17 +78,17 @@ const IconPicker = ({
                       style={{
                         backgroundColor:
                           selected === item
-                            ? '#6900FF'
+                            ? colors.primary
                             : theme == 'dark'
                               ? colors.barBackground
-                              : '#fff',
+                              : colors.cardBg,
                         padding: 5,
                         borderRadius: 5,
                       }}>
                       <MaterialIcons
                         name={item}
                         size={24}
-                        color={selected === item ? '#FFFFFF' : '#7A7A8C'}
+                        color={selected === item ? '#FFFFFF' : colors.lighterTitle}
                       />
                     </View>
                   </Pressable>
@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 14,
     fontFamily: 'Inter-600',
-    color: '#1E1E1E',
     marginBottom: 10,
   },
   label: {

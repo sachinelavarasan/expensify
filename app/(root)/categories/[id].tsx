@@ -184,7 +184,8 @@ const Category = () => {
     <SafeAreaViewComponent>
       <ThemedView style={styles.container}>
         {(isAdding || isEditing || isDeleting) && <OverlayLoader />}
-        <Animated.View style={[styles.floatingButton, animatedButtonStyle]}>
+        <Animated.View
+          style={[styles.floatingButton, { backgroundColor: colors.primary }, animatedButtonStyle]}>
           <TouchableOpacity
             style={{
               width: '100%',
@@ -308,7 +309,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   floatingButton: {
-    backgroundColor: '#6B5DE6',
     width: 50,
     height: 50,
     borderRadius: 25,

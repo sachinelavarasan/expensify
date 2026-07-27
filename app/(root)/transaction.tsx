@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,6 +41,8 @@ import { CustomSelectInput } from '@/components/CustomSelectInput';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import CustomSwitch from '@/components/Switch';
+import { Spacing } from '@/utils/Spacing';
+import { FontSize } from '@/utils/Typography';
 
 export default function Transaction() {
   const [isBulk, setIsBulk] = useState(false);
@@ -56,6 +59,19 @@ export default function Transaction() {
   const { mutateAsync: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
 
   const router = useRouter();
+
+  const formOpacity = useSharedValue(0);
+  const formTranslateY = useSharedValue(12);
+
+  useEffect(() => {
+    formOpacity.value = withTiming(1, { duration: 300 });
+    formTranslateY.value = withTiming(0, { duration: 300 });
+  }, []);
+
+  const formAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: formOpacity.value,
+    transform: [{ translateY: formTranslateY.value }],
+  }));
 
   const {
     control,
@@ -257,7 +273,7 @@ export default function Transaction() {
               )}
               renderItem={() => {
                 return (
-                  <View style={styles.formContainer}>
+                  <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
                     <View>
                       <View style={[styles.sectionContainer]}>
                         <Controller
@@ -319,7 +335,7 @@ export default function Transaction() {
                             name="exp_ts_time"
                           />
                         </View>
-                        <Spacer height={20} />
+                        <Spacer height={Spacing.xl} />
                         <Controller
                           control={control}
                           render={({ field }) => (
@@ -338,9 +354,11 @@ export default function Transaction() {
                           name="exp_tt_id"
                         />
                         {errors.exp_tt_id?.message ? (
-                          <Text style={styles.errorMessage}>{errors.exp_tt_id?.message}</Text>
+                          <Text style={[styles.errorMessage, { color: colors.expense }]}>
+                            {errors.exp_tt_id?.message}
+                          </Text>
                         ) : null}
-                        <Spacer height={20} />
+                        <Spacer height={Spacing.xl} />
 
                         <Controller
                           control={control}
@@ -381,7 +399,7 @@ export default function Transaction() {
                           name="exp_ts_title"
                         />
                       </View>
-                      <Spacer height={16} />
+                      <Spacer height={Spacing.lg} />
                       <View style={[styles.sectionContainer]}>
                         <View
                           style={{
@@ -452,10 +470,12 @@ export default function Transaction() {
                         </View>
 
                         {errors.exp_tc_id?.message ? (
-                          <Text style={styles.errorMessage}>{errors.exp_tc_id?.message}</Text>
+                          <Text style={[styles.errorMessage, { color: colors.expense }]}>
+                            {errors.exp_tc_id?.message}
+                          </Text>
                         ) : null}
                       </View>
-                      <Spacer height={12} />
+                      <Spacer height={Spacing.md} />
                       <Controller
                         control={control}
                         render={({ field }) => (
@@ -492,7 +512,7 @@ export default function Transaction() {
                       </View>
                       <Spacer height={70} />
                     </View>
-                  </View>
+                  </Animated.View>
                 );
               }}
               keyExtractor={() => 'form-transaction'}
@@ -547,6 +567,7 @@ export default function Transaction() {
             <TouchableOpacity
               style={[
                 styles.button,
+                { backgroundColor: colors.primary },
                 !isDirty || isFetching || isDeleting || isLoading ? styles.disable : {},
               ]}
               disabled={!isDirty || isFetching || isDeleting || isLoading}
@@ -587,9 +608,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.xl,
     paddingVertical: 9,
     width: 'auto',
   },
@@ -599,8 +619,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
+    // Fixed white text on a solid brand-colored button — high contrast in both themes.
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontFamily: 'Inter-600',
   },
   disable: {
@@ -622,8 +643,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   errorMessage: {
-    fontSize: 12,
-    color: '#f02d3a',
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-300',
     letterSpacing: 0.5,
   },
@@ -653,12 +673,12 @@ const styles = StyleSheet.create({
   },
   footer: {
     // height: 50,
+    // backgroundColor supplied via colors.barBackground where this style is used
     elevation: 10,
-    backgroundColor: '#FFFFFF',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.xl,
     paddingVertical: 10,
   },
   footerText: {
@@ -667,7 +687,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   subText: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
   },
   subTextContainer: {
@@ -679,7 +699,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   categoryLabel: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     fontFamily: 'Inter-500',
   },
 });

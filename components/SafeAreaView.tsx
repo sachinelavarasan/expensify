@@ -22,7 +22,7 @@ const SafeAreaViewComponent = ({
   return (
     <SafeAreaProvider>
       <SafeAreaView
-        style={[styles.container, style, { backgroundColor: colors.safeAreaView }]}
+        style={[styles.container, style, { backgroundColor: colors.bottomBarBackground }]}
         {...otherProps}>
         <ExpoStatus style={theme === 'dark' ? 'light' : 'dark'} />
         {children}

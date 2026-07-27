@@ -67,7 +67,7 @@ const Input = forwardRef(function MyInput(
           style={[
             styles.innerView,
             {
-              borderColor: error? '#64090e' :colors.inputBorder,
+              borderColor: error ? colors.expense : colors.inputBorder,
               borderRadius: 8,
               borderWidth: 1,
             },
@@ -111,7 +111,11 @@ const Input = forwardRef(function MyInput(
           ) : null}
         </View>
       </View>
-      {error ? <Text style={[styles.error, { top: inputHeight + 0 }]}>{error}</Text> : null}
+      {error ? (
+        <Text style={[styles.error, { top: inputHeight + 0, color: colors.expense }]}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 });
@@ -137,7 +141,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     fontSize: 16,
     fontFamily: 'Inter-400',
-    color: '#1E1E1E',
     paddingHorizontal: 20,
     borderRadius: 8,
     borderWidth: 1,
@@ -152,13 +155,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    color: '#B3B1C4',
     marginBottom: 6,
     fontFamily: 'Inter-500',
   },
   error: {
     fontSize: 12,
-    color: '#D9363E',
     position: 'absolute',
     fontFamily: 'Inter-300',
     letterSpacing: 0.5,

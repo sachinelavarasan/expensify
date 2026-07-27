@@ -6,6 +6,8 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-na
 
 import { useThemeContext } from '@/contexts/ThemedContext';
 import Spacer from './Spacer';
+import { FontSize } from '@/utils/Typography';
+import { Spacing } from '@/utils/Spacing';
 
 interface progressBar {
   category: string;
@@ -58,7 +60,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
       <Text
         style={{
           fontFamily: 'Inter-600',
-          fontSize: 14,
+          fontSize: FontSize.base,
           color: colors.title,
         }}>
         Spending by Category
@@ -115,7 +117,7 @@ function ProgressBar({ percentage, color }: { percentage: number; color: string 
         style={[
           {
             height: '100%',
-            backgroundColor: color || '#6C63FF',
+            backgroundColor: color || colors.primary,
             borderRadius: 4,
           },
           animatedStyle,
@@ -261,17 +263,14 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#0a0911',
-    padding: 12,
+    padding: Spacing.md,
     borderRadius: 8,
-    // borderColor: '#1e1a32',
     borderWidth: 1,
-    marginVertical: 16,
+    marginVertical: Spacing.lg,
   },
   tabContainer: {
     flexDirection: 'row',
-    marginBottom: 16,
-    // backgroundColor: '#1e1a32',
+    marginBottom: Spacing.lg,
     borderRadius: 8,
     padding: 5,
   },
@@ -284,27 +283,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tabText: {
-    // color: '#B3B1C4',
     fontFamily: 'Inter-500',
   },
   activeTabText: {
+    // Fixed white text on the active tab's brand-colored pill, intentionally theme-independent.
     color: '#fff',
   },
   card: {
-    padding: 8,
+    padding: Spacing.sm,
     marginBottom: 2,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   title: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontFamily: 'Inter-600',
-    // color: '#333',
   },
   amount: {
-    // color: '#B0AEC0',
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-400',
     textAlign: 'center',
   },
@@ -316,13 +313,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    // color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: FontSize.base,
     fontFamily: 'Inter-600',
   },
   subText: {
-    // color: '#8880A0',
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-400',
   },
   subTextContainer: {
@@ -335,16 +330,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     height: 20,
     width: '100%',
-    backgroundColor: '#1e1a32',
     borderRadius: 10,
     overflow: 'hidden',
+    // backgroundColor applied inline via colors.barBackground at usage site
   },
   segment: {
     height: '100%',
     borderRadius: 0,
   },
   legend: {
-    marginTop: 12,
+    marginTop: Spacing.md,
   },
   legendItem: {
     flexDirection: 'row',
@@ -354,12 +349,12 @@ const styles = StyleSheet.create({
   colorBox: {
     width: 14,
     height: 14,
-    marginRight: 8,
+    marginRight: Spacing.sm,
     borderRadius: 3,
   },
   legendText: {
-    color: '#ccc',
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-400',
+    // color applied inline via colors.description at usage site
   },
 });

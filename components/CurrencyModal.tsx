@@ -39,7 +39,7 @@ const CurrencyModal = ({
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
   updateSettings: (name: string, value: boolean | string) => void;
 }) => {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const [currencyVisible, setCurrencyVisible] = useState<string | number>('');
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
@@ -137,7 +137,7 @@ const CurrencyModal = ({
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
+        backdropColor={colors.scrim}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -163,7 +163,7 @@ const CurrencyModal = ({
               <TouchableOpacity
                 onPress={toggleModal}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={'#5a4f96'} size={20} />
+                <Ionicons name="close" color={colors.primary} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -191,7 +191,7 @@ const CurrencyModal = ({
                   }}
                   style={{
                     padding: 6,
-                    backgroundColor: watchCurrency === item.id ? '#6B5DE6' : 'transparent',
+                    backgroundColor: watchCurrency === item.id ? colors.primary : 'transparent',
                     borderRadius: 20,
                     width: 100,
                     alignItems: 'center',
@@ -222,7 +222,11 @@ const CurrencyModal = ({
 
             <View>
               <TouchableOpacity
-                style={[styles.button, isPending ? styles.disable : {}]}
+                style={[
+                  styles.button,
+                  { backgroundColor: colors.primary },
+                  isPending ? styles.disable : {},
+                ]}
                 onPress={handleSubmit(settingChange)}
                 disabled={ isPending}>
                 {isPending ? (
@@ -256,7 +260,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,

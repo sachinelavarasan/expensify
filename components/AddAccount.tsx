@@ -39,7 +39,7 @@ const schema = z.object({
 type BankAccount = z.infer<typeof schema>;
 
 const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?: number }) => {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const { mutateAsync: addBankAccount, isPending: isLoading } = useAddBankAccount();
   const { mutateAsync: updateBankAccount, isPending: isUpdating } = useUpdateBankAccount();
@@ -155,7 +155,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
       </Pressable>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
+        backdropColor={colors.scrim}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -181,7 +181,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
               </Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color="#5a4f96" size={20} />
+                <Ionicons name="close" color={colors.arrowColor} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -252,14 +252,14 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
                         }}>
                         <View
                           style={{
-                            backgroundColor: selectedIcon === item ? '#6B5DE6' : '#EBE9FC',
+                            backgroundColor: selectedIcon === item ? colors.primary : colors.cardBg,
                             padding: 5,
                             borderRadius: 5,
                           }}>
                           <MaterialIcons
                             name={item as React.ComponentProps<typeof MaterialIcons>['name']}
                             size={24}
-                            color={selectedIcon === item ? '#FFFFFF' : '#5A5A6E'}
+                            color={selectedIcon === item ? '#FFFFFF' : colors.lighterTitle}
                           />
                         </View>
                       </Pressable>
@@ -271,7 +271,11 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             <Spacer height={20} />
             <View>
               <TouchableOpacity
-                style={[styles.button, !isDirty || isLoading || isUpdating ? styles.disable : {}]}
+                style={[
+                  styles.button,
+                  { backgroundColor: colors.primary },
+                  !isDirty || isLoading || isUpdating ? styles.disable : {},
+                ]}
                 onPress={handleSubmit(handlePress)}
                 disabled={!isDirty || isLoading || isUpdating}>
                 {isLoading || isUpdating ? (
