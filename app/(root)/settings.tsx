@@ -293,11 +293,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  amount: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-  },
   left: {
     display: 'flex',
     flexDirection: 'row',
@@ -307,7 +302,6 @@ const styles = StyleSheet.create({
     maxWidth: deviceWidth() * 0.6,
   },
   option: {
-    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
@@ -323,7 +317,6 @@ const styles = StyleSheet.create({
   },
   subText: {
     fontSize: 12,
-    color: '#ccc',
     fontFamily: 'Inter-500',
     marginTop: 2,
   },

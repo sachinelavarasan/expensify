@@ -70,7 +70,7 @@ function CategoryProgressBar({
           <Text
             style={{
               fontSize: 10,
-              color: '#FFF',
+              color: colors.onPrimary,
               lineHeight: 20,
               fontFamily: 'Inter-600',
             }}>
@@ -175,14 +175,14 @@ function CollapsibleCategoryCard({
           <View style={styles.left}>
             <View
               style={{
-                backgroundColor: category.iconBg ? category.iconBg : '#282343',
+                backgroundColor: category.iconBg ? category.iconBg : colors.categoryFallbackBg,
                 padding: 5,
                 borderRadius: 5,
               }}>
               <MaterialIcons
                 name={category.icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 size={24}
-                color="#e0deed"
+                color={colors.categoryFallbackIcon}
               />
             </View>
             <View>
@@ -352,22 +352,11 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 18,
     fontFamily: 'Inter-600',
-    color: '#EAEAEA',
     paddingHorizontal: 16,
   },
   contentContainer: { paddingBottom: 30, paddingHorizontal: 16 },
-  itemContainer: {
-    padding: 8,
-    marginBottom: 12,
-    backgroundColor: '#2A2B37',
-    borderRadius: 6,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  name: { color: '#FFFFFF', fontSize: 14, fontFamily: 'Inter-600' },
   subTextContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' },
   cardSubtitle: {
-    color: '#E0E0FF',
     fontSize: 14,
     fontFamily: 'Inter-700',
     maxWidth: deviceWidth() - 200,
@@ -377,7 +366,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,77,79,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },

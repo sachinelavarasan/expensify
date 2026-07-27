@@ -92,8 +92,8 @@ const TimePickerPaperWithButton = ({
           justifyContent: 'center',
           width: 120,
         }}>
-        <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />
-        <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+        <Feather name="clock" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+        <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
           {formatDisplayTime(time) || value || placeholder || 'Select Time'}
         </Text>
       </Pressable>

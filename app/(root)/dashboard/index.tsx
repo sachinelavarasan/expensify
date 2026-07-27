@@ -220,8 +220,8 @@ export default function Index() {
           colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.floatingButton}>
-          <FontAwesome6 name="plus" size={22} color="#FFF" />
+          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
+          <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
         </LinearGradient>
       </TouchableOpacity>
       <TouchableOpacity
@@ -239,7 +239,7 @@ export default function Index() {
           colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.floatingButton}>
+          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
           <TransactionFilters
             applyFilters={applyFilters}
             searchText={search}
@@ -447,21 +447,10 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  month: {
-    color: '#6900FF',
-    fontSize: 17,
-    fontFamily: 'Inter-700',
-  },
   monthSwitch: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-  },
-
-  title: {
-    color: '#1C1C29',
-    fontSize: 16,
-    fontFamily: 'Inter-600',
   },
   totalAmount: {
     // color intentionally omitted: always overridden inline with a theme color (colors.title)
@@ -474,7 +463,6 @@ const styles = StyleSheet.create({
     // color intentionally omitted: always overridden inline with a theme color (colors.lighterTitle)
   },
   floatingButton: {
-    backgroundColor: '#5a4f96',
     width: 45,
     height: 45,
     borderRadius: 20,
@@ -484,7 +472,6 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: 0,
     elevation: 2,
-    shadowColor: '#000',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 1,
     shadowRadius: 3.84,

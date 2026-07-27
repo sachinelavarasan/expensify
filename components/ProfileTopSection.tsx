@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ThemedView } from './ThemedView';
 import UpdateProfile from './UpdateProfile';
+import { ProfileHeroGradient } from '@/utils/Colors';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -104,7 +105,7 @@ export default function AnimatedTopSection({
           />
         )} */}
         <LinearGradient
-          colors={['#2E026D', '#15162C', '#0F0E17']}
+          colors={ProfileHeroGradient as [string, string, string]}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           locations={[0.1, 0.5, 1]}
@@ -119,6 +120,7 @@ export default function AnimatedTopSection({
           {
             backgroundColor: colors.bottomBarBackground,
             borderColor: colors.background,
+            shadowColor: colors.shadow,
           },
         ]}>
         <ProfileImageUploader />
@@ -249,7 +251,6 @@ const styles = StyleSheet.create({
   titleTextInHeader: {
     fontSize: 16,
     fontFamily: 'Inter-700',
-    color: '#FFF',
   },
 
   subtitleTextInHeader: {
@@ -267,10 +268,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12, // spacing inside
     borderRadius: 20, // smoother card look
-    backgroundColor: '#1A1825', // darker than app bg
     // borderWidth: 1,
-    borderColor: '#2E026D', // subtle accent border
-    shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 5,

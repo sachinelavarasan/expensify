@@ -74,8 +74,8 @@ const CustomDatePicker = forwardRef<any, Props>(
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Entypo name="calendar" size={14} color="#1E1E1E" style={{ marginRight: 5 }} />
-          <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+          <Entypo name="calendar" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+          <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
             {date ? formatDateForDisplay(date) : placeholder || 'Pick a date'}
           </Text>
         </TouchableOpacity>
@@ -94,7 +94,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             onChange(formatted);
           }}
           onCancel={() => setOpen(false)}
-          buttonColor="#ffffff"
+          buttonColor={colors.onPrimary}
           title="Choose date"
           confirmText="Select"
           cancelText="Cancel"

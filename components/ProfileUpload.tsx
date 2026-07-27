@@ -69,11 +69,11 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
             position: 'absolute',
             bottom: 2,
             right: 10,
-            backgroundColor: '#00000090',
+            backgroundColor: colors.scrim,
             padding: 6,
             borderRadius: 20,
           }}>
-          <FontAwesome6 name="edit" size={12} color="#ccc" />
+          <FontAwesome6 name="edit" size={12} color={colors.onPrimary} />
         </View>
       )}
     </TouchableOpacity>

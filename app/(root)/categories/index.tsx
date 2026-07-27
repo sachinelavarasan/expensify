@@ -132,7 +132,11 @@ export default function Category() {
         }}>
         {(loading || isLoading) && <OverlayLoader />}
         <Animated.View
-          style={[styles.floatingButton, { backgroundColor: colors.primary }, animatedButtonStyle]}>
+          style={[
+            styles.floatingButton,
+            { backgroundColor: colors.primary, shadowColor: colors.shadow },
+            animatedButtonStyle,
+          ]}>
           <TouchableOpacity
             style={{
               width: '100%',
@@ -141,7 +145,7 @@ export default function Category() {
               justifyContent: 'center',
             }}
             onPress={handlePress}>
-            <Entypo name="plus" size={24} color="white" />
+            <Entypo name="plus" size={24} color={colors.onPrimary} />
           </TouchableOpacity>
         </Animated.View>
         <ProfileHeader title="Categories" />
@@ -160,7 +164,7 @@ export default function Category() {
               style={[
                 styles.tabText,
                 { color: colors.description },
-                activeTab === 'income' && styles.activeTabText,
+                activeTab === 'income' && { color: colors.onPrimary },
               ]}>
               Income
             </Text>
@@ -180,7 +184,7 @@ export default function Category() {
               style={[
                 styles.tabText,
                 { color: colors.description },
-                activeTab === 'expense' && styles.activeTabText,
+                activeTab === 'expense' && { color: colors.onPrimary },
               ]}>
               Expense
             </Text>
@@ -217,7 +221,7 @@ export default function Category() {
                         <Pressable>
                           <View
                             style={{
-                              backgroundColor: item.exp_tc_icon_bg_color || '#282343',
+                              backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
                               padding: 5,
                               borderRadius: 5,
                               height: 35,
@@ -233,7 +237,7 @@ export default function Category() {
                                   >['name']
                                 }
                                 size={24}
-                                color="#e0deed"
+                                color={colors.categoryFallbackIcon}
                               />
                             )}
                           </View>
@@ -266,7 +270,7 @@ export default function Category() {
                       <Pressable>
                         <View
                           style={{
-                            backgroundColor: item.exp_tc_icon_bg_color || '#282343',
+                            backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
                             padding: 5,
                             borderRadius: 5,
                             height: 35,
@@ -282,7 +286,7 @@ export default function Category() {
                                 >['name']
                               }
                               size={24}
-                              color="#e0deed"
+                              color={colors.categoryFallbackIcon}
                             />
                           )}
                         </View>
@@ -337,20 +341,12 @@ const styles = StyleSheet.create({
   tabText: {
     fontFamily: 'Inter-500',
   },
-  activeTabText: {
-    color: '#FFFFFF',
-  },
   card: {
     padding: 10,
     marginBottom: 5,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  amount: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
   },
   left: {
     display: 'flex',
@@ -373,7 +369,6 @@ const styles = StyleSheet.create({
     bottom: 45,
     right: 0,
     elevation: 5,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,

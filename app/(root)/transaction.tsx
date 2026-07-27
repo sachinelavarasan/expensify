@@ -534,7 +534,11 @@ export default function Transaction() {
                     shouldDirty: true,
                   });
                 }}>
-                <MaterialIcons name={exp_st_id ? 'star' : 'star-border'} size={20} color="#FFB347" />
+                <MaterialIcons
+                  name={exp_st_id ? 'star' : 'star-border'}
+                  size={20}
+                  color={colors.favorite}
+                />
               </TouchableOpacity>
 
               {exp_ts_id ? (
@@ -573,9 +577,14 @@ export default function Transaction() {
               disabled={!isDirty || isFetching || isDeleting || isLoading}
               onPress={handleSubmit(onSubmit)}>
               {isLoading ? (
-                <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
               ) : null}
-              <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>
+              <Text
+                style={[
+                  styles.title,
+                  { color: colors.onPrimary },
+                  isLoading ? styles.textDisable : {},
+                ]}>
                 {exp_ts_id ? 'Update' : 'Add'}
               </Text>
             </TouchableOpacity>
@@ -619,8 +628,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    // Fixed white text on a solid brand-colored button — high contrast in both themes.
-    color: '#FFFFFF',
+    // color applied inline via colors.onPrimary at usage site (button sits on colors.primary)
     fontSize: FontSize.md,
     fontFamily: 'Inter-600',
   },
@@ -628,48 +636,10 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   textDisable: { opacity: 0 },
-  errorContainer: {
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    display: 'flex',
-    width: '100%',
-    paddingTop: 20,
-    paddingBottom: 10,
-  },
-  error: {
-    fontSize: 14,
-    color: '#f02d3a',
-    fontFamily: 'Inter-500',
-    letterSpacing: 0.5,
-  },
   errorMessage: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-300',
     letterSpacing: 0.5,
-  },
-  label: {
-    fontSize: 18,
-    color: '#1E1E1E',
-    fontFamily: 'Inter-600',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    color: '#b7b6c1',
-    marginBottom: 2,
-    fontFamily: 'Inter-700',
-    textDecorationLine: 'underline',
-  },
-  sectionTitleContainer: {
-    marginBottom: 10,
-  },
-  interest: {
-    backgroundColor: '#323448',
-    paddingHorizontal: 20,
-    paddingVertical: 6,
-    borderRadius: 6,
-    color: '#c7c7c7',
-    fontFamily: 'Inter-600',
-    textAlign: 'center',
   },
   footer: {
     // height: 50,
@@ -680,11 +650,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: Spacing.xl,
     paddingVertical: 10,
-  },
-  footerText: {
-    color: '#fff',
-    fontSize: 18,
-    fontFamily: 'Inter-600',
   },
   subText: {
     fontSize: FontSize.sm,

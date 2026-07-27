@@ -5,12 +5,12 @@ import {
   View,
   Text,
   StyleSheet,
-  Platform,
   TouchableOpacity,
   Pressable,
   FlatList,
 } from 'react-native';
 import { deviceWidth } from '@/utils/functions';
+import { BankCardPalette } from '@/utils/Colors';
 
 import { useUser } from '@clerk/clerk-expo';
 import AnimatedTopSection from '@/components/ProfileTopSection';
@@ -23,10 +23,6 @@ import BankCard from '@/components/AccountCard';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
 import AnimatedLogoutIcon from '@/components/LogOutModal';
-
-const deviceWidthAsNumber = deviceWidth() - 67;
-
-const CARD_WIDTH = deviceWidthAsNumber / 2;
 
 const Profile = () => {
   const { colors, theme } = useThemeContext();
@@ -56,7 +52,7 @@ const Profile = () => {
             ]}>
             <View style={styles.left}>
               <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
-                <MaterialIcons name="account-balance" size={24} color="#FFF" />
+                <MaterialIcons name="account-balance" size={24} color={colors.onPrimary} />
               </View>
               <View>
                 <View>
@@ -104,7 +100,7 @@ const Profile = () => {
               // accountNumber="123456789012"
               balance={item.exp_ba_balance}
               variant={theme}
-              accent="#6C63FF"
+              accent={theme === 'dark' ? BankCardPalette.dark.gradDefault : BankCardPalette.light.gradDefault}
               onPress={() => {
                 router.push(`/accounts/${item.exp_ba_id}`);
               }}
@@ -120,7 +116,7 @@ const Profile = () => {
               ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
-                  <MaterialIcons name="category" size={24} color="#FFF" />
+                  <MaterialIcons name="category" size={24} color={colors.onPrimary} />
                 </View>
                 <View>
                   <View>
@@ -148,7 +144,7 @@ const Profile = () => {
               ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
-                  <MaterialIcons name="star" size={24} color="#FFF" />
+                  <MaterialIcons name="star" size={24} color={colors.onPrimary} />
                 </View>
                 <View>
                   <View>
@@ -177,7 +173,7 @@ const Profile = () => {
               ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
-                  <MaterialIcons name="import-export" size={24} color="#FFF" />
+                  <MaterialIcons name="import-export" size={24} color={colors.onPrimary} />
                 </View>
                 <View>
                   <View>
@@ -206,7 +202,7 @@ const Profile = () => {
               ]}>
               <View style={styles.left}>
                 <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
-                  <MaterialIcons name="settings" size={24} color="#FFF" />
+                  <MaterialIcons name="settings" size={24} color={colors.onPrimary} />
                 </View>
                 <View>
                   <View>
@@ -253,53 +249,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontFamily: 'Inter-800',
   },
-  email: {
-    fontSize: 16,
-    color: 'gray',
-    fontFamily: 'Inter-500',
-  },
   btnContainer: {
     alignItems: 'center',
     marginTop: 20,
-  },
-  button: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: '#6900FF',
-    borderRadius: 8,
-    paddingVertical: Platform.OS === 'android' ? 10 : 16,
-    width: '100%',
-  },
-  loader: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    color: '#FFF',
-    fontSize: 16,
-    fontFamily: 'Inter-600',
-  },
-  topSection: {
-    paddingBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  label: {
-    color: '#8880A0',
-    fontSize: 14,
-    marginTop: 10,
-    marginBottom: 2,
-    fontFamily: 'Inter-500',
-  },
-  infoText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Inter-600',
   },
   card: {
     paddingVertical: 8,
@@ -310,11 +262,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
   },
-  amount: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-  },
   left: {
     display: 'flex',
     flexDirection: 'row',
@@ -323,12 +270,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   option: {
-    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#6F6D85',
     fontSize: 12,
     fontFamily: 'Inter-500',
     wordWrap: 'wrap',
@@ -339,25 +284,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
-  },
-  logoutText: {
-    color: '#f1f1f6',
-  },
-  logoutBg: {
-    backgroundColor: '#282343',
-  },
-  accountCard: {
-    borderWidth: 1,
-    borderColor: '#463e75',
-    padding: 5,
-    borderRadius: 4,
-    width: CARD_WIDTH,
-  },
-  accountlabel: {
-    color: '#B3B1C4',
-    fontSize: 13,
-    fontFamily: 'Inter-600',
-    width: CARD_WIDTH * 0.5,
   },
 });
 

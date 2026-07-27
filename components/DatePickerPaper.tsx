@@ -88,8 +88,8 @@ const DatePickerPaper = forwardRef<any, Props>(
             flexDirection: 'row',
             alignItems: 'center',
           }}>
-          <Entypo name="calendar" size={14} color="#ffffff" style={{ marginRight: 5 }} />
-          <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+          <Entypo name="calendar" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+          <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
             {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
           </Text>
         </TouchableOpacity>

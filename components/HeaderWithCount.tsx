@@ -46,7 +46,6 @@ export default HeaderWithCount;
 const styles = StyleSheet.create({
   header: {
     fontSize: 24,
-    color: '#FFFFFF',
     fontFamily: 'Inter-700',
     textTransform: 'capitalize',
   },
@@ -64,14 +63,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   countText: {
-    color: '#c7c7c7',
     fontSize: 16,
     fontFamily: 'Inter-500',
     marginLeft: 3,
   },
   subTitle: {
     fontSize: 18,
-    color: '#b7b6c1',
     fontFamily: 'Inter-700',
   },
 });

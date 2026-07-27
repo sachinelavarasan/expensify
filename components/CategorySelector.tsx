@@ -63,7 +63,7 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
                 <MaterialIcons
                   name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                   size={16}
-                  color="#fff"
+                  color={colors.onPrimary}
                 />
               </View>
               <Text
@@ -72,7 +72,9 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
                   fontSize: 12,
                   padding: 5,
                   color:
-                    selected === item.exp_tc_id || theme !== 'light' ? '#FFFFFF' : colors.title,
+                    selected === item.exp_tc_id || theme !== 'light'
+                      ? colors.onPrimary
+                      : colors.title,
                 }}>
                 {item.exp_tc_label}
               </Text>
@@ -95,7 +97,7 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
             marginBottom: 5,
             backgroundColor: colors.primary,
           }}>
-          <Text style={{ color: '#fff', fontSize: 12, fontFamily: 'Inter-600' }}>
+          <Text style={{ color: colors.onPrimary, fontSize: 12, fontFamily: 'Inter-600' }}>
             {showAll ? 'View Less' : 'View More'}
           </Text>
         </Pressable>

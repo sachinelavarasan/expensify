@@ -174,9 +174,16 @@ const UpdateProfile = ({
                 onPress={handleSubmit(onSubmit)}
                 disabled={!isValid || isLoading}>
                 {isLoading ? (
-                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isLoading ? styles.textDisable : {}]}>Update</Text>
+                <Text
+                  style={[
+                    styles.btntitle,
+                    { color: colors.onPrimary },
+                    isLoading ? styles.textDisable : {},
+                  ]}>
+                  Update
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -219,7 +226,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },

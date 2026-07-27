@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import DatePicker, { getFormatedDate } from 'react-native-modern-datepicker';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { NativeDarkPickerTheme } from '@/utils/Colors';
 
 export default function CustomTimePicker({
   onDateChange,
@@ -87,13 +88,7 @@ export default function CustomTimePicker({
           <DatePicker
             onTimeChange={(date) => handleConfirm(date)}
             options={{
-              backgroundColor: '#0E0E10',
-              textHeaderColor: '#6900FF',
-              textDefaultColor: '#717171',
-              selectedTextColor: '#0E0E10',
-              mainColor: '#0E0E10',
-              textSecondaryColor: '#6900FF',
-              borderColor: '#606060',
+              ...NativeDarkPickerTheme,
             }}
             minuteInterval={1}
             current={selectedDate}
@@ -108,7 +103,6 @@ export default function CustomTimePicker({
 }
 const styles = StyleSheet.create({
   inputContainer: {
-    borderColor: '#F2F2F2',
     borderRadius: 6,
     borderWidth: 1,
     marginBottom: 0,
@@ -123,30 +117,24 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === 'android' ? 12 : 15,
     fontSize: 16,
     fontFamily: 'Inter-500',
-    color: '#717171',
     paddingHorizontal: 20,
   },
   label: {
     fontSize: 16,
-    color: '#000',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },
   error: {
     fontSize: 12,
-    color: '#f02d3a',
     marginTop: 5,
     fontFamily: 'Inter-300',
     letterSpacing: 0.5,
   },
   borderNone: {
     borderWidth: 0,
-    backgroundColor: '#1E1E1E',
   },
   // titleText: {
   //   fontSize: 15,
   // },
-  placeholder: {
-    color: '#717171',
-  },
+  placeholder: {},
 });

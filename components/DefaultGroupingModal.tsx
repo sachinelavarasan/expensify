@@ -163,9 +163,16 @@ const DefaultGroupingModal = ({
                 onPress={handleSubmit(settingChange)}
                 disabled={!isDirty || isPending}>
                 {isPending ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>Submit</Text>
+                <Text
+                  style={[
+                    styles.btntitle,
+                    { color: colors.onPrimary },
+                    isPending ? styles.textDisable : {},
+                  ]}>
+                  Submit
+                </Text>
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -180,7 +187,6 @@ export default DefaultGroupingModal;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,
@@ -188,14 +194,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    color: '#FFFFFF',
     fontFamily: 'Inter-600',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -207,7 +211,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -227,11 +230,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  amount: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-  },
   left: {
     display: 'flex',
     flexDirection: 'row',
@@ -239,13 +237,11 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   option: {
-    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
    subText: {
     fontSize: 12,
-    color: '#ccc',
     fontFamily: 'Inter-500',
     marginTop: 2,
   },

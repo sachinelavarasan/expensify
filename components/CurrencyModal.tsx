@@ -201,7 +201,7 @@ const CurrencyModal = ({
                     style={[
                       styles.subText,
                       {
-                        color: watchCurrency === item.id ? '#FFF' : colors.description,
+                        color: watchCurrency === item.id ? colors.onPrimary : colors.description,
                         fontSize: 14,
                       },
                     ]}>
@@ -230,9 +230,16 @@ const CurrencyModal = ({
                 onPress={handleSubmit(settingChange)}
                 disabled={ isPending}>
                 {isPending ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>Submit</Text>
+                <Text
+                  style={[
+                    styles.btntitle,
+                    { color: colors.onPrimary },
+                    isPending ? styles.textDisable : {},
+                  ]}>
+                  Submit
+                </Text>
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -271,7 +278,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -305,7 +311,6 @@ const styles = StyleSheet.create({
   },
   subText: {
     fontSize: 12,
-    color: '#ccc',
     fontFamily: 'Inter-500',
     marginTop: 2,
   },

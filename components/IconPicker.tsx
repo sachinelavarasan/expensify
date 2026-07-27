@@ -88,7 +88,7 @@ const IconPicker = ({
                       <MaterialIcons
                         name={item}
                         size={24}
-                        color={selected === item ? '#FFFFFF' : colors.lighterTitle}
+                        color={selected === item ? colors.onPrimary : colors.lighterTitle}
                       />
                     </View>
                   </Pressable>

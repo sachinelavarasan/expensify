@@ -63,13 +63,16 @@ const HomeHeader = ({
 
       {(!showBalance || carryBalance) && (
         <LinearGradient
-          colors={['#6B5DE6', '#705AD4']}
+          colors={colors.floatingBtnBg as [string, string]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.balance, { marginBottom: 0 }]}>
-          <Text style={[styles.balanceText]}>Balance:</Text>
+          <Text style={[styles.balanceText, { color: colors.onPrimary }]}>Balance:</Text>
           <Text
-            style={[styles.balanceText, { fontFamily: 'Inter-600', marginLeft: 6, color: '#FFF' }]}
+            style={[
+              styles.balanceText,
+              { fontFamily: 'Inter-600', marginLeft: 6, color: colors.onPrimary },
+            ]}
             numberOfLines={1}>
             {formatToCurrency(balance)}
           </Text>
@@ -99,13 +102,11 @@ const styles = StyleSheet.create({
     // elevation: 6,
   },
   cardTitle: {
-    color: '#F4F5F8',
     fontSize: 14,
     fontFamily: 'Inter-600',
     paddingBottom: 5,
   },
   cardSubtitle: {
-    color: '#E0E0FF',
     fontSize: 14,
     fontFamily: 'Inter-700',
     maxWidth: cardWidth - 50,
@@ -114,7 +115,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#37955e25',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#ff4d4f26',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -138,6 +137,5 @@ const styles = StyleSheet.create({
   balanceText: {
     fontSize: 13,
     fontFamily: 'Inter-500',
-    color: '#EDEDED',
   },
 });

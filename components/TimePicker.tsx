@@ -72,8 +72,8 @@ const CustomTimePicker = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />
-        <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+        <Feather name="clock" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+        <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
           {value || placeholder || 'Select Time'}
         </Text>
       </TouchableOpacity>
@@ -91,7 +91,7 @@ const CustomTimePicker = ({
           onChange(formatted);
         }}
         onCancel={() => setOpen(false)}
-        buttonColor="#ffffff"
+        buttonColor={colors.onPrimary}
         title="Choose time"
         confirmText="Select"
         cancelText="Cancel"

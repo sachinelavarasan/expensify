@@ -90,8 +90,8 @@ const TimePickerPaper = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />
-        <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+        <Feather name="clock" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+        <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
           {formatDisplayTime(time) || placeholder || 'Select Time'}
         </Text>
       </TouchableOpacity>

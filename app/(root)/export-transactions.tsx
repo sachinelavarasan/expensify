@@ -159,9 +159,9 @@ export default function ExportData() {
                 disabled={!start || !end}
                 onPress={download}>
                 {isPdfLoading || isPending ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.title, isPdfLoading || isPending  ? styles.textDisable : {}]}>
+                <Text style={[styles.title, { color: colors.onPrimary }, isPdfLoading || isPending  ? styles.textDisable : {}]}>
                   Export Now
                 </Text>
               </TouchableOpacity>
@@ -195,7 +195,7 @@ export default function ExportData() {
                   }
                 ]}
                 onPress={() => router.push('/(root)/import-transactions')}>
-                <Text style={[styles.title]}>
+                <Text style={[styles.title, { color: colors.onPrimary }]}>
                   Import Transactions
                 </Text>
               </TouchableOpacity>
@@ -225,18 +225,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    color: '#FFF',
     fontSize: FontSize.md,
     fontFamily: 'Inter-600',
   },
-  logoutBg: {
-    backgroundColor: '#076ae3',
-  },
-  opacityBg: {
-    backgroundColor: '#2E8B57',
-  },
+  logoutBg: {},
+  opacityBg: {},
   card: {
-    borderColor: '#5a4f96',
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 15,
@@ -253,7 +247,6 @@ const styles = StyleSheet.create({
   },
   subText: {
     fontSize: FontSize.base,
-    color: '#ccc',
     marginTop: 2,
     fontFamily: 'Inter-500',
   },
@@ -261,26 +254,12 @@ const styles = StyleSheet.create({
     padding: 12,
   },
 
-  itemContainer: {
-    padding: 8,
-    marginBottom: 12,
-    backgroundColor: '#141221',
-    borderRadius: 4,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   left: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     flex: 1,
-  },
-  name: {
-    color: '#FFFFFF',
-    fontSize: FontSize.base,
-    fontFamily: 'Inter-600',
   },
   subTextContainer: {
     display: 'flex',

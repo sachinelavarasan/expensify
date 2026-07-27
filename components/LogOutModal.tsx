@@ -156,7 +156,7 @@ const AnimatedLogoutIcon = () => {
             ]}
             onPress={handleProceed}
             disabled={loading}>
-            <Text style={styles.buttonText}>Yes, logout</Text>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Yes, logout</Text>
           </Pressable>
         </View>
       </View>
@@ -167,11 +167,11 @@ const AnimatedLogoutIcon = () => {
   return (
     <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#cc1928' }]}
+        style={[styles.button, { backgroundColor: colors.danger }]}
         onPress={openModal}
         disabled={loading}>
-        <Ionicons name="log-out-outline" size={24} color="#fff" style={{ marginRight: 8 }} />
-        <Text style={styles.logoutText}>Logout</Text>
+        <Ionicons name="log-out-outline" size={24} color={colors.onPrimary} style={{ marginRight: 8 }} />
+        <Text style={[styles.logoutText, { color: colors.onPrimary }]}>Logout</Text>
       </TouchableOpacity>
 
       <BottomSheetModal
@@ -214,13 +214,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
   logoutText: {
     fontSize: 17,
-    color: '#fff',
     fontFamily: 'Inter-600',
   },
   button: {

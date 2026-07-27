@@ -162,9 +162,16 @@ const DefaultTransactionModal = ({
                 onPress={handleSubmit(settingChange)}
                 disabled={!isDirty || isPending}>
                 {isPending ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isPending ? styles.textDisable : {}]}>Submit</Text>
+                <Text
+                  style={[
+                    styles.btntitle,
+                    { color: colors.onPrimary },
+                    isPending ? styles.textDisable : {},
+                  ]}>
+                  Submit
+                </Text>
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -203,7 +210,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -217,7 +223,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#B3B1C4',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },
@@ -230,7 +235,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   amount: {
-    color: '#A0A0A0',
     fontSize: 14,
     fontFamily: 'Inter-500',
   },
@@ -243,13 +247,11 @@ const styles = StyleSheet.create({
     maxWidth: deviceWidth() * 0.65,
   },
   option: {
-    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },
    subText: {
     fontSize: 12,
-    color: '#ccc',
     fontFamily: 'Inter-500',
     marginTop: 2,
   },

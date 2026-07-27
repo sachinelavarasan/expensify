@@ -91,7 +91,7 @@ const Input = forwardRef(function MyInput(
             autoCapitalize="none"
             spellCheck={false}
             placeholderTextColor={colors.inputPlaceholder}
-            selectionColor="#fdfdfd"
+            selectionColor={colors.text}
             cursorColor={colors.secondary}
             editable={editable}
           />

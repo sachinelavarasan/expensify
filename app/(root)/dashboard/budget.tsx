@@ -90,7 +90,7 @@ function BudgetProgressBar({
       <View
         style={{
           height: 18,
-          backgroundColor: '#6e6c706c',
+          backgroundColor: colors.barBackground,
           borderRadius: 9,
           overflow: 'hidden',
           marginTop: 6,
@@ -320,7 +320,9 @@ const Budget = () => {
                         <View style={styles.left}>
                           <View
                             style={{
-                              backgroundColor: category.iconBg ? category.iconBg : '#282343',
+                              backgroundColor: category.iconBg
+                                ? category.iconBg
+                                : colors.categoryFallbackBg,
                               padding: 5,
                               borderRadius: 5,
                             }}>
@@ -329,7 +331,7 @@ const Budget = () => {
                                 category.icon as React.ComponentProps<typeof MaterialIcons>['name']
                               }
                               size={24}
-                              color="#e0deed"
+                              color={colors.categoryFallbackIcon}
                             />
                           </View>
                           <View>
@@ -451,9 +453,14 @@ const Budget = () => {
                     onPress={handleDelete}
                     disabled={isLoading || isUpdating || isDeleting}>
                     {isLoading || isDeleting ? (
-                      <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                      <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                     ) : null}
-                    <Text style={[styles.btntitle, isLoading || isDeleting ? styles.disable : {}]}>
+                    <Text
+                      style={[
+                        styles.btntitle,
+                        { color: colors.onPrimary },
+                        isLoading || isDeleting ? styles.disable : {},
+                      ]}>
                       Delete
                     </Text>
                   </TouchableOpacity>
@@ -467,9 +474,14 @@ const Budget = () => {
                   onPress={handleSubmit(handlePress)}
                   disabled={!isDirty || isLoading || isUpdating || isDeleting}>
                   {isLoading || isUpdating ? (
-                    <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                    <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                   ) : null}
-                  <Text style={[styles.btntitle, isLoading || isUpdating ? styles.disable : {}]}>
+                  <Text
+                    style={[
+                      styles.btntitle,
+                      { color: colors.onPrimary },
+                      isLoading || isUpdating ? styles.disable : {},
+                    ]}>
                     {currentBudget?.exp_bg_id ? 'Update' : 'Create'}
                   </Text>
                 </TouchableOpacity>
@@ -556,8 +568,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    // Fixed white text on the solid brand-colored budget button, intentionally theme-independent.
-    color: '#FFFFFF',
+    // color applied inline via colors.onPrimary at each usage site (text on a solid-colored button)
     fontSize: FontSize.md,
     fontFamily: 'Inter-600',
   },

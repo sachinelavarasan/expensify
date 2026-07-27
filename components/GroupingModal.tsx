@@ -41,8 +41,8 @@ const GroupingModal = ({
     <>
       <TouchableOpacity style={[styles.card, { backgroundColor: colors.primary }]} onPress={toggleModal}>
         <View style={styles.chip}>
-          <Text style={[styles.subText, { color: '#ffffff' }]}>{grouping}</Text>
-          <Entypo name="chevron-small-down" size={20} color="#fff" />
+          <Text style={[styles.subText, { color: colors.onPrimary }]}>{grouping}</Text>
+          <Entypo name="chevron-small-down" size={20} color={colors.onPrimary} />
         </View>
       </TouchableOpacity>
 
@@ -90,7 +90,7 @@ const GroupingModal = ({
               <TouchableOpacity
                 style={[styles.button, { backgroundColor: colors.primary }]}
                 onPress={settingChange}>
-                <Text style={[styles.btntitle]}>Apply</Text>
+                <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -105,7 +105,6 @@ export default GroupingModal;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#16161A',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 15,
@@ -113,14 +112,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    color: '#FFFFFF',
     fontFamily: 'Inter-600',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -132,7 +129,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -148,13 +144,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 50,
-    backgroundColor: '#6B5DE6',
     flexShrink: 1,
-  },
-  amount: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
   },
   chip: {
     display: 'flex',
@@ -162,11 +152,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-  },
-  option: {
-    color: '#F1F1F6',
-    fontSize: 14,
-    fontFamily: 'Inter-600',
   },
   subText: {
     fontSize: 14,

@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
   dateHeader: {
     fontSize: 14,
     fontFamily: 'Inter-600',
-    color: '#1E1E1E',
     marginBottom: 5,
   },
   subText: {

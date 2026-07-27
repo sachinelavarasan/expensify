@@ -15,7 +15,7 @@ export default function TabLayout() {
 
   // Inactive icons sit directly on the bottom bar background, so they use a theme
   // token; active icons render on a solid brand-colored pill (see BottomTabBar.tsx)
-  // so a fixed white stays high-contrast in both themes.
+  // so they use colors.onPrimary to stay high-contrast in both themes.
   const ROUTES: {
     name: string;
     title: string;
@@ -26,25 +26,25 @@ export default function TabLayout() {
       name: 'index',
       title: 'Home',
       icon: <Entypo name="home" size={24} color={colors.lighterTitle} />,
-      activeIcon: <Entypo name="home" size={24} color="#FFFFFF" />,
+      activeIcon: <Entypo name="home" size={24} color={colors.onPrimary} />,
     },
     {
       name: 'budget',
       title: 'Budget',
       icon: <FontAwesome name="get-pocket" size={24} color={colors.lighterTitle} />,
-      activeIcon: <FontAwesome name="get-pocket" size={24} color="#FFFFFF" />,
+      activeIcon: <FontAwesome name="get-pocket" size={24} color={colors.onPrimary} />,
     },
     {
       name: 'stats',
       title: 'Stats',
       icon: <Ionicons name="stats-chart" size={24} color={colors.lighterTitle} />,
-      activeIcon: <Ionicons name="stats-chart" size={24} color="#FFFFFF" />,
+      activeIcon: <Ionicons name="stats-chart" size={24} color={colors.onPrimary} />,
     },
     {
       name: 'profile',
       title: 'Profile',
       icon: <Feather name="user" size={24} color={colors.lighterTitle} />,
-      activeIcon: <Feather name="user" size={24} color="#FFFFFF" />,
+      activeIcon: <Feather name="user" size={24} color={colors.onPrimary} />,
       // icon: <Feather name="menu" size={24} color={colors.lighterTitle} />,
       // activeIcon: <Feather name="menu" size={24} color="#FFFFFF" />,
     },

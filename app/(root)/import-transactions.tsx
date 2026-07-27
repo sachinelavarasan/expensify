@@ -284,7 +284,9 @@ export default function ImportTransactions() {
                           ? { ...styles.stepDotActive, backgroundColor: colors.primary }
                           : { ...styles.stepDotInactive, backgroundColor: colors.secondary },
                       ]}>
-                      <Text style={styles.stepDotText}>{idx + 1}</Text>
+                      <Text style={[styles.stepDotText, { color: colors.onPrimary }]}>
+                        {idx + 1}
+                      </Text>
                     </View>
                     <Text
                       style={[
@@ -346,7 +348,7 @@ export default function ImportTransactions() {
                     },
                   ]}
                   onPress={pickExcelFile}>
-                  <Text style={styles.title}>Choose a File</Text>
+                  <Text style={[styles.title, { color: colors.onPrimary }]}>Choose a File</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -418,8 +420,15 @@ export default function ImportTransactions() {
                       (!canGoNextFromMap || processing) && styles.disable,
                     ]}
                     onPress={generatePreview}>
-                    {processing && <ActivityIndicator color="#FFF" style={styles.loader} />}
-                    <Text style={[styles.title, processing && styles.textDisable]}>
+                    {processing && (
+                      <ActivityIndicator color={colors.onPrimary} style={styles.loader} />
+                    )}
+                    <Text
+                      style={[
+                        styles.title,
+                        { color: colors.onPrimary },
+                        processing && styles.textDisable,
+                      ]}>
                       Generate Preview
                     </Text>
                   </TouchableOpacity>
@@ -461,7 +470,7 @@ export default function ImportTransactions() {
                       <TouchableOpacity
                         style={[styles.button, styles.accent, { backgroundColor: colors.income }]}
                         onPress={toggleValid}>
-                        <Text style={[styles.title]}>View valid</Text>
+                        <Text style={[styles.title, { color: colors.onPrimary }]}>View valid</Text>
                       </TouchableOpacity>
                     ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
                   </View>
@@ -475,7 +484,7 @@ export default function ImportTransactions() {
                       <TouchableOpacity
                         style={[styles.button, styles.danger, { backgroundColor: colors.expense }]}
                         onPress={toggleInvalid}>
-                        <Text style={styles.title}>View invalid</Text>
+                        <Text style={[styles.title, { color: colors.onPrimary }]}>View invalid</Text>
                       </TouchableOpacity>
                     ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
                   </View>
@@ -513,7 +522,14 @@ export default function ImportTransactions() {
                         {saving && (
                           <ActivityIndicator color={colors.primary} style={styles.loader} />
                         )}
-                        <Text style={[styles.title, saving && styles.textDisable]}>Import Now</Text>
+                        <Text
+                          style={[
+                            styles.title,
+                            { color: colors.onPrimary },
+                            saving && styles.textDisable,
+                          ]}>
+                          Import Now
+                        </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -621,16 +637,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  title: { color: '#FFF', fontSize: FontSize.md, fontFamily: 'Inter-600' },
-  primary: { backgroundColor: '#076ae3' },
-  secondary: { backgroundColor: '#282343' },
-  accent: { backgroundColor: '#2E8B57' },
-  danger: { backgroundColor: '#7A1F1F' },
+  title: { fontSize: FontSize.md, fontFamily: 'Inter-600' },
+  primary: {},
+  accent: {},
+  danger: {},
   disable: { opacity: 0.4 },
   textDisable: { opacity: 0 },
   loader: { position: 'absolute' },
 
-  subText: { fontSize: FontSize.base, color: '#ccc', marginTop: 2, fontFamily: 'Inter-500' },
+  subText: { fontSize: FontSize.base, marginTop: 2, fontFamily: 'Inter-500' },
 
   // stepper
   stepper: {
@@ -648,49 +663,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
   },
-  stepDotActive: { backgroundColor: '#076ae3' },
-  stepDotInactive: { backgroundColor: '#282343' },
-  stepDotText: { color: '#fff', fontSize: FontSize.sm, fontFamily: 'Inter-700' },
+  stepDotActive: {},
+  stepDotInactive: {},
+  stepDotText: { fontSize: FontSize.sm, fontFamily: 'Inter-700' },
   stepLabel: { fontSize: FontSize.sm, fontFamily: 'Inter-500' },
-  stepLabelActive: { color: '#EAEAEA', fontFamily: 'Inter-600' },
-  stepLabelInactive: { color: '#8B8AA0', fontFamily: 'Inter-500' },
+  stepLabelActive: { fontFamily: 'Inter-600' },
+  stepLabelInactive: { fontFamily: 'Inter-500' },
   stepLine: { width: 20, height: 2, marginHorizontal: 8, borderRadius: 2 },
-  stepLineActive: { backgroundColor: '#076ae3' },
-  stepLineInactive: { backgroundColor: '#282343' },
+  stepLineActive: {},
+  stepLineInactive: {},
 
   // preview
   previewCards: { flexDirection: 'row', gap: 10 },
   previewCard: {
     flex: 1,
-    backgroundColor: '#1A1B24',
-    borderColor: '#2B2D3A',
     borderWidth: 1,
     borderRadius: 10,
     padding: 12,
     alignItems: 'center',
   },
-  previewTitle: { color: '#EAEAEA', fontFamily: 'Inter-600', fontSize: FontSize.base },
-  previewCount: { color: '#9FEF9F', fontFamily: 'Inter-700', fontSize: 22, marginVertical: 6 },
+  previewTitle: { fontFamily: 'Inter-600', fontSize: FontSize.base },
+  previewCount: { fontFamily: 'Inter-700', fontSize: 22, marginVertical: 6 },
 
   // list items
   contentContainer: { padding: 12 },
   itemContainer: {
     padding: 8,
     marginBottom: 12,
-    backgroundColor: '#2A2B37',
     borderRadius: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   left: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  name: { color: '#FFFFFF', fontSize: FontSize.base, fontFamily: 'Inter-600' },
+  name: { fontSize: FontSize.base, fontFamily: 'Inter-600' },
   subTextContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' },
 
   // sheet titles
   sheetTitle: {
     fontSize: FontSize.md,
     fontFamily: 'Inter-600',
-    color: '#EAEAEA',
     paddingHorizontal: 16,
     paddingBottom: 8,
     paddingTop: 6,

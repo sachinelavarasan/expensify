@@ -13,6 +13,7 @@ import {
   useDeleteBankAccount,
 } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
+import { BankCardPalette } from '@/utils/Colors';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { useUser } from '@clerk/clerk-expo';
@@ -125,7 +126,7 @@ export default function AccountScreen() {
                 balance={account.exp_ba_balance}
                 variant={theme === 'dark' ? 'dark' : 'light'}
                 // variant="dark"
-                accent="#6C63FF"
+                accent={theme === 'dark' ? BankCardPalette.dark.gradDefault : BankCardPalette.light.gradDefault}
                 otherStyle={{
                   width: cardWidth,
                 }}
@@ -205,49 +206,13 @@ const styles = StyleSheet.create({
   dateHeader: {
     fontSize: 14,
     fontFamily: 'Inter-600',
-    color: '#a19bca',
-  },
-  header: {
-    fontSize: 32,
-    backgroundColor: '#fff',
-    color: 'red',
-    fontFamily: 'Inter-600',
   },
   title: {
     fontSize: 24,
     fontFamily: 'Inter-600',
   },
   totalAmount: {
-    color: '#D5D5D5',
     fontSize: 14,
     fontFamily: 'Inter-500',
-  },
-  card: {
-    borderColor: '#5a4f96',
-    borderWidth: 1,
-    padding: 15,
-    borderRadius: 10,
-    flexDirection: 'row',
-    columnGap: 10,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 20,
-  },
-  cardTitle: {
-    color: '#F4F5F8',
-    fontSize: 16,
-    fontFamily: 'Inter-700',
-    paddingBottom: 5,
-  },
-  cardSubtitle: {
-    color: '#CCC',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-  },
-  default: {
-    color: '#8880A0',
-    fontSize: 10,
-    fontFamily: 'Inter-500',
-    verticalAlign: 'middle',
   },
 });

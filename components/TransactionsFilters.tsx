@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
@@ -57,7 +57,7 @@ const TransactionFilters = ({
           paddingVertical: 5,
           paddingHorizontal: 5,
         }}>
-        <FontAwesome6 name="filter" size={20} color="#FFF" />
+        <FontAwesome6 name="filter" size={20} color={colors.onPrimary} />
       </TouchableOpacity>
 
       <Modal
@@ -124,11 +124,11 @@ const TransactionFilters = ({
             <View>
               <TouchableOpacity onPress={handlePress}>
                 <LinearGradient
-                  colors={['#6B5DE6', '#6900FF']}
+                  colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={[styles.button]}>
-                  <Text style={[styles.btntitle]}>Apply</Text>
+                  <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -151,14 +151,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    color: '#1E1E1E',
     fontFamily: 'Inter-600',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -170,7 +168,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },

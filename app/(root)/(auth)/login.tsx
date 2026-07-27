@@ -191,9 +191,16 @@ export default function SignIn() {
                     disabled={isLoading}
                     onPress={handleSubmit(onSubmit)}>
                     {isLoading ? (
-                      <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                      <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                     ) : null}
-                    <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>Sign In</Text>
+                    <Text
+                      style={[
+                        styles.title,
+                        { color: colors.onPrimary },
+                        isLoading ? styles.textDisable : {},
+                      ]}>
+                      Sign In
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <Spacer height={20} />
@@ -261,7 +268,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -277,15 +283,8 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
   },
-  error: {
-    fontSize: 14,
-    color: '#f02d3a',
-    fontFamily: 'Inter-500',
-    letterSpacing: 0.5,
-  },
   label: {
     fontSize: 24,
-    color: '#FFFFFF',
     marginBottom: 2,
     fontFamily: 'Inter-800',
   },

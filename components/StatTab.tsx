@@ -196,7 +196,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
             style={[
               styles.tabText,
               { color: colors.description },
-              activeTab === 'income' && styles.activeTabText,
+              activeTab === 'income' && [styles.activeTabText, { color: colors.onPrimary }],
             ]}>
             Income
           </Text>
@@ -212,7 +212,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
             style={[
               styles.tabText,
               { color: colors.description },
-              activeTab === 'expense' && styles.activeTabText,
+              activeTab === 'expense' && [styles.activeTabText, { color: colors.onPrimary }],
             ]}>
             Expense
           </Text>
@@ -286,8 +286,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
   },
   activeTabText: {
-    // Fixed white text on the active tab's brand-colored pill, intentionally theme-independent.
-    color: '#fff',
+    // color applied inline via colors.onPrimary at usage site (active tab pill uses colors.primary)
   },
   card: {
     padding: Spacing.sm,

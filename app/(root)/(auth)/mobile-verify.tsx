@@ -143,9 +143,16 @@ const MobileVerify = () => {
               onPress={verify}
               disabled={otpVerifyLoading || !otpValidation(otp)}>
               {otpVerifyLoading ? (
-                <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
               ) : null}
-              <Text style={[styles.title, otpVerifyLoading ? styles.textDisable : {}]}>Verify</Text>
+              <Text
+                style={[
+                  styles.title,
+                  { color: colors.onPrimary },
+                  otpVerifyLoading ? styles.textDisable : {},
+                ]}>
+                Verify
+              </Text>
             </TouchableOpacity>
 
             <Spacer height={50} />
@@ -169,12 +176,10 @@ export default MobileVerify;
 const styles = StyleSheet.create({
   header: {
     fontSize: 24,
-    color: '#FFFFFF',
     fontFamily: 'Inter-800',
   },
   subtext: {
     fontSize: 14,
-    color: '#b7b6c1',
     fontFamily: 'Inter-400',
     paddingTop: 10,
     textAlign: 'center',
@@ -209,7 +214,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },

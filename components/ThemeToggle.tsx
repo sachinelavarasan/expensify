@@ -21,7 +21,7 @@ const ThemeToggle = () => {
             {isDark ? (
               <Feather name="moon" size={20} color={colors.title} style={{ marginRight: 8 }} />
             ) : (
-              <Feather name="sun" size={20} color="#ffaa00" style={{ marginRight: 8 }} />
+              <Feather name="sun" size={20} color={colors.sun} style={{ marginRight: 8 }} />
             )}
             <Text className="text-lg" style={{ color: colors.title, fontFamily: 'Inter-500' }}>
               {isDark ? 'Dark Mode' : 'Light Mode'}
