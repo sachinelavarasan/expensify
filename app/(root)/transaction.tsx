@@ -24,7 +24,7 @@ import CustomRadioButton from '@/components/CustomRadioButton';
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
 import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
-import { AntDesign, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import OverlayLoader from '@/components/Overlay';
 import {
   useDeleteTransaction,
@@ -514,7 +514,7 @@ export default function Transaction() {
                     shouldDirty: true,
                   });
                 }}>
-                <AntDesign name={exp_st_id ? 'star' : 'staro'} size={20} color="#FFB347" />
+                <MaterialIcons name={exp_st_id ? 'star' : 'star-border'} size={20} color="#FFB347" />
               </TouchableOpacity>
 
               {exp_ts_id ? (

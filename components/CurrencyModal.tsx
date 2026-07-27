@@ -14,7 +14,7 @@ import { IExpUser } from '@/types';
 import { useUserSettingChanges } from '@/hooks/useSettings';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { useAsyncStorage } from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -43,7 +43,6 @@ const CurrencyModal = ({
   const [show, setShow] = useState(false);
   const [currencyVisible, setCurrencyVisible] = useState<string | number>('');
   const { mutateAsync: settingChanges, isPending } = useUserSettingChanges();
-  const showCurrencyAsync = useAsyncStorage('show_currency');
 
   const {
     handleSubmit,
@@ -61,7 +60,7 @@ const CurrencyModal = ({
 
   useEffect(() => {
     const getValuesFromStore = async () => {
-      const showTransaction = await showCurrencyAsync.getItem();
+      const showTransaction = await AsyncStorage.getItem('show_currency');
        if(showTransaction){
         setCurrencyVisible(JSON.parse(showTransaction));
       }
@@ -104,7 +103,7 @@ const CurrencyModal = ({
         });
         refetch();
         updateSettings('currency', datas.currency);
-        showCurrencyAsync.setItem(JSON.stringify(currencyVisible));
+        AsyncStorage.setItem('show_currency', JSON.stringify(currencyVisible));
       })
       .catch(() => {
         showToast({

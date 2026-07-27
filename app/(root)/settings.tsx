@@ -15,7 +15,7 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import { useReminderSettings } from '@/hooks/useReminder';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { useAsyncStorage } from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Setting() {
   const { colors } = useThemeContext();
@@ -33,7 +33,6 @@ export default function Setting() {
   });
   const [ttime, setTtime] = useState(false);
   const { user, refetch } = useGetUserData();
-  const currencyAsync = useAsyncStorage('currency');
 
   const updateSettingPreference = useCallback(async (name: string, value: boolean | string) => {
     switch (name) {
@@ -53,7 +52,7 @@ export default function Setting() {
             ...generalSettings,
             currency: value,
           });
-        await currencyAsync.setItem(String(value));
+        await AsyncStorage.setItem('currency', String(value));
         break;
       case 'grouping':
         if (typeof value === 'string')
@@ -78,7 +77,7 @@ export default function Setting() {
       const balance = await getAsyncValue('balance');
       const overBalance = await getAsyncValue('over-balance');
       const ttTime = await getAsyncValue('tt-time');
-      const currency = await currencyAsync.getItem();
+      const currency = await AsyncStorage.getItem('currency');
       const grouping = await getAsyncValue('grouping');
       const d_transaction = await getAsyncValue('d_transaction');
       if (balance) {

@@ -1,5 +1,5 @@
 import { ThemedView } from '@/components/ThemedView';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { PieChart, pieDataItem } from 'react-native-gifted-charts';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import MonthSwitcher from '@/components/MonthSwitch';
@@ -7,7 +7,6 @@ import OverlayLoader from '@/components/Overlay';
 import TableView from '@/components/Table';
 import IncomeExpenseTabs from '@/components/StatTab';
 import { useCallback, useState } from 'react';
-import { RefreshControl } from 'react-native-gesture-handler';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import GroupingModal from '@/components/GroupingModal';
 

@@ -97,7 +97,7 @@ export default function ExportData() {
                   placeholder="Start date"
                 />
                 <Spacer height={5} />
-                <AntDesign name="arrowdown" size={24} color="#6900FF" />
+                <AntDesign name="arrow-down" size={24} color="#6900FF" />
                 <Spacer height={5} />
                 <DatePickerWithOutValue
                   label="To:"
