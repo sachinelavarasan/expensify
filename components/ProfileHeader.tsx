@@ -29,12 +29,14 @@ export default function ProfileHeader({
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
         <Pressable onPress={router.back} style={{ marginRight: 10 }}>
           <MaterialIcons name="arrow-back" size={24} color={colors.arrowColor} />
         </Pressable>
-        <View>
+        <View style={{ flexShrink: 1 }}>
           <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
             style={{
               fontSize: 18,
               color: colors.title,
@@ -44,6 +46,8 @@ export default function ProfileHeader({
           </Text>
           {!!subtitle && (
             <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
               style={{
                 fontSize: 14,
                 color: colors.description,
@@ -55,10 +59,25 @@ export default function ProfileHeader({
           )}
         </View>
       </View>
-      <View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}>
         {deleteAction && (
-          <TouchableOpacity onPress={deleteAction}>
-            <FontAwesome5 name="trash" size={20} color={colors.expense} />
+          // <TouchableOpacity onPress={deleteAction}>
+          //   <FontAwesome5 name="trash" size={20} color={colors.expense} />
+          // </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              {
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+              ,
+              { backgroundColor: `${colors.expense}1A` },
+            ]}
+            onPress={deleteAction}>
+            <MaterialIcons name="delete-forever" size={20} color={colors.expense} />
           </TouchableOpacity>
         )}
         {children}

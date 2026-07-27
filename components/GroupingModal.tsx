@@ -1,15 +1,11 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
-import Modal from 'react-native-modal';
-import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { Entypo, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import ModalCard from './ModalCard';
+import { Entypo } from '@expo/vector-icons';
 import { dataGroupingType } from '@/utils/common-data';
 import CustomRadioButton from './CustomRadioButton';
 import { useThemeContext } from '@/contexts/ThemedContext';
-
-const width = deviceWidth();
-const height = deviceHeight();
 
 const GroupingModal = ({
   grouping,
@@ -46,57 +42,23 @@ const GroupingModal = ({
         </View>
       </TouchableOpacity>
 
-      <Modal
-        backdropColor={colors.scrim}
-        isVisible={show}
-        hasBackdrop={true}
-        deviceHeight={height}
-        deviceWidth={width}
-        animationIn={'fadeIn'}
-        animationOut={'fadeOut'}
-        coverScreen={true}>
-        <View
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View style={[styles.modal, { backgroundColor: colors.background }]}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text style={[styles.title, { color: colors.title }]}>Default Grouping</Text>
+      <ModalCard visible={show} onClose={toggleModal} title="Default Grouping">
+        <CustomRadioButton
+          isColumn
+          options={dataGroupingType}
+          value={selection}
+          onChange={(vale) => setSelection(vale as 'daily' | 'weekly' | 'monthly')}
+        />
 
-              <TouchableOpacity
-                onPress={toggleModal}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={colors.arrowColor} size={20} />
-              </TouchableOpacity>
-            </View>
-            <Spacer height={15} />
-
-            <CustomRadioButton
-              isColumn
-              options={dataGroupingType}
-              value={selection}
-              onChange={(vale) => setSelection(vale as 'daily' | 'weekly' | 'monthly')}
-            />
-
-            <Spacer height={20} />
-            <View>
-              <TouchableOpacity
-                style={[styles.button, { backgroundColor: colors.primary }]}
-                onPress={settingChange}>
-                <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
-              </TouchableOpacity>
-            </View>
-            <Spacer height={20} />
-          </View>
+        <Spacer height={20} />
+        <View>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.primary }]}
+            onPress={settingChange}>
+            <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </ModalCard>
     </>
   );
 };
@@ -104,16 +66,6 @@ const GroupingModal = ({
 export default GroupingModal;
 
 const styles = StyleSheet.create({
-  modal: {
-    width: deviceWidth() - 60,
-    borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Inter-600',
-  },
   button: {
     alignItems: 'center',
     flexDirection: 'row',

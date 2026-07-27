@@ -13,13 +13,13 @@ import {
   useDeleteBankAccount,
 } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
-import { BankCardPalette } from '@/utils/Colors';
+import { FontSize } from '@/utils/Typography';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { useUser } from '@clerk/clerk-expo';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Text,
   StyleSheet,
@@ -36,9 +36,10 @@ const width = deviceWidth();
 const cardWidth = width - 30;
 
 export default function AccountScreen() {
-  const { theme, colors } = useThemeContext();
+  const { colors } = useThemeContext();
   const { id } = useLocalSearchParams() as unknown as { id: number };
-  const { account, loading, refetch } = useAccountGroupedTransactions(id);
+  const { account, loading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
   const { user: currentUser } = useUser();
   const { mutateAsync: deleteAccount, isPending: isDeleting } = useDeleteBankAccount();
@@ -46,6 +47,18 @@ export default function AccountScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const router = useRouter();
+
+  const totals = useMemo(() => {
+    const groups = account?.data ?? [];
+    return groups.reduce(
+      (acc, group) => ({
+        income: acc.income + Number(group.income || 0),
+        expense: acc.expense + Number(group.expense || 0),
+        transactionCount: acc.transactionCount + group.data.length,
+      }),
+      { income: 0, expense: 0, transactionCount: 0 },
+    );
+  }, [account?.data]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -102,15 +115,18 @@ export default function AccountScreen() {
                     }}
                     exp_ba_id={account.exp_ba_id}
                   />
-                  <TouchableOpacity onPress={handleDelete} disabled={isDeleting}>
-                    <MaterialIcons name="delete-forever" size={30} color={colors.expense} />
+                  <TouchableOpacity
+                    style={[styles.iconButton, { backgroundColor: `${colors.expense}1A` }]}
+                    onPress={handleDelete}
+                    disabled={isDeleting}>
+                    <MaterialIcons name="delete-forever" size={20} color={colors.expense} />
                   </TouchableOpacity>
                 </View>
               )}
             </View>
           </ProfileHeader>
         </View>
-        {loading || refreshing || !account || isDeleting ? (
+        {loading || !account || isDeleting ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
@@ -122,11 +138,10 @@ export default function AccountScreen() {
                 bankName={account.exp_ba_name}
                 holderName={currentUser?.firstName || ''}
                 icon={account.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
-                // accountNumber="123456789012"
                 balance={account.exp_ba_balance}
-                variant={theme === 'dark' ? 'dark' : 'light'}
-                // variant="dark"
-                accent={theme === 'dark' ? BankCardPalette.dark.gradDefault : BankCardPalette.light.gradDefault}
+                income={totals.income}
+                expense={totals.expense}
+                transactionCount={totals.transactionCount}
                 otherStyle={{
                   width: cardWidth,
                 }}
@@ -146,30 +161,27 @@ export default function AccountScreen() {
               contentContainerStyle={{ paddingBottom: 80 }}
               style={{ paddingHorizontal: 15 }}
               keyExtractor={(item, index) => item.exp_ts_id.toString()}
+              onEndReached={() => {
+                if (hasNextPage && !isFetchingNextPage) {
+                  fetchNextPage();
+                }
+              }}
+              onEndReachedThreshold={0.4}
+              ListFooterComponent={
+                isFetchingNextPage ? (
+                  <View style={{ paddingVertical: 20 }}>
+                    <ActivityIndicator color={colors.primary} />
+                  </View>
+                ) : null
+              }
               renderItem={({ item }) => (
                 <View style={{ paddingHorizontal: 5 }}>
                   <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
               renderSectionHeader={({ section: { title, income, expense } }) => (
-                // <View
-                //   style={{
-                //     flexDirection: 'row',
-                //     justifyContent: 'space-between',
-                //     alignItems: 'center',
-                //     backgroundColor: theme === 'dark' ? '#0d001a' : '#F4F3FF',
-                //     paddingVertical: 10,
-                //   }}>
                 <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    backgroundColor: colors.themedViewBg[0],
-                    paddingVertical: 16,
-                    paddingHorizontal: 10,
-                    borderRadius: 4,
-                  }}>
+                  style={[styles.sectionHeader, { backgroundColor: colors.bottomBarBackground }]}>
                   <Text style={[styles.dateHeader, { color: colors.title }]}>{title}</Text>
 
                   <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -187,7 +199,6 @@ export default function AccountScreen() {
                     )}
                   </View>
                 </View>
-                // </View>
               )}
               stickySectionHeadersEnabled={true}
             />
@@ -203,16 +214,28 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingBottom: 60,
   },
-  dateHeader: {
-    fontSize: 14,
-    fontFamily: 'Inter-600',
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
-    fontSize: 24,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  dateHeader: {
+    fontSize: FontSize.base,
     fontFamily: 'Inter-600',
   },
   totalAmount: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     fontFamily: 'Inter-500',
   },
 });

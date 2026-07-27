@@ -1,18 +1,8 @@
-import {
-  ActivityIndicator,
-  Image,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
-import Modal from 'react-native-modal';
-import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { AntDesign, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import ModalCard from './ModalCard';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,9 +12,6 @@ import { QueryObserverResult } from '@tanstack/react-query';
 import { IExpUser } from '@/types';
 import { showToast } from './ToastMessage';
 import { useThemeContext } from '@/contexts/ThemedContext';
-
-const width = deviceWidth();
-const height = deviceHeight();
 
 const schema = z.object({
   name: z.string().min(3, { message: 'Minimum 3 characters' }),
@@ -101,7 +88,6 @@ const UpdateProfile = ({
       alert('Failed to update profile.');
     }
   };
-  const titleColor = colors.title;
   return (
     <>
       <Pressable style={{ marginLeft: 35 }} onPress={toggleModal}>
@@ -112,83 +98,49 @@ const UpdateProfile = ({
         />
       </Pressable>
 
-      <Modal
-        backdropColor={colors.scrim}
-        isVisible={show}
-        hasBackdrop={true}
-        deviceHeight={height}
-        deviceWidth={width}
-        animationIn={'fadeIn'}
-        animationOut={'fadeOut'}
-        coverScreen={true}>
-        <View
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View style={[styles.modal, { backgroundColor: colors.background }]}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-              <Text style={[styles.title, { color: titleColor }]}>Edit Details</Text>
-
-              <TouchableOpacity
-                onPress={() => setShow(!show)}
-                style={{ alignItems: 'flex-end' }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                disabled={isLoading}>
-                <Ionicons name="close" color={colors.arrowColor} size={20} />
-              </TouchableOpacity>
-            </View>
-            <Spacer height={15} />
-            <Controller
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="Name"
-                  label="Name"
-                  keyboardType="default"
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  onBlur={field.onBlur}
-                  onChangeText={field.onChange}
-                  error={errors.name?.message}
-                  borderLess
-                />
-              )}
-              name="name"
+      <ModalCard visible={show} onClose={toggleModal} title="Edit Details" closeDisabled={isLoading}>
+        <Controller
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              placeholder="Name"
+              label="Name"
+              keyboardType="default"
+              autoCapitalize="none"
+              autoComplete="off"
+              onBlur={field.onBlur}
+              onChangeText={field.onChange}
+              error={errors.name?.message}
+              borderLess
             />
-            <Spacer height={20} />
-            <View style={styles.btnContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: colors.primary },
-                  !isValid || isLoading ? styles.disable : {},
-                ]}
-                onPress={handleSubmit(onSubmit)}
-                disabled={!isValid || isLoading}>
-                {isLoading ? (
-                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
-                ) : null}
-                <Text
-                  style={[
-                    styles.btntitle,
-                    { color: colors.onPrimary },
-                    isLoading ? styles.textDisable : {},
-                  ]}>
-                  Update
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          )}
+          name="name"
+        />
+        <Spacer height={20} />
+        <View style={styles.btnContainer}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: colors.primary },
+              !isValid || isLoading ? styles.disable : {},
+            ]}
+            onPress={handleSubmit(onSubmit)}
+            disabled={!isValid || isLoading}>
+            {isLoading ? (
+              <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+            ) : null}
+            <Text
+              style={[
+                styles.btntitle,
+                { color: colors.onPrimary },
+                isLoading ? styles.textDisable : {},
+              ]}>
+              Update
+            </Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </ModalCard>
     </>
   );
 };
@@ -196,18 +148,6 @@ const UpdateProfile = ({
 export default UpdateProfile;
 
 const styles = StyleSheet.create({
-  modal: {
-    width: deviceWidth() - 60,
-    borderRadius: 10,
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: 20,
-    marginBottom: 2,
-    fontFamily: 'Inter-800',
-  },
   btnContainer: {
     alignItems: 'center',
   },

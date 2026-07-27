@@ -59,9 +59,14 @@ export default function RecurringTransactions() {
         <ThemedView style={{ flex: 1, paddingHorizontal: 5 }}>
           {loading && <OverlayLoader />}
           <ProfileHeader title="Recurring Transactions">
-            <TouchableOpacity onPress={() => router.push('/recurring-transaction')}>
-              <MaterialIcons name="add-circle-outline" size={24} color={colors.arrowColor} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+              <TouchableOpacity onPress={() => router.push('/import-recurring-transactions')}>
+                <MaterialIcons name="playlist-add-check" size={24} color={colors.arrowColor} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/recurring-transaction')}>
+                <MaterialIcons name="add-circle-outline" size={24} color={colors.arrowColor} />
+              </TouchableOpacity>
+            </View>
           </ProfileHeader>
 
           <FlatList

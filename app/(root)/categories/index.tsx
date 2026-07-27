@@ -21,9 +21,11 @@ import { Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { ICategory } from '@/types';
 import OverlayLoader from '@/components/Overlay';
 import Spacer from '@/components/Spacer';
+import Emptystate from '@/components/Emptystate';
 
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { FontSize } from '@/utils/Typography';
 
 export default function Category() {
   const { colors } = useThemeContext();
@@ -149,7 +151,7 @@ export default function Category() {
           </TouchableOpacity>
         </Animated.View>
         <ProfileHeader title="Categories" />
-        <View style={[styles.tabContainer, { backgroundColor: colors.topBarColor }]}>
+        <View style={[styles.tabContainer, { backgroundColor: colors.barBackground }]}>
           <TouchableOpacity
             style={[
               styles.tab,
@@ -166,7 +168,7 @@ export default function Category() {
                 { color: colors.description },
                 activeTab === 'income' && { color: colors.onPrimary },
               ]}>
-              Income
+              Income · {incomeCategories.length}
             </Text>
           </TouchableOpacity>
 
@@ -186,7 +188,7 @@ export default function Category() {
                 { color: colors.description },
                 activeTab === 'expense' && { color: colors.onPrimary },
               ]}>
-              Expense
+              Expense · {expenseCategories.length}
             </Text>
           </TouchableOpacity>
         </View>
@@ -207,28 +209,27 @@ export default function Category() {
             }}
             ListHeaderComponent={() => (
               <>
-                {systemList.map((item) => (
-                  <Link
-                    key={item.exp_tc_id}
-                    disabled={true}
-                    href={{
-                      pathname: '/categories/[id]',
-                      params: { id: item.exp_tc_id, data: JSON.stringify(item) },
-                    }}
-                    asChild>
-                    <TouchableOpacity style={styles.card}>
-                      <View style={styles.left}>
-                        <Pressable>
+                {systemList.length > 0 && (
+                  <>
+                    <Text style={[styles.sectionLabel, { color: colors.lighterTitle }]}>
+                      Default
+                    </Text>
+                    {systemList.map((item) => (
+                      <View
+                        key={item.exp_tc_id}
+                        style={[
+                          styles.card,
+                          { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                        ]}>
+                        <View style={styles.left}>
                           <View
-                            style={{
-                              backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                              padding: 5,
-                              borderRadius: 5,
-                              height: 35,
-                              width: 35,
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}>
+                            style={[
+                              styles.iconBox,
+                              {
+                                backgroundColor:
+                                  item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
+                              },
+                            ]}>
                             {item.exp_tc_icon && (
                               <MaterialIcons
                                 name={
@@ -236,22 +237,36 @@ export default function Category() {
                                     typeof MaterialIcons
                                   >['name']
                                 }
-                                size={24}
+                                size={22}
                                 color={colors.categoryFallbackIcon}
                               />
                             )}
                           </View>
-                        </Pressable>
-                        <Text style={[styles.name, { color: colors.title }]}>
-                          {item.exp_tc_label}
-                        </Text>
+                          <Text style={[styles.name, { color: colors.title }]}>
+                            {item.exp_tc_label}
+                          </Text>
+                        </View>
+                        <Ionicons name="lock-closed" size={16} color={colors.lighterTitle} />
                       </View>
-                    </TouchableOpacity>
-                  </Link>
-                ))}
+                    ))}
+                  </>
+                )}
+                {dataList.length > 0 && (
+                  <Text style={[styles.sectionLabel, { color: colors.lighterTitle }]}>
+                    Your Categories · long press to reorder
+                  </Text>
+                )}
               </>
             )}
             ListFooterComponent={<Spacer height={100} />}
+            ListEmptyComponent={
+              !loading ? (
+                <Emptystate
+                  title="No custom categories yet"
+                  description={`Tap the + button to add your first ${activeTab} category.`}
+                />
+              ) : null
+            }
             showsVerticalScrollIndicator={false}
             scrollEnabled={true}
             bounces={false}
@@ -265,19 +280,21 @@ export default function Category() {
                     params: { id: item.exp_tc_id, data: JSON.stringify(item) },
                   }}
                   asChild>
-                  <TouchableOpacity style={styles.card}>
-                    <View style={styles.left}>
-                      <Pressable>
+                  <TouchableOpacity>
+                    <View
+                      style={[
+                        styles.card,
+                        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                      ]}>
+                      <View style={styles.left}>
                         <View
-                          style={{
-                            backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                            padding: 5,
-                            borderRadius: 5,
-                            height: 35,
-                            width: 35,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}>
+                          style={[
+                            styles.iconBox,
+                            {
+                              backgroundColor:
+                                item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
+                            },
+                          ]}>
                           {item.exp_tc_icon && (
                             <MaterialIcons
                               name={
@@ -285,31 +302,30 @@ export default function Category() {
                                   typeof MaterialIcons
                                 >['name']
                               }
-                              size={24}
+                              size={22}
                               color={colors.categoryFallbackIcon}
                             />
                           )}
                         </View>
-                      </Pressable>
-                      <Text style={[styles.name, { color: colors.title }]}>
-                        {item.exp_tc_label}
-                        {isActive}
-                      </Text>
-                    </View>
+                        <Text style={[styles.name, { color: colors.title }]}>
+                          {item.exp_tc_label}
+                        </Text>
+                      </View>
 
-                    <View>
-                      {item.exp_tc_user_id && (
-                        <Pressable
-                          onLongPress={drag}
-                          style={{
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
-                            height: 35,
-                            width: 35,
-                          }}>
-                          <Ionicons name="reorder-two" size={24} color={colors.description} />
-                        </Pressable>
-                      )}
+                      <View>
+                        {item.exp_tc_user_id && (
+                          <Pressable
+                            onLongPress={drag}
+                            style={{
+                              alignItems: 'flex-end',
+                              justifyContent: 'center',
+                              height: 35,
+                              width: 35,
+                            }}>
+                            <Ionicons name="reorder-two" size={22} color={colors.description} />
+                          </Pressable>
+                        )}
+                      </View>
                     </View>
                   </TouchableOpacity>
                 </Link>
@@ -339,11 +355,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tabText: {
-    fontFamily: 'Inter-500',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+  },
+  sectionLabel: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 8,
+    marginTop: 4,
   },
   card: {
     padding: 10,
-    marginBottom: 5,
+    marginBottom: 10,
+    borderRadius: 14,
+    borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -355,9 +382,16 @@ const styles = StyleSheet.create({
     gap: 10,
     flex: 1,
   },
+  iconBox: {
+    height: 40,
+    width: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   name: {
-    fontSize: 14,
-    fontFamily: 'Inter-500',
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-600',
   },
   floatingButton: {
     width: 50,

@@ -46,6 +46,10 @@ export async function registerForPushNotificationsAsync() {
   }
 }
 
+// Used to gate locally-scheduled reminders (Notifications.scheduleNotificationAsync),
+// which only need permission - unlike registerForPushNotificationsAsync above, which
+// needs a physical device to obtain a remote push token. Gating this on Device.isDevice
+// too would leave the reminder permanently un-schedulable on simulators/emulators.
 export async function registerForPushNotificationsCheck() {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -56,19 +60,15 @@ export async function registerForPushNotificationsCheck() {
     });
   }
 
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      alert('Permission not granted to get push token for push notification!');
-      return false;
-    }
-    return true;
-  } else {
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  if (finalStatus !== 'granted') {
+    alert('Permission not granted to schedule reminder notifications!');
     return false;
   }
+  return true;
 }

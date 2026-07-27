@@ -36,9 +36,12 @@ const Input = forwardRef(function MyInput(
     isTitle,
     editable = true,
     isRequired = false,
+    onFocus,
+    onBlur,
     ...otherProps
   } = props;
   const [show, setShow] = useState(false);
+  const [focused, setFocused] = useState(false);
   return (
     <View style={{position:'relative'}} onLayout={(e) => setInputHeight(e.nativeEvent.layout.height)}>
       {label ? (
@@ -67,7 +70,8 @@ const Input = forwardRef(function MyInput(
           style={[
             styles.innerView,
             {
-              borderColor: error ? colors.expense : colors.inputBorder,
+              borderColor: error ? colors.expense : focused ? colors.borderSelected : colors.inputBorder,
+              backgroundColor: colors.inputColor,
               borderRadius: 8,
               borderWidth: 1,
             },
@@ -78,7 +82,6 @@ const Input = forwardRef(function MyInput(
             style={[
               styles.input,
               {
-                backgroundColor:  colors.inputColor,
                 color: colors.text,
               },
               isTitle ? styles.titleText : null,
@@ -94,6 +97,14 @@ const Input = forwardRef(function MyInput(
             selectionColor={colors.text}
             cursorColor={colors.secondary}
             editable={editable}
+            onFocus={(e) => {
+              setFocused(true);
+              onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setFocused(false);
+              onBlur?.(e);
+            }}
           />
           {isPassword ? (
             <TouchableOpacity onPress={() => setShow((state) => !state)}>
@@ -138,20 +149,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingVertical: 5,
+    paddingVertical: Platform.OS === 'android' ? 8 : 16,
     fontSize: 16,
     fontFamily: 'Inter-400',
     paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'transparent'
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 0,
-    // },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 2.84,
-    // elevation: 1,
   },
   label: {
     fontSize: 12,

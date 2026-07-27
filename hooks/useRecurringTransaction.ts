@@ -105,6 +105,36 @@ export const useUpdateRecurringTransaction = () => {
   });
 };
 
+export const useImportRecurringTransactions = () => {
+  const queryClient = useQueryClient();
+  const { getToken, userId } = useAuth();
+
+  return useMutation({
+    mutationFn: async (recurringIds: number[]) => {
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/expensify/recurring-transactions/import`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recurringIds }),
+      });
+
+      if (!res.ok) throw new Error('Failed to import recurring transactions');
+      return (await res.json()) as { imported: number };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurringTransactions });
+    },
+  });
+};
+
 export const useDeleteRecurringTransaction = () => {
   const queryClient = useQueryClient();
   const { getToken, userId } = useAuth();

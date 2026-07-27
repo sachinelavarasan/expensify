@@ -13,13 +13,14 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
+import CategorySelector from '@/components/CategorySelector';
 import { CustomSelectInput } from '@/components/CustomSelectInput';
 import DatePickerPaper from '@/components/DatePickerPaper';
 import CustomSwitch from '@/components/Switch';
@@ -123,6 +124,10 @@ export default function RecurringTransaction() {
       [],
     [categories, exp_rt_transaction_type_id],
   );
+
+  const redirectToCategory = () => {
+    router.push('/categories');
+  };
 
   const onSubmit = (data: recurringTransactionSchemaType) => {
     const formattedData = {
@@ -254,7 +259,7 @@ export default function RecurringTransaction() {
                         <CustomRadioButton
                           label="Repeats"
                           value={field.value}
-                          options={recurringFrequencyType}
+                          options={recurringFrequencyType.filter((freq) => freq.id === 'monthly')}
                           onChange={field.onChange}
                           isRequired
                         />
@@ -369,18 +374,91 @@ export default function RecurringTransaction() {
                       control={control}
                       name="exp_rt_category_id"
                       render={({ field }) => (
-                        <CustomSelectInput
-                          {...field}
-                          value={field.value}
-                          options={categoriesList.map((category) => ({
-                            key: category.exp_tc_id,
-                            value: category.exp_tc_label,
-                          }))}
-                          placeholder="Select category"
-                          label="Category"
-                          onChange={(selectedId) => field.onChange(selectedId)}
-                          error={errors.exp_rt_category_id?.message}
-                        />
+                        <View>
+                          <View
+                            style={{
+                              borderColor: colors.inputBorder,
+                              borderWidth: 1,
+                              borderRadius: 8,
+                              paddingVertical: 5,
+                              paddingHorizontal: 8,
+                              backgroundColor: colors.inputColor,
+                            }}>
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                paddingVertical: 10,
+                                paddingHorizontal: 5,
+                                flexWrap: 'wrap',
+                              }}>
+                              <Text
+                                style={[
+                                  styles.categoryLabel,
+                                  {
+                                    flex: 1,
+                                    flexWrap: 'wrap',
+                                    lineHeight: 20,
+                                    color: colors.title,
+                                  },
+                                ]}>
+                                Category
+                                {!!categoriesList.find((item) => item.exp_tc_id === field.value)
+                                  ?.exp_tc_label && (
+                                  <Text
+                                    style={{
+                                      fontFamily: 'Inter-500',
+                                      color: colors.text,
+                                    }}>
+                                    {' '}
+                                    :{' '}
+                                    {
+                                      categoriesList.find((item) => item.exp_tc_id === field.value)
+                                        ?.exp_tc_label
+                                    }
+                                  </Text>
+                                )}
+                              </Text>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  gap: 10,
+                                  marginLeft: 30,
+                                }}>
+                                <TouchableOpacity
+                                  activeOpacity={0.2}
+                                  style={{
+                                    paddingHorizontal: 10,
+                                  }}
+                                  onPress={redirectToCategory}>
+                                  <MaterialIcons name="edit" size={22} color={colors.text} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                  activeOpacity={0.2}
+                                  style={{
+                                    paddingHorizontal: 10,
+                                  }}
+                                  onPress={redirectToCategory}>
+                                  <MaterialIcons name="add" size={22} color={colors.text} />
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+
+                            <CategorySelector
+                              categories={categoriesList}
+                              selected={field.value}
+                              onSelect={(id) => field.onChange(id)}
+                            />
+                          </View>
+
+                          {errors.exp_rt_category_id?.message ? (
+                            <Text style={[styles.errorMessage, { color: colors.expense }]}>
+                              {errors.exp_rt_category_id?.message}
+                            </Text>
+                          ) : null}
+                        </View>
                       )}
                     />
                   </View>
@@ -463,6 +541,10 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontFamily: 'Inter-400',
+  },
+  categoryLabel: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-500',
   },
   button: {
     alignItems: 'center',

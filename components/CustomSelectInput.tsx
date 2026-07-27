@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Image, Platform, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SelectList } from 'react-native-dropdown-select-list';
 import { FontAwesome } from '@expo/vector-icons';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -14,6 +14,7 @@ interface CustomSelectInputProps {
   isRequired?: boolean;
   isSmall?: boolean;
   error?: string | null;
+  clearable?: boolean;
 }
 
 export const CustomSelectInput = ({
@@ -24,11 +25,16 @@ export const CustomSelectInput = ({
   value,
   isRequired = false,
   isSmall = false,
-  error
+  error,
+  clearable = false,
 }: CustomSelectInputProps) => {
   const [selected, setSelected] = useState(value);
   const { colors, theme } = useThemeContext();
   const [defaultOption, setDefaultOption] = useState<{ key: any; value: any } | undefined>();
+  // Bumped on clear to force SelectList to remount - it only reflects prop
+  // changes back into its own displayed text on mount/defaultOption change,
+  // so resetting `value` alone wouldn't clear the text it shows.
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     const curr = options.find((opt) => opt.key == value);
@@ -36,22 +42,37 @@ export const CustomSelectInput = ({
     setSelected(value);
   }, [value, options]);
 
+  const handleClear = () => {
+    setSelected('');
+    setDefaultOption(undefined);
+    onChange('');
+    setResetKey((k) => k + 1);
+  };
+
   return (
     <View style={styles.selectBoxContainer}>
       {label ? (
-        <View style={{ display: 'flex', flexDirection: 'row' }}>
-          <Text style={[styles.labelStyles, { color: colors.title }]}>{label}</Text>
-          {isRequired ? (
-            <View style={{ marginLeft: 5, marginTop: 5 }}>
-              <Image
-                source={require('@/assets/icons/required.png')}
-                style={{ width: 5, height: 5 }}
-              />
-            </View>
-          ) : null}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ display: 'flex', flexDirection: 'row' }}>
+            <Text style={[styles.labelStyles, { color: colors.title }]}>{label}</Text>
+            {isRequired ? (
+              <View style={{ marginLeft: 5, marginTop: 5 }}>
+                <Image
+                  source={require('@/assets/icons/required.png')}
+                  style={{ width: 5, height: 5 }}
+                />
+              </View>
+            ) : null}
+          </View>
+          {clearable && !!selected && (
+            <TouchableOpacity onPress={handleClear} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+              <Text style={[styles.clearText, { color: colors.expense }]}>Clear</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : null}
       <SelectList
+        key={resetKey}
         onSelect={() => onChange(selected)}
         setSelected={setSelected}
         fontFamily={isSmall? "Inter-400": "Inter-500"}
@@ -114,6 +135,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 6,
     fontFamily: 'Inter-500',
+  },
+  clearText: {
+    fontSize: 12,
+    marginBottom: 6,
+    fontFamily: 'Inter-600',
   },
    error: {
     fontSize: 12,

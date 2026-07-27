@@ -8,8 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { format, startOfMonth, startOfWeek, startOfYear, subDays } from 'date-fns';
 
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -19,22 +20,71 @@ import {
   useExportExcelTransactions,
   useExportPdfTransactions,
 } from '@/hooks/useExportTransactions';
-import CustomRadioButton from '@/components/CustomRadioButton';
-import { exportType, transactionExportType } from '@/utils/common-data';
 import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
-import { AntDesign } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
+
+type PresetId = 'today' | 'week' | 'month' | '30d' | 'year' | 'custom';
+
+const DATE_PRESETS: { id: PresetId; label: string }[] = [
+  { id: 'today', label: 'Today' },
+  { id: 'week', label: 'This Week' },
+  { id: 'month', label: 'This Month' },
+  { id: '30d', label: 'Last 30 Days' },
+  { id: 'year', label: 'This Year' },
+  { id: 'custom', label: 'Custom' },
+];
+
+const getPresetRange = (preset: PresetId): { start: string; end: string } | null => {
+  const today = new Date();
+  const end = format(today, 'yyyy-MM-dd');
+  switch (preset) {
+    case 'today':
+      return { start: end, end };
+    case 'week':
+      return { start: format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd'), end };
+    case 'month':
+      return { start: format(startOfMonth(today), 'yyyy-MM-dd'), end };
+    case '30d':
+      return { start: format(subDays(today, 29), 'yyyy-MM-dd'), end };
+    case 'year':
+      return { start: format(startOfYear(today), 'yyyy-MM-dd'), end };
+    default:
+      return null;
+  }
+};
+
+const FORMAT_OPTIONS: {
+  id: string;
+  label: string;
+  icon: React.ComponentProps<typeof MaterialIcons>['name'];
+}[] = [
+  { id: 'pdf', label: 'PDF', icon: 'picture-as-pdf' },
+  { id: 'xlsx', label: 'Excel', icon: 'grid-on' },
+  { id: 'csv', label: 'CSV', icon: 'description' },
+];
+
+const TRAN_TYPE_OPTIONS: {
+  id: string;
+  label: string;
+  icon: React.ComponentProps<typeof MaterialIcons>['name'];
+}[] = [
+  { id: 'all', label: 'All', icon: 'swap-vert' },
+  { id: 'income', label: 'Income', icon: 'trending-up' },
+  { id: 'expense', label: 'Expense', icon: 'trending-down' },
+];
 
 export default function ExportData() {
   const router = useRouter();
   const { colors } = useThemeContext();
   const { mutateAsync: exportExcelMutation, isPending } = useExportExcelTransactions();
   const { mutateAsync: exportPdfMutation, isPending: isPdfLoading } = useExportPdfTransactions();
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
-  const [docType, setDoctype] = useState<number | string>('pdf');
+  const [preset, setPreset] = useState<PresetId>('month');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [docType, setDoctype] = useState<string>('pdf');
   const [tranType, setTranType] = useState<string>('all');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -46,6 +96,17 @@ export default function ExportData() {
     opacity: cardFade.value,
     transform: [{ translateY: (1 - cardFade.value) * 10 }],
   }));
+
+  const { start, end } = useMemo(() => {
+    if (preset === 'custom') return { start: customStart, end: customEnd };
+    return getPresetRange(preset) ?? { start: '', end: '' };
+  }, [preset, customStart, customEnd]);
+
+  const rangeLabel = useMemo(() => {
+    if (!start || !end) return '';
+    if (start === end) return format(new Date(start), 'EEE, MMM d, yyyy');
+    return `${format(new Date(start), 'MMM d, yyyy')}  →  ${format(new Date(end), 'MMM d, yyyy')}`;
+  }, [start, end]);
 
   async function download() {
     if (!start || !end) {
@@ -61,8 +122,6 @@ export default function ExportData() {
             fileType: 'xlsx',
             tranType,
           });
-          setEnd('');
-          setStart('');
           break;
         case 'csv':
           await exportExcelMutation({
@@ -71,8 +130,6 @@ export default function ExportData() {
             fileType: 'csv',
             tranType,
           });
-          setEnd('');
-          setStart('');
           break;
         default:
           await exportPdfMutation({
@@ -80,8 +137,6 @@ export default function ExportData() {
             endDate: end,
             tranType,
           });
-          setEnd('');
-          setStart('');
           break;
       }
     } catch {
@@ -103,48 +158,160 @@ export default function ExportData() {
             <ProfileHeader title="Export Transactions" paddingHorizontal={false} />
             <Spacer height={20} />
             <Animated.View style={cardAnimatedStyle}>
-            <View style={{ alignItems: 'flex-start' }}>
-              <View style={[styles.card, { width: '100%', backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}>
-                <DatePickerWithOutValue
-                  label="From:"
-                  onChange={(data: string) => setStart(data)}
-                  value={start}
-                  placeholder="Start date"
-                />
-                <Spacer height={5} />
-                <AntDesign name="arrow-down" size={24} color={colors.primary} />
-                <Spacer height={5} />
-                <DatePickerWithOutValue
-                  label="To:"
-                  onChange={(data: string) => setEnd(data)}
-                  value={end}
-                  placeholder="End date"
-                  minimumDate={start}
-                />
+              <View
+                style={[
+                  styles.card,
+                  { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                ]}>
+                <Text style={[styles.sectionLabel, { color: colors.description }]}>Date Range</Text>
+                <View style={styles.chipRow}>
+                  {DATE_PRESETS.map((item) => {
+                    const selected = preset === item.id;
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => setPreset(item.id)}
+                        style={[
+                          styles.chip,
+                          {
+                            backgroundColor: selected ? colors.primary : colors.cardBg,
+                            borderColor: selected ? colors.primary : colors.inputBorder,
+                          },
+                        ]}>
+                        <Text
+                          style={[
+                            styles.chipLabel,
+                            { color: selected ? colors.onPrimary : colors.title },
+                          ]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {preset === 'custom' ? (
+                  <>
+                    <Spacer height={14} />
+                    <DatePickerWithOutValue
+                      label="From:"
+                      onChange={(data: string) => setCustomStart(data)}
+                      value={customStart}
+                      placeholder="Start date"
+                    />
+                    <Spacer height={10} />
+                    <DatePickerWithOutValue
+                      label="To:"
+                      onChange={(data: string) => setCustomEnd(data)}
+                      value={customEnd}
+                      placeholder="End date"
+                      minimumDate={customStart}
+                    />
+                  </>
+                ) : (
+                  !!rangeLabel && (
+                    <>
+                      <Spacer height={12} />
+                      <View
+                        style={[
+                          styles.rangeSummary,
+                          { backgroundColor: colors.cardBg, borderColor: colors.inputBorder },
+                        ]}>
+                        <MaterialIcons name="date-range" size={16} color={colors.primary} />
+                        <Text style={[styles.rangeSummaryText, { color: colors.title }]}>
+                          {rangeLabel}
+                        </Text>
+                      </View>
+                    </>
+                  )
+                )}
               </View>
-            </View>
-            <Spacer height={20} />
-            <View style={[styles.card,{ backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}>
-              <CustomRadioButton
-                label="Format"
-                value={docType}
-                options={exportType}
-                onChange={(data) => {
-                  setDoctype(data);
-                }}
-              />
-            </View>
-            <Spacer height={20} />
-            <View style={[styles.card,{ backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}>
-              <CustomRadioButton
-                label="Transaction Type"
-                value={tranType}
-                options={transactionExportType}
-                onChange={(data) => {
-                  setTranType(String(data));
-                }}
-              />
-            </View>
+
+              <Spacer height={20} />
+              <View
+                style={[
+                  styles.card,
+                  { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                ]}>
+                <Text style={[styles.sectionLabel, { color: colors.description }]}>Format</Text>
+                <View style={styles.chipRow}>
+                  {FORMAT_OPTIONS.map((item) => {
+                    const selected = docType === item.id;
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => setDoctype(item.id)}
+                        style={[
+                          styles.iconChip,
+                          {
+                            backgroundColor: selected ? colors.primary : colors.cardBg,
+                            borderColor: selected ? colors.primary : colors.inputBorder,
+                          },
+                        ]}>
+                        <MaterialIcons
+                          name={item.icon}
+                          size={18}
+                          color={selected ? colors.onPrimary : colors.title}
+                        />
+                        <Text
+                          style={[
+                            styles.chipLabel,
+                            { color: selected ? colors.onPrimary : colors.title },
+                          ]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              <Spacer height={20} />
+              <View
+                style={[
+                  styles.card,
+                  { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                ]}>
+                <Text style={[styles.sectionLabel, { color: colors.description }]}>
+                  Transaction Type
+                </Text>
+                <View style={styles.chipRow}>
+                  {TRAN_TYPE_OPTIONS.map((item) => {
+                    const selected = tranType === item.id;
+                    const accent =
+                      item.id === 'income'
+                        ? colors.income
+                        : item.id === 'expense'
+                          ? colors.expense
+                          : colors.primary;
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => setTranType(item.id)}
+                        style={[
+                          styles.iconChip,
+                          {
+                            backgroundColor: selected ? accent : colors.cardBg,
+                            borderColor: selected ? accent : colors.inputBorder,
+                          },
+                        ]}>
+                        <MaterialIcons
+                          name={item.icon}
+                          size={18}
+                          color={selected ? colors.onPrimary : colors.title}
+                        />
+                        <Text
+                          style={[
+                            styles.chipLabel,
+                            { color: selected ? colors.onPrimary : colors.title },
+                          ]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
             </Animated.View>
             <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
               <TouchableOpacity
@@ -232,9 +399,53 @@ const styles = StyleSheet.create({
   opacityBg: {},
   card: {
     borderWidth: 1,
-    paddingVertical: 10,
+    paddingVertical: 14,
     paddingHorizontal: 15,
+    borderRadius: 14,
+  },
+  sectionLabel: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 10,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  iconChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  chipLabel: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-600',
+  },
+  rangeSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
     borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  rangeSummaryText: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-500',
   },
   disable: {
     opacity: 0.6,

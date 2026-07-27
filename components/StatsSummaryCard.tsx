@@ -1,0 +1,132 @@
+import React from 'react';
+import { ColorValue, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Feather } from '@expo/vector-icons';
+
+import { useThemeContext } from '@/contexts/ThemedContext';
+import { formatToCurrency } from '@/utils/formatter';
+import { FontSize } from '@/utils/Typography';
+import useCountUp from '@/hooks/useCountUp';
+
+interface Props {
+  income: number;
+  expense: number;
+  transactionCount: number;
+}
+
+export default function StatsSummaryCard({ income, expense, transactionCount }: Props) {
+  const { colors } = useThemeContext();
+  const net = income - expense;
+
+  const animatedNet = useCountUp(net);
+  const animatedIncome = useCountUp(income);
+  const animatedExpense = useCountUp(expense);
+
+  return (
+    <LinearGradient
+      colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.card}>
+      <Text style={[styles.label, { color: colors.onPrimary }]}>Net Total</Text>
+      <Text style={[styles.net, { color: colors.onPrimary }]} numberOfLines={1}>
+        {formatToCurrency(animatedNet, undefined, net)}
+      </Text>
+
+      <View style={styles.row}>
+        <View style={styles.stat}>
+          <View style={styles.dot}>
+            <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
+          </View>
+          <View>
+            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
+            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+              {formatToCurrency(animatedIncome, undefined, income)}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.stat}>
+          <View style={styles.dot}>
+            <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
+          </View>
+          <View>
+            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
+            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+              {formatToCurrency(animatedExpense, undefined, expense)}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {transactionCount > 0 && (
+        <View style={styles.footer}>
+          <Text style={[styles.footerText, { color: colors.onPrimary }]}>
+            {transactionCount} {transactionCount === 1 ? 'transaction' : 'transactions'} this period
+          </Text>
+        </View>
+      )}
+    </LinearGradient>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 20,
+    padding: 20,
+  },
+  label: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    opacity: 0.75,
+  },
+  net: {
+    fontSize: 30,
+    fontFamily: 'Inter-600',
+    marginTop: 4,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
+    marginTop: 16,
+  },
+  stat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  dot: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+  },
+  statLabel: {
+    fontSize: 10,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    opacity: 0.75,
+  },
+  statValue: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    marginTop: 1,
+  },
+  footer: {
+    flexDirection: 'row',
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.22)',
+  },
+  footerText: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-400',
+    opacity: 0.9,
+  },
+});

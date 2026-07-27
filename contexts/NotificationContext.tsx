@@ -55,24 +55,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
       const data = response.notification.request.content.data as {
         type?: string;
-        recurringId?: string | number;
-        title?: string;
-        amount?: string | number;
-        categoryId?: string | number;
-        transactionTypeId?: string | number;
-        bankAccountId?: string | number;
       };
-      if (data?.type === 'recurring-transaction-due') {
-        router.push({
-          pathname: '/transaction',
-          params: {
-            recurring_title: String(data.title ?? ''),
-            recurring_amount: String(data.amount ?? ''),
-            recurring_category_id: String(data.categoryId ?? ''),
-            recurring_transaction_type_id: String(data.transactionTypeId ?? ''),
-            recurring_bank_account_id: String(data.bankAccountId ?? ''),
-          },
-        });
+      if (data?.type === 'recurring-transactions-monthly') {
+        router.push('/import-recurring-transactions');
       }
     });
 

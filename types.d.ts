@@ -108,6 +108,7 @@ export interface ITransactionGroup {
 
 export interface IAccountGroupedTransactions extends IBankAccount {
   data: ITransactionGroup[];
+  hasMore: boolean;
 }
 
 export interface BankAccount {

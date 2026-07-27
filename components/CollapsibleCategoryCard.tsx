@@ -1,12 +1,17 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { Feather, FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import {
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from '@expo/vector-icons';
 import { deviceWidth } from '@/utils/functions';
 import CategoryBudgetTable from './CategoryBudgetTable';
 import BottomSheet, {
   BottomSheetBackdrop,
-  BottomSheetFlatList,
+  BottomSheetSectionList,
   BottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import { IBudget, Itransaction } from '@/types';
@@ -14,6 +19,9 @@ import { ThemeColors } from '@/utils/Colors';
 import { format } from 'date-fns';
 import TransactionCard from './TransactionCard';
 import { LinearGradient } from 'expo-linear-gradient';
+import CategoryTrendSparkline from './CategoryTrendSparkline';
+import Emptystate from './Emptystate';
+import { FontSize } from '@/utils/Typography';
 
 const width = deviceWidth();
 const barWidth2 = Math.round((width - 40) * 0.3);
@@ -127,7 +135,6 @@ function CollapsibleCategoryCard({
   const [expanded, setExpanded] = useState(false);
   const animatedHeight = useSharedValue(0);
   const validSheetRef = useRef<BottomSheetModal>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const animatedStyle = useAnimatedStyle(
     () => ({
@@ -138,18 +145,22 @@ function CollapsibleCategoryCard({
 
   const toggleExpand = () => {
     setExpanded(!expanded);
-    animatedHeight.value = expanded ? 0 : 100;
+    animatedHeight.value = expanded ? 0 : 190;
   };
 
-  const toggleValid = useCallback(() => {
-    isSheetOpen ? validSheetRef.current?.dismiss() : validSheetRef.current?.present();
-    setIsSheetOpen((s) => !s);
-  }, [isSheetOpen]);
+  const openTransactions = useCallback(() => {
+    validSheetRef.current?.present();
+  }, []);
+
+  const closeTransactions = useCallback(() => {
+    validSheetRef.current?.dismiss();
+  }, []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
         {...props}
+        pressBehavior="none"
         disappearsOnIndex={-1}
         appearsOnIndex={1}
         style={{ backgroundColor: colors.scrim }}
@@ -165,6 +176,40 @@ function CollapsibleCategoryCard({
       </View>
     ),
     [],
+  );
+
+  const sections = useMemo(() => {
+    const groups = new Map<string, Itransaction[]>();
+    category.transactions.forEach((item) => {
+      const existing = groups.get(item.exp_ts_date);
+      if (existing) {
+        existing.push(item);
+      } else {
+        groups.set(item.exp_ts_date, [item]);
+      }
+    });
+
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
+      .map(([date, data]) => ({
+        title: date,
+        data,
+        total: data.reduce((sum, item) => sum + Number(item.exp_ts_amount), 0),
+      }));
+  }, [category.transactions]);
+
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: { title: string; total: number } }) => (
+      <View style={styles.dateHeaderRow}>
+        <Text style={[styles.dateHeaderText, { color: colors.lighterTitle }]}>
+          {format(new Date(section.title), 'dd MMM yyyy')}
+        </Text>
+        <Text style={[styles.dateHeaderTotal, { color: colors.title }]}>
+          {formatToCurrency(section.total)}
+        </Text>
+      </View>
+    ),
+    [colors, formatToCurrency],
   );
 
   return (
@@ -240,8 +285,9 @@ function CollapsibleCategoryCard({
           totalBudget={Number(category.budgetAmount)}
           totalRemaining={category.remainingBudget}
         />
+        <CategoryTrendSparkline categoryId={category.categoryId} enabled={expanded} />
         {category.transactions.length > 0 && (
-          <TouchableOpacity onPress={toggleValid}>
+          <TouchableOpacity onPress={openTransactions}>
             <Text
               style={{
                 color: colors.primary,
@@ -257,63 +303,90 @@ function CollapsibleCategoryCard({
 
       <BottomSheetModal
         ref={validSheetRef}
-        snapPoints={['80%']}
+        snapPoints={['60%', '92%']}
         enablePanDownToClose
-        onDismiss={toggleValid}
         backdropComponent={renderBackdrop}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
-        <Text
-          style={[
-            styles.sheetTitle,
-            { color: colors.lighterTitle, flexWrap: 'wrap', marginBottom: 2, textTransform: 'capitalize', },
-          ]}>
-          {category.category}
-        </Text>
-        <Text
-          style={[
-            styles.sheetTitle,
-            {
-              color: colors.secondary,
-              flexWrap: 'wrap',
-              fontFamily: 'Inter-500',
-              textTransform: 'uppercase',
-              marginBottom: 8,
-              fontSize: 14
-            },
-          ]}>
-          {currentMonth}
-        </Text>
-        <View
-          style={[
-            styles.categoryTitleCard,
-            { marginHorizontal: 16,marginBottom: 16, backgroundColor: `${colors.expense}48` },
-          ]}>
-          <View>
-            <Text
+        <View style={styles.sheetHeaderRow}>
+          <View style={styles.sheetHeaderLeft}>
+            <View
               style={[
-                styles.cardTitle,
-                { color: colors.lighterTitle, fontFamily: 'Inter-500', flexWrap: 'wrap' },
+                styles.sheetIconBox,
+                { backgroundColor: category.iconBg ? category.iconBg : colors.categoryFallbackBg },
               ]}>
-              Expense
+              <MaterialIcons
+                name={category.icon as React.ComponentProps<typeof MaterialIcons>['name']}
+                size={20}
+                color={colors.categoryFallbackIcon}
+              />
+            </View>
+            <View>
+              <Text
+                style={[styles.sheetTitle, { color: colors.title }]}
+                numberOfLines={1}>
+                {category.category}
+              </Text>
+              <Text style={[styles.sheetSubtitle, { color: colors.description }]}>
+                {currentMonth} · {category.transactions.length} transaction
+                {category.transactions.length > 1 ? 's' : ''}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={closeTransactions}
+            hitSlop={10}
+            style={[styles.closeButton, { backgroundColor: colors.inputColor }]}>
+            <Ionicons name="close" size={18} color={colors.title} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.statsRow}>
+          <View style={[styles.statChip, { backgroundColor: `${colors.primary}1A` }]}>
+            <Text style={[styles.statChipLabel, { color: colors.description }]}>Budget</Text>
+            <Text style={[styles.statChipValue, { color: colors.title }]} numberOfLines={1}>
+              {formatToCurrency(Number(category.budgetAmount))}
             </Text>
-            <Text style={[styles.cardSubtitle, { color: colors.title }]} numberOfLines={2}>
+          </View>
+          <View style={[styles.statChip, { backgroundColor: `${colors.expense}1A` }]}>
+            <Text style={[styles.statChipLabel, { color: colors.description }]}>Spent</Text>
+            <Text style={[styles.statChipValue, { color: colors.title }]} numberOfLines={1}>
               {formatToCurrency(category.totalAmount)}
             </Text>
           </View>
-          <View style={[styles.iconBadgeRed, { backgroundColor: `${colors.expense}26` }]}>
-            <Feather name="arrow-up-right" size={16} color={colors.expense} />
+          <View
+            style={[
+              styles.statChip,
+              { backgroundColor: `${category.remainingBudget < 0 ? colors.expense : colors.income}1A` },
+            ]}>
+            <Text style={[styles.statChipLabel, { color: colors.description }]}>
+              {category.remainingBudget < 0 ? 'Over by' : 'Remaining'}
+            </Text>
+            <Text
+              style={[
+                styles.statChipValue,
+                { color: category.remainingBudget < 0 ? colors.expense : colors.title },
+              ]}
+              numberOfLines={1}>
+              {formatToCurrency(Math.abs(category.remainingBudget))}
+            </Text>
           </View>
         </View>
-        <BottomSheetFlatList
-          data={category.transactions}
-          keyExtractor={(_, i) => `v-${i}`}
+
+        <BottomSheetSectionList
+          sections={sections}
+          keyExtractor={(item, index) => `${item.exp_ts_id}-${index}`}
           renderItem={renderPreviewItem}
+          renderSectionHeader={renderSectionHeader}
           contentContainerStyle={styles.contentContainer}
+          stickySectionHeadersEnabled={false}
           initialNumToRender={16}
           maxToRenderPerBatch={16}
           windowSize={7}
+          ListEmptyComponent={
+            <Emptystate title="No transactions" description="Nothing recorded for this category yet." />
+          }
         />
       </BottomSheetModal>
     </View>
@@ -350,31 +423,79 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-400',
   },
   sheetTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Inter-600',
-    paddingHorizontal: 16,
   },
-  contentContainer: { paddingBottom: 30, paddingHorizontal: 16 },
-  subTextContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' },
-  cardSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-700',
-    maxWidth: deviceWidth() - 200,
+  sheetSubtitle: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-400',
     marginTop: 2,
   },
-  iconBadgeRed: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryTitleCard: {
-    borderRadius: 16,
-    padding: 18,
+  sheetHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // elevation: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
   },
+  sheetHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    marginRight: 10,
+  },
+  closeButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    marginBottom: 14,
+  },
+  statChip: {
+    flex: 1,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  statChipLabel: {
+    fontSize: 10,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  statChipValue: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    marginTop: 2,
+  },
+  dateHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  dateHeaderText: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+  },
+  dateHeaderTotal: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+  },
+  contentContainer: { paddingBottom: 30, paddingHorizontal: 16 },
 });

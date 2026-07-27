@@ -1,9 +1,9 @@
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
-import Modal from 'react-native-modal';
-import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import SettingsRow from './SettingsRow';
+import ModalCard from './ModalCard';
+import { FontAwesome } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,9 +14,6 @@ import { showToast } from './ToastMessage';
 import { useUserSettingChanges } from '@/hooks/useSettings';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { useThemeContext } from '@/contexts/ThemedContext';
-
-const width = deviceWidth();
-const height = deviceHeight();
 
 const schema = z.object({
   transaction_type: z.number(),
@@ -100,84 +97,50 @@ const DefaultTransactionModal = ({
 
   return (
     <>
-      <TouchableOpacity style={styles.card} onPress={toggleModal}>
-        <View style={styles.left}>
-          <FontAwesome name="exchange" size={20} color={colors.title} />
-          <View>
-            <Text style={[styles.option, { color: colors.title }]}>Default Transaction</Text>
-            <Text style={[styles.subText, { color: colors.description }]}>
-              {label || 'Choose default type: Income or Expense'}
+      <SettingsRow
+        icon={<FontAwesome name="exchange" size={16} color={colors.onPrimary} />}
+        title="Default Transaction"
+        subtitle={label || 'Choose default type: Income or Expense'}
+        onPress={toggleModal}
+      />
+
+      <ModalCard
+        visible={show}
+        onClose={toggleModal}
+        title="Default Transaction"
+        closeDisabled={isPending}>
+        <Controller
+          control={control}
+          render={({ field }) => (
+            <CustomRadioButton isColumn options={TransactionType} {...field} />
+          )}
+          name="transaction_type"
+        />
+
+        <Spacer height={20} />
+        <View>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: colors.primary },
+              !isDirty || isPending ? styles.disable : {},
+            ]}
+            onPress={handleSubmit(settingChange)}
+            disabled={!isDirty || isPending}>
+            {isPending ? (
+              <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+            ) : null}
+            <Text
+              style={[
+                styles.btntitle,
+                { color: colors.onPrimary },
+                isPending ? styles.textDisable : {},
+              ]}>
+              Submit
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
-
-      <Modal
-        backdropColor={colors.scrim}
-        isVisible={show}
-        hasBackdrop={true}
-        deviceHeight={height}
-        deviceWidth={width}
-        animationIn={'fadeIn'}
-        animationOut={'fadeOut'}
-        coverScreen={true}>
-        <View
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <View style={[styles.modal, { backgroundColor: colors.background }]}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text style={[styles.title, { color: colors.title }]}>Default Transaction</Text>
-
-              <TouchableOpacity
-                onPress={toggleModal}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close" color={colors.primary} size={20} />
-              </TouchableOpacity>
-            </View>
-            <Spacer height={15} />
-            <Controller
-              control={control}
-              render={({ field }) => (
-                <CustomRadioButton isColumn options={TransactionType} {...field} />
-              )}
-              name="transaction_type"
-            />
-
-            <Spacer height={20} />
-            <View>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: colors.primary },
-                  !isDirty || isPending ? styles.disable : {},
-                ]}
-                onPress={handleSubmit(settingChange)}
-                disabled={!isDirty || isPending}>
-                {isPending ? (
-                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
-                ) : null}
-                <Text
-                  style={[
-                    styles.btntitle,
-                    { color: colors.onPrimary },
-                    isPending ? styles.textDisable : {},
-                  ]}>
-                  Submit
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <Spacer height={20} />
-          </View>
-        </View>
-      </Modal>
+      </ModalCard>
     </>
   );
 };
@@ -185,16 +148,6 @@ const DefaultTransactionModal = ({
 export default DefaultTransactionModal;
 
 const styles = StyleSheet.create({
-  modal: {
-    width: deviceWidth() - 60,
-    borderRadius: 10,
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Inter-600',
-  },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -217,42 +170,4 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   textDisable: { opacity: 0 },
-  iconBox: {
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  label: {
-    fontSize: 14,
-    marginBottom: 6,
-    fontFamily: 'Inter-400',
-  },
-  card: {
-    paddingVertical: 8,
-    marginBottom: 6,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  amount: {
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-  },
-  left: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-    maxWidth: deviceWidth() * 0.65,
-  },
-  option: {
-    fontSize: 14,
-    fontFamily: 'Inter-600',
-  },
-   subText: {
-    fontSize: 12,
-    fontFamily: 'Inter-500',
-    marginTop: 2,
-  },
 });
