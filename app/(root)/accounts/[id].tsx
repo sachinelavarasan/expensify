@@ -13,6 +13,7 @@ import {
   useDeleteBankAccount,
 } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
+import { BankCardPalette } from '@/utils/Colors';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { useUser } from '@clerk/clerk-expo';
@@ -102,7 +103,7 @@ export default function AccountScreen() {
                     exp_ba_id={account.exp_ba_id}
                   />
                   <TouchableOpacity onPress={handleDelete} disabled={isDeleting}>
-                    <MaterialIcons name="delete-forever" size={30} color={'#f33f3fd9'} />
+                    <MaterialIcons name="delete-forever" size={30} color={colors.expense} />
                   </TouchableOpacity>
                 </View>
               )}
@@ -111,7 +112,7 @@ export default function AccountScreen() {
         </View>
         {loading || refreshing || !account || isDeleting ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator size="large" color="#6900FF" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
           <>
@@ -125,7 +126,7 @@ export default function AccountScreen() {
                 balance={account.exp_ba_balance}
                 variant={theme === 'dark' ? 'dark' : 'light'}
                 // variant="dark"
-                accent="#6C63FF"
+                accent={theme === 'dark' ? BankCardPalette.dark.gradDefault : BankCardPalette.light.gradDefault}
                 otherStyle={{
                   width: cardWidth,
                 }}
@@ -174,13 +175,13 @@ export default function AccountScreen() {
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!expense && (
                       <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
-                        <Feather name="arrow-up-right" size={14} color="#FF4D4F" />
+                        <Feather name="arrow-up-right" size={14} color={colors.expense} />
                         {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
                       <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
-                        <Feather name="arrow-down-left" size={14} color="#00C896" />
+                        <Feather name="arrow-down-left" size={14} color={colors.income} />
                         {formatToCurrency(income)}
                       </Text>
                     )}
@@ -205,49 +206,13 @@ const styles = StyleSheet.create({
   dateHeader: {
     fontSize: 14,
     fontFamily: 'Inter-600',
-    color: '#a19bca',
-  },
-  header: {
-    fontSize: 32,
-    backgroundColor: '#fff',
-    color: 'red',
-    fontFamily: 'Inter-600',
   },
   title: {
     fontSize: 24,
     fontFamily: 'Inter-600',
   },
   totalAmount: {
-    color: '#D5D5D5',
     fontSize: 14,
     fontFamily: 'Inter-500',
-  },
-  card: {
-    borderColor: '#5a4f96',
-    borderWidth: 1,
-    padding: 15,
-    borderRadius: 10,
-    flexDirection: 'row',
-    columnGap: 10,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginHorizontal: 20,
-  },
-  cardTitle: {
-    color: '#F4F5F8',
-    fontSize: 16,
-    fontFamily: 'Inter-700',
-    paddingBottom: 5,
-  },
-  cardSubtitle: {
-    color: '#CCC',
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-  },
-  default: {
-    color: '#8880A0',
-    fontSize: 10,
-    fontFamily: 'Inter-500',
-    verticalAlign: 'middle',
   },
 });

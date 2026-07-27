@@ -12,6 +12,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
+import { useThemeContext } from '@/contexts/ThemedContext';
+import { BankCardPalette } from '@/utils/Colors';
 
 type BankCardProps = {
   bankName: string;
@@ -38,33 +40,28 @@ const BankCard = ({
   balance,
   icon,
   currency = 'USD',
-  variant = 'dark',
+  variant,
   accent,
   onPress,
   otherStyle,
 }: BankCardProps) => {
   const [showFull, setShowFull] = useState(false);
+  const { theme } = useThemeContext();
+  const resolvedVariant = variant ?? theme;
 
   const colors = useMemo(() => {
-    if (variant === 'light') {
-      return {
-        text: '#0F0E17',
-        sub: '#5A5A6A',
-        chip: '#E6E6F2',
-        grad: [accent || '#6C63FF', '#B388FF'],
-        cardBg: ['#FFFFFF', '#F7F7FB'] as ColorValue[],
-        border: '#E9E7F2',
-      };
-    }
+    const palette =
+      resolvedVariant === 'light' ? BankCardPalette.light : BankCardPalette.dark;
     return {
-      text: '#FFFFFF',
-      sub: '#CFCFE6',
-      chip: '#2B2748',
-      grad: [accent || '#6C63FF', '#9E6BFF'],
-      cardBg: ['#1A1535', '#0F0E25'] as ColorValue[],
-      border: '#2F2A4F',
+      text: palette.text,
+      sub: palette.sub,
+      chip: palette.chip,
+      chipInner: palette.chipInner,
+      grad: [accent || palette.gradDefault, palette.gradEnd],
+      cardBg: [palette.cardBgStart, palette.cardBgEnd] as ColorValue[],
+      border: palette.border,
     };
-  }, [variant, accent]);
+  }, [resolvedVariant, accent]);
 
   return (
     <TouchableOpacity
@@ -98,7 +95,7 @@ const BankCard = ({
 
         <View style={[styles.row, { marginTop: 8 }]}>
           <View style={[styles.chip, { backgroundColor: colors.chip }]}>
-            <View style={styles.chipInner} />
+            <View style={[styles.chipInner, { backgroundColor: colors.chipInner }]} />
           </View>
           <MaterialIcons name={icon} size={22} color={colors.sub} />
         </View>
@@ -174,7 +171,6 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 4,
-    backgroundColor: '#FFD66B',
   },
   number: {
     marginTop: 16,

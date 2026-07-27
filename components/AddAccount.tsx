@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { accountIcon } from '@/utils/common-data';
 import { showToast } from './ToastMessage';
+import { AddAccountButtonGradient } from '@/utils/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAddBankAccount, useUpdateBankAccount } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -39,7 +40,7 @@ const schema = z.object({
 type BankAccount = z.infer<typeof schema>;
 
 const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?: number }) => {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const { mutateAsync: addBankAccount, isPending: isLoading } = useAddBankAccount();
   const { mutateAsync: updateBankAccount, isPending: isUpdating } = useUpdateBankAccount();
@@ -145,17 +146,17 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
           </View>
         ) : (
           <LinearGradient
-            colors={['#6C63FF', '#B388FF']}
+            colors={AddAccountButtonGradient as [string, string]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={[styles.addbutton]}>
-            <Text style={styles.text}>Add New</Text>
+            <Text style={[styles.text, { color: colors.onPrimary }]}>Add New</Text>
           </LinearGradient>
         )}
       </Pressable>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
+        backdropColor={colors.scrim}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -181,7 +182,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
               </Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color="#5a4f96" size={20} />
+                <Ionicons name="close" color={colors.arrowColor} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={15} />
@@ -252,14 +253,14 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
                         }}>
                         <View
                           style={{
-                            backgroundColor: selectedIcon === item ? '#6B5DE6' : '#EBE9FC',
+                            backgroundColor: selectedIcon === item ? colors.primary : colors.cardBg,
                             padding: 5,
                             borderRadius: 5,
                           }}>
                           <MaterialIcons
                             name={item as React.ComponentProps<typeof MaterialIcons>['name']}
                             size={24}
-                            color={selectedIcon === item ? '#FFFFFF' : '#5A5A6E'}
+                            color={selectedIcon === item ? colors.onPrimary : colors.lighterTitle}
                           />
                         </View>
                       </Pressable>
@@ -271,13 +272,17 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             <Spacer height={20} />
             <View>
               <TouchableOpacity
-                style={[styles.button, !isDirty || isLoading || isUpdating ? styles.disable : {}]}
+                style={[
+                  styles.button,
+                  { backgroundColor: colors.primary },
+                  !isDirty || isLoading || isUpdating ? styles.disable : {},
+                ]}
                 onPress={handleSubmit(handlePress)}
                 disabled={!isDirty || isLoading || isUpdating}>
                 {isLoading || isUpdating ? (
-                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isLoading || isUpdating ? styles.textDisable : {}]}>
+                <Text style={[styles.btntitle, { color: colors.onPrimary }, isLoading || isUpdating ? styles.textDisable : {}]}>
                   {exp_ba_id ? 'Update' : 'Create'}
                 </Text>
               </TouchableOpacity>
@@ -307,7 +312,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -319,7 +323,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -342,7 +345,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#B388FF',
+    shadowColor: AddAccountButtonGradient[1],
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -355,7 +358,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    color: '#FFF',
     fontSize: 14,
     fontFamily: 'Inter-600',
   },

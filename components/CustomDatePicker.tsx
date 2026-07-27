@@ -3,6 +3,7 @@ import React, { forwardRef, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { format, parseISO } from 'date-fns';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   value: string;
@@ -20,6 +21,7 @@ const CustomDatePicker = forwardRef<any, Props>(
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date>(new Date());
     const [minimum, setMinimumDate] = useState<Date>();
+    const { colors } = useThemeContext();
 
     useEffect(() => {
       const date = value ? parseISO(value) : new Date();
@@ -48,7 +50,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             <Text
               style={{
                 fontSize: 14,
-                color: '#282343',
+                color: colors.title,
                 marginBottom: 6,
                 fontFamily: 'Inter-400',
               }}>
@@ -62,7 +64,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             if (onBlur) onBlur(); // handle blur manually
           }}
           style={{
-            backgroundColor: '#6B5DE6',
+            backgroundColor: colors.primary,
             borderWidth: 1,
             paddingHorizontal: 12,
             paddingVertical: 5,
@@ -72,8 +74,8 @@ const CustomDatePicker = forwardRef<any, Props>(
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Entypo name="calendar" size={14} color="#1E1E1E" style={{ marginRight: 5 }} />
-          <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+          <Entypo name="calendar" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+          <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
             {date ? formatDateForDisplay(date) : placeholder || 'Pick a date'}
           </Text>
         </TouchableOpacity>
@@ -92,7 +94,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             onChange(formatted);
           }}
           onCancel={() => setOpen(false)}
-          buttonColor="#ffffff"
+          buttonColor={colors.onPrimary}
           title="Choose date"
           confirmText="Select"
           cancelText="Cancel"
@@ -102,7 +104,7 @@ const CustomDatePicker = forwardRef<any, Props>(
           <Text
             style={{
               fontSize: 12,
-              color: '#f02d3a',
+              color: colors.expense,
               marginTop: 4,
               fontFamily: 'Inter-300',
               maxWidth: 100,

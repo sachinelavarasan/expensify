@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { format, parse } from 'date-fns';
 import { TimePickerModal } from 'react-native-paper-dates';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   value: string;
@@ -25,6 +26,7 @@ const TimePickerPaper = ({
 }: Props) => {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<Date>(new Date());
+  const { colors } = useThemeContext();
 
   const formatDisplayTime = (date: Date) => format(date, 'hh:mm a');
 
@@ -64,7 +66,7 @@ const TimePickerPaper = ({
           <Text
             style={{
               fontSize: 14,
-              color: '#282343',
+              color: colors.title,
               marginBottom: 6,
               fontFamily: 'Inter-400',
             }}>
@@ -79,7 +81,7 @@ const TimePickerPaper = ({
           onBlur?.();
         }}
         style={{
-          backgroundColor: '#6B5DE6',
+          backgroundColor: colors.primary,
           borderWidth: 1,
           paddingHorizontal: 12,
           paddingVertical: 5,
@@ -88,8 +90,8 @@ const TimePickerPaper = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />
-        <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+        <Feather name="clock" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+        <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
           {formatDisplayTime(time) || placeholder || 'Select Time'}
         </Text>
       </TouchableOpacity>
@@ -110,7 +112,7 @@ const TimePickerPaper = ({
         <Text
           style={{
             fontSize: 12,
-            color: '#f02d3a',
+            color: colors.expense,
             marginTop: 4,
             fontFamily: 'Inter-300',
             maxWidth: 100,

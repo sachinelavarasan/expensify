@@ -29,47 +29,50 @@ const HomeHeader = ({
     <View>
       <View style={[styles.topContainer, !balance && { marginBottom: 5 }]}>
         <LinearGradient
-          colors={['#37955e45', '#37955e55']}
+          colors={[`${colors.income}45`, `${colors.income}55`]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.card, { width: cardWidth }]}>
           <View>
-            <Text style={[styles.cardTitle, { color: '#37955e' }]}>Income</Text>
+            <Text style={[styles.cardTitle, { color: colors.income }]}>Income</Text>
             <Text style={[styles.cardSubtitle, { color: colors.title }]} numberOfLines={2}>
               {formatToCurrency(income)}
             </Text>
           </View>
-          <View style={styles.iconBadgeGreen}>
-            <Feather name="arrow-down-left" size={16} color="#00C896" />
+          <View style={[styles.iconBadgeGreen, { backgroundColor: `${colors.income}25` }]}>
+            <Feather name="arrow-down-left" size={16} color={colors.income} />
           </View>
         </LinearGradient>
 
         <LinearGradient
-          colors={['#f33f3f42', '#f33f3f48']}
+          colors={[`${colors.expense}42`, `${colors.expense}48`]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.card, { width: cardWidth }]}>
           <View>
-            <Text style={[styles.cardTitle, { color: '#F56569' }]}>Expense</Text>
+            <Text style={[styles.cardTitle, { color: colors.expense }]}>Expense</Text>
             <Text style={[styles.cardSubtitle, { color: colors.title }]} numberOfLines={2}>
               {formatToCurrency(expense)}
             </Text>
           </View>
-          <View style={styles.iconBadgeRed}>
-            <Feather name="arrow-up-right" size={16} color="#FF4D4F" />
+          <View style={[styles.iconBadgeRed, { backgroundColor: `${colors.expense}26` }]}>
+            <Feather name="arrow-up-right" size={16} color={colors.expense} />
           </View>
         </LinearGradient>
       </View>
 
       {(!showBalance || carryBalance) && (
         <LinearGradient
-          colors={['#6B5DE6', '#705AD4']}
+          colors={colors.floatingBtnBg as [string, string]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.balance, { marginBottom: 0 }]}>
-          <Text style={[styles.balanceText]}>Balance:</Text>
+          <Text style={[styles.balanceText, { color: colors.onPrimary }]}>Balance:</Text>
           <Text
-            style={[styles.balanceText, { fontFamily: 'Inter-600', marginLeft: 6, color: '#FFF' }]}
+            style={[
+              styles.balanceText,
+              { fontFamily: 'Inter-600', marginLeft: 6, color: colors.onPrimary },
+            ]}
             numberOfLines={1}>
             {formatToCurrency(balance)}
           </Text>
@@ -99,13 +102,11 @@ const styles = StyleSheet.create({
     // elevation: 6,
   },
   cardTitle: {
-    color: '#F4F5F8',
     fontSize: 14,
     fontFamily: 'Inter-600',
     paddingBottom: 5,
   },
   cardSubtitle: {
-    color: '#E0E0FF',
     fontSize: 14,
     fontFamily: 'Inter-700',
     maxWidth: cardWidth - 50,
@@ -114,7 +115,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#37955e25',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#ff4d4f26',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -138,6 +137,5 @@ const styles = StyleSheet.create({
   balanceText: {
     fontSize: 13,
     fontFamily: 'Inter-500',
-    color: '#EDEDED',
   },
 });

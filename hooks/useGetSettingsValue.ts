@@ -1,5 +1,5 @@
 import { getAsyncValue } from '@/utils/functions';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 export const useGetSettingsFromStore = (key: string) => {

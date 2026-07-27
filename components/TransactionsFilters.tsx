@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 import Spacer from './Spacer';
 import Modal from 'react-native-modal';
@@ -28,7 +28,7 @@ const TransactionFilters = ({
   accounts: BankAccount[];
   selectedAccount: number | string
 }) => {
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState(searchText);
   const [transactionType, setTransactionType] = useState<string>(selectedTransaction);
@@ -57,11 +57,11 @@ const TransactionFilters = ({
           paddingVertical: 5,
           paddingHorizontal: 5,
         }}>
-        <FontAwesome6 name="filter" size={20} color="#FFF" />
+        <FontAwesome6 name="filter" size={20} color={colors.onPrimary} />
       </TouchableOpacity>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(28, 27, 27, 0.5)'}
+        backdropColor={colors.scrim}
         style={{ flex: 1 }}
         isVisible={show}
         hasBackdrop={true}
@@ -86,7 +86,7 @@ const TransactionFilters = ({
               <Text style={[styles.title, { color: colors.title }]}>Apply Filters</Text>
 
               <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color={'#5a4f96'} size={20} />
+                <Ionicons name="close" color={colors.primary} size={20} />
               </TouchableOpacity>
             </View>
             <Spacer height={20} />
@@ -124,11 +124,11 @@ const TransactionFilters = ({
             <View>
               <TouchableOpacity onPress={handlePress}>
                 <LinearGradient
-                  colors={['#6B5DE6', '#6900FF']}
+                  colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={[styles.button]}>
-                  <Text style={[styles.btntitle]}>Apply</Text>
+                  <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -151,14 +151,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    color: '#1E1E1E',
     fontFamily: 'Inter-600',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -170,7 +168,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -184,7 +181,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#282343',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },

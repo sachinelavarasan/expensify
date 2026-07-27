@@ -3,13 +3,13 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  useAnimatedGestureHandler,
   withSpring,
   interpolate,
-  Extrapolate,
+  Extrapolation,
 } from 'react-native-reanimated';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 const BUTTON_WIDTH = 100;
 const SWIPE_THRESHOLD = BUTTON_WIDTH / 2;
@@ -20,23 +20,26 @@ type Props = {
 };
 
 export default function SwipeableRow({ children, onDelete }: Props) {
+  const { colors } = useThemeContext();
   const translateX = useSharedValue(0);
+  const startX = useSharedValue(0);
 
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: any) => {
-      ctx.startX = translateX.value;
-    },
-    onActive: (event, ctx: any) => {
-      translateX.value = Math.min(0, ctx.startX + event.translationX);
-    },
-    onEnd: () => {
+  const panGesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-5, 5])
+    .onStart(() => {
+      startX.value = translateX.value;
+    })
+    .onUpdate((event) => {
+      translateX.value = Math.min(0, startX.value + event.translationX);
+    })
+    .onEnd(() => {
       if (translateX.value < -SWIPE_THRESHOLD) {
         translateX.value = withSpring(-BUTTON_WIDTH);
       } else {
         translateX.value = withSpring(0);
       }
-    },
-  });
+    });
 
   const rowStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
@@ -47,7 +50,7 @@ export default function SwipeableRow({ children, onDelete }: Props) {
       translateX.value,
       [-BUTTON_WIDTH, -BUTTON_WIDTH + 20],
       [1, 0],
-      Extrapolate.CLAMP,
+      Extrapolation.CLAMP,
     );
     return { opacity };
   });
@@ -61,16 +64,13 @@ export default function SwipeableRow({ children, onDelete }: Props) {
     <View style={styles.container}>
       <Animated.View style={[styles.deleteContainer, deleteStyle]}>
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <MaterialIcons name="delete" size={30} color={'#da1616'} />
+          <MaterialIcons name="delete" size={30} color={colors.expense} />
         </TouchableOpacity>
       </Animated.View>
 
-      <PanGestureHandler
-        onGestureEvent={gestureHandler}
-        activeOffsetX={[-10, 10]}
-        failOffsetY={[-5, 5]}>
+      <GestureDetector gesture={panGesture}>
         <Animated.View style={[rowStyle]}>{children}</Animated.View>
-      </PanGestureHandler>
+      </GestureDetector>
     </View>
   );
 }
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   deleteContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'flex-end',
   },

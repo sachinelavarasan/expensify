@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { format, parse } from 'date-fns';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   value: string;
@@ -25,6 +26,7 @@ const CustomTimePicker = ({
 }: Props) => {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<Date>(new Date());
+  const { colors } = useThemeContext();
 
   useEffect(() => {
     if (!value) {
@@ -47,7 +49,7 @@ const CustomTimePicker = ({
           <Text
             style={{
               fontSize: 14,
-              color: '#282343',
+              color: colors.title,
               marginBottom: 6,
               fontFamily: 'Inter-400',
             }}>
@@ -61,7 +63,7 @@ const CustomTimePicker = ({
           onBlur?.();
         }}
         style={{
-          backgroundColor: '#463e75',
+          backgroundColor: colors.primary,
           borderWidth: 1,
           paddingHorizontal: 12,
           paddingVertical: 5,
@@ -70,8 +72,8 @@ const CustomTimePicker = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <Feather name="clock" size={14} color="#fff" style={{ marginRight: 5 }} />
-        <Text style={{ color: '#fff', fontFamily: 'Inter-500' }}>
+        <Feather name="clock" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
+        <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
           {value || placeholder || 'Select Time'}
         </Text>
       </TouchableOpacity>
@@ -89,7 +91,7 @@ const CustomTimePicker = ({
           onChange(formatted);
         }}
         onCancel={() => setOpen(false)}
-        buttonColor="#ffffff"
+        buttonColor={colors.onPrimary}
         title="Choose time"
         confirmText="Select"
         cancelText="Cancel"
@@ -98,7 +100,7 @@ const CustomTimePicker = ({
         <Text
           style={{
             fontSize: 12,
-            color: '#f02d3a',
+            color: colors.expense,
             marginTop: 4,
             fontFamily: 'Inter-300',
             maxWidth: 100,

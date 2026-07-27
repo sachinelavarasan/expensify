@@ -10,6 +10,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, {
+  FadeInDown,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 
 import Emptystate from '@/components/Emptystate';
 import TransactionCard from '@/components/TransactionCard';
@@ -34,6 +40,7 @@ import SwipeableRow from '@/components/Swippable';
 import { showToast } from '@/components/ToastMessage';
 import { useDeleteTransaction } from '@/hooks/useTransaction';
 import GroupingModal from '@/components/GroupingModal';
+import { FontSize } from '@/utils/Typography';
 
 export default function Index() {
   const { colors } = useThemeContext();
@@ -64,6 +71,19 @@ export default function Index() {
 
   const [refreshing, setRefreshing] = useState(false);
   const { value } = useGetSettingsFromStore('tt-time');
+
+  const headerOpacity = useSharedValue(0);
+  const headerTranslateY = useSharedValue(12);
+
+  useEffect(() => {
+    headerOpacity.value = withTiming(1, { duration: 350 });
+    headerTranslateY.value = withTiming(0, { duration: 350 });
+  }, [headerOpacity, headerTranslateY]);
+
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+    transform: [{ translateY: headerTranslateY.value }],
+  }));
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -200,8 +220,8 @@ export default function Index() {
           colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.floatingButton}>
-          <FontAwesome6 name="plus" size={22} color="#FFF" />
+          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
+          <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
         </LinearGradient>
       </TouchableOpacity>
       <TouchableOpacity
@@ -219,7 +239,7 @@ export default function Index() {
           colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.floatingButton}>
+          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
           <TransactionFilters
             applyFilters={applyFilters}
             searchText={search}
@@ -246,7 +266,7 @@ export default function Index() {
           />
           <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
         </View>
-        <View style={{ paddingHorizontal: 15 }}>
+        <Animated.View style={[{ paddingHorizontal: 15 }, headerAnimatedStyle]}>
           <HomeHeader
             income={income}
             expense={expense}
@@ -254,7 +274,7 @@ export default function Index() {
             showBalance={showBalance}
             balance={balance}
           />
-        </View>
+        </Animated.View>
         <View
           style={{
             flexDirection: 'row',
@@ -267,7 +287,7 @@ export default function Index() {
             <Pressable
               style={{
                 borderWidth: 1,
-                borderColor: '#5a4f96',
+                borderColor: colors.primary,
                 paddingVertical: 2,
                 paddingHorizontal: 10,
                 borderRadius: 50,
@@ -291,7 +311,7 @@ export default function Index() {
             <Pressable
               style={{
                 borderWidth: 1,
-                borderColor: '#5a4f96',
+                borderColor: colors.primary,
                 paddingVertical: 2,
                 paddingHorizontal: 10,
                 borderRadius: 50,
@@ -317,7 +337,7 @@ export default function Index() {
             <Pressable
               style={{
                 borderWidth: 1,
-                borderColor: '#5a4f96',
+                borderColor: colors.primary,
                 paddingVertical: 2,
                 paddingHorizontal: 10,
                 borderRadius: 50,
@@ -343,7 +363,7 @@ export default function Index() {
             <Pressable
               style={{
                 borderWidth: 1,
-                borderColor: '#5a4f96',
+                borderColor: colors.primary,
                 paddingVertical: 2,
                 paddingHorizontal: 10,
                 borderRadius: 50,
@@ -378,9 +398,11 @@ export default function Index() {
             />
           }
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             return (
-              <View style={{ paddingVertical: 10, paddingHorizontal: 5 }}>
+              <Animated.View
+                entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
+                style={{ paddingVertical: 10, paddingHorizontal: 5 }}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -414,7 +436,7 @@ export default function Index() {
                     <TransactionCard {...transaction} showTsTime={value} />
                   </SwipeableRow>
                 ))}
-              </View>
+              </Animated.View>
             );
           }}
           keyExtractor={(item) => item.date}
@@ -425,34 +447,22 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  month: {
-    color: '#6900FF',
-    fontSize: 17,
-    fontFamily: 'Inter-700',
-  },
   monthSwitch: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
   },
-
-  title: {
-    color: '#1C1C29',
-    fontSize: 16,
-    fontFamily: 'Inter-600',
-  },
   totalAmount: {
-    color: '#D5D5D5',
-    fontSize: 14,
+    // color intentionally omitted: always overridden inline with a theme color (colors.title)
+    fontSize: FontSize.base,
     fontFamily: 'Inter-500',
   },
   dateHeader: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
-    color: '#a19bca',
+    // color intentionally omitted: always overridden inline with a theme color (colors.lighterTitle)
   },
   floatingButton: {
-    backgroundColor: '#5a4f96',
     width: 45,
     height: 45,
     borderRadius: 20,
@@ -462,7 +472,6 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: 0,
     elevation: 2,
-    shadowColor: '#000',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 1,
     shadowRadius: 3.84,

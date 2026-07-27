@@ -32,6 +32,7 @@ const ChangePassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const { signIn, isLoaded, setActive } = useSignIn();
   const { colors } = useThemeContext();
+  const otpTextInputStyle = { ...styles.roundedTextInput, color: colors.arrowColor };
 
   const router = useRouter();
 
@@ -128,17 +129,17 @@ const ChangePassword = () => {
               <Text style={[styles.header, { color: colors.title }]}>Change Password</Text>
               <Text style={[styles.subtext, { color: colors.description }]}>
                 Enter the 6-digit code that has been sent to{' '}
-                <Text style={[styles.subtext]}>{email}</Text>
+                <Text style={[styles.subtext, { color: colors.description }]}>{email}</Text>
               </Text>
             </View>
             <Spacer height={30} />
             <OTPTextInput
               inputCount={6}
               containerStyle={styles.textInputContainer}
-              textInputStyle={styles.roundedTextInput}
+              textInputStyle={otpTextInputStyle}
               inputCellLength={1}
-              tintColor="#6900FF"
-              offTintColor="#8880A0"
+              tintColor={colors.primary}
+              offTintColor={colors.arrowColor}
               keyboardType="numeric"
               autoFocus={true}
               handleTextChange={handleTextChange}></OTPTextInput>
@@ -160,6 +161,7 @@ const ChangePassword = () => {
             <TouchableOpacity
               style={[
                 styles.button,
+                { backgroundColor: colors.primary },
                 otpVerifyLoading || !otpValidation(otp) || !passwordValidation(newPassword)
                   ? styles.disable
                   : {},
@@ -169,9 +171,16 @@ const ChangePassword = () => {
                 otpVerifyLoading || !otpValidation(otp) || !passwordValidation(newPassword)
               }>
               {otpVerifyLoading ? (
-                <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
               ) : null}
-              <Text style={[styles.title, otpVerifyLoading ? styles.textDisable : {}]}>Verify</Text>
+              <Text
+                style={[
+                  styles.title,
+                  { color: colors.onPrimary },
+                  otpVerifyLoading ? styles.textDisable : {},
+                ]}>
+                Verify
+              </Text>
             </TouchableOpacity>
 
             <Spacer height={50} />
@@ -194,12 +203,10 @@ export default ChangePassword;
 const styles = StyleSheet.create({
   header: {
     fontSize: 24,
-    color: '#FFFFFF',
     fontFamily: 'Inter-800',
   },
   subtext: {
     fontSize: 14,
-    color: '#b7b6c1',
     fontFamily: 'Inter-400',
     paddingTop: 10,
     textAlign: 'center',
@@ -212,7 +219,6 @@ const styles = StyleSheet.create({
   roundedTextInput: {
     borderRadius: 10,
     borderWidth: 4,
-    color: '#8880A0',
     padding: 0,
     fontSize: 18,
     fontFamily: 'Inter-600',
@@ -225,7 +231,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: 8,
     width: '100%',
@@ -236,7 +241,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },

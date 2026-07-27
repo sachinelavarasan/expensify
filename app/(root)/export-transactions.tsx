@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -24,6 +25,7 @@ import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
 import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { FontSize } from '@/utils/Typography';
 
 export default function ExportData() {
   const router = useRouter();
@@ -34,44 +36,56 @@ export default function ExportData() {
   const [end, setEnd] = useState('');
   const [docType, setDoctype] = useState<number | string>('pdf');
   const [tranType, setTranType] = useState<string>('all');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const cardFade = useSharedValue(0);
+  useEffect(() => {
+    cardFade.value = withTiming(1, { duration: 350 });
+  }, [cardFade]);
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: cardFade.value,
+    transform: [{ translateY: (1 - cardFade.value) * 10 }],
+  }));
 
   async function download() {
     if (!start || !end) {
       return;
     }
-    switch (docType) {
-      case 'xlsx':
-        exportExcelMutation({
-          startDate: start,
-          endDate: end,
-          fileType: 'xlsx',
-          tranType,
-        }).then(() => {
+    setErrorMessage('');
+    try {
+      switch (docType) {
+        case 'xlsx':
+          await exportExcelMutation({
+            startDate: start,
+            endDate: end,
+            fileType: 'xlsx',
+            tranType,
+          });
           setEnd('');
           setStart('');
-        });
-        break;
-      case 'csv':
-        exportExcelMutation({
-          startDate: start,
-          endDate: end,
-          fileType: 'csv',
-          tranType,
-        }).then(() => {
+          break;
+        case 'csv':
+          await exportExcelMutation({
+            startDate: start,
+            endDate: end,
+            fileType: 'csv',
+            tranType,
+          });
           setEnd('');
           setStart('');
-        });
-        break;
-      default:
-        exportPdfMutation({
-          startDate: start,
-          endDate: end,
-          tranType,
-        }).then(() => {
+          break;
+        default:
+          await exportPdfMutation({
+            startDate: start,
+            endDate: end,
+            tranType,
+          });
           setEnd('');
           setStart('');
-        });
-        break;
+          break;
+      }
+    } catch {
+      setErrorMessage('Something went wrong while exporting your transactions. Please try again.');
     }
   }
 
@@ -88,6 +102,7 @@ export default function ExportData() {
             }}>
             <ProfileHeader title="Export Transactions" paddingHorizontal={false} />
             <Spacer height={20} />
+            <Animated.View style={cardAnimatedStyle}>
             <View style={{ alignItems: 'flex-start' }}>
               <View style={[styles.card, { width: '100%', backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}>
                 <DatePickerWithOutValue
@@ -97,7 +112,7 @@ export default function ExportData() {
                   placeholder="Start date"
                 />
                 <Spacer height={5} />
-                <AntDesign name="arrowdown" size={24} color="#6900FF" />
+                <AntDesign name="arrow-down" size={24} color={colors.primary} />
                 <Spacer height={5} />
                 <DatePickerWithOutValue
                   label="To:"
@@ -130,6 +145,7 @@ export default function ExportData() {
                 }}
               />
             </View>
+            </Animated.View>
             <View style={[styles.btnContainer, { paddingHorizontal: 5 }]}>
               <TouchableOpacity
                 style={[
@@ -143,18 +159,23 @@ export default function ExportData() {
                 disabled={!start || !end}
                 onPress={download}>
                 {isPdfLoading || isPending ? (
-                  <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.title, isPdfLoading || isPending  ? styles.textDisable : {}]}>
+                <Text style={[styles.title, { color: colors.onPrimary }, isPdfLoading || isPending  ? styles.textDisable : {}]}>
                   Export Now
                 </Text>
               </TouchableOpacity>
+              {!!errorMessage && (
+                <Text style={[styles.subText, { color: colors.expense, textAlign: 'center', marginTop: 8 }]}>
+                  {errorMessage}
+                </Text>
+              )}
             </View>
             <Spacer height={20} />
             <Spacer
               height={1}
               otherStyle={{
-                backgroundColor: '#5a4f9645',
+                backgroundColor: colors.borderColor,
               }}
             />
             <Spacer height={20} />
@@ -174,7 +195,7 @@ export default function ExportData() {
                   }
                 ]}
                 onPress={() => router.push('/(root)/import-transactions')}>
-                <Text style={[styles.title]}>
+                <Text style={[styles.title, { color: colors.onPrimary }]}>
                   Import Transactions
                 </Text>
               </TouchableOpacity>
@@ -204,18 +225,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    color: '#FFF',
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontFamily: 'Inter-600',
   },
-  logoutBg: {
-    backgroundColor: '#076ae3',
-  },
-  opacityBg: {
-    backgroundColor: '#2E8B57',
-  },
+  logoutBg: {},
+  opacityBg: {},
   card: {
-    borderColor: '#5a4f96',
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 15,
@@ -231,8 +246,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   subText: {
-    fontSize: 14,
-    color: '#ccc',
+    fontSize: FontSize.base,
     marginTop: 2,
     fontFamily: 'Inter-500',
   },
@@ -240,26 +254,12 @@ const styles = StyleSheet.create({
     padding: 12,
   },
 
-  itemContainer: {
-    padding: 8,
-    marginBottom: 12,
-    backgroundColor: '#141221',
-    borderRadius: 4,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   left: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     flex: 1,
-  },
-  name: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontFamily: 'Inter-600',
   },
   subTextContainer: {
     display: 'flex',

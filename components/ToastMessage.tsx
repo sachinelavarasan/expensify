@@ -3,6 +3,7 @@
 import React from 'react';
 import Toast, { ToastConfig, BaseToast, ErrorToast, InfoToast } from 'react-native-toast-message';
 import { StyleSheet } from 'react-native';
+import { ToastPalette } from '@/utils/Colors';
 
 // Define custom styles for different toast types
 const toastConfig: ToastConfig = {
@@ -73,19 +74,19 @@ export default ToastMessage;
 const styles = StyleSheet.create({
   successToast: {
     height: 55,
-    backgroundColor: '#3EB489',
+    backgroundColor: ToastPalette.successBg,
     borderLeftWidth: 0,
     paddingVertical: 15,
   },
   errorToast: {
     height: 55,
-    backgroundColor: '#EF4444',
+    backgroundColor: ToastPalette.errorBg,
     borderLeftWidth: 0,
     paddingVertical: 15,
   },
   infoToast: {
     height: 55,
-    backgroundColor: '#FFBF00',
+    backgroundColor: ToastPalette.infoBg,
     borderLeftWidth: 0,
     paddingVertical: 15,
   },
@@ -93,17 +94,17 @@ const styles = StyleSheet.create({
     padding: 0,
     fontSize: 14,
     fontFamily: 'Inter-400',
-    color: '#000',
+    color: ToastPalette.infoText1,
   },
   text1: {
     padding: 0,
     fontSize: 14,
     fontFamily: 'Inter-400',
-    color: '#FFFFFF',
+    color: ToastPalette.text1,
   },
   text2: {
     fontSize: 12,
     fontFamily: 'Inter-400',
-    color: '#f5f5f5',
+    color: ToastPalette.text2,
   },
 });

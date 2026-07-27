@@ -1,15 +1,17 @@
 import { ThemedView } from '@/components/ThemedView';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { PieChart, pieDataItem } from 'react-native-gifted-charts';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import MonthSwitcher from '@/components/MonthSwitch';
 import OverlayLoader from '@/components/Overlay';
 import TableView from '@/components/Table';
 import IncomeExpenseTabs from '@/components/StatTab';
-import { useCallback, useState } from 'react';
-import { RefreshControl } from 'react-native-gesture-handler';
+import Emptystate from '@/components/Emptystate';
+import { useCallback, useEffect, useState } from 'react';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import GroupingModal from '@/components/GroupingModal';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { FontSize, Typography } from '@/utils/Typography';
 
 export default function Stat() {
   const { colors } = useThemeContext();
@@ -50,6 +52,18 @@ export default function Stat() {
     }, 2000);
   }, []);
 
+  const chartOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (!loading) {
+      chartOpacity.value = withTiming(1, { duration: 300 });
+    }
+  }, [loading]);
+
+  const chartAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: chartOpacity.value,
+  }));
+
   return (
     <ThemedView style={{ flex: 1, paddingHorizontal: 15 }}>
       {loading && <OverlayLoader />}
@@ -73,11 +87,14 @@ export default function Stat() {
               <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
             </View>
 
-            <View
-              style={{
-                paddingVertical: 10,
-                alignItems: 'center',
-              }}>
+            <Animated.View
+              style={[
+                {
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                },
+                chartAnimatedStyle,
+              ]}>
               <PieChart
                 data={pieData}
                 radius={100}
@@ -87,36 +104,42 @@ export default function Stat() {
                 innerCircleColor={colors.barBackground}
                 innerRadius={65}
                 labelsPosition="mid"
-                textColor="#6B5DE6"
+                textColor={colors.primary}
                 centerLabelComponent={() =>
                   pieData.length > 0 ? (
                     pieData.map((item, index) => (
                       <Text
                         key={index}
                         style={{
-                          fontSize: 14,
+                          ...Typography.bodySemiBold,
                           marginBottom: 5,
                           color: item.color,
-                          fontFamily: 'Inter-600',
                         }}>
                         {item.text}
                       </Text>
                     ))
                   ) : (
-                    <Text style={{ fontSize: 16, color: colors.title, fontFamily: 'Inter-500', }}>No data</Text>
+                    <Text style={{ fontSize: FontSize.md, color: colors.title, fontFamily: 'Inter-500' }}>No data</Text>
                   )
                 }
               />
-            </View>
+            </Animated.View>
 
             {/* <View> */}
               <TableView transactions={transactions} />
             {/* </View> */}
 
-            {transactions.length > 0 && (
+            {transactions.length > 0 ? (
               <View>
                 <IncomeExpenseTabs transactions={transactions} />
               </View>
+            ) : (
+              !loading && (
+                <Emptystate
+                  title="No transactions yet"
+                  description="Add income or expenses for this period to see your stats here."
+                />
+              )
             )}
           </>
         }

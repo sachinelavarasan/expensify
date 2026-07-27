@@ -30,18 +30,22 @@ export default function TableView({ transactions }: { transactions: Itransaction
       <View style={[styles.table, { borderColor: colors.inputBorder }]}>
         {/* Table Header with Gradient */}
         <LinearGradient
-          colors={['#705AD4', '#6B5DE6']}
+          colors={[colors.floatingBtnBg[1], colors.floatingBtnBg[0]]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.headerRow}>
           <View style={{ width: firstColumnWidth }}>
-            <Text style={[styles.cell, styles.headerText]}>Type</Text>
+            <Text style={[styles.cell, styles.headerText, { color: colors.onPrimary }]}>Type</Text>
           </View>
           <View style={{ width: secondColumnWidth }}>
-            <Text style={[styles.cell, styles.headerText]}>Amount</Text>
+            <Text style={[styles.cell, styles.headerText, { color: colors.onPrimary }]}>
+              Amount
+            </Text>
           </View>
           <View style={{ width: thirdColumnWidth }}>
-            <Text style={[styles.cell, styles.headerText]}>Count</Text>
+            <Text style={[styles.cell, styles.headerText, { color: colors.onPrimary }]}>
+              Count
+            </Text>
           </View>
         </LinearGradient>
 
@@ -145,12 +149,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     fontSize: 14,
-    color: '#D1CFE9',
     fontFamily: 'Inter-400',
   },
   headerText: {
     fontFamily: 'Inter-600',
-    color: '#E6E6FA',
     fontSize: 14,
   },
 });

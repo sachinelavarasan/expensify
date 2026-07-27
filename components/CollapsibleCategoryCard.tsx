@@ -22,10 +22,12 @@ function CategoryProgressBar({
   spentAmount,
   budgetAmount,
   exceeded,
+  colors,
 }: {
   spentAmount: number;
   budgetAmount: number;
   exceeded: boolean;
+  colors: ThemeColors;
 }) {
   const percentage = Math.min((spentAmount / budgetAmount) * 100, 100);
   const progress = useSharedValue(0);
@@ -42,7 +44,7 @@ function CategoryProgressBar({
     <View
       style={{
         height: 20,
-        backgroundColor: '#6e6c706c',
+        backgroundColor: colors.borderColor,
         borderRadius: 10,
         overflow: 'hidden',
         marginTop: 6,
@@ -52,13 +54,13 @@ function CategoryProgressBar({
         style={[
           {
             height: '100%',
-            backgroundColor: exceeded ? '#d12222' : '#6C63FF',
+            backgroundColor: exceeded ? colors.expense : colors.primary,
             borderRadius: 0,
           },
           animatedStyle,
         ]}
       />
-      <View style={StyleSheet.absoluteFillObject}>
+      <View style={StyleSheet.absoluteFill}>
         <View
           style={{
             flex: 1,
@@ -68,7 +70,7 @@ function CategoryProgressBar({
           <Text
             style={{
               fontSize: 10,
-              color: '#FFF',
+              color: colors.onPrimary,
               lineHeight: 20,
               fontFamily: 'Inter-600',
             }}>
@@ -150,10 +152,10 @@ function CollapsibleCategoryCard({
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={1}
-        style={{ backgroundColor: '#00000088' }}
+        style={{ backgroundColor: colors.scrim }}
       />
     ),
-    [],
+    [colors],
   );
 
   const renderPreviewItem = useCallback(
@@ -173,14 +175,14 @@ function CollapsibleCategoryCard({
           <View style={styles.left}>
             <View
               style={{
-                backgroundColor: category.iconBg ? category.iconBg : '#282343',
+                backgroundColor: category.iconBg ? category.iconBg : colors.categoryFallbackBg,
                 padding: 5,
                 borderRadius: 5,
               }}>
               <MaterialIcons
                 name={category.icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 size={24}
-                color="#e0deed"
+                color={colors.categoryFallbackIcon}
               />
             </View>
             <View>
@@ -207,7 +209,7 @@ function CollapsibleCategoryCard({
                   style={[
                     styles.subText,
                     {
-                      color: category.remainingBudget > 0 ? colors.title : '#d12222',
+                      color: category.remainingBudget > 0 ? colors.title : colors.expense,
                       fontFamily: 'Inter-600',
                     },
                   ]}>
@@ -226,6 +228,7 @@ function CollapsibleCategoryCard({
               spentAmount={category.totalAmount}
               budgetAmount={Number(category.budgetAmount)}
               exceeded={category.remainingBudget < 0}
+              colors={colors}
             />
           </View>
         </View>
@@ -260,7 +263,7 @@ function CollapsibleCategoryCard({
         backdropComponent={renderBackdrop}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
-        handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
+        handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         <Text
           style={[
             styles.sheetTitle,
@@ -285,7 +288,7 @@ function CollapsibleCategoryCard({
         <View
           style={[
             styles.categoryTitleCard,
-            { marginHorizontal: 16,marginBottom: 16, backgroundColor: '#f33f3f48' },
+            { marginHorizontal: 16,marginBottom: 16, backgroundColor: `${colors.expense}48` },
           ]}>
           <View>
             <Text
@@ -299,8 +302,8 @@ function CollapsibleCategoryCard({
               {formatToCurrency(category.totalAmount)}
             </Text>
           </View>
-          <View style={styles.iconBadgeRed}>
-            <Feather name="arrow-up-right" size={16} color="#FF4D4F" />
+          <View style={[styles.iconBadgeRed, { backgroundColor: `${colors.expense}26` }]}>
+            <Feather name="arrow-up-right" size={16} color={colors.expense} />
           </View>
         </View>
         <BottomSheetFlatList
@@ -349,22 +352,11 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 18,
     fontFamily: 'Inter-600',
-    color: '#EAEAEA',
     paddingHorizontal: 16,
   },
   contentContainer: { paddingBottom: 30, paddingHorizontal: 16 },
-  itemContainer: {
-    padding: 8,
-    marginBottom: 12,
-    backgroundColor: '#2A2B37',
-    borderRadius: 6,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  name: { color: '#FFFFFF', fontSize: 14, fontFamily: 'Inter-600' },
   subTextContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' },
   cardSubtitle: {
-    color: '#E0E0FF',
     fontSize: 14,
     fontFamily: 'Inter-700',
     maxWidth: deviceWidth() - 200,
@@ -374,7 +366,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,77,79,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },

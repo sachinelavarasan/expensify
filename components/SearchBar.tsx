@@ -40,7 +40,7 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
                 },
               ]
         }>
-        <Feather name="search" size={18} color="#999999" style={{ marginLeft: 10 }} />
+        <Feather name="search" size={18} color={colors.inputPlaceholder} style={{ marginLeft: 10 }} />
         <TextInput
           style={[
             styles.input,
@@ -68,19 +68,19 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
             setIsClicked(false);
           }}
           placeholderTextColor={colors.inputPlaceholder}
-          selectionColor="#999999"
-          cursorColor="#999999"
+          selectionColor={colors.inputPlaceholder}
+          cursorColor={colors.inputPlaceholder}
         />
 
         {actionsNeeded && (
           <View style={styles.actions}>
             {clicked && (
               <>
-                <View style={styles.check}>
+                <View style={[styles.check, { backgroundColor: colors.categoryFallbackBg }]}>
                   <Entypo
                     name="check"
                     size={20}
-                    color="#1E1E1E"
+                    color={colors.categoryFallbackIcon}
                     style={{ padding: 2 }}
                     onPress={() => {
                       Keyboard.dismiss();
@@ -89,11 +89,15 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
                     }}
                   />
                 </View>
-                <View style={styles.close}>
+                <View
+                  style={[
+                    styles.close,
+                    { backgroundColor: colors.categoryFallbackBg, borderColor: colors.categoryFallbackBg },
+                  ]}>
                   <Entypo
                     name="cross"
                     size={20}
-                    color="#1E1E1E"
+                    color={colors.categoryFallbackIcon}
                     style={{ padding: 1.5 }}
                     onPress={() => {
                       Keyboard.dismiss();
@@ -180,7 +184,6 @@ const styles = StyleSheet.create({
     height: 25,
     width: 25,
     borderRadius: 25,
-    backgroundColor: '#323448',
     alignContent: 'center',
     justifyContent: 'center',
     marginRight: 15,
@@ -191,8 +194,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignContent: 'center',
     justifyContent: 'center',
-    borderColor: '#323448',
-    backgroundColor: '#323448',
     borderWidth: 1,
     marginRight: 5,
   },

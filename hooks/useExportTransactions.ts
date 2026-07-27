@@ -1,6 +1,6 @@
 import { useAuth } from '@clerk/clerk-expo';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 import { format } from 'date-fns';

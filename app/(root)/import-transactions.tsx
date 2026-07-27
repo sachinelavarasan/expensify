@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as XLSX from 'xlsx';
@@ -20,6 +21,8 @@ import { ThemedView } from '@/components/ThemedView';
 import Spacer from '@/components/Spacer';
 import ProfileHeader from '@/components/ProfileHeader';
 import { CustomSelectInput } from '@/components/CustomSelectInput';
+import OverlayLoader from '@/components/Overlay';
+import { FontSize } from '@/utils/Typography';
 import { formatToCurrency } from '@/utils/formatter';
 import { useImportBulkTransaction, useImportExcel } from '@/hooks/useExportTransactions';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
@@ -38,6 +41,16 @@ type HeadersMap = {
 export default function ImportTransactions() {
   const { colors } = useThemeContext();
   const [step, setStep] = useState<0 | 1 | 2>(0);
+
+  const stepFade = useSharedValue(0);
+  useEffect(() => {
+    stepFade.value = 0;
+    stepFade.value = withTiming(1, { duration: 300 });
+  }, [step, stepFade]);
+  const stepAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: stepFade.value,
+    transform: [{ translateY: (1 - stepFade.value) * 8 }],
+  }));
 
   const { mutateAsync: importExcelMutation, isPending: processing, data } = useImportExcel();
   const { mutateAsync: importBulkTransactions, isPending: saving } = useImportBulkTransaction();
@@ -195,10 +208,10 @@ export default function ImportTransactions() {
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={1}
-        style={{ backgroundColor: '#00000088' }}
+        style={{ backgroundColor: colors.scrim }}
       />
     ),
-    [],
+    [colors],
   );
 
   const renderPreviewItem = useCallback(
@@ -237,7 +250,7 @@ export default function ImportTransactions() {
               </Text>
             </View>
             {!!item.errors && (
-              <Text style={[styles.subText, { color: '#F87171', maxWidth: 300 }]} numberOfLines={3}>
+              <Text style={[styles.subText, { color: colors.expense, maxWidth: 300 }]} numberOfLines={3}>
                 {item.errors}
               </Text>
             )}
@@ -254,6 +267,7 @@ export default function ImportTransactions() {
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
         <ThemedView style={{ flex: 1, paddingHorizontal: 15 }}>
+          {processing && <OverlayLoader />}
           <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
             <ProfileHeader title="Import Transactions" />
             <Spacer height={10} />
@@ -268,9 +282,11 @@ export default function ImportTransactions() {
                         styles.stepDot,
                         active
                           ? { ...styles.stepDotActive, backgroundColor: colors.primary }
-                          : { ...styles.stepDotInactive, backgroundColor: '#ccccccb8' },
+                          : { ...styles.stepDotInactive, backgroundColor: colors.secondary },
                       ]}>
-                      <Text style={styles.stepDotText}>{idx + 1}</Text>
+                      <Text style={[styles.stepDotText, { color: colors.onPrimary }]}>
+                        {idx + 1}
+                      </Text>
                     </View>
                     <Text
                       style={[
@@ -296,6 +312,7 @@ export default function ImportTransactions() {
               })}
             </View>
 
+            <Animated.View style={stepAnimatedStyle}>
             {step === 0 && (
               <View style={{ paddingHorizontal: 5 }}>
                 <Text
@@ -331,7 +348,7 @@ export default function ImportTransactions() {
                     },
                   ]}
                   onPress={pickExcelFile}>
-                  <Text style={styles.title}>Choose a File</Text>
+                  <Text style={[styles.title, { color: colors.onPrimary }]}>Choose a File</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -398,13 +415,20 @@ export default function ImportTransactions() {
                       styles.button,
                       styles.accent,
                       {
-                        backgroundColor: '#2E8B57',
+                        backgroundColor: colors.income,
                       },
                       (!canGoNextFromMap || processing) && styles.disable,
                     ]}
                     onPress={generatePreview}>
-                    {processing && <ActivityIndicator color="#FFF" style={styles.loader} />}
-                    <Text style={[styles.title, processing && styles.textDisable]}>
+                    {processing && (
+                      <ActivityIndicator color={colors.onPrimary} style={styles.loader} />
+                    )}
+                    <Text
+                      style={[
+                        styles.title,
+                        { color: colors.onPrimary },
+                        processing && styles.textDisable,
+                      ]}>
                       Generate Preview
                     </Text>
                   </TouchableOpacity>
@@ -441,26 +465,26 @@ export default function ImportTransactions() {
                 <View style={styles.previewCards}>
                   <View style={[styles.previewCard, {backgroundColor: colors.inputColor, borderColor: colors.inputBorder}]}>
                     <Text style={[styles.previewTitle, {color: colors.description}]}>Valid</Text>
-                    <Text style={styles.previewCount}>{validRows.length}</Text>
+                    <Text style={[styles.previewCount, { color: colors.income }]}>{validRows.length}</Text>
                     {validRows.length > 0 ? (
                       <TouchableOpacity
-                        style={[styles.button, styles.accent]}
+                        style={[styles.button, styles.accent, { backgroundColor: colors.income }]}
                         onPress={toggleValid}>
-                        <Text style={[styles.title]}>View valid</Text>
+                        <Text style={[styles.title, { color: colors.onPrimary }]}>View valid</Text>
                       </TouchableOpacity>
                     ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
                   </View>
 
                   <View style={[styles.previewCard, {backgroundColor: colors.inputColor, borderColor: colors.inputBorder}]}>
-                    <Text style={[styles.previewTitle, { color: '#E63946' }]}>Invalid</Text>
-                    <Text style={[styles.previewCount, { color: '#E63946' }]}>
+                    <Text style={[styles.previewTitle, { color: colors.expense }]}>Invalid</Text>
+                    <Text style={[styles.previewCount, { color: colors.expense }]}>
                       {invalidRows.length}
                     </Text>
                     {invalidRows.length > 0 ? (
                       <TouchableOpacity
-                        style={[styles.button, styles.danger]}
+                        style={[styles.button, styles.danger, { backgroundColor: colors.expense }]}
                         onPress={toggleInvalid}>
-                        <Text style={styles.title}>View invalid</Text>
+                        <Text style={[styles.title, { color: colors.onPrimary }]}>View invalid</Text>
                       </TouchableOpacity>
                     ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
                   </View>
@@ -498,7 +522,14 @@ export default function ImportTransactions() {
                         {saving && (
                           <ActivityIndicator color={colors.primary} style={styles.loader} />
                         )}
-                        <Text style={[styles.title, saving && styles.textDisable]}>Import Now</Text>
+                        <Text
+                          style={[
+                            styles.title,
+                            { color: colors.onPrimary },
+                            saving && styles.textDisable,
+                          ]}>
+                          Import Now
+                        </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -534,6 +565,7 @@ export default function ImportTransactions() {
                 </View>
               </View>
             )}
+            </Animated.View>
 
             <Spacer height={40} />
           </ScrollView>
@@ -548,7 +580,7 @@ export default function ImportTransactions() {
               backdropComponent={renderBackdrop}
               enableDynamicSizing={false}
               backgroundStyle={{ backgroundColor: colors.cardBg }}
-              handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
+              handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
               <Text style={[styles.sheetTitle, { color: colors.title }]}>
                 {validRows.length} valid records
               </Text>
@@ -574,8 +606,8 @@ export default function ImportTransactions() {
               backdropComponent={renderBackdrop}
               enableDynamicSizing={false}
               backgroundStyle={{ backgroundColor: colors.cardBg }}
-              handleIndicatorStyle={{ backgroundColor: '#ccc' }}>
-              <Text style={[styles.sheetTitle, { color: '#E63946' }]}>
+              handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
+              <Text style={[styles.sheetTitle, { color: colors.expense }]}>
                 {invalidRows.length} invalid records
               </Text>
               <BottomSheetFlatList
@@ -605,16 +637,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  title: { color: '#FFF', fontSize: 16, fontFamily: 'Inter-600' },
-  primary: { backgroundColor: '#076ae3' },
-  secondary: { backgroundColor: '#282343' },
-  accent: { backgroundColor: '#2E8B57' },
-  danger: { backgroundColor: '#7A1F1F' },
+  title: { fontSize: FontSize.md, fontFamily: 'Inter-600' },
+  primary: {},
+  accent: {},
+  danger: {},
   disable: { opacity: 0.4 },
   textDisable: { opacity: 0 },
   loader: { position: 'absolute' },
 
-  subText: { fontSize: 14, color: '#ccc', marginTop: 2, fontFamily: 'Inter-500' },
+  subText: { fontSize: FontSize.base, marginTop: 2, fontFamily: 'Inter-500' },
 
   // stepper
   stepper: {
@@ -632,49 +663,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 6,
   },
-  stepDotActive: { backgroundColor: '#076ae3' },
-  stepDotInactive: { backgroundColor: '#282343' },
-  stepDotText: { color: '#fff', fontSize: 12, fontFamily: 'Inter-700' },
-  stepLabel: { fontSize: 12, fontFamily: 'Inter-500' },
-  stepLabelActive: { color: '#EAEAEA', fontFamily: 'Inter-600' },
-  stepLabelInactive: { color: '#8B8AA0', fontFamily: 'Inter-500' },
+  stepDotActive: {},
+  stepDotInactive: {},
+  stepDotText: { fontSize: FontSize.sm, fontFamily: 'Inter-700' },
+  stepLabel: { fontSize: FontSize.sm, fontFamily: 'Inter-500' },
+  stepLabelActive: { fontFamily: 'Inter-600' },
+  stepLabelInactive: { fontFamily: 'Inter-500' },
   stepLine: { width: 20, height: 2, marginHorizontal: 8, borderRadius: 2 },
-  stepLineActive: { backgroundColor: '#076ae3' },
-  stepLineInactive: { backgroundColor: '#282343' },
+  stepLineActive: {},
+  stepLineInactive: {},
 
   // preview
   previewCards: { flexDirection: 'row', gap: 10 },
   previewCard: {
     flex: 1,
-    backgroundColor: '#1A1B24',
-    borderColor: '#2B2D3A',
     borderWidth: 1,
     borderRadius: 10,
     padding: 12,
     alignItems: 'center',
   },
-  previewTitle: { color: '#EAEAEA', fontFamily: 'Inter-600', fontSize: 14 },
-  previewCount: { color: '#9FEF9F', fontFamily: 'Inter-700', fontSize: 22, marginVertical: 6 },
+  previewTitle: { fontFamily: 'Inter-600', fontSize: FontSize.base },
+  previewCount: { fontFamily: 'Inter-700', fontSize: 22, marginVertical: 6 },
 
   // list items
   contentContainer: { padding: 12 },
   itemContainer: {
     padding: 8,
     marginBottom: 12,
-    backgroundColor: '#2A2B37',
     borderRadius: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   left: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  name: { color: '#FFFFFF', fontSize: 14, fontFamily: 'Inter-600' },
+  name: { fontSize: FontSize.base, fontFamily: 'Inter-600' },
   subTextContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' },
 
   // sheet titles
   sheetTitle: {
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontFamily: 'Inter-600',
-    color: '#EAEAEA',
     paddingHorizontal: 16,
     paddingBottom: 8,
     paddingTop: 6,

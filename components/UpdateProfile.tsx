@@ -108,12 +108,12 @@ const UpdateProfile = ({
         <FontAwesome5
           name="user-edit"
           size={20}
-          color={theme === 'dark' ? '#fff' : colors.secondary}
+          color={theme === 'dark' ? colors.text : colors.secondary}
         />
       </Pressable>
 
       <Modal
-        backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.1)'}
+        backdropColor={colors.scrim}
         isVisible={show}
         hasBackdrop={true}
         deviceHeight={height}
@@ -166,13 +166,24 @@ const UpdateProfile = ({
             <Spacer height={20} />
             <View style={styles.btnContainer}>
               <TouchableOpacity
-                style={[styles.button, !isValid || isLoading ? styles.disable : {}]}
+                style={[
+                  styles.button,
+                  { backgroundColor: colors.primary },
+                  !isValid || isLoading ? styles.disable : {},
+                ]}
                 onPress={handleSubmit(onSubmit)}
                 disabled={!isValid || isLoading}>
                 {isLoading ? (
-                  <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                 ) : null}
-                <Text style={[styles.btntitle, isLoading ? styles.textDisable : {}]}>Update</Text>
+                <Text
+                  style={[
+                    styles.btntitle,
+                    { color: colors.onPrimary },
+                    isLoading ? styles.textDisable : {},
+                  ]}>
+                  Update
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -194,7 +205,6 @@ const styles = StyleSheet.create({
   title: {
     textAlign: 'center',
     fontSize: 20,
-    color: '#1E1E1E',
     marginBottom: 2,
     fontFamily: 'Inter-800',
   },
@@ -205,7 +215,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 50,
     paddingHorizontal: 20,
     paddingVertical: 9,
@@ -217,7 +226,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },

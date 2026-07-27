@@ -259,13 +259,24 @@ const Register = () => {
                 <Spacer height={35} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
-                    style={[styles.button, isLoading ? styles.disable : {}]}
+                    style={[
+                      styles.button,
+                      { backgroundColor: colors.primary },
+                      isLoading ? styles.disable : {},
+                    ]}
                     onPress={handleSubmit(register)}
                     disabled={isLoading}>
                     {isLoading ? (
-                      <ActivityIndicator animating color={'#FFF'} style={styles.loader} />
+                      <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                     ) : null}
-                    <Text style={[styles.title, isLoading ? styles.textDisable : {}]}>Sign Up</Text>
+                    <Text
+                      style={[
+                        styles.title,
+                        { color: colors.onPrimary },
+                        isLoading ? styles.textDisable : {},
+                      ]}>
+                      Sign Up
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <Spacer height={50} />
@@ -315,7 +326,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 8,
     paddingVertical: 8,
     width: '100%',
@@ -326,7 +336,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
@@ -342,15 +351,8 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
   },
-  error: {
-    fontSize: 14,
-    color: '#f02d3a',
-    fontFamily: 'Inter-500',
-    letterSpacing: 0.5,
-  },
   label: {
     fontSize: 24,
-    color: '#FFFFFF',
     marginBottom: 2,
     fontFamily: 'Inter-800',
   },

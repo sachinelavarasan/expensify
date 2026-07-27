@@ -27,8 +27,10 @@ import { useAddBudget, useDeleteBudget, useUpdateBudget } from '@/hooks/useBudge
 import { IBudget } from '@/types';
 import { BudgetedCategoriesList } from '@/components/CollapsibleCategoryCard';
 import OverlayLoader from '@/components/Overlay';
+import Emptystate from '@/components/Emptystate';
 import { useFocusEffect } from 'expo-router';
-import { RefreshControl } from 'react-native-gesture-handler';
+import { Spacing } from '@/utils/Spacing';
+import { FontSize } from '@/utils/Typography';
 
 const width = deviceWidth();
 const height = deviceHeight();
@@ -45,6 +47,23 @@ const schema = z.object({
 
 type BudgetSchema = z.infer<typeof schema>;
 
+function FadeInView({ children }: { children: React.ReactNode }) {
+  const opacity = useSharedValue(0);
+  const translateY = useSharedValue(8);
+
+  useEffect(() => {
+    opacity.value = withTiming(1, { duration: 300 });
+    translateY.value = withTiming(0, { duration: 300 });
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  return <Animated.View style={animatedStyle}>{children}</Animated.View>;
+}
+
 function BudgetProgressBar({
   spentAmount,
   budgetAmount,
@@ -54,6 +73,7 @@ function BudgetProgressBar({
   budgetAmount: number;
   exceeded: boolean;
 }) {
+  const { colors } = useThemeContext();
   const percentage = Math.min((spentAmount / budgetAmount) * 100, 100);
   const progress = useSharedValue(0);
 
@@ -70,7 +90,7 @@ function BudgetProgressBar({
       <View
         style={{
           height: 18,
-          backgroundColor: '#6e6c706c',
+          backgroundColor: colors.barBackground,
           borderRadius: 9,
           overflow: 'hidden',
           marginTop: 6,
@@ -80,7 +100,7 @@ function BudgetProgressBar({
           style={[
             {
               height: '100%',
-              backgroundColor: exceeded ? '#d12222' : '#6C63FF',
+              backgroundColor: exceeded ? colors.expense : colors.primary,
               borderRadius: 0,
             },
             animatedStyle,
@@ -91,10 +111,10 @@ function BudgetProgressBar({
         style={[
           styles.amount,
           {
-            color: '#999999',
+            color: colors.lighterTitle,
             marginTop: 6,
             fontFamily: 'Inter-500',
-            fontSize: 12,
+            fontSize: FontSize.sm,
           },
         ]}>
         {exceeded ? 'Budget Exceeded' : `${percentage.toFixed(2)}% used`}
@@ -106,7 +126,7 @@ function BudgetProgressBar({
 const Budget = () => {
   const [show, setShow] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<IBudget | null>(null);
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const { budgets, currentMonth, loading, currentDate,  goToPreviousMonth, goToNextMonth, refetch } =
     useBudgetsForMonth();
   const { mutateAsync: addBudget, isPending: isLoading } = useAddBudget();
@@ -281,12 +301,10 @@ const Budget = () => {
                   </View>
                 </>
               ) : (
-                <View style={{ alignItems: 'center', marginVertical: 10 }}>
-                  <Ionicons name="wallet-outline" size={60} color="#ccc" />
-                  <Text style={[styles.dateHeader, { color: colors.lighterTitle, marginTop: 4 }]}>
-                    Budget not set for this month
-                  </Text>
-                </View>
+                <Emptystate
+                  title="No budget set"
+                  description="Set a budget for this month to start tracking your spending."
+                />
               )}
 
               {nonBudgetedCategories.length > 0 && (
@@ -296,12 +314,15 @@ const Budget = () => {
                   </Text>
                   
                   {nonBudgetedCategories.map((category) => (
-                    <View style={styles.subMenuContainer} key={category.category}>
+                    <FadeInView key={category.category}>
+                    <View style={styles.subMenuContainer}>
                       <View style={styles.card}>
                         <View style={styles.left}>
                           <View
                             style={{
-                              backgroundColor: category.iconBg ? category.iconBg : '#282343',
+                              backgroundColor: category.iconBg
+                                ? category.iconBg
+                                : colors.categoryFallbackBg,
                               padding: 5,
                               borderRadius: 5,
                             }}>
@@ -310,7 +331,7 @@ const Budget = () => {
                                 category.icon as React.ComponentProps<typeof MaterialIcons>['name']
                               }
                               size={24}
-                              color="#e0deed"
+                              color={colors.categoryFallbackIcon}
                             />
                           </View>
                           <View>
@@ -326,7 +347,7 @@ const Budget = () => {
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center',
-                                gap: 8,
+                                gap: Spacing.sm,
                               }}>
                               <Text style={[styles.subText, { color: colors.description }]}>
                                 Spent :
@@ -357,7 +378,7 @@ const Budget = () => {
                                 styles.cardTitle,
                                 {
                                   color: colors.secondary,
-                                  fontSize: 14,
+                                  fontSize: FontSize.base,
                                   fontFamily: 'Inter-600',
                                 },
                               ]}>
@@ -367,6 +388,7 @@ const Budget = () => {
                         </View>
                       </View>
                     </View>
+                    </FadeInView>
                   ))}
                 </View>
               )}
@@ -374,7 +396,7 @@ const Budget = () => {
           }
         />
         <ReactNativeModal
-          backdropColor={theme === 'light' ? 'rgba(53, 50, 50, 0.5)' : 'rgba(139, 131, 131, 0.2)'}
+          backdropColor={colors.scrim}
           isVisible={show}
           hasBackdrop={true}
           deviceHeight={height}
@@ -400,7 +422,7 @@ const Budget = () => {
                 </Text>
 
                 <TouchableOpacity onPress={() => toggleModal()}>
-                  <Ionicons name="close" color="#5a4f96" size={20} />
+                  <Ionicons name="close" color={colors.primary} size={20} />
                 </TouchableOpacity>
               </View>
 
@@ -424,16 +446,21 @@ const Budget = () => {
                 name="exp_bg_amount"
               />
               <Spacer height={30} />
-              <View style={{ flexDirection: 'row', gap: 20, justifyContent: 'center' }}>
+              <View style={{ flexDirection: 'row', gap: Spacing.xl, justifyContent: 'center' }}>
                 {currentBudget?.exp_bg_id ? (
                   <TouchableOpacity
-                    style={[styles.budgetButton, { backgroundColor: '#d12222' }]}
+                    style={[styles.budgetButton, { backgroundColor: colors.expense }]}
                     onPress={handleDelete}
                     disabled={isLoading || isUpdating || isDeleting}>
                     {isLoading || isDeleting ? (
-                      <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                      <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                     ) : null}
-                    <Text style={[styles.btntitle, isLoading || isDeleting ? styles.disable : {}]}>
+                    <Text
+                      style={[
+                        styles.btntitle,
+                        { color: colors.onPrimary },
+                        isLoading || isDeleting ? styles.disable : {},
+                      ]}>
                       Delete
                     </Text>
                   </TouchableOpacity>
@@ -441,14 +468,20 @@ const Budget = () => {
                 <TouchableOpacity
                   style={[
                     styles.budgetButton,
+                    { backgroundColor: colors.primary },
                     !isDirty || isLoading || isUpdating ? styles.disable : {},
                   ]}
                   onPress={handleSubmit(handlePress)}
                   disabled={!isDirty || isLoading || isUpdating || isDeleting}>
                   {isLoading || isUpdating ? (
-                    <ActivityIndicator animating color={'#FFFFFF'} style={styles.loader} />
+                    <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
                   ) : null}
-                  <Text style={[styles.btntitle, isLoading || isUpdating ? styles.disable : {}]}>
+                  <Text
+                    style={[
+                      styles.btntitle,
+                      { color: colors.onPrimary },
+                      isLoading || isUpdating ? styles.disable : {},
+                    ]}>
                     {currentBudget?.exp_bg_id ? 'Update' : 'Create'}
                   </Text>
                 </TouchableOpacity>
@@ -463,14 +496,14 @@ const Budget = () => {
 
 const styles = StyleSheet.create({
   amount: {
-    fontSize: 12,
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-400',
     textAlign: 'center',
   },
   dateHeader: {
-    fontSize: 14,
+    fontSize: FontSize.base,
     fontFamily: 'Inter-500',
-    color: '#a19bca',
+    // color applied inline via theme colors at each usage site
   },
   left: {
     display: 'flex',
@@ -481,21 +514,21 @@ const styles = StyleSheet.create({
     maxWidth: deviceWidth() * 0.5,
   },
   cardTitle: {
-    color: '#F1F1F6',
-    fontSize: 16,
+    fontSize: FontSize.md,
     fontFamily: 'Inter-600',
+    // color applied inline via theme colors at each usage site
   },
   subMenuContainer: {
     // paddingVertical: 4,
   },
   subText: {
-    fontSize: 12,
-    color: '#ccc',
+    fontSize: FontSize.sm,
     marginTop: 2,
     fontFamily: 'Inter-500',
+    // color applied inline via theme colors at each usage site
   },
   card: {
-    paddingVertical: 20,
+    paddingVertical: Spacing.xl,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -504,8 +537,8 @@ const styles = StyleSheet.create({
   buttonRounded: {
     borderWidth: 1,
     borderRadius: 50,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.sm,
     width: 'auto',
   },
   modal: {
@@ -515,16 +548,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: FontSize.xl,
     fontFamily: 'Inter-600',
   },
   budgetButton: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: '#6B5DE6',
     borderRadius: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.xl,
     paddingVertical: 9,
   },
   disable: {
@@ -536,8 +568,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btntitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    // color applied inline via colors.onPrimary at each usage site (text on a solid-colored button)
+    fontSize: FontSize.md,
     fontFamily: 'Inter-600',
   },
 });

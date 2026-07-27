@@ -44,7 +44,7 @@ const TransactionCard = ({
           <View style={styles.left}>
             <View
               style={{
-                backgroundColor: exp_tc_icon_bg_color ? exp_tc_icon_bg_color : '#282343',
+                backgroundColor: exp_tc_icon_bg_color ? exp_tc_icon_bg_color : colors.categoryFallbackBg,
                 padding: 8,
                 borderRadius: 5,
                 marginTop:2,
@@ -59,7 +59,7 @@ const TransactionCard = ({
                       : 'trending-down'
                 }
                 size={24}
-                color="#fff"
+                color={colors.categoryFallbackIcon}
               />
             </View>
             <View>
@@ -137,13 +137,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   name: {
-    color: '#F1F1F6',
     fontSize: 14,
     fontFamily: 'Inter-600',
     maxWidth: deviceWidth() - 150,
   },
   subText: {
-    color: '#B3B1C4',
     fontSize: 12,
     fontFamily: 'Inter-400',
   },

@@ -65,7 +65,7 @@ export const CustomSelectInput = ({
           justifyContent: 'space-between',
           borderRadius: 8,
           borderWidth: 1,
-          borderColor: error ? '#64090e' :colors.inputBorder,
+          borderColor: error ? colors.expense :colors.inputBorder,
           paddingHorizontal: 12,
           paddingVertical: 10,
           shadowColor: colors.inputColor,
@@ -98,7 +98,7 @@ export const CustomSelectInput = ({
         maxHeight={150}
         placeholder={placeholder}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: colors.expense }]}>{error}</Text> : null}
     </View>
   );
 };
@@ -110,36 +110,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
   },
-  boxStyles: {
-    borderWidth: 0,
-    borderRadius: 6,
-    padding: 0,
-    backgroundColor: '#1C1C20',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    fontSize: 12,
-    fontFamily: 'Inter-300',
-    color: '#6E6E80',
-  },
-  dropdownStyles: { backgroundColor: '#1C1C20', borderWidth: 0 },
-  inputStyles: {
-    color: '#ffffff',
-    paddingVertical: 2,
-  },
-  dropdownTextStyles: {
-    color: '#B3B1C4',
-    fontSize: 12,
-  },
   labelStyles: {
     fontSize: 12,
-    color: '#B3B1C4',
     marginBottom: 6,
     fontFamily: 'Inter-500',
   },
    error: {
     fontSize: 12,
-    color: '#D9363E',
     bottom: 0,
     position: 'absolute',
     marginBottom: -20,

@@ -13,7 +13,7 @@ const NetworkInfoModal = () => {
     type: '',
     connected: null,
   });
-  const { colors, theme } = useThemeContext();
+  const { colors } = useThemeContext();
   const width = deviceWidth();
   const height = deviceHeight();
   useEffect(() => {
@@ -36,7 +36,7 @@ const NetworkInfoModal = () => {
   }
   return (
     <Modal
-    backdropColor={theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)'}
+    backdropColor={colors.scrim}
       isVisible={true}
       hasBackdrop={true}
       deviceHeight={height}
@@ -66,7 +66,6 @@ export default NetworkInfoModal;
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: '#1C1C29',
     width: deviceWidth() - 60,
     borderRadius: 10,
     paddingVertical: 30,
@@ -76,7 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: '#ffffff',
     fontSize: 20,
     textAlign: 'center',
     lineHeight: 24,
@@ -84,7 +82,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-700',
   },
   subTitle: {
-    color: '#C7C7C7',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 24,

@@ -184,7 +184,12 @@ const Category = () => {
     <SafeAreaViewComponent>
       <ThemedView style={styles.container}>
         {(isAdding || isEditing || isDeleting) && <OverlayLoader />}
-        <Animated.View style={[styles.floatingButton, animatedButtonStyle]}>
+        <Animated.View
+          style={[
+            styles.floatingButton,
+            { backgroundColor: colors.primary, shadowColor: colors.shadow },
+            animatedButtonStyle,
+          ]}>
           <TouchableOpacity
             style={{
               width: '100%',
@@ -193,7 +198,7 @@ const Category = () => {
               justifyContent: 'center',
             }}
             onPress={handlePress}>
-            <MaterialIcons name="check" size={24} color="white" />
+            <MaterialIcons name="check" size={24} color={colors.onPrimary} />
           </TouchableOpacity>
         </Animated.View>
 
@@ -254,7 +259,7 @@ const Category = () => {
                   <Pressable style={[styles.iconBox]}>
                     <View
                       style={{
-                        backgroundColor: categoryDetail.exp_tc_icon_bg_color || '#282343',
+                        backgroundColor: categoryDetail.exp_tc_icon_bg_color || colors.categoryFallbackBg,
                         padding: 5,
                         borderRadius: 5,
                         height: 40,
@@ -270,7 +275,7 @@ const Category = () => {
                             >['name']
                           }
                           size={24}
-                          color="#fff"
+                          color={colors.categoryFallbackIcon}
                         />
                       )}
                     </View>
@@ -308,7 +313,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   floatingButton: {
-    backgroundColor: '#6B5DE6',
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -318,7 +322,6 @@ const styles = StyleSheet.create({
     bottom: 45,
     right: 0,
     elevation: 5,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,

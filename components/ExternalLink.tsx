@@ -1,9 +1,9 @@
 import { type ComponentProps } from 'react';
 import { Platform } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, type Href } from 'expo-router';
 import { openBrowserAsync } from 'expo-web-browser';
 
-type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: string };
+type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href };
 
 export function ExternalLink({ href, ...rest }: Props) {
   return (
@@ -14,7 +14,7 @@ export function ExternalLink({ href, ...rest }: Props) {
       onPress={async (event) => {
         if (Platform.OS !== 'web') {
           event.preventDefault();
-          await openBrowserAsync(href);
+          await openBrowserAsync(href as string);
         }
       }}
     />

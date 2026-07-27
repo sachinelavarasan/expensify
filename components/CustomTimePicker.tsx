@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import DatePicker, { getFormatedDate } from 'react-native-modern-datepicker';
+import { useThemeContext } from '@/contexts/ThemedContext';
+import { NativeDarkPickerTheme } from '@/utils/Colors';
 
 export default function CustomTimePicker({
   onDateChange,
@@ -19,6 +21,7 @@ export default function CustomTimePicker({
   error?: string;
   isRequired?: boolean;
 }) {
+  const { colors } = useThemeContext();
   const getCurrentTime = () => {
     const now = new Date();
     const hours = now.getHours();
@@ -50,7 +53,7 @@ export default function CustomTimePicker({
     <View>
       {label ? (
         <View style={{ display: 'flex', flexDirection: 'row' }}>
-          <Text style={styles.label}>{label}</Text>
+          <Text style={[styles.label, { color: colors.title }]}>{label}</Text>
           {/* {isRequired ? (
             <View style={{ marginLeft: 5, marginTop: 5 }}>
               <Image
@@ -65,32 +68,33 @@ export default function CustomTimePicker({
         onPress={() => {
           toggleDatePicker();
         }}
-        style={[styles.inputContainer, borderLess ? styles.borderNone : null, styles.innerView]}>
+        style={[
+          styles.inputContainer,
+          { borderColor: colors.inputBorder },
+          borderLess ? [styles.borderNone, { backgroundColor: colors.inputColor }] : null,
+          styles.innerView,
+        ]}>
         {selectedDate ? (
-          <Text style={styles.input}>{selectedDate}</Text>
+          <Text style={[styles.input, { color: colors.title }]}>{selectedDate}</Text>
         ) : (
-          <Text style={[styles.input, styles.placeholder]}>{placeholder}</Text>
+          <Text style={[styles.input, styles.placeholder, { color: colors.inputPlaceholder }]}>
+            {placeholder}
+          </Text>
         )}
       </Pressable>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: colors.expense }]}>{error}</Text> : null}
       {datePickerVisible && (
         <View style={{ bottom: -10 }}>
           <DatePicker
             onTimeChange={(date) => handleConfirm(date)}
             options={{
-              backgroundColor: '#0E0E10',
-              textHeaderColor: '#6900FF',
-              textDefaultColor: '#717171',
-              selectedTextColor: '#0E0E10',
-              mainColor: '#0E0E10',
-              textSecondaryColor: '#6900FF',
-              borderColor: '#606060',
+              ...NativeDarkPickerTheme,
             }}
             minuteInterval={1}
             current={selectedDate}
             selected={selectedDate}
             mode="time"
-            style={{ borderRadius: 10, borderColor: '#3A3A54', borderWidth: 1 }}
+            style={{ borderRadius: 10, borderColor: colors.borderColor, borderWidth: 1 }}
           />
         </View>
       )}
@@ -99,7 +103,6 @@ export default function CustomTimePicker({
 }
 const styles = StyleSheet.create({
   inputContainer: {
-    borderColor: '#F2F2F2',
     borderRadius: 6,
     borderWidth: 1,
     marginBottom: 0,
@@ -114,30 +117,24 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === 'android' ? 12 : 15,
     fontSize: 16,
     fontFamily: 'Inter-500',
-    color: '#717171',
     paddingHorizontal: 20,
   },
   label: {
     fontSize: 16,
-    color: '#000',
     marginBottom: 6,
     fontFamily: 'Inter-400',
   },
   error: {
     fontSize: 12,
-    color: '#f02d3a',
     marginTop: 5,
     fontFamily: 'Inter-300',
     letterSpacing: 0.5,
   },
   borderNone: {
     borderWidth: 0,
-    backgroundColor: '#1E1E1E',
   },
   // titleText: {
   //   fontSize: 15,
   // },
-  placeholder: {
-    color: '#717171',
-  },
+  placeholder: {},
 });
