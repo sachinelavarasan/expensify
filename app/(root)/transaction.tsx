@@ -50,9 +50,22 @@ export default function Transaction() {
   const { colors } = useThemeContext();
   const { categories } = useGetCategoryCache();
   const { accounts } = useGetUserBankAccounts();
-  const { exp_ts_id, starred } = useLocalSearchParams() as {
+  const {
+    exp_ts_id,
+    starred,
+    recurring_title,
+    recurring_amount,
+    recurring_category_id,
+    recurring_transaction_type_id,
+    recurring_bank_account_id,
+  } = useLocalSearchParams() as {
     exp_ts_id?: string;
     starred?: boolean;
+    recurring_title?: string;
+    recurring_amount?: string;
+    recurring_category_id?: string;
+    recurring_transaction_type_id?: string;
+    recurring_bank_account_id?: string;
   };
   const { data, isLoading: isFetching } = useFetchTransaction(exp_ts_id);
   const { mutateAsync: saveTransaction, isPending: isLoading } = useSaveTransaction(starred);
@@ -112,6 +125,24 @@ export default function Transaction() {
           exp_tt_id: data.exp_tt_id || 1,
           exp_st_id: !!data.exp_st_id,
           exp_ts_bank_account_id: data.exp_ts_bank_account_id || undefined,
+        },
+        {
+          keepDirty: false,
+          keepIsValidating: true,
+        },
+      );
+    } else if (recurring_title) {
+      reset(
+        {
+          exp_ts_title: recurring_title,
+          exp_ts_note: '',
+          exp_ts_amount: recurring_amount || '',
+          exp_tc_id: recurring_category_id ? Number(recurring_category_id) : undefined,
+          exp_tt_id: recurring_transaction_type_id ? Number(recurring_transaction_type_id) : 1,
+          exp_st_id: false,
+          exp_ts_bank_account_id: recurring_bank_account_id
+            ? Number(recurring_bank_account_id)
+            : undefined,
         },
         {
           keepDirty: false,

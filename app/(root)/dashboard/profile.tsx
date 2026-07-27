@@ -164,6 +164,36 @@ const Profile = () => {
             </View>
           </TouchableOpacity>
         </Link>
+
+        <Link href={'/(root)/recurring-transactions'} asChild>
+          <TouchableOpacity>
+            <View
+              style={[
+                styles.card,
+                // { backgroundColor: colors.bottomBarBackground},
+              ]}>
+              <View style={styles.left}>
+                <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 5 }}>
+                  <MaterialIcons name="event-repeat" size={24} color={colors.onPrimary} />
+                </View>
+                <View>
+                  <View>
+                    <Text style={[styles.option, { color: colors.title }]}>
+                      Recurring Transactions
+                    </Text>
+                  </View>
+                  <View style={styles.subTextContainer}>
+                    <Text style={[styles.subText, { color: colors.description }]}>
+                      Get reminders for bills and income that repeat
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View>{/* <Text style={styles.amount}>%</Text> */}</View>
+            </View>
+          </TouchableOpacity>
+        </Link>
         <Link href={'/(root)/export-transactions'} asChild>
           <TouchableOpacity>
             <View
