@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   label: {
-    color: '#282343',
     fontSize: 12,
     fontFamily: 'Inter-500',
   },

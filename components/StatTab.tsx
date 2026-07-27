@@ -64,7 +64,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
         Spending by Category
       </Text>
       <Spacer height={10} />
-      <View style={styles.barBackground}>
+      <View style={[styles.barBackground, { backgroundColor: colors.barBackground }]}>
         {data.map((cat, index) => (
           <ProgressSegment
             key={index}
@@ -91,6 +91,7 @@ function MultiColorProgressBar({ data }: { data: progressBar[] }) {
 
 function ProgressBar({ percentage, color }: { percentage: number; color: string }) {
   const progress = useSharedValue(0);
+  const { colors } = useThemeContext();
 
   useEffect(() => {
     progress.value = withTiming(percentage, { duration: 800 });
@@ -104,7 +105,7 @@ function ProgressBar({ percentage, color }: { percentage: number; color: string 
     <View
       style={{
         height: 6,
-        backgroundColor: '#ccc',
+        backgroundColor: colors.barBackground,
         borderRadius: 4,
         overflow: 'hidden',
         marginTop: 6,
@@ -186,7 +187,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         <TouchableOpacity
           style={[
             styles.tab,
-            activeTab === 'income' && { ...styles.activeTab, backgroundColor: '#6B5DE6' },
+            activeTab === 'income' && { ...styles.activeTab, backgroundColor: colors.primary },
           ]}
           onPress={() => setActiveTab('income')}>
           <Text
@@ -202,7 +203,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         <TouchableOpacity
           style={[
             styles.tab,
-            activeTab === 'expense' && { ...styles.activeTab, backgroundColor: '#6B5DE6' },
+            activeTab === 'expense' && { ...styles.activeTab, backgroundColor: colors.primary },
           ]}
           onPress={() => setActiveTab('expense')}>
           <Text
@@ -280,7 +281,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#463e75',
     borderRadius: 8,
   },
   tabText: {

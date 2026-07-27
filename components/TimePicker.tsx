@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { format, parse } from 'date-fns';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   value: string;
@@ -25,6 +26,7 @@ const CustomTimePicker = ({
 }: Props) => {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<Date>(new Date());
+  const { colors } = useThemeContext();
 
   useEffect(() => {
     if (!value) {
@@ -47,7 +49,7 @@ const CustomTimePicker = ({
           <Text
             style={{
               fontSize: 14,
-              color: '#282343',
+              color: colors.title,
               marginBottom: 6,
               fontFamily: 'Inter-400',
             }}>

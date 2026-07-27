@@ -3,6 +3,7 @@ import React, { forwardRef, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { format, parseISO } from 'date-fns';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   value: string;
@@ -20,6 +21,7 @@ const CustomDatePicker = forwardRef<any, Props>(
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date>(new Date());
     const [minimum, setMinimumDate] = useState<Date>();
+    const { colors } = useThemeContext();
 
     useEffect(() => {
       const date = value ? parseISO(value) : new Date();
@@ -48,7 +50,7 @@ const CustomDatePicker = forwardRef<any, Props>(
             <Text
               style={{
                 fontSize: 14,
-                color: '#282343',
+                color: colors.title,
                 marginBottom: 6,
                 fontFamily: 'Inter-400',
               }}>

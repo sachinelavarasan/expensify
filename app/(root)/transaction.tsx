@@ -667,7 +667,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
   },
   subText: {
-    color: '#282343',
     fontSize: 12,
     fontFamily: 'Inter-500',
   },

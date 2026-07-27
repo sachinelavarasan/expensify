@@ -15,11 +15,11 @@ export const LightColors = {
   bottomBarBackground: '#FFF',
   barBackground: '#FFFFFF',
   topBarColor: '#ededf3bf',
-  themedViewBg: ['#FFF', '#FFF'],
+  themedViewBg: ['#FFFFFF', '#F8F7FF', '#F1EFFF', '#FFFFFF'],
   floatingBtnBg: ['#6B5DE6', '#705AD4'],
   safeAreaView: "#FFF",
   cardBg: "#ffffff",
-  inputColor:"#ffffff",
+  inputColor:"#F4F3FF",
   inputBorder: "#dadae1ff",
   inputPlaceholder: '#b7b7bcff'
 };

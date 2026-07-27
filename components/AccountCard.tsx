@@ -12,6 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
+import { useThemeContext } from '@/contexts/ThemedContext';
 
 type BankCardProps = {
   bankName: string;
@@ -38,15 +39,17 @@ const BankCard = ({
   balance,
   icon,
   currency = 'USD',
-  variant = 'dark',
+  variant,
   accent,
   onPress,
   otherStyle,
 }: BankCardProps) => {
   const [showFull, setShowFull] = useState(false);
+  const { theme } = useThemeContext();
+  const resolvedVariant = variant ?? theme;
 
   const colors = useMemo(() => {
-    if (variant === 'light') {
+    if (resolvedVariant === 'light') {
       return {
         text: '#0F0E17',
         sub: '#5A5A6A',
@@ -64,7 +67,7 @@ const BankCard = ({
       cardBg: ['#1A1535', '#0F0E25'] as ColorValue[],
       border: '#2F2A4F',
     };
-  }, [variant, accent]);
+  }, [resolvedVariant, accent]);
 
   return (
     <TouchableOpacity
