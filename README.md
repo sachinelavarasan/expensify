@@ -1,6 +1,6 @@
 # Expensify 📱
 
-A modern, cross-platform expense tracking application built with Expo and React Native.  
+A modern, cross-platform expense tracking application built with Expo and React Native.
 Expensify helps users track expenses, visualize spending patterns, and export reports securely.
 
 Supports Android, iOS, and Web platforms.
@@ -9,15 +9,14 @@ Supports Android, iOS, and Web platforms.
 
 ## ✨ Features
 
-- 📊 Track daily income and expenses
-- 📈 Interactive charts and spending analytics
-- 🔐 Secure authentication with Clerk
-- 📁 Export expenses to Excel (XLSX)
+- 📊 Track daily income and expenses, with recurring transactions and starred items
+- 📈 Interactive dashboard, budgets, and spending stats
+- 🔐 JWT-based authentication (signup/login, OTP verification, password reset) against the [expensify-api](../expensify-api) backend
+- 📁 Import/export transactions (Excel)
+- 🔔 Push notifications
 - ⚡ Fast and optimized performance with React Query
 - 📱 Cross-platform support (Android, iOS, Web)
 - 🧭 File-based routing with Expo Router
-- 💾 Secure local storage
-- 🎨 Modern and responsive UI
 
 ---
 
@@ -37,7 +36,7 @@ Supports Android, iOS, and Web platforms.
 ![Zod](https://img.shields.io/badge/Zod-3068B7?style=for-the-badge&logo=zod&logoColor=white)
 
 ### Authentication
-![Clerk](https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)
+Custom JWT auth against the Expensify API — access/refresh tokens stored via `expo-secure-store`, with automatic token refresh in `lib/apiClient.ts`.
 
 ### Platforms
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
@@ -45,32 +44,40 @@ Supports Android, iOS, and Web platforms.
 
 ---
 
-
-
-Example structure:
-
-
-
-## Get a fresh project
-
-When you're ready, run:
+## 🚀 Getting started
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Create a `.env` with the backend URL:
+
+```bash
+EXPO_PUBLIC_API_URL=http://localhost:8000
+```
+
+Then run:
+
+```bash
+npm run start      # Expo dev server (scan the QR code, or press a/i/w)
+npm run android     # Run on a connected Android device
+npm run ios         # Run on iOS simulator
+npm run web         # Run in the browser
+```
+
+This app talks to the [expensify-api](../expensify-api) backend — make sure it's running (see its README) and that `EXPO_PUBLIC_API_URL` points at it.
+
+## 📂 Project structure
+
+- `app/` — Expo Router file-based routes
+  - `(root)/(auth)/` — login, signup, OTP verification, password reset
+  - `(root)/dashboard/` — dashboard, budget, stats, profile
+  - `(root)/` — transactions, accounts, categories, recurring transactions, import/export, settings
+- `contexts/` — `AuthContext`, `NotificationContext`, `ThemedContext`
+- `lib/` — `apiClient` (axios + token refresh), `secureStorage`, `tokenStore`
+- `utils/Colors.ts` — app theme/brand colors
 
 ## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Expo documentation](https://docs.expo.dev/)
+- [Expo Router documentation](https://docs.expo.dev/router/introduction/)
