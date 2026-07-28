@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { getStoredTokens, setStoredTokens, clearStoredTokens } from '@/lib/secureStorage';
 import { clearTokens, onUnauthorized, setTokens as setStoreTokens } from '@/lib/tokenStore';
+import { useNotification } from '@/contexts/NotificationContext';
+import { useEnableNotificationToken, useDisableNotificationToken } from '@/hooks/useSettings';
 
 interface AuthTokens {
   accessToken: string;
@@ -34,8 +36,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const queryClient = useQueryClient();
+  const { expoPushToken } = useNotification();
+  const { mutate: enableNotificationToken } = useEnableNotificationToken();
+  const { mutateAsync: disableNotificationToken } = useDisableNotificationToken();
 
   const signOut = async () => {
+    if (expoPushToken) {
+      try {
+        await disableNotificationToken(expoPushToken);
+      } catch (error) {
+        console.error('Failed to disable notification token on sign out:', error);
+      }
+    }
     clearTokens();
     await clearStoredTokens();
     queryClient.clear();
@@ -43,8 +55,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   useEffect(() => {
+    if (isSignedIn && expoPushToken) {
+      enableNotificationToken({ token: expoPushToken });
+    }
+  }, [isSignedIn, expoPushToken, enableNotificationToken]);
+
+  const signOutRef = useRef(signOut);
+  useEffect(() => {
+    signOutRef.current = signOut;
+  });
+
+  useEffect(() => {
     onUnauthorized(() => {
-      signOut();
+      signOutRef.current();
     });
 
     (async () => {
@@ -55,7 +78,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
       setIsBootstrapping(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signIn = async (tokens: AuthTokens) => {

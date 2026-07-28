@@ -45,3 +45,5 @@ google-service-for-eas.json
 play-console-services.json
 
 *.aab
+*service*.json
+*firebase-adminsdk*.json
