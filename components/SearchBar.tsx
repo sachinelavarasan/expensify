@@ -16,14 +16,7 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
   const { theme, colors } = useThemeContext();
   const [clicked, setIsClicked] = useState(false);
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor:  colors.inputColor,
-          shadowColor: colors.inputColor,
-        },
-      ]}>
+    <View style={styles.container}>
       <View
         style={
           clicked
@@ -31,12 +24,16 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
                 styles.searchBar__clicked,
                 {
                   borderColor: colors.borderSelected,
+                  backgroundColor: colors.inputColor,
+                  shadowColor: colors.inputColor,
                 },
               ]
             : [
                 styles.searchBar__unclicked,
                 {
                   borderColor: colors.borderColor,
+                  backgroundColor: colors.inputColor,
+                  shadowColor: colors.inputColor,
                 },
               ]
         }>
@@ -45,7 +42,6 @@ const SearchBar = ({ searchPhrase, onChange, onClick, onClose, actionsNeeded = f
           style={[
             styles.input,
             {
-              backgroundColor: colors.inputColor,
               color: colors.text,
             },
           ]}
@@ -136,15 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     width: '100%',
-
     paddingHorizontal: 2,
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2.84,
-    elevation: 1,
   },
   searchBar__unclicked: {
     // paddingVertical: 12,
@@ -154,6 +142,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.84,
+    elevation: 1,
   },
   searchBar__clicked: {
     // paddingVertical: 12,
@@ -164,6 +159,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'space-evenly',
+    overflow: 'hidden',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.84,
+    elevation: 1,
   },
   input: {
     flex: 1,
@@ -172,7 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-400',
     paddingHorizontal: 10,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   actions: {
     flexDirection: 'row',

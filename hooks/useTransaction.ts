@@ -52,6 +52,87 @@ export const useSaveTransaction = (starred: boolean | undefined) => {
   });
 };
 
+export interface ISpendTrendPoint {
+  month: string;
+  label: string;
+  income: number;
+  expense: number;
+}
+
+export const useSpendTrend = (months = 6) => {
+  const { getToken, userId } = useAuth();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['spend-trend', months],
+    queryFn: async (): Promise<ISpendTrendPoint[]> => {
+      const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
+
+      const res = await fetch(`${API_URL}/expensify/transactions/trend?months=${months}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`API Error: ${res.status} ${res.statusText}`);
+      }
+
+      return await res.json();
+    },
+  });
+
+  return {
+    trend: data || [],
+    loading: isLoading,
+  };
+};
+
+export interface ICategoryTrendPoint {
+  month: string;
+  label: string;
+  expense: number;
+}
+
+export const useCategoryTrend = (categoryId: number | undefined, months = 6, enabled = true) => {
+  const { getToken, userId } = useAuth();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['category-trend', categoryId, months],
+    enabled: !!categoryId && enabled,
+    queryFn: async (): Promise<ICategoryTrendPoint[]> => {
+      const token = await getToken();
+      if (!userId) {
+        throw new Error('User is not authenticated');
+      }
+
+      const res = await fetch(
+        `${API_URL}/expensify/transactions/category-trend?categoryId=${categoryId}&months=${months}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(`API Error: ${res.status} ${res.statusText}`);
+      }
+
+      return await res.json();
+    },
+  });
+
+  return {
+    trend: data || [],
+    loading: isLoading,
+  };
+};
+
 export const useFetchTransaction = (exp_ts_id?: string) => {
   const { getToken, userId } = useAuth();
 

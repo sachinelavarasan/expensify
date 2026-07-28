@@ -1,20 +1,24 @@
 import { ThemedView } from '@/components/ThemedView';
-import { View, Text, FlatList, RefreshControl } from 'react-native';
-import { PieChart, pieDataItem } from 'react-native-gifted-charts';
+import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import MonthSwitcher from '@/components/MonthSwitch';
 import OverlayLoader from '@/components/Overlay';
-import TableView from '@/components/Table';
 import IncomeExpenseTabs from '@/components/StatTab';
 import Emptystate from '@/components/Emptystate';
 import { useCallback, useEffect, useState } from 'react';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import GroupingModal from '@/components/GroupingModal';
+import SpendTrendChart from '@/components/SpendTrendChart';
+import StatsSummaryCard from '@/components/StatsSummaryCard';
+import BreakdownChart from '@/components/BreakdownChart';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { FontSize, Typography } from '@/utils/Typography';
+import { FontSize } from '@/utils/Typography';
 
 export default function Stat() {
   const { colors } = useThemeContext();
+  const queryClient = useQueryClient();
   const { transactions, formattedTitle, loading, goToNext, goToPrevious, refetch, dateRangeType, updateDateRangeType } =
     useMonthlyTransactions();
 
@@ -28,29 +32,21 @@ export default function Stat() {
 
   const totalExpense = expenseTransactions.reduce((sum, tx) => sum + Number(tx.exp_ts_amount), 0);
 
-  const total = totalIncome + totalExpense;
-  const divident = totalIncome === 0 && totalExpense === 0;
-
-  const pieData: pieDataItem[] = [
-    {
-      value: divident ? 1 : totalIncome,
-      color: !divident ? colors.income : colors.arrowColor,
-      text: `Income: ${((totalIncome / (divident ? 1 : total)) * 100).toFixed(0)}%`,
-    },
-    {
-      value: divident ? 1 : totalExpense,
-      color: !divident ? colors.expense : colors.arrowColor,
-      text: `Expense: ${((totalExpense / (divident ? 1 : total)) * 100).toFixed(0)}%`,
-    },
-  ];
-
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['spend-trend'] });
       setRefreshing(false);
     }, 2000);
-  }, []);
+  }, [refetch, queryClient]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['spend-trend'] });
+    }, [refetch, queryClient]),
+  );
 
   const chartOpacity = useSharedValue(0);
 
@@ -70,7 +66,8 @@ export default function Stat() {
 
       <FlatList
         data={[1]}
-        bounces={false}
+        bounces
+        alwaysBounceVertical
         keyExtractor={() => 'page-wrapper'}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 50 }}
@@ -87,50 +84,23 @@ export default function Stat() {
               <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
             </View>
 
-            <Animated.View
-              style={[
-                {
-                  paddingVertical: 10,
-                  alignItems: 'center',
-                },
-                chartAnimatedStyle,
-              ]}>
-              <PieChart
-                data={pieData}
-                radius={100}
-                donut
-                isAnimated
-                animationDuration={500}
-                innerCircleColor={colors.barBackground}
-                innerRadius={65}
-                labelsPosition="mid"
-                textColor={colors.primary}
-                centerLabelComponent={() =>
-                  pieData.length > 0 ? (
-                    pieData.map((item, index) => (
-                      <Text
-                        key={index}
-                        style={{
-                          ...Typography.bodySemiBold,
-                          marginBottom: 5,
-                          color: item.color,
-                        }}>
-                        {item.text}
-                      </Text>
-                    ))
-                  ) : (
-                    <Text style={{ fontSize: FontSize.md, color: colors.title, fontFamily: 'Inter-500' }}>No data</Text>
-                  )
-                }
+            <Animated.View style={chartAnimatedStyle}>
+              <StatsSummaryCard
+                income={totalIncome}
+                expense={totalExpense}
+                transactionCount={transactions.length}
               />
-            </Animated.View>
 
-            {/* <View> */}
-              <TableView transactions={transactions} />
-            {/* </View> */}
+              <Text style={[styles.sectionHeader, { color: colors.lighterTitle }]}>Trend</Text>
+              <SpendTrendChart />
+
+              <Text style={[styles.sectionHeader, { color: colors.lighterTitle }]}>Breakdown</Text>
+              <BreakdownChart income={totalIncome} expense={totalExpense} />
+            </Animated.View>
 
             {transactions.length > 0 ? (
               <View>
+                <Text style={[styles.sectionHeader, { color: colors.lighterTitle }]}>By Category</Text>
                 <IncomeExpenseTabs transactions={transactions} />
               </View>
             ) : (
@@ -147,3 +117,12 @@ export default function Stat() {
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  sectionHeader: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-500',
+    marginTop: 20,
+    marginBottom: 4,
+  },
+});

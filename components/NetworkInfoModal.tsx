@@ -1,11 +1,10 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text } from 'react-native';
 import { useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import Modal from 'react-native-modal';
+import ModalCard from '@/components/ModalCard';
 
 import Spacer from '@/components/Spacer';
 
-import { deviceWidth, deviceHeight } from '@/utils/functions';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 const NetworkInfoModal = () => {
@@ -14,8 +13,6 @@ const NetworkInfoModal = () => {
     connected: null,
   });
   const { colors } = useThemeContext();
-  const width = deviceWidth();
-  const height = deviceHeight();
   useEffect(() => {
     // Subscribe to network state updates
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -31,34 +28,18 @@ const NetworkInfoModal = () => {
     };
   }, []);
 
-  if ((netInfo.type === 'cellular' || 'wifi') && netInfo.connected) {
+  if (netInfo.connected !== false) {
     return null;
   }
   return (
-    <Modal
-    backdropColor={colors.scrim}
-      isVisible={true}
-      hasBackdrop={true}
-      deviceHeight={height}
-      deviceWidth={width}
-      coverScreen={true}>
-      <View
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <View style={[styles.modal, {  backgroundColor: colors.background }]}>
-          <Image source={require('@/assets/icons/network-warning.png')} />
-          <Text style={[styles.title , { color:  colors.title}]}>Network Error</Text>
-          <Spacer height={15} />
-          <Text style={[styles.subTitle, { color:  colors.description}]}>
-            There is an error occurred while connecting to network. Please check your mobile
-            network.
-          </Text>
-        </View>
-      </View>
-    </Modal>
+    <ModalCard visible contentStyle={styles.modal}>
+      <Image source={require('@/assets/icons/network-warning.png')} />
+      <Text style={[styles.title, { color: colors.title }]}>Network Error</Text>
+      <Spacer height={15} />
+      <Text style={[styles.subTitle, { color: colors.description }]}>
+        There is an error occurred while connecting to network. Please check your mobile network.
+      </Text>
+    </ModalCard>
   );
 };
 
@@ -66,11 +47,8 @@ export default NetworkInfoModal;
 
 const styles = StyleSheet.create({
   modal: {
-    width: deviceWidth() - 60,
-    borderRadius: 10,
-    paddingVertical: 30,
-    paddingHorizontal: 30,
-    display: 'flex',
+    paddingTop: 30,
+    paddingBottom: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },

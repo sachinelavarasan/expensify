@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Subscription } from 'expo-notifications';
+import { useRouter } from 'expo-router';
 import { registerForPushNotificationsAsync } from '../utils/registerForPushNotificationsAsync';
 
 interface NotificationContextType {
@@ -27,6 +28,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const router = useRouter();
 
   const notificationListener = useRef<Subscription | null>(null);
   const responseListener = useRef<Subscription | null>(null);
@@ -50,6 +52,13 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         JSON.stringify(response, null, 2),
         JSON.stringify(response.notification.request.content.data, null, 2),
       );
+
+      const data = response.notification.request.content.data as {
+        type?: string;
+      };
+      if (data?.type === 'recurring-transactions-monthly') {
+        router.push('/import-recurring-transactions');
+      }
     });
 
     return () => {

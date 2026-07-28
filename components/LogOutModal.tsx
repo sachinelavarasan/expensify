@@ -1,15 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  cancelAnimation,
-  withTiming,
-  withRepeat,
-  Easing,
-  withSequence,
-} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useReminderSettings } from '@/hooks/useReminder';
 import { useAuth } from '@clerk/clerk-expo';
@@ -17,35 +8,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
-const AnimatedIcon = Animated.createAnimatedComponent(Ionicons);
-
-const AnimatedLogoutIcon = () => {
+const LogoutButton = () => {
   const { colors } = useThemeContext();
   const { disableNotification } = useReminderSettings();
   const { signOut } = useAuth();
   const router = useRouter();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const translateX = useSharedValue(0);
-
-  const animatedStyles1 = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
-
   const openModal = useCallback(() => {
-     
     bottomSheetModalRef.current?.present();
-    setIsSheetOpen((prev) => !prev);
-  }, [isSheetOpen]);
+  }, []);
 
   const closeModal = useCallback(() => {
-     
-    bottomSheetModalRef.current?.dismiss()
-    setIsSheetOpen((prev) => !prev);
-  }, [isSheetOpen]);
+    bottomSheetModalRef.current?.dismiss();
+  }, []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -60,7 +38,8 @@ const AnimatedLogoutIcon = () => {
     [colors],
   );
 
-  const onSubmit = async () => {
+  const handleProceed = async () => {
+    setLoading(true);
     try {
       await signOut();
       await disableNotification();
@@ -68,117 +47,65 @@ const AnimatedLogoutIcon = () => {
       router.replace('/(root)/(auth)/login');
     } catch (e) {
       console.log('Logout failed:', e);
-    } finally {
       setLoading(false);
-      onDismiss();
     }
   };
 
-  const handleProceed = async () => {
-    setLoading(true);
-
-    const bounceSequence = withSequence(
-      withTiming(0, {
-        duration: 0,
-        easing: Easing.inOut(Easing.ease),
-      }),
-      withTiming(50, {
-        duration: 800,
-        easing: Easing.inOut(Easing.ease),
-      }),
-      withTiming(-50, {
-        duration: 1600,
-        easing: Easing.inOut(Easing.ease),
-      }),
-      withTiming(0, {
-        duration: 800,
-        easing: Easing.inOut(Easing.ease),
-      }),
-    );
-    translateX.value = withRepeat(bounceSequence, -1, false);
-
-    setTimeout(() => {
-      onSubmit();
-    }, 2500);
-  };
-
-  const onDismiss = () => {
-    if(loading) return;
+  const handleCancel = useCallback(() => {
+    if (loading) return;
     closeModal();
-    cancelAnimation(translateX);
-    translateX.value = 0;
-  };
+  }, [loading, closeModal]);
 
   const renderBottomSheetContent = useCallback(
     () => (
       <View style={styles.contentContainer}>
-        <Animated.View style={[animatedStyles1]}>
-          <AnimatedIcon name="log-out-outline" size={60} color={colors.lighterTitle} />
-        </Animated.View>
+        <View style={[styles.iconBadge, { backgroundColor: colors.danger + '1A' }]}>
+          <Ionicons name="log-out-outline" size={30} color={colors.danger} />
+        </View>
 
-        <Text style={[styles.description, { color: colors.text }]}>
-          {loading ? 'Logging out...' : 'Are you sure you want to log out?'}
-        </Text>
-        <Text
-          style={[
-            {
-              color: colors.description,
-              fontSize: 14,
-              textAlign: 'center',
-              marginBottom: 15,
-              marginTop: 4,
-              fontFamily: 'Inter-400',
-            },
-          ]}>
-          Thank you and see you again! ❤️
+        <Text style={[styles.title, { color: colors.title }]}>Log out?</Text>
+        <Text style={[styles.description, { color: colors.description }]}>
+          You&apos;ll need to sign in again to access your account.
         </Text>
 
         <View style={styles.buttonRow}>
           <Pressable
-            style={[
-              styles.buttons,
-              {
-                borderColor: colors.inputBorder,
-                borderWidth: 1,
-              },
-            ]}
+            style={[styles.button, { borderColor: colors.inputBorder, borderWidth: 1 }]}
             disabled={loading}
-            onPress={onDismiss}>
+            onPress={handleCancel}>
             <Text style={[styles.buttonText, { color: colors.description }]}>Cancel</Text>
           </Pressable>
 
           <Pressable
-            style={[
-              styles.buttons,
-              {
-                backgroundColor: colors.primary,
-              },
-            ]}
+            style={[styles.button, { backgroundColor: colors.danger }, loading && styles.disabled]}
             onPress={handleProceed}
             disabled={loading}>
-            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Yes, logout</Text>
+            {loading ? (
+              <ActivityIndicator animating color={colors.onPrimary} />
+            ) : (
+              <Text style={[styles.buttonText, { color: colors.onPrimary }]}>Log Out</Text>
+            )}
           </Pressable>
         </View>
       </View>
     ),
-    [animatedStyles1, colors, loading],
+    [colors, loading, handleCancel],
   );
 
   return (
-    <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ width: '100%' }}>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: colors.danger }]}
+        style={[styles.logoutRow, { backgroundColor: colors.danger }]}
         onPress={openModal}
         disabled={loading}>
-        <Ionicons name="log-out-outline" size={24} color={colors.onPrimary} style={{ marginRight: 8 }} />
+        <Ionicons name="log-out-outline" size={20} color={colors.onPrimary} />
         <Text style={[styles.logoutText, { color: colors.onPrimary }]}>Logout</Text>
       </TouchableOpacity>
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        snapPoints={['40%']}
-        enablePanDownToClose
-        onDismiss={onDismiss}
+        snapPoints={['32%']}
+        enablePanDownToClose={!loading}
         backdropComponent={renderBackdrop}
         enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
@@ -191,44 +118,62 @@ const AnimatedLogoutIcon = () => {
 
 const styles = StyleSheet.create({
   contentContainer: {
-    padding: 30,
+    paddingHorizontal: 24,
+    paddingTop: 8,
     alignItems: 'center',
-    justifyContent: 'center',
     flex: 1,
   },
-  description: {
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  title: {
     fontSize: 18,
-    textAlign: 'center',
-    marginTop: 15,
     fontFamily: 'Inter-600',
+  },
+  description: {
+    fontSize: 14,
+    fontFamily: 'Inter-400',
+    textAlign: 'center',
+    marginTop: 6,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 20,
-    marginTop: 10,
+    gap: 12,
+    marginTop: 24,
+    width: '100%',
   },
-  buttons: {
+  button: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     fontSize: 16,
     fontFamily: 'Inter-600',
   },
-  logoutText: {
-    fontSize: 17,
-    fontFamily: 'Inter-600',
+  disabled: {
+    opacity: 0.7,
   },
-  button: {
-    alignItems: 'center',
+  logoutRow: {
     flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    paddingVertical: 10,
+    borderRadius: 12,
+    paddingVertical: 12,
     width: '100%',
+  },
+  logoutText: {
+    fontSize: 16,
+    fontFamily: 'Inter-600',
   },
 });
 
-export default AnimatedLogoutIcon;
+export default LogoutButton;

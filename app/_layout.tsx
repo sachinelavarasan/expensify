@@ -103,10 +103,12 @@ function LayoutBuilder() {
         <ThemeProvider>
           <BottomSheetModalProvider>
           {authLoaded && fontsLoaded ? (
-            <AppStack />
+            <>
+              <AppStack />
+              <NetworkInfoModal />
+            </>
           ) : null}
           <ToastMessage />
-          <NetworkInfoModal />
           </BottomSheetModalProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
@@ -126,6 +128,8 @@ function AppStack() {
       <Stack.Screen name="(root)/settings" />
       <Stack.Screen name="(root)/categories/index" />
       <Stack.Screen name="(root)/starred" />
+      <Stack.Screen name="(root)/recurring-transactions" />
+      <Stack.Screen name="(root)/recurring-transaction" />
       <Stack.Screen name="(root)/export-transactions" />
       <Stack.Screen name="(root)/import-transactions" options={{
         presentation: 'fullScreenModal'

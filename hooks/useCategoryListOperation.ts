@@ -74,7 +74,8 @@ export const useReorderCategories = () => {
         throw new Error('Failed to reorder categories');
       }
 
-      return await response.json();
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });

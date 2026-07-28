@@ -108,6 +108,7 @@ export interface ITransactionGroup {
 
 export interface IAccountGroupedTransactions extends IBankAccount {
   data: ITransactionGroup[];
+  hasMore: boolean;
 }
 
 export interface BankAccount {
@@ -150,3 +151,41 @@ export type UpdateBudgetDto = Pick<
   Budget,
   'exp_bg_amount' | 'exp_bg_id'
 >;
+
+export interface IRecurringTransaction {
+  exp_rt_id: number;
+  exp_rt_title: string;
+  exp_rt_amount: string;
+  exp_rt_note?: string | null;
+  exp_rt_category_id: number;
+  exp_rt_transaction_type_id: number;
+  exp_rt_bank_account_id: number | null;
+  exp_rt_frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  exp_rt_start_date: string;
+  exp_rt_end_date: string | null;
+  exp_rt_next_due_date: string;
+  exp_rt_is_active: boolean;
+  exp_tc_label: string;
+  exp_tc_icon: string;
+  exp_tc_icon_bg_color: string;
+  exp_tt_label: string;
+  exp_ba_name: string | null;
+}
+
+export type CreateRecurringTransactionDto = Pick<
+  IRecurringTransaction,
+  | 'exp_rt_title'
+  | 'exp_rt_amount'
+  | 'exp_rt_note'
+  | 'exp_rt_category_id'
+  | 'exp_rt_transaction_type_id'
+  | 'exp_rt_bank_account_id'
+  | 'exp_rt_frequency'
+  | 'exp_rt_start_date'
+  | 'exp_rt_end_date'
+>;
+
+export type UpdateRecurringTransactionDto = Partial<CreateRecurringTransactionDto> & {
+  exp_rt_id: number;
+  exp_rt_is_active?: boolean;
+};

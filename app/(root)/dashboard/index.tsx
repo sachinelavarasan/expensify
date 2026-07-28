@@ -1,9 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Alert,
   ColorValue,
   FlatList,
-  Pressable,
   RefreshControl,
   StyleSheet,
   Text,
@@ -16,6 +15,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import { useQueryClient } from '@tanstack/react-query';
 
 import Emptystate from '@/components/Emptystate';
 import TransactionCard from '@/components/TransactionCard';
@@ -24,13 +24,15 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Entypo, Feather, FontAwesome6 } from '@expo/vector-icons';
+import { Feather, FontAwesome6 } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useRouter } from 'expo-router';
-import HomeHeader from '../../../components/HomeHeader';
+import HomeSummaryCard from '@/components/HomeSummaryCard';
+import HomeNudges from '@/components/HomeNudges';
 import { Itransaction } from '@/types';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
+import FilterChip from '@/components/FilterChip';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
@@ -45,6 +47,9 @@ import { FontSize } from '@/utils/Typography';
 export default function Index() {
   const { colors } = useThemeContext();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { accounts, loading: accountsLoading } = useBankAccounts();
+  const [defaultAccountResolved, setDefaultAccountResolved] = useState(false);
   const {
     transactions,
     formattedTitle,
@@ -60,17 +65,29 @@ export default function Index() {
     bankAccount,
     updateBankAccount,
     updateDateRangeType,
-  } = useMonthlyTransactions();
+  } = useMonthlyTransactions(undefined, 'monthly', defaultAccountResolved);
   const { mutateAsync: deleteTransaction } = useDeleteTransaction();
   useCategoryList();
   useGetUserData();
-  const { accounts } = useBankAccounts();
   const [balance, setBalance] = useState<number>(0);
   const { value: showBalance } = useGetSettingsFromStore('balance');
   const { value: carryBalance } = useGetSettingsFromStore('over-balance');
 
   const [refreshing, setRefreshing] = useState(false);
   const { value } = useGetSettingsFromStore('tt-time');
+
+  const hasAppliedDefaultAccount = useRef(false);
+  useEffect(() => {
+    if (hasAppliedDefaultAccount.current || accountsLoading) {
+      return;
+    }
+    hasAppliedDefaultAccount.current = true;
+    const primary = accounts.find((acc) => acc.exp_ba_is_primary);
+    if (primary) {
+      updateBankAccount(primary.exp_ba_id);
+    }
+    setDefaultAccountResolved(true);
+  }, [accounts, accountsLoading, updateBankAccount]);
 
   const headerOpacity = useSharedValue(0);
   const headerTranslateY = useSharedValue(12);
@@ -89,9 +106,10 @@ export default function Index() {
     setRefreshing(true);
     setTimeout(() => {
       refetch();
+      queryClient.invalidateQueries({ queryKey: ['spend-trend'] });
       setRefreshing(false);
     }, 2000);
-  }, []);
+  }, [refetch, queryClient]);
 
   const handlePress = () => {
     router.push('/(root)/transaction');
@@ -204,13 +222,13 @@ export default function Index() {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      {loading && <OverlayLoader />}
+      {(loading || !defaultAccountResolved) && <OverlayLoader />}
       <TouchableOpacity
         style={{
           width: 30,
           height: 30,
           position: 'absolute',
-          bottom: 5,
+          bottom: 20,
           right: 0,
           zIndex: 2,
           marginRight: 10,
@@ -224,224 +242,132 @@ export default function Index() {
           <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
         </LinearGradient>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={{
-          width: 30,
-          height: 30,
-          position: 'absolute',
-          bottom: 70,
-          right: 0,
-          zIndex: 2,
-          marginRight: 10,
-        }}
-        onPress={handlePress}>
-        <LinearGradient
-          colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
-          <TransactionFilters
-            applyFilters={applyFilters}
-            searchText={search}
-            selectedTransaction={transactionType}
-            selectedAccount={bankAccount}
-            accounts={accounts}
-          />
-        </LinearGradient>
-      </TouchableOpacity>
-      <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
-        <View
-          style={{
-            paddingVertical: 10,
-            paddingHorizontal: 15,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            overflow: 'hidden',
-          }}>
-          <MonthSwitcher
-            nextMonth={goToNext}
-            prevMonth={goToPrevious}
-            currentMonth={formattedTitle}
-          />
-          <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
-        </View>
-        <Animated.View style={[{ paddingHorizontal: 15 }, headerAnimatedStyle]}>
-          <HomeHeader
-            income={income}
-            expense={expense}
-            carryBalance={carryBalance}
-            showBalance={showBalance}
-            balance={balance}
-          />
-        </Animated.View>
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: 10,
-            flexWrap: 'wrap',
-            marginVertical: 6,
-            paddingHorizontal: 15,
-          }}>
-          {!!search && (
-            <Pressable
+      <FlatList
+        bounces
+        alwaysBounceVertical
+        showsVerticalScrollIndicator={false}
+        data={groupedDataArray}
+        contentContainerStyle={{ paddingBottom: 250, flex: 1 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListHeaderComponent={
+          <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
+            <View
               style={{
-                borderWidth: 1,
-                borderColor: colors.primary,
-                paddingVertical: 2,
-                paddingHorizontal: 10,
-                borderRadius: 50,
+                paddingVertical: 10,
+                paddingHorizontal: 15,
                 flexDirection: 'row',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                gap: 5,
-              }}
-              onPress={() => removeFilter('search')}>
-              <Text
+                overflow: 'hidden',
+              }}>
+              <MonthSwitcher
+                nextMonth={goToNext}
+                prevMonth={goToPrevious}
+                currentMonth={formattedTitle}
+              />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
+                <TransactionFilters
+                  applyFilters={applyFilters}
+                  searchText={search}
+                  selectedTransaction={transactionType}
+                  selectedAccount={bankAccount}
+                  accounts={accounts}
+                  hasActiveFilters={!!search || !!transactionType || !!bankAccount}
+                />
+              </View>
+            </View>
+            <Animated.View style={[{ paddingHorizontal: 15 }, headerAnimatedStyle]}>
+              <HomeSummaryCard
+                income={income}
+                expense={expense}
+                carryBalance={carryBalance}
+                showBalance={showBalance}
+                balance={balance}
+                transactions={transactions}
+              />
+              <HomeNudges />
+            </Animated.View>
+            {(!!search || !!transactionType || !!bankAccount) && (
+              <View
                 style={{
-                  color: colors.secondary,
-                  fontFamily: 'Inter-500',
+                  flexDirection: 'row',
+                  gap: 10,
+                  flexWrap: 'wrap',
+                  marginVertical: 6,
+                  paddingHorizontal: 15,
                 }}>
-                Search:{' '}
-                <Text style={{ color: colors.title, textTransform: 'capitalize' }}>{search}</Text>
-              </Text>
-              <Entypo name="cross" size={20} color={colors.secondary} />
-            </Pressable>
-          )}
-          {!!transactionType && (
-            <Pressable
-              style={{
-                borderWidth: 1,
-                borderColor: colors.primary,
-                paddingVertical: 2,
-                paddingHorizontal: 10,
-                borderRadius: 50,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 5,
-              }}
-              onPress={() => removeFilter('t_type')}>
-              <Text
+                {!!search && (
+                  <FilterChip label="Search" value={search} onRemove={() => removeFilter('search')} />
+                )}
+                {!!transactionType && (
+                  <FilterChip
+                    label="Transaction type"
+                    value={transactionType}
+                    onRemove={() => removeFilter('t_type')}
+                  />
+                )}
+                {!!bankAccount && (
+                  <FilterChip
+                    label="Account"
+                    value={accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
+                    onRemove={() => removeFilter('account')}
+                  />
+                )}
+                <FilterChip label="Clear Filters" onRemove={() => removeFilter('default')} />
+              </View>
+            )}
+          </View>
+        }
+        ListEmptyComponent={
+          <Emptystate
+            title="No transactions yet"
+            description="Start by adding your income or expenses to see them here."
+          />
+        }
+        renderItem={({ item, index }) => {
+          return (
+            <Animated.View
+              entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
+              style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
+              <View
                 style={{
-                  color: colors.secondary,
-                  fontFamily: 'Inter-500',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                 }}>
-                Transaction type:{' '}
-                <Text style={{ color: colors.title, textTransform: 'capitalize' }}>
-                  {transactionType}
+                <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>
+                  {format(new Date(item.date), 'dd MMMM yyyy')}
                 </Text>
-              </Text>
-              <Entypo name="cross" size={20} color={colors.secondary} />
-            </Pressable>
-          )}
-          {!!bankAccount && (
-            <Pressable
-              style={{
-                borderWidth: 1,
-                borderColor: colors.primary,
-                paddingVertical: 2,
-                paddingHorizontal: 10,
-                borderRadius: 50,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 5,
-              }}
-              onPress={() => removeFilter('account')}>
-              <Text
-                style={{
-                  color: colors.secondary,
-                  fontFamily: 'Inter-500',
-                }}>
-                Account:{' '}
-                <Text style={{ color: colors.title, textTransform: 'capitalize' }}>
-                  {accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
-                </Text>
-              </Text>
-              <Entypo name="cross" size={20} color={colors.secondary} />
-            </Pressable>
-          )}
-          {!!search && !!transactionType && (
-            <Pressable
-              style={{
-                borderWidth: 1,
-                borderColor: colors.primary,
-                paddingVertical: 2,
-                paddingHorizontal: 10,
-                borderRadius: 50,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 5,
-              }}
-              onPress={() => removeFilter('default')}>
-              <Text
-                style={{
-                  textTransform: 'capitalize',
-                  color: colors.secondary,
-                  fontFamily: 'Inter-500',
-                }}>
-                Clear Filters
-              </Text>
-              <Entypo name="cross" size={20} color={colors.secondary} />
-            </Pressable>
-          )}
-        </View>
-      </View>
-      <View style={{ paddingHorizontal: 15 }}>
-        <FlatList
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-          data={groupedDataArray}
-          contentContainerStyle={{ paddingBottom: 250, flex: 1 }}
-          ListEmptyComponent={
-            <Emptystate
-              title="No transactions yet"
-              description="Start by adding your income or expenses to see them here."
-            />
-          }
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          renderItem={({ item, index }) => {
-            return (
-              <Animated.View
-                entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
-                style={{ paddingVertical: 10, paddingHorizontal: 5 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
-                  <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>
-                    {format(new Date(item.date), 'dd MMMM yyyy')}
-                  </Text>
 
-                  <View style={{ flexDirection: 'row', gap: 6 }}>
-                    {!!item.debit && (
-                      <Text style={[styles.totalAmount, { color: colors.title }]}>
-                        <Feather name="arrow-up-right" size={12} color={colors.expense} />
-                        {formatToCurrency(item.debit)}
-                      </Text>
-                    )}
-                    {!!item.credit && (
-                      <Text style={[styles.totalAmount, { color: colors.title }]}>
-                        <Feather name="arrow-down-left" size={12} color={colors.income} />
-                        {formatToCurrency(item.credit)}
-                      </Text>
-                    )}
-                  </View>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  {!!item.debit && (
+                    <Text style={[styles.totalAmount, { color: colors.title }]}>
+                      <Feather name="arrow-up-right" size={12} color={colors.expense} />
+                      {formatToCurrency(item.debit)}
+                    </Text>
+                  )}
+                  {!!item.credit && (
+                    <Text style={[styles.totalAmount, { color: colors.title }]}>
+                      <Feather name="arrow-down-left" size={12} color={colors.income} />
+                      {formatToCurrency(item.credit)}
+                    </Text>
+                  )}
                 </View>
+              </View>
 
-                {item.data.map((transaction: Itransaction) => (
-                  <SwipeableRow
-                    key={transaction.exp_ts_id}
-                    onDelete={() => handleDelete(transaction.exp_ts_id)}>
-                    <TransactionCard {...transaction} showTsTime={value} />
-                  </SwipeableRow>
-                ))}
-              </Animated.View>
-            );
-          }}
-          keyExtractor={(item) => item.date}
-        />
-      </View>
+              {item.data.map((transaction: Itransaction) => (
+                <SwipeableRow
+                  key={transaction.exp_ts_id}
+                  onDelete={() => handleDelete(transaction.exp_ts_id)}>
+                  <TransactionCard {...transaction} showTsTime={value} />
+                </SwipeableRow>
+              ))}
+            </Animated.View>
+          );
+        }}
+        keyExtractor={(item) => item.date}
+      />
     </ThemedView>
   );
 }

@@ -19,8 +19,8 @@ export const LightColors = {
   floatingBtnBg: ['#6B5DE6', '#8A7CFF'],
   cardBg: '#ffffff',
   inputColor: '#F1F0F8',
-  inputBorder: '#DEDCEA',
-  inputPlaceholder: '#A6A4B8',
+  inputBorder: '#CFCBE3',
+  inputPlaceholder: '#8D8AA0',
   scrim: 'rgba(0, 0, 0, 0.5)',
   accent: '#FFC83A',
   onPrimary: '#FFFFFF',
@@ -72,31 +72,6 @@ export type ThemeColors = typeof LightColors;
 // react to the app's light/dark theme (they're their own fixed design), but
 // are centralized here so no raw hex lives inline in components.
 
-export const BankCardPalette = {
-  light: {
-    text: '#0F0E17',
-    sub: '#5A5A6A',
-    chip: '#E6E6F2',
-    chipInner: '#FFD66B',
-    gradDefault: '#6C63FF',
-    gradEnd: '#B388FF',
-    cardBgStart: '#FFFFFF',
-    cardBgEnd: '#F7F7FB',
-    border: '#E9E7F2',
-  },
-  dark: {
-    text: '#FFFFFF',
-    sub: '#CFCFE6',
-    chip: '#2B2748',
-    chipInner: '#FFD66B',
-    gradDefault: '#6C63FF',
-    gradEnd: '#9E6BFF',
-    cardBgStart: '#1A1535',
-    cardBgEnd: '#0F0E25',
-    border: '#2F2A4F',
-  },
-};
-
 export const NativeDarkPickerTheme = {
   backgroundColor: '#0E0E10',
   textHeaderColor: '#6B5DE6',
@@ -121,10 +96,6 @@ export const SwitchPalette = {
   thumbOn: '#F5F5F5',
   thumbOff: '#574866',
 };
-
-// Fixed decorative gradient for the profile screen's header cover image -
-// not theme-reactive, it's a one-off hero treatment.
-export const ProfileHeroGradient = ['#2E026D', '#15162C', '#0F0E17'];
 
 // Fixed gradient + glow for the "Add account" CTA button.
 export const AddAccountButtonGradient = ['#6B5DE6', '#8A7CFF'];

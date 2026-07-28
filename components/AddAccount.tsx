@@ -9,9 +9,8 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
-import Modal from 'react-native-modal';
-import { deviceHeight, deviceWidth } from '@/utils/functions';
-import { FontAwesome, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import ModalCard from './ModalCard';
+import { FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,9 +21,6 @@ import { AddAccountButtonGradient } from '@/utils/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAddBankAccount, useUpdateBankAccount } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
-
-const width = deviceWidth();
-const height = deviceHeight();
 
 const schema = z.object({
   exp_ba_name: z.string().trim().min(3, { message: 'Name should be minimum 3 characters' }),
@@ -141,8 +137,8 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
     <>
       <Pressable onPress={toggleModal} style={{ borderRadius: 40, overflow: 'hidden' }}>
         {exp_ba_id ? (
-          <View style={styles.iconWrapper}>
-            <MaterialCommunityIcons name="circle-edit-outline" size={28} color={colors.arrowColor} />
+          <View style={[styles.iconWrapper, { backgroundColor: `${colors.primary}1A` }]}>
+            <MaterialCommunityIcons name="circle-edit-outline" size={20} color={colors.primary} />
           </View>
         ) : (
           <LinearGradient
@@ -155,142 +151,118 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
         )}
       </Pressable>
 
-      <Modal
-        backdropColor={colors.scrim}
-        isVisible={show}
-        hasBackdrop={true}
-        deviceHeight={height}
-        deviceWidth={width}
-        animationIn={'fadeIn'}
-        animationOut={'fadeOut'}
-        coverScreen={true}>
+      <ModalCard
+        visible={show}
+        onClose={toggleModal}
+        title={exp_ba_id ? 'Edit Account' : 'Add Account'}
+        closeDisabled={isLoading || isUpdating}>
+        <Controller
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              label="Account Name"
+              keyboardType="default"
+              autoCapitalize="none"
+              autoComplete="off"
+              onBlur={field.onBlur}
+              onChangeText={field.onChange}
+              error={errors.exp_ba_name?.message}
+              borderLess
+            />
+          )}
+          name="exp_ba_name"
+        />
+        <Spacer height={20} />
+        <Controller
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              label="Initial Amount"
+              keyboardType="numeric"
+              onBlur={field.onBlur}
+              onChangeText={field.onChange}
+              error={errors.exp_ba_balance?.message}
+              borderLess
+              editable={!exp_ba_id}
+              isRequired
+            />
+          )}
+          name="exp_ba_balance"
+        />
+        <Spacer height={20} />
+        <Text style={[styles.label, { color: colors.title }]}>Select Icon</Text>
         <View
           style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            borderColor: colors.borderColor,
+            borderWidth: 1,
+            borderRadius: 8,
+            paddingVertical: 5,
+            paddingHorizontal: 8,
           }}>
-          <View style={[styles.modal, { backgroundColor: colors.background }]}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text style={[styles.title, { color: colors.title }]}>
-                {exp_ba_id ? 'Edit Account' : 'Add Account'}
-              </Text>
-
-              <TouchableOpacity onPress={toggleModal}>
-                <Ionicons name="close" color={colors.arrowColor} size={20} />
-              </TouchableOpacity>
-            </View>
-            <Spacer height={15} />
-            <Controller
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  label="Account Name"
-                  keyboardType="default"
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  onBlur={field.onBlur}
-                  onChangeText={field.onChange}
-                  error={errors.exp_ba_name?.message}
-                  borderLess
-                />
-              )}
-              name="exp_ba_name"
-            />
-            <Spacer height={20} />
-            <Controller
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  label="Initial Amount"
-                  keyboardType="numeric"
-                  onBlur={field.onBlur}
-                  onChangeText={field.onChange}
-                  error={errors.exp_ba_balance?.message}
-                  borderLess
-                  editable={!exp_ba_id}
-                  isRequired
-                />
-              )}
-              name="exp_ba_balance"
-            />
-            <Spacer height={20} />
-            <Text style={[styles.label, { color: colors.title }]}>Select Icon</Text>
-            <View
-              style={{
-                borderColor: colors.borderColor,
-                borderWidth: 1,
-                borderRadius: 8,
-                paddingVertical: 5,
-                paddingHorizontal: 8,
-              }}>
-              <FlatList
-                showsVerticalScrollIndicator={false}
-                horizontal
-                data={accountIcon}
-                contentContainerStyle={{
-                  gap: 5,
-                }}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => {
-                  return (
-                    <View style={{ padding: 5 }}>
-                      <Pressable
-                        key={item}
-                        style={[styles.iconBox]}
-                        onPress={() => {
-                          setValue('exp_ba_icon', item, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                        }}>
-                        <View
-                          style={{
-                            backgroundColor: selectedIcon === item ? colors.primary : colors.cardBg,
-                            padding: 5,
-                            borderRadius: 5,
-                          }}>
-                          <MaterialIcons
-                            name={item as React.ComponentProps<typeof MaterialIcons>['name']}
-                            size={24}
-                            color={selectedIcon === item ? colors.onPrimary : colors.lighterTitle}
-                          />
-                        </View>
-                      </Pressable>
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            horizontal
+            data={accountIcon}
+            contentContainerStyle={{
+              gap: 5,
+            }}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => {
+              return (
+                <View style={{ padding: 5 }}>
+                  <Pressable
+                    key={item}
+                    style={[styles.iconBox]}
+                    onPress={() => {
+                      setValue('exp_ba_icon', item, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    }}>
+                    <View
+                      style={{
+                        backgroundColor: selectedIcon === item ? colors.primary : colors.cardBg,
+                        padding: 5,
+                        borderRadius: 5,
+                      }}>
+                      <MaterialIcons
+                        name={item as React.ComponentProps<typeof MaterialIcons>['name']}
+                        size={24}
+                        color={selectedIcon === item ? colors.onPrimary : colors.lighterTitle}
+                      />
                     </View>
-                  );
-                }}
-              />
-            </View>
-            <Spacer height={20} />
-            <View>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: colors.primary },
-                  !isDirty || isLoading || isUpdating ? styles.disable : {},
-                ]}
-                onPress={handleSubmit(handlePress)}
-                disabled={!isDirty || isLoading || isUpdating}>
-                {isLoading || isUpdating ? (
-                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
-                ) : null}
-                <Text style={[styles.btntitle, { color: colors.onPrimary }, isLoading || isUpdating ? styles.textDisable : {}]}>
-                  {exp_ba_id ? 'Update' : 'Create'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <Spacer height={20} />
-          </View>
+                  </Pressable>
+                </View>
+              );
+            }}
+          />
         </View>
-      </Modal>
+        <Spacer height={20} />
+        <View>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: colors.primary },
+              !isDirty || isLoading || isUpdating ? styles.disable : {},
+            ]}
+            onPress={handleSubmit(handlePress)}
+            disabled={!isDirty || isLoading || isUpdating}>
+            {isLoading || isUpdating ? (
+              <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+            ) : null}
+            <Text
+              style={[
+                styles.btntitle,
+                { color: colors.onPrimary },
+                isLoading || isUpdating ? styles.textDisable : {},
+              ]}>
+              {exp_ba_id ? 'Update' : 'Create'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ModalCard>
     </>
   );
 };
@@ -298,16 +270,6 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
 export default AddAccount;
 
 const styles = StyleSheet.create({
-  modal: {
-    width: deviceWidth() - 60,
-    borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Inter-600',
-  },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -354,6 +316,7 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 40,
     height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

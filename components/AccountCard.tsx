@@ -1,131 +1,115 @@
-// BankCard.tsx
-import React, { useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ColorValue,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { BankCardPalette } from '@/utils/Colors';
+import { FontSize } from '@/utils/Typography';
+import useCountUp from '@/hooks/useCountUp';
 
 type BankCardProps = {
   bankName: string;
   holderName: string;
-  accountNumber?: string;
   balance: number | string;
-  currency?: string;
-  variant?: 'dark' | 'light';
-  accent?: string;
   onPress?: () => void;
   otherStyle?: StyleProp<ViewStyle>;
-  icon: React.ComponentProps<typeof MaterialIcons>['name']
+  icon: React.ComponentProps<typeof MaterialIcons>['name'];
+  // Optional "All Time" activity for this account. When provided, an income/
+  // expense stat row and transaction count are folded into the same card
+  // instead of needing a separate summary card.
+  income?: number;
+  expense?: number;
+  transactionCount?: number;
 };
-
-const maskAccount = (num: string) => (num.length <= 4 ? num : `•••• •••• •••• ${num.slice(-4)}`);
-
-// const formatAmount = (amt: number, currency = 'USD') =>
-//   new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amt);
 
 const BankCard = ({
   bankName,
   holderName,
-  accountNumber,
   balance,
   icon,
-  currency = 'USD',
-  variant,
-  accent,
   onPress,
   otherStyle,
+  income,
+  expense,
+  transactionCount,
 }: BankCardProps) => {
-  const [showFull, setShowFull] = useState(false);
-  const { theme } = useThemeContext();
-  const resolvedVariant = variant ?? theme;
+  const { colors } = useThemeContext();
 
-  const colors = useMemo(() => {
-    const palette =
-      resolvedVariant === 'light' ? BankCardPalette.light : BankCardPalette.dark;
-    return {
-      text: palette.text,
-      sub: palette.sub,
-      chip: palette.chip,
-      chipInner: palette.chipInner,
-      grad: [accent || palette.gradDefault, palette.gradEnd],
-      cardBg: [palette.cardBgStart, palette.cardBgEnd] as ColorValue[],
-      border: palette.border,
-    };
-  }, [resolvedVariant, accent]);
+  const numericBalance = Number(balance) || 0;
+  const animatedBalance = useCountUp(numericBalance);
+  const showActivity = income !== undefined && expense !== undefined;
+  const animatedIncome = useCountUp(income ?? 0);
+  const animatedExpense = useCountUp(expense ?? 0);
 
   return (
     <TouchableOpacity
       activeOpacity={0.9}
-      onPress={() => (onPress ? onPress() : setShowFull((p) => !p))}
-      style={[styles.wrapper, otherStyle]}>
-      <LinearGradient
-        colors={colors.cardBg as [ColorValue, ColorValue]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.card, { borderColor: colors.border }, otherStyle]}>
-        {/* Accent ribbon */}
-        <LinearGradient
-          colors={colors.grad as [ColorValue, ColorValue]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.ribbon}
-        />
-
-        {/* Top row */}
-        <View style={[styles.row, { marginTop: 10 }]}>
-          <Text style={[styles.bankName, { color: colors.text }]} numberOfLines={1}>
-            {bankName}
-          </Text>
-          {/* <MaterialCommunityIcons
-            name="contactless-payment"
-            size={22}
-            color={colors.sub}
-          /> */}
-        </View>
-
-        <View style={[styles.row, { marginTop: 8 }]}>
-          <View style={[styles.chip, { backgroundColor: colors.chip }]}>
-            <View style={[styles.chipInner, { backgroundColor: colors.chipInner }]} />
+      onPress={onPress}
+      disabled={!onPress}
+      style={[
+        styles.card,
+        { backgroundColor: colors.inputColor, borderColor: colors.primary },
+        otherStyle,
+      ]}>
+      <View style={styles.topRow}>
+        <View style={styles.left}>
+          <View style={[styles.dot, { backgroundColor: `${colors.primary}22` }]}>
+            <MaterialIcons name={icon} size={16} color={colors.primary} />
           </View>
-          <MaterialIcons name={icon} size={22} color={colors.sub} />
-        </View>
-
-        {/* Number */}
-        {!!accountNumber && (
-          <Text style={[styles.number, { color: colors.text }]}>
-            {showFull ? accountNumber.replace(/(.{4})/g, '$1 ').trim() : maskAccount(accountNumber)}
-          </Text>
-        )}
-
-        {/* Footer */}
-        <View style={[styles.row, { marginTop: 10 }]}>
-          <View>
-            <Text style={[styles.label, { color: colors.sub }]}>Card Holder</Text>
-            <Text style={[styles.value, { color: colors.text }]} numberOfLines={1}>
-              {holderName}
+          <View style={styles.identity}>
+            <Text style={[styles.label, { color: colors.lighterTitle }]}>Account</Text>
+            <Text style={[styles.value, { color: colors.title }]} numberOfLines={1}>
+              {bankName}
             </Text>
           </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Text style={[styles.label, { color: colors.sub }]}>Balance</Text>
-            <Text style={[styles.value, { color: colors.text }]}>{formatToCurrency(balance)}</Text>
-          </View>
         </View>
 
-        {/* Hint */}
-        <Text style={[styles.hint, { color: colors.sub }]}>
-          {/* {showFull ? 'Tap to hide details' : 'Tap to reveal details'} */}
+        <View style={styles.right}>
+          <Text style={[styles.label, { color: colors.lighterTitle }]}>Balance</Text>
+          <Text style={[styles.balance, { color: colors.title }]} numberOfLines={1}>
+            {formatToCurrency(animatedBalance, undefined, numericBalance)}
+          </Text>
+        </View>
+      </View>
+
+      {showActivity && (
+        <View style={[styles.activityRow, { borderTopColor: colors.borderColor }]}>
+          <View style={styles.stat}>
+            <View style={[styles.statDot, { backgroundColor: `${colors.income}22` }]}>
+              <Feather name="arrow-down-left" size={11} color={colors.income} />
+            </View>
+            <View>
+              <Text style={[styles.statLabel, { color: colors.lighterTitle }]}>Income</Text>
+              <Text style={[styles.statValue, { color: colors.title }]} numberOfLines={1}>
+                {formatToCurrency(animatedIncome, undefined, income)}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.stat}>
+            <View style={[styles.statDot, { backgroundColor: `${colors.expense}22` }]}>
+              <Feather name="arrow-up-right" size={11} color={colors.expense} />
+            </View>
+            <View>
+              <Text style={[styles.statLabel, { color: colors.lighterTitle }]}>Expense</Text>
+              <Text style={[styles.statValue, { color: colors.title }]} numberOfLines={1}>
+                {formatToCurrency(animatedExpense, undefined, expense)}
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      <View style={[styles.footer, { borderTopColor: colors.borderColor }]}>
+        <Text style={[styles.footerText, { color: colors.description }]} numberOfLines={1}>
+          Card Holder: <Text style={[styles.footerValue, { color: colors.title }]}>{holderName}</Text>
+          {!!transactionCount && (
+            <Text style={[styles.footerText, { color: colors.description }]}>
+              {'  ·  '}
+              <Text style={[styles.footerValue, { color: colors.title }]}>{transactionCount}</Text>
+              {transactionCount === 1 ? ' transaction' : ' transactions'}
+            </Text>
+          )}
         </Text>
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -133,66 +117,94 @@ const BankCard = ({
 export default BankCard;
 
 const styles = StyleSheet.create({
-  wrapper: { width: 350 },
   card: {
     width: 350,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: 18,
   },
-  ribbon: {
-    position: 'absolute',
-    right: -40,
-    top: -40,
-    width: 160,
-    height: 160,
-    transform: [{ rotate: '35deg' }],
-    opacity: 0.25,
-    borderRadius: 24,
-  },
-  row: {
+  topRow: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
+    gap: 12,
+  },
+  left: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
   },
-  bankName: {
-    fontSize: 16,
-    fontFamily: 'Inter-700',
+  identity: {
+    flexShrink: 1,
   },
-  chip: {
-    width: 36,
-    height: 26,
-    borderRadius: 6,
+  right: {
+    alignItems: 'flex-end',
+  },
+  dot: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 6,
-  },
-  chipInner: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-  },
-  number: {
-    marginTop: 16,
-    fontSize: 18,
-    letterSpacing: 2,
-    fontFamily: 'Inter-600',
   },
   label: {
-    fontSize: 11,
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-600',
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    fontFamily: 'Inter-500',
+    letterSpacing: 0.3,
   },
   value: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
     marginTop: 2,
-    fontSize: 14,
-    fontFamily: 'Inter-600',
   },
-  hint: {
-    marginTop: 12,
-    fontSize: 11,
-    textAlign: 'right',
-    fontFamily: 'Inter-500',
+  balance: {
+    fontSize: FontSize.xl,
+    fontFamily: 'Inter-700',
+    marginTop: 2,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    gap: 24,
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  stat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statDot: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statLabel: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  statValue: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
+    marginTop: 1,
+  },
+  footer: {
+    flexDirection: 'row',
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  footerText: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-400',
+  },
+  footerValue: {
+    fontFamily: 'Inter-600',
   },
 });

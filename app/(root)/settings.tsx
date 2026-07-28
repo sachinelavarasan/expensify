@@ -6,8 +6,9 @@ import ProfileHeader from '@/components/ProfileHeader';
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import Spacer from '@/components/Spacer';
 import CustomSwitch from '@/components/Switch';
+import SettingsRow from '@/components/SettingsRow';
 import TimePickerPaperWithButton from '@/components/TimePickerPaperWithButton';
-import { deviceWidth, getAsyncValue, setAsyncValue } from '@/utils/functions';
+import { getAsyncValue, setAsyncValue } from '@/utils/functions';
 import CurrencyModal from '@/components/CurrencyModal';
 import DefaultTransactionModal from '@/components/DefaultTransactionModal';
 import DefaultGroupingModal from '@/components/DefaultGroupingModal';
@@ -15,6 +16,7 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import { useReminderSettings } from '@/hooks/useReminder';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { FontSize } from '@/utils/Typography';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Setting() {
@@ -125,14 +127,19 @@ export default function Setting() {
             }}>
             <ProfileHeader title="Settings" paddingHorizontal={false} />
             <Spacer height={20} />
-            <View style={{ gap: 20 }}>
-              <ThemeToggle />
+            <View style={{ gap: 22 }}>
+              {/* Appearance Section */}
+              <View>
+                <Text style={[styles.sectionLabel, { color: colors.description }]}>Appearance</Text>
+                <View style={styles.section}>
+                  <ThemeToggle />
+                </View>
+              </View>
+
               {/* General Section */}
               <View>
-                <View>
-                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>General</Text>
-                </View>
-                <View style={styles.subMenuContainer}>
+                <Text style={[styles.sectionLabel, { color: colors.description }]}>General</Text>
+                <View style={styles.section}>
                   <CurrencyModal
                     currency={generalSettings?.currency}
                     refetch={refetch}
@@ -149,132 +156,99 @@ export default function Setting() {
                     refetch={refetch}
                     updateSettings={updateSettingPreference}
                   />
-
-                  {/* <TouchableOpacity style={styles.card}>
-                    <View style={styles.left}>
-                      <MaterialCommunityIcons name="theme-light-dark" size={24} color="white" />
-                      <View>
-                        <Text style={styles.option}>Theme Setup</Text>
-                        <Text style={styles.subText}>Switch between light and dark modes</Text>
-                      </View>
-                    </View>
-                  </TouchableOpacity> */}
                 </View>
               </View>
 
               {/* Reminder Section */}
               <View>
-                <View>
-                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>Reminder</Text>
-                </View>
-                <View style={styles.subMenuContainer}>
-                  <View style={styles.card}>
-                    <View style={styles.left}>
-                      <MaterialIcons name="access-alarm" size={22} color={colors.text} />
-                      <View>
-                        <Text style={[styles.option, { color: colors.title }]}>Daily Reminder</Text>
-                        <Text style={[styles.subText, { color: colors.description }]}>
-                          Get a daily notification to add transactions
-                        </Text>
+                <Text style={[styles.sectionLabel, { color: colors.description }]}>Reminder</Text>
+                <View style={styles.section}>
+                  <SettingsRow
+                    icon={<MaterialIcons name="access-alarm" size={18} color={colors.onPrimary} />}
+                    title="Daily Reminder"
+                    subtitle={
+                      enabled
+                        ? `Reminds you daily at ${time}`
+                        : 'Get a daily notification to add transactions'
+                    }
+                    right={
+                      <View style={{ alignItems: 'flex-end', gap: 8 }}>
+                        <CustomSwitch
+                          value={enabled}
+                          onChange={(value) => {
+                            if (value) {
+                              scheduleNotification();
+                            } else disableNotification();
+                          }}
+                        />
+                        <View style={!enabled ? { opacity: 0.4 } : undefined}>
+                          <TimePickerPaperWithButton
+                            value={time}
+                            onChange={(value) => {
+                              scheduleNotification(value);
+                            }}
+                            disabled={!enabled}
+                          />
+                        </View>
                       </View>
-                    </View>
-                    <View>
-                      <CustomSwitch
-                        value={enabled}
-                        onChange={(value) => {
-                          if (value) {
-                            scheduleNotification();
-                          } else disableNotification();
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <View>
-                    <TimePickerPaperWithButton
-                      label="Reminder Time"
-                      value={time}
-                      onChange={(value) => {
-                        scheduleNotification(value);
-                      }}
-                      disabled={!enabled}
-                    />
-                  </View>
+                    }
+                  />
                 </View>
               </View>
 
               {/* Display Customization Section */}
               <View>
-                <View>
-                  <Text style={{ color: colors.text, fontFamily: 'Inter-500' }}>
-                    Display Customization
-                  </Text>
-                </View>
-                <View style={styles.subMenuContainer}>
-                  <View style={styles.card}>
-                    <View style={styles.left}>
-                      <MaterialIcons name="account-balance-wallet" size={22} color={colors.text} />
-                      <View>
-                        <Text style={[styles.option, { color: colors.title }]}>Hide Balance</Text>
-                        <Text style={[styles.subText, { color: colors.description }]}>
-                          Toggle visibility of your total balance
-                        </Text>
-                      </View>
-                    </View>
-                    <View>
+                <Text style={[styles.sectionLabel, { color: colors.description }]}>
+                  Display Customization
+                </Text>
+                <View style={styles.section}>
+                  <SettingsRow
+                    icon={
+                      <MaterialIcons name="account-balance-wallet" size={18} color={colors.onPrimary} />
+                    }
+                    title="Hide Balance"
+                    subtitle="Toggle visibility of your total balance"
+                    right={
                       <CustomSwitch
                         value={showBalance}
                         onChange={(value) => {
                           updateSettingPreference('balance', value);
                         }}
                       />
-                    </View>
-                  </View>
-                  <View style={styles.card}>
-                    <View style={styles.left}>
+                    }
+                  />
+                  <SettingsRow
+                    icon={
                       <MaterialCommunityIcons
                         name="calendar-arrow-right"
-                        size={22}
-                        color={colors.text}
+                        size={18}
+                        color={colors.onPrimary}
                       />
-                      <View>
-                        <Text style={[styles.option, { color: colors.title }]}>
-                          Carry Over Balance
-                        </Text>
-                        <Text style={[styles.subText, { color: colors.description }]}>
-                          Move unused balance to the next period
-                        </Text>
-                      </View>
-                    </View>
-                    <View>
+                    }
+                    title="Carry Over Balance"
+                    subtitle="Move unused balance to the next period"
+                    right={
                       <CustomSwitch
                         value={carryBalance}
                         onChange={(value) => {
                           updateSettingPreference('over-balance', value);
                         }}
                       />
-                    </View>
-                  </View>
-                  <View style={styles.card}>
-                    <View style={styles.left}>
-                      <Ionicons name="time-outline" size={22} color={colors.text} />
-                      <View>
-                        <Text style={[styles.option, { color: colors.title }]}>
-                          Show Transaction Time
-                        </Text>
-                        <Text style={[styles.subText, { color: colors.description }]}>
-                          Display the time along with each transaction
-                        </Text>
-                      </View>
-                    </View>
-                    <View>
+                    }
+                  />
+                  <SettingsRow
+                    icon={<Ionicons name="time-outline" size={18} color={colors.onPrimary} />}
+                    title="Show Transaction Time"
+                    subtitle="Display the time along with each transaction"
+                    right={
                       <CustomSwitch
                         value={ttime}
                         onChange={(value) => {
                           updateSettingPreference('tt-time', value);
                         }}
                       />
-                    </View>
-                  </View>
+                    }
+                  />
                 </View>
               </View>
             </View>
@@ -285,39 +259,13 @@ export default function Setting() {
   );
 }
 const styles = StyleSheet.create({
-  card: {
-    paddingVertical: 8,
-    marginBottom: 6,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  left: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-    maxWidth: deviceWidth() * 0.6,
-  },
-  option: {
-    fontSize: 14,
+  sectionLabel: {
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 8,
+    paddingHorizontal: 2,
   },
-  subTextContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  subMenuContainer: {
-    paddingLeft: 10,
-    paddingVertical: 4,
-  },
-  subText: {
-    fontSize: 12,
-    fontFamily: 'Inter-500',
-    marginTop: 2,
-  },
+  section: {},
 });

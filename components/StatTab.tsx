@@ -185,7 +185,7 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
         styles.container,
         { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
       ]}>
-      <View style={[styles.tabContainer, { backgroundColor: colors.topBarColor }]}>
+      <View style={[styles.tabContainer, { backgroundColor: colors.barBackground }]}>
         <TouchableOpacity
           style={[
             styles.tab,

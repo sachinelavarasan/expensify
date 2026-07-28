@@ -465,7 +465,12 @@ export default function Transaction() {
                           <CategorySelector
                             categories={categoriesList}
                             selected={exp_tc_id}
-                            setValue={setValue}
+                            onSelect={(id) =>
+                              setValue('exp_tc_id', id, {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              })
+                            }
                           />
                         </View>
 
@@ -519,7 +524,7 @@ export default function Transaction() {
             />
           </KeyboardAvoidingView>
         </ThemedView>
-        <View style={[styles.footer, { backgroundColor: colors.barBackground }]}>
+        <View style={[styles.footer, { backgroundColor: colors.bottomBarBackground }]}>
           <View>
             <View
               style={{

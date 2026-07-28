@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { startOfDay, addDays, startOfWeek, addWeeks, startOfMonth, addMonths, format } from 'date-fns';
 import { useAuth } from '@clerk/clerk-expo';
@@ -8,7 +8,11 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 type DateRangeType = 'daily' | 'weekly' | 'monthly';
 
-const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'monthly') => {
+const useTransactions = (
+  initialDate?: Date,
+  initialRange: DateRangeType = 'monthly',
+  enabled: boolean = true,
+) => {
   const [currentDate, setCurrentDate] = useState(initialDate || new Date());
   const [dateRangeType, setDateRangeType] = useState<DateRangeType>(initialRange);
   const [search, setSearch] = useState('');
@@ -22,6 +26,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'mont
     refetch,
   } = useQuery({
     queryKey: ['transactions', currentDate, search, transactionType, dateRangeType, bankAccount],
+    enabled,
     queryFn: async ({ queryKey }): Promise<Itransaction[]> => {
       const token = await getToken();
       if (!userId) throw new Error('User is not authenticated');
@@ -65,10 +70,6 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'mont
     },
   });
 
-  useEffect(() => {
-    refetch();
-  }, [currentDate, dateRangeType, bankAccount]);
-
   const goToPrevious = () => {
     setCurrentDate((prev) => {
       if (dateRangeType === 'daily') return addDays(prev, -1);
@@ -94,7 +95,7 @@ const useTransactions = (initialDate?: Date, initialRange: DateRangeType = 'mont
     if (customDate) {
       setCurrentDate(customDate);
     } else {
-      setCurrentDate((prev) => new Date(prev));
+      refetch();
     }
   };
 

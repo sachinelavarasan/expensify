@@ -357,3 +357,22 @@ export const dataGroupingType = [
   //   label: 'Year',
   // },
 ];
+
+export const recurringFrequencyType = [
+  {
+    id: 'daily',
+    label: 'Daily',
+  },
+  {
+    id: 'weekly',
+    label: 'Weekly',
+  },
+  {
+    id: 'monthly',
+    label: 'Monthly',
+  },
+  {
+    id: 'yearly',
+    label: 'Yearly',
+  },
+];

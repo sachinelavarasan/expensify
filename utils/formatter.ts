@@ -136,12 +136,17 @@ export function formatToCurrency2(
 export const formatToCurrency = (
   amount: number | string | bigint,
   currency: SupportedCurrency = getAppCurrency(),
+  // Which K/L/Cr bucket to render in is picked off this value instead of `amount`
+  // when provided. Pass the final target while animating a count-up so the
+  // bucket doesn't flip mid-animation as the interpolated value crosses a
+  // threshold (e.g. plain digits suddenly reformatting to "X.XX L").
+  scaleReference: number | string | bigint = amount,
 ): string => {
   if (amount === null || amount === undefined || (typeof amount === 'number' && isNaN(amount))) {
     return '-';
   }
 
-  const showCurrency = shouldShowCurrency();  
+  const showCurrency = shouldShowCurrency();
 
   const currencySymbols: Record<SupportedCurrency, string> = {
     '$': '$',
@@ -153,30 +158,33 @@ export const formatToCurrency = (
 
   const symbol = showCurrency ? currencySymbols[currency] || '' : '';
   let value: Decimal;
+  let scaleValue: Decimal;
 
   try {
     value = new Decimal(amount);
+    scaleValue = new Decimal(scaleReference);
   } catch {
     return '-';
   }
 
   const isNegative = value.isNeg();
   const abs = value.abs();
+  const scaleAbs = scaleValue.abs();
   const prefix = isNegative ? '-' : '';
   const formatLabel = (val: Decimal.Value, label: string) =>
     `${prefix}${symbol}${new Decimal(val).toFixed(2)}${label}`;
 
   if (currency === '₹') {
-    if (abs.gte('10000000')) return formatLabel(abs.div('10000000'), ' Cr');
-    if (abs.gte('100000')) return formatLabel(abs.div('100000'), ' L');
-    if (abs.gte('1000')) return `${prefix}${symbol}${abs.toNumber().toLocaleString('en-IN')}`;
+    if (scaleAbs.gte('10000000')) return formatLabel(abs.div('10000000'), ' Cr');
+    if (scaleAbs.gte('100000')) return formatLabel(abs.div('100000'), ' L');
+    if (scaleAbs.gte('1000')) return `${prefix}${symbol}${abs.toNumber().toLocaleString('en-IN')}`;
     return `${prefix}${symbol}${abs.toFixed(2)}`;
   }
 
-  if (abs.gte('1000000000000')) return formatLabel(abs.div('1000000000000'), 'T');
-  if (abs.gte('1000000000')) return formatLabel(abs.div('1000000000'), 'B');
-  if (abs.gte('1000000')) return formatLabel(abs.div('1000000'), 'M');
-  if (abs.gte('1000')) return formatLabel(abs.div('1000'), 'K');
+  if (scaleAbs.gte('1000000000000')) return formatLabel(abs.div('1000000000000'), 'T');
+  if (scaleAbs.gte('1000000000')) return formatLabel(abs.div('1000000000'), 'B');
+  if (scaleAbs.gte('1000000')) return formatLabel(abs.div('1000000'), 'M');
+  if (scaleAbs.gte('1000')) return formatLabel(abs.div('1000'), 'K');
 
   return `${prefix}${symbol}${abs.toFixed(2)}`;
 };

@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as XLSX from 'xlsx';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
@@ -38,6 +39,10 @@ type HeadersMap = {
   account: string | number;
 };
 
+// Importing more than this in a single request times out on the backend, so
+// large imports are split into sequential batches of this size instead.
+const IMPORT_BATCH_SIZE = 100;
+
 export default function ImportTransactions() {
   const { colors } = useThemeContext();
   const [step, setStep] = useState<0 | 1 | 2>(0);
@@ -53,11 +58,13 @@ export default function ImportTransactions() {
   }));
 
   const { mutateAsync: importExcelMutation, isPending: processing, data } = useImportExcel();
-  const { mutateAsync: importBulkTransactions, isPending: saving } = useImportBulkTransaction();
+  const { mutateAsync: importBulkTransactions } = useImportBulkTransaction();
   const { accounts } = useGetUserBankAccounts();
 
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
   const [excelData, setExcelData] = useState<any[]>([]);
+  const [pickedFileName, setPickedFileName] = useState('');
+  const [isReadingFile, setIsReadingFile] = useState(false);
   const [headersMap, setHeadersMap] = useState<HeadersMap>({
     title: '',
     amount: '',
@@ -74,6 +81,39 @@ export default function ImportTransactions() {
   const validRows = useMemo(() => data?.validRows || [], [data?.validRows]);
   const invalidRows = useMemo(() => data?.invalidRows || [], [data?.invalidRows]);
 
+  const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(
+    null,
+  );
+  const isImporting = importProgress !== null;
+  const importBatchCount = Math.ceil(validRows.length / IMPORT_BATCH_SIZE);
+  const totalRows = validRows.length + invalidRows.length;
+  const selectedAccountName = useMemo(
+    () => accounts.find((a) => String(a.exp_ba_id) === String(headersMap.account))?.exp_ba_name,
+    [accounts, headersMap.account],
+  );
+
+  const invalidReasonCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    invalidRows.forEach((row: any) => {
+      String(row.errors || '')
+        .split(',')
+        .map((reason: string) => reason.trim())
+        .filter(Boolean)
+        .forEach((reason: string) => counts.set(reason, (counts.get(reason) || 0) + 1));
+    });
+    return Array.from(counts.entries()).sort(([, a], [, b]) => b - a);
+  }, [invalidRows]);
+
+  const getSample = useCallback(
+    (field: keyof HeadersMap) => {
+      const column = headersMap[field];
+      if (!column || !excelData.length) return '';
+      const value = excelData[0]?.[column as string];
+      return value === undefined || value === null || value === '' ? '' : String(value);
+    },
+    [headersMap, excelData],
+  );
+
   const onChangeMap = (field: keyof HeadersMap, value: string | number) => {
     setHeadersMap((prev) => ({ ...prev, [field]: value as any }));
   };
@@ -82,6 +122,7 @@ export default function ImportTransactions() {
     setStep(0);
     setExcelHeaders([]);
     setExcelData([]);
+    setPickedFileName('');
     setHeadersMap({
       title: '',
       amount: '',
@@ -97,6 +138,7 @@ export default function ImportTransactions() {
       // reset state
       setExcelHeaders([]);
       setExcelData([]);
+      setPickedFileName('');
       setHeadersMap({
         title: '',
         amount: '',
@@ -120,6 +162,8 @@ export default function ImportTransactions() {
         return;
       }
 
+      setIsReadingFile(true);
+
       const fileContent = await FileSystem.readAsStringAsync(file.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
@@ -138,6 +182,7 @@ export default function ImportTransactions() {
 
       setExcelData(jsonData);
       setExcelHeaders(headersRow);
+      setPickedFileName(file.name);
       if (headersRow?.length === 0) {
         return;
       }
@@ -145,14 +190,41 @@ export default function ImportTransactions() {
     } catch (e) {
       console.error('Error reading Excel:', e);
       Alert.alert('Error', 'Something went wrong while reading the file.');
+    } finally {
+      setIsReadingFile(false);
     }
   };
 
-  const canGoNextFromMap = useMemo(() => {
+  const duplicateMappedColumns = useMemo(() => {
+    const usedBy = new Map<string, (keyof HeadersMap)[]>();
+    (['title', 'amount', 'date', 'transaction_type', 'note'] as (keyof HeadersMap)[]).forEach(
+      (field) => {
+        const column = headersMap[field];
+        if (!column) return;
+        const fields = usedBy.get(column as string) || [];
+        fields.push(field);
+        usedBy.set(column as string, fields);
+      },
+    );
+    return Array.from(usedBy.entries()).filter(([, fields]) => fields.length > 1);
+  }, [headersMap]);
+
+  const fieldLabels: Record<keyof HeadersMap, string> = {
+    title: 'Title',
+    amount: 'Amount',
+    date: 'Date',
+    transaction_type: 'Transaction Type',
+    note: 'Note',
+    account: 'Account',
+  };
+
+  const requiredFieldsMapped = useMemo(() => {
     return ['title', 'amount', 'date', 'transaction_type', 'account'].every(
       (key) => !!(headersMap as any)[key],
     );
   }, [headersMap]);
+
+  const canGoNextFromMap = requiredFieldsMapped && duplicateMappedColumns.length === 0;
 
   const generatePreview = async () => {
     try {
@@ -169,23 +241,36 @@ export default function ImportTransactions() {
   };
 
   const finalizeImport = async () => {
+    const total = validRows.length;
+    const batches: typeof validRows[] = [];
+    for (let i = 0; i < total; i += IMPORT_BATCH_SIZE) {
+      batches.push(validRows.slice(i, i + IMPORT_BATCH_SIZE));
+    }
+
+    let completed = 0;
+    setImportProgress({ done: 0, total });
+
     try {
-      await importBulkTransactions(
-        { headers: headersMap, data: validRows },
-        {
-          onError: () => Alert.alert('Error', 'Failed to process file.'),
-          onSuccess: () => {
-            showToast({
-              text1: 'Your transactions have been imported successfully',
-              type: 'success',
-              position: 'bottom',
-            });
-            resetAll();
-          },
-        },
-      );
+      for (const batch of batches) {
+        await importBulkTransactions({ headers: headersMap, data: batch });
+        completed += batch.length;
+        setImportProgress({ done: completed, total });
+      }
+      showToast({
+        text1: 'Your transactions have been imported successfully',
+        type: 'success',
+        position: 'bottom',
+      });
+      resetAll();
     } catch {
-      Alert.alert('Error', 'Failed to process file.');
+      Alert.alert(
+        'Import incomplete',
+        completed > 0
+          ? `${completed} of ${total} records were imported before an error occurred. Run the import again to add the rest.`
+          : 'Failed to process file.',
+      );
+    } finally {
+      setImportProgress(null);
     }
   };
 
@@ -206,6 +291,7 @@ export default function ImportTransactions() {
     (props: any) => (
       <BottomSheetBackdrop
         {...props}
+        pressBehavior="none"
         disappearsOnIndex={-1}
         appearsOnIndex={1}
         style={{ backgroundColor: colors.scrim }}
@@ -340,24 +426,67 @@ export default function ImportTransactions() {
                 </Text>
                 <Spacer height={20} />
                 <TouchableOpacity
+                  disabled={isReadingFile}
                   style={[
-                    styles.button,
-                    styles.primary,
-                    {
-                      backgroundColor: colors.primary,
-                    },
+                    styles.dropzone,
+                    { borderColor: colors.primary, backgroundColor: colors.inputColor },
+                    isReadingFile && styles.disable,
                   ]}
                   onPress={pickExcelFile}>
-                  <Text style={[styles.title, { color: colors.onPrimary }]}>Choose a File</Text>
+                  {isReadingFile ? (
+                    <ActivityIndicator color={colors.primary} />
+                  ) : (
+                    <MaterialIcons name="upload-file" size={30} color={colors.primary} />
+                  )}
+                  <Spacer height={8} />
+                  <Text style={[styles.title, { color: colors.primary }]}>
+                    {isReadingFile ? 'Reading file…' : 'Choose a File'}
+                  </Text>
+                  <Text style={[styles.subText, { color: colors.description, marginTop: 2 }]}>
+                    Tap to browse your device
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
 
             {step === 1 && excelHeaders?.length > 0 && (
               <View style={{ gap: 10, paddingHorizontal: 5 }}>
+                {!!pickedFileName && (
+                  <View
+                    style={[
+                      styles.fileChip,
+                      { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                    ]}>
+                    <Feather name="file-text" size={14} color={colors.primary} />
+                    <Text
+                      style={[styles.fileChipText, { color: colors.title }]}
+                      numberOfLines={1}>
+                      {pickedFileName}
+                    </Text>
+                    <Text style={[styles.fileChipMeta, { color: colors.description }]}>
+                      {excelData.length} row{excelData.length === 1 ? '' : 's'}
+                    </Text>
+                  </View>
+                )}
+
                 <Text style={[styles.subText, { color: colors.description }]}>
                   Map your spreadsheet columns to the required fields.
                 </Text>
+
+                {duplicateMappedColumns.length > 0 && (
+                  <View
+                    style={[
+                      styles.warningBanner,
+                      { backgroundColor: `${colors.expense}1A`, borderColor: colors.expense },
+                    ]}>
+                    <Feather name="alert-triangle" size={14} color={colors.expense} />
+                    <Text style={[styles.warningText, { color: colors.expense }]}>
+                      &quot;{duplicateMappedColumns[0][0]}&quot; is mapped to both{' '}
+                      {duplicateMappedColumns[0][1].map((f) => fieldLabels[f]).join(' and ')}.
+                      Each column should be used once.
+                    </Text>
+                  </View>
+                )}
 
                 <CustomSelectInput
                   options={accounts.map((a) => ({ key: a.exp_ba_id, value: a.exp_ba_name }))}
@@ -367,45 +496,85 @@ export default function ImportTransactions() {
                   isSmall
                   value={headersMap?.account as any}
                 />
-                <CustomSelectInput
-                  options={excelHeaders.map((h) => ({ key: h, value: h }))}
-                  isRequired
-                  label="Title"
-                  onChange={(v) => onChangeMap('title', v)}
-                  isSmall
-                  value={headersMap?.title}
-                />
-                <CustomSelectInput
-                  options={excelHeaders.map((h) => ({ key: h, value: h }))}
-                  isRequired
-                  label="Amount"
-                  onChange={(v) => onChangeMap('amount', v)}
-                  isSmall
-                  value={headersMap?.amount}
-                />
-                <CustomSelectInput
-                  options={excelHeaders.map((h) => ({ key: h, value: h }))}
-                  isRequired
-                  label="Date"
-                  onChange={(v) => onChangeMap('date', v)}
-                  isSmall
-                  value={headersMap?.date}
-                />
-                <CustomSelectInput
-                  options={excelHeaders.map((h) => ({ key: h, value: h }))}
-                  isRequired
-                  label="Transaction Type"
-                  onChange={(v) => onChangeMap('transaction_type', v)}
-                  isSmall
-                  value={headersMap?.transaction_type}
-                />
-                <CustomSelectInput
-                  options={excelHeaders.map((h) => ({ key: h, value: h }))}
-                  label="Note"
-                  onChange={(v) => onChangeMap('note', v)}
-                  isSmall
-                  value={headersMap?.note}
-                />
+                <View>
+                  <CustomSelectInput
+                    options={excelHeaders.map((h) => ({ key: h, value: h }))}
+                    isRequired
+                    label="Title"
+                    onChange={(v) => onChangeMap('title', v)}
+                    isSmall
+                    clearable
+                    value={headersMap?.title}
+                  />
+                  {!!getSample('title') && (
+                    <Text style={[styles.sampleHint, { color: colors.description }]} numberOfLines={1}>
+                      Sample: {getSample('title')}
+                    </Text>
+                  )}
+                </View>
+                <View>
+                  <CustomSelectInput
+                    options={excelHeaders.map((h) => ({ key: h, value: h }))}
+                    isRequired
+                    label="Amount"
+                    onChange={(v) => onChangeMap('amount', v)}
+                    isSmall
+                    clearable
+                    value={headersMap?.amount}
+                  />
+                  {!!getSample('amount') && (
+                    <Text style={[styles.sampleHint, { color: colors.description }]} numberOfLines={1}>
+                      Sample: {getSample('amount')}
+                    </Text>
+                  )}
+                </View>
+                <View>
+                  <CustomSelectInput
+                    options={excelHeaders.map((h) => ({ key: h, value: h }))}
+                    isRequired
+                    label="Date"
+                    onChange={(v) => onChangeMap('date', v)}
+                    isSmall
+                    clearable
+                    value={headersMap?.date}
+                  />
+                  {!!getSample('date') && (
+                    <Text style={[styles.sampleHint, { color: colors.description }]} numberOfLines={1}>
+                      Sample: {getSample('date')}
+                    </Text>
+                  )}
+                </View>
+                <View>
+                  <CustomSelectInput
+                    options={excelHeaders.map((h) => ({ key: h, value: h }))}
+                    isRequired
+                    label="Transaction Type"
+                    onChange={(v) => onChangeMap('transaction_type', v)}
+                    isSmall
+                    clearable
+                    value={headersMap?.transaction_type}
+                  />
+                  {!!getSample('transaction_type') && (
+                    <Text style={[styles.sampleHint, { color: colors.description }]} numberOfLines={1}>
+                      Sample: {getSample('transaction_type')}
+                    </Text>
+                  )}
+                </View>
+                <View>
+                  <CustomSelectInput
+                    options={excelHeaders.map((h) => ({ key: h, value: h }))}
+                    label="Note"
+                    onChange={(v) => onChangeMap('note', v)}
+                    isSmall
+                    clearable
+                    value={headersMap?.note}
+                  />
+                  {!!getSample('note') && (
+                    <Text style={[styles.sampleHint, { color: colors.description }]} numberOfLines={1}>
+                      Sample: {getSample('note')}
+                    </Text>
+                  )}
+                </View>
 
                 <Spacer height={10} />
                 <View>
@@ -432,6 +601,16 @@ export default function ImportTransactions() {
                       Generate Preview
                     </Text>
                   </TouchableOpacity>
+                  {!requiredFieldsMapped && duplicateMappedColumns.length === 0 && (
+                    <Text
+                      style={[
+                        styles.subText,
+                        { color: colors.description, textAlign: 'center', marginTop: 8 },
+                      ]}>
+                      Map all required fields (Title, Amount, Date, Transaction Type, Account) to
+                      continue.
+                    </Text>
+                  )}
                   <Spacer height={20} />
                   <TouchableOpacity
                     style={[
@@ -458,81 +637,183 @@ export default function ImportTransactions() {
 
             {step === 2 && (
               <View style={{ paddingHorizontal: 5 }}>
-                <Text style={[styles.subText, { marginBottom: 8, color: colors.description }]}>
-                  Preview the parsed rows below. You can open lists for valid/invalid rows.
-                </Text>
+                <View
+                  style={[
+                    styles.targetCard,
+                    { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                  ]}>
+                  <View style={[styles.targetIcon, { backgroundColor: colors.primary }]}>
+                    <MaterialIcons name="account-balance" size={18} color={colors.onPrimary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.targetLabel, { color: colors.description }]}>
+                      Importing into
+                    </Text>
+                    <Text style={[styles.targetName, { color: colors.title }]} numberOfLines={1}>
+                      {selectedAccountName}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={[styles.targetTotal, { color: colors.title }]}>{totalRows}</Text>
+                    <Text style={[styles.targetTotalLabel, { color: colors.description }]}>
+                      rows found
+                    </Text>
+                  </View>
+                </View>
+
+                <Spacer height={14} />
 
                 <View style={styles.previewCards}>
-                  <View style={[styles.previewCard, {backgroundColor: colors.inputColor, borderColor: colors.inputBorder}]}>
-                    <Text style={[styles.previewTitle, {color: colors.description}]}>Valid</Text>
+                  <View
+                    style={[
+                      styles.previewCard,
+                      invalidRows.length === 0 && { flex: 1 },
+                      { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                    ]}>
+                    <View style={styles.previewCardHeader}>
+                      <Feather name="check-circle" size={14} color={colors.income} />
+                      <Text style={[styles.previewTitle, { color: colors.income }]}>Valid</Text>
+                    </View>
                     <Text style={[styles.previewCount, { color: colors.income }]}>{validRows.length}</Text>
-                    {validRows.length > 0 ? (
+                    {validRows.length > 0 && (
                       <TouchableOpacity
                         style={[styles.button, styles.accent, { backgroundColor: colors.income }]}
                         onPress={toggleValid}>
-                        <Text style={[styles.title, { color: colors.onPrimary }]}>View valid</Text>
+                        <Text style={[styles.title, { color: colors.onPrimary }]}>View all</Text>
                       </TouchableOpacity>
-                    ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
+                    )}
                   </View>
 
-                  <View style={[styles.previewCard, {backgroundColor: colors.inputColor, borderColor: colors.inputBorder}]}>
-                    <Text style={[styles.previewTitle, { color: colors.expense }]}>Invalid</Text>
-                    <Text style={[styles.previewCount, { color: colors.expense }]}>
-                      {invalidRows.length}
-                    </Text>
-                    {invalidRows.length > 0 ? (
+                  {invalidRows.length > 0 && (
+                    <View
+                      style={[
+                        styles.previewCard,
+                        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                      ]}>
+                      <View style={styles.previewCardHeader}>
+                        <Feather name="alert-circle" size={14} color={colors.expense} />
+                        <Text style={[styles.previewTitle, { color: colors.expense }]}>Invalid</Text>
+                      </View>
+                      <Text style={[styles.previewCount, { color: colors.expense }]}>
+                        {invalidRows.length}
+                      </Text>
+                      <View style={styles.reasonList}>
+                        {invalidReasonCounts.map(([reason, count]) => (
+                          <View
+                            key={reason}
+                            style={[styles.reasonChip, { borderColor: colors.expense }]}>
+                            <Text
+                              style={[styles.reasonText, { color: colors.expense }]}
+                              numberOfLines={1}>
+                              {reason} · {count}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                      <Spacer height={8} />
                       <TouchableOpacity
                         style={[styles.button, styles.danger, { backgroundColor: colors.expense }]}
                         onPress={toggleInvalid}>
-                        <Text style={[styles.title, { color: colors.onPrimary }]}>View invalid</Text>
+                        <Text style={[styles.title, { color: colors.onPrimary }]}>View all</Text>
                       </TouchableOpacity>
-                    ): <Text style={[styles.previewTitle, {color: colors.description}]}>No records </Text>}
-                  </View>
+                    </View>
+                  )}
                 </View>
+
+                {validRows.length > 0 && (
+                  <>
+                    <Spacer height={16} />
+                    <Text style={[styles.sectionLabel, { color: colors.description }]}>
+                      Preview
+                    </Text>
+                    <Spacer height={6} />
+                    {validRows.slice(0, 3).map((item: any, idx: number) => (
+                      <View key={idx} style={{ marginBottom: 8 }}>
+                        {renderPreviewItem({ item })}
+                      </View>
+                    ))}
+                    {validRows.length > 3 && (
+                      <TouchableOpacity onPress={toggleValid}>
+                        <Text style={[styles.moreLink, { color: colors.primary }]}>
+                          +{validRows.length - 3} more valid row
+                          {validRows.length - 3 === 1 ? '' : 's'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
+                )}
 
                 <Spacer height={10} />
 
                 <View>
                   <View style={{ paddingHorizontal: 5 }}>
-                    <Text style={[styles.subText, { marginBottom: 10, color: colors.description }]}>
-                      Ready to import{' '}
-                      <Text style={{ color: colors.primary, fontFamily: 'Inter-600' }}>
-                        {validRows.length}
-                      </Text>{' '}
-                      valid records into{' '}
-                      <Text style={{ color: colors.primary, fontFamily: 'Inter-600' }}>
-                        {
-                          accounts.find((a) => String(a.exp_ba_id) === String(headersMap.account))
-                            ?.exp_ba_name
-                        }
-                      </Text>
-                      .
-                    </Text>
+                    {isImporting ? (
+                      <View style={{ marginBottom: 14 }}>
+                        <Text style={[styles.subText, { color: colors.description, marginBottom: 8 }]}>
+                          Importing{' '}
+                          <Text style={{ color: colors.primary, fontFamily: 'Inter-600' }}>
+                            {importProgress?.done}
+                          </Text>{' '}
+                          of{' '}
+                          <Text style={{ color: colors.primary, fontFamily: 'Inter-600' }}>
+                            {importProgress?.total}
+                          </Text>{' '}
+                          records…
+                        </Text>
+                        <View
+                          style={[styles.importProgressTrack, { backgroundColor: colors.inputBorder }]}>
+                          <View
+                            style={[
+                              styles.importProgressFill,
+                              {
+                                backgroundColor: colors.primary,
+                                width: `${Math.min(
+                                  100,
+                                  ((importProgress?.done ?? 0) / (importProgress?.total || 1)) * 100,
+                                )}%`,
+                              },
+                            ]}
+                          />
+                        </View>
+                      </View>
+                    ) : (
+                      validRows.length > 0 &&
+                      importBatchCount > 1 && (
+                        <Text style={[styles.subText, { marginBottom: 10, color: colors.description }]}>
+                          Sent in{' '}
+                          <Text style={{ color: colors.primary, fontFamily: 'Inter-600' }}>
+                            {importBatchCount}
+                          </Text>{' '}
+                          batches of up to {IMPORT_BATCH_SIZE} records each to avoid timeouts.
+                        </Text>
+                      )
+                    )}
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                       <TouchableOpacity
-                        disabled={saving || validRows.length === 0}
+                        disabled={isImporting || validRows.length === 0}
                         style={[
                           styles.button,
                           styles.accent,
                           { flex: 1 },
                           { backgroundColor: colors.primary },
-                          (saving || validRows.length === 0) && styles.disable,
+                          (isImporting || validRows.length === 0) && styles.disable,
                         ]}
                         onPress={finalizeImport}>
-                        {saving && (
+                        {isImporting && (
                           <ActivityIndicator color={colors.primary} style={styles.loader} />
                         )}
                         <Text
                           style={[
                             styles.title,
                             { color: colors.onPrimary },
-                            saving && styles.textDisable,
+                            isImporting && styles.textDisable,
                           ]}>
                           Import Now
                         </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
+                        disabled={isImporting}
                         style={[
                           styles.button,
                           {
@@ -541,6 +822,7 @@ export default function ImportTransactions() {
                             paddingVertical: 8,
                             paddingHorizontal: 12,
                           },
+                          isImporting && styles.disable,
                         ]}
                         onPress={() => setStep(1)}>
                         <Text
@@ -555,11 +837,15 @@ export default function ImportTransactions() {
                       </TouchableOpacity>
                     </View>
 
-                    <Spacer height={16} />
+                    <Spacer height={14} />
                     <TouchableOpacity
-                      style={[styles.button, { borderColor: colors.inputBorder, borderWidth: 1 }]}
+                      disabled={isImporting}
+                      style={[styles.startOverButton, isImporting && styles.disable]}
                       onPress={resetAll}>
-                      <Text style={[styles.title,{color: colors.description}]}>Start Over</Text>
+                      <Feather name="refresh-ccw" size={13} color={colors.description} />
+                      <Text style={[styles.startOverText, { color: colors.description }]}>
+                        Start Over
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -647,6 +933,39 @@ const styles = StyleSheet.create({
 
   subText: { fontSize: FontSize.base, marginTop: 2, fontFamily: 'Inter-500' },
 
+  // file picker
+  dropzone: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: 14,
+    paddingVertical: 32,
+    paddingHorizontal: 16,
+  },
+  fileChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  fileChipText: { flex: 1, fontSize: FontSize.base, fontFamily: 'Inter-600' },
+  fileChipMeta: { fontSize: FontSize.sm, fontFamily: 'Inter-500' },
+
+  // mapping warnings
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+  },
+  warningText: { flex: 1, fontSize: FontSize.sm, fontFamily: 'Inter-500', lineHeight: 18 },
+
   // stepper
   stepper: {
     flexDirection: 'row',
@@ -673,6 +992,27 @@ const styles = StyleSheet.create({
   stepLineActive: {},
   stepLineInactive: {},
 
+  // import target summary
+  targetCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+  },
+  targetIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  targetLabel: { fontSize: FontSize.sm, fontFamily: 'Inter-500' },
+  targetName: { fontSize: FontSize.base, fontFamily: 'Inter-700', marginTop: 1 },
+  targetTotal: { fontSize: FontSize.md, fontFamily: 'Inter-700' },
+  targetTotalLabel: { fontSize: FontSize.sm, fontFamily: 'Inter-500' },
+
   // preview
   previewCards: { flexDirection: 'row', gap: 10 },
   previewCard: {
@@ -682,8 +1022,54 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
   },
+  previewCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   previewTitle: { fontFamily: 'Inter-600', fontSize: FontSize.base },
   previewCount: { fontFamily: 'Inter-700', fontSize: 22, marginVertical: 6 },
+  sectionLabel: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  moreLink: { fontSize: FontSize.base, fontFamily: 'Inter-600', marginTop: 2 },
+
+  // start over
+  startOverButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+  },
+  startOverText: { fontSize: FontSize.base, fontFamily: 'Inter-500' },
+
+  // import progress
+  importProgressTrack: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  importProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+
+  // mapping sample hints
+  sampleHint: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-400',
+    marginTop: 4,
+  },
+
+  // invalid reason breakdown
+  reasonList: { alignItems: 'center', gap: 4 },
+  reasonChip: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+  },
+  reasonText: { fontSize: FontSize.sm, fontFamily: 'Inter-500' },
 
   // list items
   contentContainer: { padding: 12 },

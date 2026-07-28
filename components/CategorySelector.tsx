@@ -2,19 +2,17 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { ICategory } from '@/types';
-import { UseFormSetValue } from 'react-hook-form';
-import { transactionSchemaType } from '@/utils/schema';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   categories: ICategory[] | [];
-  selected: number | string;
-  setValue: UseFormSetValue<transactionSchemaType>;
+  selected: number | string | undefined;
+  onSelect: (id: number) => void;
 }
 
 const MAX_VISIBLE = 7;
 
-export default function CategorySelector({ categories, selected, setValue }: Props) {
+export default function CategorySelector({ categories, selected, onSelect }: Props) {
   const { colors, theme } = useThemeContext();
   const [showAll, setShowAll] = useState(false);
 
@@ -48,12 +46,7 @@ export default function CategorySelector({ categories, selected, setValue }: Pro
                     selected === item.exp_tc_id ? item.exp_tc_icon_bg_color : undefined,
                 },
               ]}
-              onPress={() => {
-                setValue('exp_tc_id', item.exp_tc_id, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                });
-              }}>
+              onPress={() => onSelect(item.exp_tc_id)}>
               <View
                 style={{
                   backgroundColor: item.exp_tc_icon_bg_color,
