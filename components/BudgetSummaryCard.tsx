@@ -94,7 +94,7 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
 const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
   },
   label: {
     fontSize: FontSize.sm,
@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
   balance: {
     fontSize: 30,
     fontFamily: 'Inter-600',
-    marginTop: 4,
+    marginTop: 2,
   },
   row: {
     flexDirection: 'row',
     gap: 18,
-    marginTop: 16,
+    marginTop: 10,
   },
   stat: {
     flexDirection: 'row',
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: 'rgba(255,255,255,0.22)',
     overflow: 'hidden',
-    marginTop: 16,
+    marginTop: 10,
   },
   progressFill: {
     height: '100%',
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
-    marginTop: 8,
+    marginTop: 6,
     opacity: 0.9,
   },
 });

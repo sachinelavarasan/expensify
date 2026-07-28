@@ -158,7 +158,7 @@ export default function HomeSummaryCard({
 const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
   },
   label: {
     fontSize: FontSize.sm,
@@ -170,13 +170,13 @@ const styles = StyleSheet.create({
   balance: {
     fontSize: 30,
     fontFamily: 'Inter-600',
-    marginTop: 4,
+    marginTop: 2,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: 10,
     gap: 14,
   },
   stats: {
@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    marginTop: 14,
-    paddingTop: 12,
+    marginTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.22)',
   },

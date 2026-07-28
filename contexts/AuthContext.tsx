@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState, ReactNod
 import { useQueryClient } from '@tanstack/react-query';
 
 import { getStoredTokens, setStoredTokens, clearStoredTokens } from '@/lib/secureStorage';
-import { clearTokens, onUnauthorized, setTokens as setStoreTokens } from '@/lib/tokenStore';
+import { clearTokens, getAccessToken, onUnauthorized, setTokens as setStoreTokens } from '@/lib/tokenStore';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useEnableNotificationToken, useDisableNotificationToken } from '@/hooks/useSettings';
 
@@ -39,19 +39,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { expoPushToken } = useNotification();
   const { mutate: enableNotificationToken } = useEnableNotificationToken();
   const { mutateAsync: disableNotificationToken } = useDisableNotificationToken();
+  const isSigningOutRef = useRef(false);
 
   const signOut = async () => {
-    if (expoPushToken) {
-      try {
-        await disableNotificationToken(expoPushToken);
-      } catch (error) {
-        console.error('Failed to disable notification token on sign out:', error);
+    if (isSigningOutRef.current) return;
+    isSigningOutRef.current = true;
+    try {
+      if (expoPushToken && getAccessToken()) {
+        try {
+          await disableNotificationToken(expoPushToken);
+        } catch (error) {
+          console.error('Failed to disable notification token on sign out:', error);
+        }
       }
+      clearTokens();
+      await clearStoredTokens();
+      queryClient.clear();
+      setIsSignedIn(false);
+    } finally {
+      isSigningOutRef.current = false;
     }
-    clearTokens();
-    await clearStoredTokens();
-    queryClient.clear();
-    setIsSignedIn(false);
   };
 
   useEffect(() => {

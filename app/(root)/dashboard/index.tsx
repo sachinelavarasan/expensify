@@ -242,83 +242,81 @@ export default function Index() {
           <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
         </LinearGradient>
       </TouchableOpacity>
+      <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
+        <View
+          style={{
+            paddingVertical: 10,
+            paddingHorizontal: 15,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            overflow: 'hidden',
+          }}>
+          <MonthSwitcher
+            nextMonth={goToNext}
+            prevMonth={goToPrevious}
+            currentMonth={formattedTitle}
+          />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
+            <TransactionFilters
+              applyFilters={applyFilters}
+              searchText={search}
+              selectedTransaction={transactionType}
+              selectedAccount={bankAccount}
+              accounts={accounts}
+              hasActiveFilters={!!search || !!transactionType || !!bankAccount}
+            />
+          </View>
+        </View>
+        <Animated.View style={[{ paddingHorizontal: 15 }, headerAnimatedStyle]}>
+          <HomeSummaryCard
+            income={income}
+            expense={expense}
+            carryBalance={carryBalance}
+            showBalance={showBalance}
+            balance={balance}
+            transactions={transactions}
+          />
+          <HomeNudges />
+        </Animated.View>
+        {(!!search || !!transactionType || !!bankAccount) && (
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 10,
+              flexWrap: 'wrap',
+              marginVertical: 6,
+              paddingHorizontal: 15,
+            }}>
+            {!!search && (
+              <FilterChip label="Search" value={search} onRemove={() => removeFilter('search')} />
+            )}
+            {!!transactionType && (
+              <FilterChip
+                label="Transaction type"
+                value={transactionType}
+                onRemove={() => removeFilter('t_type')}
+              />
+            )}
+            {!!bankAccount && (
+              <FilterChip
+                label="Account"
+                value={accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
+                onRemove={() => removeFilter('account')}
+              />
+            )}
+            <FilterChip label="Clear Filters" onRemove={() => removeFilter('default')} />
+          </View>
+        )}
+      </View>
       <FlatList
         bounces
-        alwaysBounceVertical
         showsVerticalScrollIndicator={false}
         data={groupedDataArray}
-        contentContainerStyle={{ paddingBottom: 250, flex: 1 }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 250, flexGrow: 1 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListHeaderComponent={
-          <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
-            <View
-              style={{
-                paddingVertical: 10,
-                paddingHorizontal: 15,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                overflow: 'hidden',
-              }}>
-              <MonthSwitcher
-                nextMonth={goToNext}
-                prevMonth={goToPrevious}
-                currentMonth={formattedTitle}
-              />
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
-                <TransactionFilters
-                  applyFilters={applyFilters}
-                  searchText={search}
-                  selectedTransaction={transactionType}
-                  selectedAccount={bankAccount}
-                  accounts={accounts}
-                  hasActiveFilters={!!search || !!transactionType || !!bankAccount}
-                />
-              </View>
-            </View>
-            <Animated.View style={[{ paddingHorizontal: 15 }, headerAnimatedStyle]}>
-              <HomeSummaryCard
-                income={income}
-                expense={expense}
-                carryBalance={carryBalance}
-                showBalance={showBalance}
-                balance={balance}
-                transactions={transactions}
-              />
-              <HomeNudges />
-            </Animated.View>
-            {(!!search || !!transactionType || !!bankAccount) && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 10,
-                  flexWrap: 'wrap',
-                  marginVertical: 6,
-                  paddingHorizontal: 15,
-                }}>
-                {!!search && (
-                  <FilterChip label="Search" value={search} onRemove={() => removeFilter('search')} />
-                )}
-                {!!transactionType && (
-                  <FilterChip
-                    label="Transaction type"
-                    value={transactionType}
-                    onRemove={() => removeFilter('t_type')}
-                  />
-                )}
-                {!!bankAccount && (
-                  <FilterChip
-                    label="Account"
-                    value={accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
-                    onRemove={() => removeFilter('account')}
-                  />
-                )}
-                <FilterChip label="Clear Filters" onRemove={() => removeFilter('default')} />
-              </View>
-            )}
-          </View>
-        }
         ListEmptyComponent={
           <Emptystate
             title="No transactions yet"
@@ -329,7 +327,7 @@ export default function Index() {
           return (
             <Animated.View
               entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
-              style={{ paddingVertical: 10, paddingHorizontal: 20 }}>
+              style={{ paddingVertical: 6, paddingHorizontal: 20 }}>
               <View
                 style={{
                   flexDirection: 'row',

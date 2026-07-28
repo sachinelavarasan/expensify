@@ -19,7 +19,12 @@ const MonthSwitcher = ({
         <MaterialIcons name="keyboard-arrow-left" size={30} color={colors.arrowColor} />
       </TouchableOpacity>
 
-      <Text style={[styles.month, { color: colors.monthSwitcher }]}>{currentMonth}</Text>
+      <Text
+        style={[styles.month, { color: colors.monthSwitcher }]}
+        numberOfLines={1}
+        ellipsizeMode="tail">
+        {currentMonth}
+      </Text>
 
       <TouchableOpacity onPress={nextMonth} style={{ paddingLeft: 8 }}>
         <MaterialIcons name="keyboard-arrow-right" size={30} color={colors.arrowColor} />
@@ -32,13 +37,16 @@ const styles = StyleSheet.create({
   month: {
     fontSize: 16,
     fontFamily: 'Inter-700',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    flexShrink: 1,
+    minWidth: 0,
   },
   monthSwitch: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 5,
-    flexShrink: 1
+    flex: 1,
+    minWidth: 0,
   },
 });
 

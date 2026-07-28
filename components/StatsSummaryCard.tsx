@@ -72,7 +72,7 @@ export default function StatsSummaryCard({ income, expense, transactionCount }: 
 const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
   },
   label: {
     fontSize: FontSize.sm,
@@ -84,13 +84,13 @@ const styles = StyleSheet.create({
   net: {
     fontSize: 30,
     fontFamily: 'Inter-600',
-    marginTop: 4,
+    marginTop: 2,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 18,
-    marginTop: 16,
+    marginTop: 10,
   },
   stat: {
     flexDirection: 'row',
@@ -119,8 +119,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    marginTop: 14,
-    paddingTop: 12,
+    marginTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.22)',
   },

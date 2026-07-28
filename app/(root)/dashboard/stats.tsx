@@ -81,7 +81,9 @@ export default function Stat() {
                 prevMonth={goToPrevious}
                 currentMonth={formattedTitle}
               />
-              <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
+              <View style={{ flexShrink: 0 }}>
+                <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
+              </View>
             </View>
 
             <Animated.View style={chartAnimatedStyle}>
