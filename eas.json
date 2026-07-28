@@ -14,7 +14,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://lendslog-api.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://expensify-api-delta.vercel.app"
       }
     },
     "preview2": {
@@ -37,7 +37,7 @@
         "resourceClass": "large"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://lendslog-api.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://expensify-api-delta.vercel.app"
       }
     }
   },
