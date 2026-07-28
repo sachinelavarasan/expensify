@@ -5,12 +5,11 @@ import {
   ITransactionGroup,
   UpdateBankAccountDto,
 } from '@/types';
-import { useAuth } from '@clerk/clerk-expo';
+import { apiClient } from '@/lib/apiClient';
 
 import { useMutation, useQueryClient, useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const ACCOUNT_TRANSACTIONS_PAGE_SIZE = 30;
 
 export const queryKeys = {
@@ -19,25 +18,11 @@ export const queryKeys = {
 
 export const useAddBankAccount = () => {
   const queryClient = useQueryClient();
-  const { getToken, userId } = useAuth();
 
   return useMutation({
     mutationFn: async (data: CreateBankAccountDto) => {
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const token = await getToken();
-      const res = await fetch(`${API_URL}/expensify/accounts`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error('Failed to add account');
-      return await res.json();
+      const res = await apiClient.post('/expensify/accounts', data);
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
@@ -47,25 +32,11 @@ export const useAddBankAccount = () => {
 
 export const useUpdateBankAccount = () => {
   const queryClient = useQueryClient();
-  const { getToken, userId } = useAuth();
 
   return useMutation({
     mutationFn: async (data: UpdateBankAccountDto) => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const res = await fetch(`${API_URL}/expensify/accounts/${data.exp_ba_id}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error('Failed to update account');
-      return await res.json();
+      const res = await apiClient.put(`/expensify/accounts/${data.exp_ba_id}`, data);
+      return res.data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
@@ -78,22 +49,10 @@ export const useUpdateBankAccount = () => {
 
 export const useDeleteBankAccount = () => {
   const queryClient = useQueryClient();
-  const { getToken, userId } = useAuth();
 
   return useMutation({
     mutationFn: async (id: number) => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const res = await fetch(`${API_URL}/expensify/accounts/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error('Failed to delete account');
+      await apiClient.delete(`/expensify/accounts/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
@@ -102,8 +61,6 @@ export const useDeleteBankAccount = () => {
 };
 
 export const useBankAccounts = () => {
-  const { getToken, userId } = useAuth();
-
   const {
     data: accounts,
     isLoading: loading,
@@ -113,18 +70,8 @@ export const useBankAccounts = () => {
   } = useQuery<BankAccount[], Error>({
     queryKey: queryKeys.bankAccounts,
     queryFn: async () => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const res = await fetch(`${API_URL}/expensify/accounts`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error('Failed to fetch accounts');
-      return await res.json();
+      const res = await apiClient.get('/expensify/accounts');
+      return res.data;
     },
   });
   return {
@@ -136,8 +83,6 @@ export const useBankAccounts = () => {
 };
 
 export const useAccountGroupedTransactions = (accountId: number) => {
-  const { getToken, userId } = useAuth();
-
   const {
     data,
     isLoading: loading,
@@ -154,25 +99,10 @@ export const useAccountGroupedTransactions = (accountId: number) => {
     // useInfiniteQuery's expected {pages, pageParams} shape and crash on read.
     queryKey: ['accountDetailPaginated', accountId],
     queryFn: async ({ pageParam }) => {
-      const token = await getToken();
-      if (!userId) {
-        throw new Error('User is not authenticated');
-      }
-      const res = await fetch(
-        `${API_URL}/expensify/accounts/${accountId}?page=${pageParam}&limit=${ACCOUNT_TRANSACTIONS_PAGE_SIZE}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error('Failed to fetch account transactions');
-      }
-
-      return res.json();
+      const res = await apiClient.get(`/expensify/accounts/${accountId}`, {
+        params: { page: pageParam, limit: ACCOUNT_TRANSACTIONS_PAGE_SIZE },
+      });
+      return res.data;
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => (lastPage.hasMore ? allPages.length + 1 : undefined),

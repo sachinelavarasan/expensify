@@ -12,7 +12,6 @@ import {
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { deviceWidth } from '@/utils/functions';
 
-import { useUser } from '@clerk/clerk-expo';
 import { ThemedView } from '@/components/ThemedView';
 import ProfileHeaderCard from '@/components/ProfileHeaderCard';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -68,8 +67,7 @@ const Profile = () => {
   const { colors } = useThemeContext();
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
-  const { refetch } = useGetUserData();
-  const { user: currentUser } = useUser();
+  const { user: currentUser, refetch } = useGetUserData();
 
   const overAllAmount = accounts.reduce(
     (previous, current) => Number(previous) + Number(current.exp_ba_balance) || 0,
@@ -83,8 +81,8 @@ const Profile = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}>
         <ProfileHeaderCard
-          title={currentUser?.firstName || ''}
-          subtitle={currentUser?.emailAddresses?.[0]?.emailAddress || ''}
+          title={currentUser?.exp_us_name || ''}
+          subtitle={currentUser?.exp_us_email || ''}
           refetch={refetch}
         />
         <Spacer height={20} />
@@ -146,7 +144,7 @@ const Profile = () => {
           renderItem={({ item }) => (
             <BankCard
               bankName={item.exp_ba_name}
-              holderName={currentUser?.firstName || ''}
+              holderName={currentUser?.exp_us_name || ''}
               icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
               balance={item.exp_ba_balance}
               onPress={() => {

@@ -13,10 +13,10 @@ import {
   useDeleteBankAccount,
 } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
+import { useGetUserData } from '@/hooks/useUserStore';
 import { FontSize } from '@/utils/Typography';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
-import { useUser } from '@clerk/clerk-expo';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
@@ -41,7 +41,7 @@ export default function AccountScreen() {
   const { account, loading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
-  const { user: currentUser } = useUser();
+  const { user: currentUser } = useGetUserData();
   const { mutateAsync: deleteAccount, isPending: isDeleting } = useDeleteBankAccount();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -136,7 +136,7 @@ export default function AccountScreen() {
             <View style={{ paddingHorizontal: 15, marginBottom: 5 }}>
               <BankCard
                 bankName={account.exp_ba_name}
-                holderName={currentUser?.firstName || ''}
+                holderName={currentUser?.exp_us_name || ''}
                 icon={account.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 balance={account.exp_ba_balance}
                 income={totals.income}

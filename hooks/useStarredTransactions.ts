@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@clerk/clerk-expo';
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
+import { apiClient } from '@/lib/apiClient';
 
 export const useGetStarredTransactions = () => {
-  const { getToken, userId } = useAuth();
-
   const {
     data: starred,
     isLoading,
@@ -16,26 +11,9 @@ export const useGetStarredTransactions = () => {
   } = useQuery({
     queryKey: ['starred-transactions'],
     queryFn: async () => {
-      const token = await getToken();
-
-      if (!userId || !token) {
-        throw new Error('User is not authenticated');
-      }
-
-      const res = await fetch(`${API_URL}/expensify/starred`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`Failed to fetch starred transactions: ${res.status} - ${errText}`);
-      }
-
-      return await res.json();
+      const res = await apiClient.get('/expensify/starred');
+      return res.data;
     },
-    // enabled: !!userId,
   });
 
   return {

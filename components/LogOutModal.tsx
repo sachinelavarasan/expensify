@@ -3,7 +3,7 @@ import { ActivityIndicator, View, Text, StyleSheet, Pressable, TouchableOpacity 
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { useReminderSettings } from '@/hooks/useReminder';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuthContext } from '@/contexts/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -11,7 +11,7 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 const LogoutButton = () => {
   const { colors } = useThemeContext();
   const { disableNotification } = useReminderSettings();
-  const { signOut } = useAuth();
+  const { signOut } = useAuthContext();
   const router = useRouter();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);

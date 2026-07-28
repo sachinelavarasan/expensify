@@ -33,7 +33,8 @@
       "channel": "production",
       "autoIncrement": true,
       "android": {
-        "image": "latest"
+        "image": "latest",
+        "resourceClass": "large"
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://lendslog-api.vercel.app"
@@ -41,7 +42,7 @@
     }
   },
   "submit": {
-     "production": {
+    "production": {
       "android": {
         "serviceAccountKeyPath": "./play-console-services.json",
         "track": "internal"
