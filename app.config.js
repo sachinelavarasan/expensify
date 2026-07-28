@@ -1,3 +1,18 @@
+const { withGradleProperties } = require('@expo/config-plugins');
+
+const withIncreasedMetaspace = (config) =>
+  withGradleProperties(config, (config) => {
+    const key = 'org.gradle.jvmargs';
+    const value = '-Xmx6144m -XX:MaxMetaspaceSize=2048m';
+    const existing = config.modResults.find((item) => item.type === 'property' && item.key === key);
+    if (existing) {
+      existing.value = value;
+    } else {
+      config.modResults.push({ type: 'property', key, value });
+    }
+    return config;
+  });
+
 export default {
   "expo": {
     "name": "Expensify",
@@ -25,6 +40,7 @@ export default {
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      withIncreasedMetaspace,
       "expo-router",
       [
         "expo-splash-screen",
