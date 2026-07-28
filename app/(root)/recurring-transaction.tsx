@@ -45,7 +45,7 @@ import { FontSize } from '@/utils/Typography';
 export default function RecurringTransaction() {
   const { colors } = useThemeContext();
   const router = useRouter();
-  const { exp_rt_id } = useLocalSearchParams() as { exp_rt_id?: string };
+  const { exp_rt_id } = useLocalSearchParams<{ exp_rt_id?: string }>();
 
   const { categories } = useGetCategoryCache();
   const { accounts } = useGetUserBankAccounts();
@@ -60,7 +60,7 @@ export default function RecurringTransaction() {
   const isLoading = isAdding || isUpdating;
 
   const existing = useMemo(
-    () => recurringTransactions.find((item) => item.exp_rt_id === Number(exp_rt_id)),
+    () => recurringTransactions.find((item) => item.exp_rt_id === exp_rt_id),
     [recurringTransactions, exp_rt_id],
   );
 

@@ -7,7 +7,7 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 interface Props {
   categories: ICategory[] | [];
   selected: number | string | undefined;
-  onSelect: (id: number) => void;
+  onSelect: (id: string) => void;
 }
 
 const MAX_VISIBLE = 7;

@@ -21,7 +21,7 @@ export interface User {
 }
 
 export interface IExpUser {
-  exp_us_id: number;
+  exp_us_id: string;
   exp_us_clerk_id?: string;
   exp_us_name: string;
   exp_us_email: string;
@@ -39,8 +39,8 @@ export interface IExpUser {
 }
 
 export interface Itransaction {
-  exp_ts_id: number;
-  exp_ts_user_id: number;
+  exp_ts_id: string;
+  exp_ts_user_id: string;
   exp_ts_title: string;
   exp_ts_amount: string;
   exp_ts_date: string;
@@ -48,32 +48,32 @@ export interface Itransaction {
   exp_ts_note?: string;
   exp_ts_transaction_type: string;
   exp_ts_category: string;
-  exp_tc_id: number;
+  exp_tc_id: string;
   exp_tt_id: number;
-  exp_st_id?: number;
+  exp_st_id?: string;
   exp_tc_icon: string;
   exp_tc_icon_bg_color: string;
   exp_ba_name: string;
 }
 
 export interface ICategory {
-  exp_tc_id: number;
+  exp_tc_id: string;
   exp_tc_label: string;
   exp_tc_icon: string;
-  exp_tc_user_id: number | null;
+  exp_tc_user_id: string | null;
   exp_tc_icon_bg_color: string;
   exp_tc_transaction_type: number;
   exp_tc_sort_order: number;
 }
 export interface IBudget {
   category: string;
-  categoryId: number;
+  categoryId: string;
   icon: string;
   iconBg: string;
   totalAmount: number;
   transactionCount: number;
   transactions: Itransaction[];
-  exp_bg_id: number | null,
+  exp_bg_id: string | null,
   budgetAmount: string | null,
   remainingBudget: number,
 }
@@ -83,8 +83,8 @@ export interface ICategoryWithCount extends ICategory {
 }
 
 export interface IBankAccount {
-  exp_ba_id: number;
-  exp_ba_user_id: number;
+  exp_ba_id: string;
+  exp_ba_user_id: string;
   exp_ba_name: string;
   exp_ba_balance: string;
   exp_ba_currency: string;
@@ -113,8 +113,8 @@ export interface IAccountGroupedTransactions extends IBankAccount {
 }
 
 export interface BankAccount {
-  exp_ba_id: number;
-  exp_ba_user_id: number;
+  exp_ba_id: string;
+  exp_ba_user_id: string;
   exp_ba_name: string;
   exp_ba_balance: string;
   exp_ba_currency: string;
@@ -132,13 +132,13 @@ export type CreateBankAccountDto = Pick<
   BankAccount,
   'exp_ba_name' | 'exp_ba_balance' | 'exp_ba_icon'
 >;
-export type UpdateBankAccountDto = Partial<CreateBankAccountDto> & { exp_ba_id: number };
+export type UpdateBankAccountDto = Partial<CreateBankAccountDto> & { exp_ba_id: string };
 export interface Budget {
-  exp_bg_id: number;
-  exp_bg_user_id: number | null;
+  exp_bg_id: string;
+  exp_bg_user_id: string | null;
   exp_bg_amount: string;
-  exp_bg_user_id: number | null;
-  exp_bg_category_id: number | null;
+  exp_bg_user_id: string | null;
+  exp_bg_category_id: string | null;
   exp_bg_date: string;
   exp_bg_created_at: string;
   exp_bg_updated_at: string;
@@ -154,13 +154,13 @@ export type UpdateBudgetDto = Pick<
 >;
 
 export interface IRecurringTransaction {
-  exp_rt_id: number;
+  exp_rt_id: string;
   exp_rt_title: string;
   exp_rt_amount: string;
   exp_rt_note?: string | null;
-  exp_rt_category_id: number;
+  exp_rt_category_id: string;
   exp_rt_transaction_type_id: number;
-  exp_rt_bank_account_id: number | null;
+  exp_rt_bank_account_id: string | null;
   exp_rt_frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
   exp_rt_start_date: string;
   exp_rt_end_date: string | null;
@@ -187,6 +187,6 @@ export type CreateRecurringTransactionDto = Pick<
 >;
 
 export type UpdateRecurringTransactionDto = Partial<CreateRecurringTransactionDto> & {
-  exp_rt_id: number;
+  exp_rt_id: string;
   exp_rt_is_active?: boolean;
 };

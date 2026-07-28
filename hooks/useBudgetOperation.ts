@@ -29,7 +29,7 @@ export const useUpdateBudget = () => {
 
 export const useDeleteBudget = () => {
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       await apiClient.delete(`/expensify/budget/${id}`);
     },
     onSuccess: () => {

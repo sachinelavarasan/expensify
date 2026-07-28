@@ -65,7 +65,7 @@ export const useImportRecurringTransactions = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (recurringIds: number[]) => {
+    mutationFn: async (recurringIds: string[]) => {
       const res = await apiClient.post('/expensify/recurring-transactions/import', {
         recurringIds,
       });
@@ -83,7 +83,7 @@ export const useDeleteRecurringTransaction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       await apiClient.delete(`/expensify/recurring-transaction/${id}`);
     },
     onSuccess: () => {

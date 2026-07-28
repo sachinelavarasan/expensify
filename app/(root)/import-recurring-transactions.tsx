@@ -28,7 +28,7 @@ export default function ImportRecurringTransactions() {
     [recurringTransactions],
   );
 
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [hasInitializedSelection, setHasInitializedSelection] = useState(false);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function ImportRecurringTransactions() {
 
   const allSelected = selectedIds.size === activeTransactions.length && activeTransactions.length > 0;
 
-  const toggleSelected = (id: number) => {
+  const toggleSelected = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {

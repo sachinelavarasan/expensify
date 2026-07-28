@@ -35,7 +35,7 @@ const schema = z.object({
 
 type BankAccount = z.infer<typeof schema>;
 
-const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?: number }) => {
+const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?: string }) => {
   const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const { mutateAsync: addBankAccount, isPending: isLoading } = useAddBankAccount();

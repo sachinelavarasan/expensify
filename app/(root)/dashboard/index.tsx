@@ -115,7 +115,7 @@ export default function Index() {
     router.push('/(root)/transaction');
   };
 
-  const handleDelete = async (exp_ts_id: number) => {
+  const handleDelete = async (exp_ts_id: string) => {
     try {
       const confirm = await new Promise((resolve) =>
         Alert.alert(
@@ -131,7 +131,7 @@ export default function Index() {
       if (!confirm) return;
 
       if (exp_ts_id)
-        deleteTransaction(Number(exp_ts_id))
+        deleteTransaction(exp_ts_id)
           .then(() => {
             showToast({
               text1: 'The transaction has been removed.',

@@ -61,7 +61,7 @@ export default function HomeSummaryCard({
   }, [trend]);
 
   const topCategory = useMemo(() => {
-    const totals = new Map<number, { label: string; amount: number }>();
+    const totals = new Map<string, { label: string; amount: number }>();
     transactions
       .filter((tx) => tx.exp_tt_id === 1)
       .forEach((tx) => {

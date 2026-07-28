@@ -16,7 +16,7 @@ export default function CategoryTrendSparkline({
   enabled,
   months = 6,
 }: {
-  categoryId: number;
+  categoryId: string;
   enabled: boolean;
   months?: number;
 }) {

@@ -197,7 +197,7 @@ export default function Transaction() {
       if (!confirm) return;
 
       if (exp_ts_id)
-        deleteTransaction(Number(exp_ts_id))
+        deleteTransaction(exp_ts_id)
           .then(() => {
             showToast({
               text1: 'The transaction has been removed.',

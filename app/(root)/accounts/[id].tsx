@@ -37,7 +37,7 @@ const cardWidth = width - 30;
 
 export default function AccountScreen() {
   const { colors } = useThemeContext();
-  const { id } = useLocalSearchParams() as unknown as { id: number };
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { account, loading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
@@ -80,7 +80,7 @@ export default function AccountScreen() {
       if (!confirm) return;
 
       if (account?.exp_ba_id)
-        deleteAccount(Number(account?.exp_ba_id))
+        deleteAccount(account.exp_ba_id)
           .then(() => {
             showToast({
               text1: 'The account has been removed.',

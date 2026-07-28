@@ -95,7 +95,7 @@ const Category = () => {
           });
         });
     } else if (id) {
-      editCategory({ exp_tc_id: Number(id), ...categoryDetail })
+      editCategory({ exp_tc_id: id, ...categoryDetail })
         .then(() => {
           showToast({
             text1: 'Category updated successfully',
@@ -133,7 +133,7 @@ const Category = () => {
 
       if (!confirm) return;
 
-      deleteCategory(Number(id))
+      deleteCategory(id)
         .then(() => {
           showToast({
             text1: 'Category removed successfully',

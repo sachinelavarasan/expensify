@@ -11,7 +11,7 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import CustomSwitch from './Switch';
 
 interface Props extends IRecurringTransaction {
-  onToggleActive: (id: number, value: boolean) => void;
+  onToggleActive: (id: string, value: boolean) => void;
 }
 
 const RecurringTransactionCard = ({

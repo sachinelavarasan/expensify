@@ -59,7 +59,7 @@ export interface ICategoryTrendPoint {
   expense: number;
 }
 
-export const useCategoryTrend = (categoryId: number | undefined, months = 6, enabled = true) => {
+export const useCategoryTrend = (categoryId: string | undefined, months = 6, enabled = true) => {
   const { data, isLoading } = useQuery({
     queryKey: ['category-trend', categoryId, months],
     enabled: !!categoryId && enabled,
@@ -92,7 +92,7 @@ export const useDeleteTransaction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       await apiClient.delete(`/expensify/transaction/${id}`);
     },
     onSuccess: () => {

@@ -88,7 +88,7 @@ export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       await apiClient.delete(`/expensify/categories/${id}`);
     },
     onSuccess: () => {

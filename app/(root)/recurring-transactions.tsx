@@ -39,13 +39,13 @@ export default function RecurringTransactions() {
     refetch().finally(() => setRefreshing(false));
   }, [refetch]);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     deleteRecurringTransaction(id).catch(() => {
       showToast({ text1: 'Failed to delete recurring transaction', type: 'error', position: 'bottom' });
     });
   };
 
-  const handleToggleActive = (id: number, value: boolean) => {
+  const handleToggleActive = (id: string, value: boolean) => {
     updateRecurringTransaction({ exp_rt_id: id, exp_rt_is_active: value }).catch(() => {
       showToast({ text1: 'Failed to update recurring transaction', type: 'error', position: 'bottom' });
     });
@@ -88,7 +88,7 @@ export default function RecurringTransactions() {
                 </View>
               </SwipeableRow>
             )}
-            keyExtractor={(item) => item.exp_rt_id.toString()}
+            keyExtractor={(item) => item.exp_rt_id}
           />
         </ThemedView>
       </SafeAreaViewComponent>

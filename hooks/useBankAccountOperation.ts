@@ -51,7 +51,7 @@ export const useDeleteBankAccount = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       await apiClient.delete(`/expensify/accounts/${id}`);
     },
     onSuccess: () => {
@@ -82,7 +82,7 @@ export const useBankAccounts = () => {
   };
 };
 
-export const useAccountGroupedTransactions = (accountId: number) => {
+export const useAccountGroupedTransactions = (accountId: string) => {
   const {
     data,
     isLoading: loading,
