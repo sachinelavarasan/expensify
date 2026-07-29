@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Alert,
   ColorValue,
   FlatList,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -24,11 +25,16 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Feather, FontAwesome6 } from '@expo/vector-icons';
-import { format } from 'date-fns';
+import { Feather, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { format, parse } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeSummaryCard from '@/components/HomeSummaryCard';
 import HomeNudges from '@/components/HomeNudges';
+import CalendarGrid from '@/components/CalendarGrid';
+import CategorySelector from '@/components/CategorySelector';
+import ModalCard from '@/components/ModalCard';
+import Spacer from '@/components/Spacer';
+import { useNetWorth } from '@/hooks/useNetWorth';
 import { Itransaction } from '@/types';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
 import TransactionFilters from '@/components/TransactionsFilters';
@@ -40,7 +46,11 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import SwipeableRow from '@/components/Swippable';
 import { showToast } from '@/components/ToastMessage';
-import { useDeleteTransaction } from '@/hooks/useTransaction';
+import {
+  useBulkDeleteTransactions,
+  useBulkUpdateTransactions,
+  useDeleteTransaction,
+} from '@/hooks/useTransaction';
 import GroupingModal from '@/components/GroupingModal';
 import { FontSize } from '@/utils/Typography';
 
@@ -49,6 +59,7 @@ export default function Index() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { accounts, loading: accountsLoading } = useBankAccounts();
+  const { netWorth } = useNetWorth(accounts);
   const [defaultAccountResolved, setDefaultAccountResolved] = useState(false);
   const {
     transactions,
@@ -65,16 +76,39 @@ export default function Index() {
     bankAccount,
     updateBankAccount,
     updateDateRangeType,
+    currentDate,
+    customDateRange,
+    minAmount,
+    maxAmount,
+    categoryIds,
+    tags,
+    updateCustomDateRange,
+    clearCustomDateRange,
+    updateMinAmount,
+    updateMaxAmount,
+    updateCategoryIds,
+    updateTags,
   } = useMonthlyTransactions(undefined, 'monthly', defaultAccountResolved);
   const { mutateAsync: deleteTransaction } = useDeleteTransaction();
-  useCategoryList();
+  const { mutateAsync: bulkDeleteTransactions } = useBulkDeleteTransactions();
+  const { mutateAsync: bulkUpdateTransactions } = useBulkUpdateTransactions();
+  const { categories } = useCategoryList();
   useGetUserData();
-  const [balance, setBalance] = useState<number>(0);
   const { value: showBalance } = useGetSettingsFromStore('balance');
   const { value: carryBalance } = useGetSettingsFromStore('over-balance');
 
   const [refreshing, setRefreshing] = useState(false);
   const { value } = useGetSettingsFromStore('tt-time');
+
+  // Bulk edit/delete selection state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [bulkCategoryId, setBulkCategoryId] = useState<string>('');
+
+  // Calendar view state
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   const hasAppliedDefaultAccount = useRef(false);
   useEffect(() => {
@@ -151,10 +185,95 @@ export default function Index() {
     }
   };
 
-  const applyFilters = (search: string, transactionType: string, selectedId: number | string) => {
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const enterSelectionMode = (id: string) => {
+    setSelectionMode(true);
+    setSelectedIds((prev) => new Set(prev).add(id));
+  };
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    const count = selectedIds.size;
+    const confirm = await new Promise((resolve) =>
+      Alert.alert(
+        `Delete ${count} transaction${count > 1 ? 's' : ''}?`,
+        'These will be moved to Trash.',
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+        ],
+      ),
+    );
+    if (!confirm) return;
+
+    try {
+      await bulkDeleteTransactions(Array.from(selectedIds));
+      showToast({ text1: 'Transactions moved to Trash', type: 'success', position: 'bottom' });
+    } catch {
+      showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+    } finally {
+      exitSelectionMode();
+    }
+  };
+
+  const handleBulkCategoryChange = async () => {
+    if (!bulkCategoryId) return;
+    try {
+      await bulkUpdateTransactions({
+        ids: Array.from(selectedIds),
+        patch: { exp_tc_id: bulkCategoryId },
+      });
+      showToast({ text1: 'Category updated', type: 'success', position: 'bottom' });
+    } catch {
+      showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+    } finally {
+      setCategoryModalVisible(false);
+      setBulkCategoryId('');
+      exitSelectionMode();
+    }
+  };
+
+  const handleSelectDay = (dateStr: string) => {
+    setSelectedDay(dateStr);
+    setViewMode('list');
+  };
+
+  const applyFilters = (
+    search: string,
+    transactionType: string,
+    selectedId: number | string,
+    extras: {
+      tags: string[];
+      customDateRange: { start: string; end: string } | null;
+      minAmount: string;
+      maxAmount: string;
+      categoryIds: string[];
+    },
+  ) => {
     updateSearch(search);
     updateTransactionType(transactionType);
     updateBankAccount(selectedId);
+    updateTags(extras.tags);
+    if (extras.customDateRange) {
+      updateCustomDateRange(extras.customDateRange);
+    } else {
+      clearCustomDateRange();
+    }
+    updateMinAmount(extras.minAmount);
+    updateMaxAmount(extras.maxAmount);
+    updateCategoryIds(extras.categoryIds);
   };
   const removeFilter = (type: string) => {
     switch (type) {
@@ -167,15 +286,43 @@ export default function Index() {
       case 'account':
         updateBankAccount('');
         break;
+      case 'dateRange':
+        clearCustomDateRange();
+        break;
+      case 'amount':
+        updateMinAmount('');
+        updateMaxAmount('');
+        break;
+      case 'categories':
+        updateCategoryIds([]);
+        break;
+      case 'tags':
+        updateTags([]);
+        break;
       case 'default':
         updateTransactionType('');
         updateSearch('');
         updateBankAccount('');
+        clearCustomDateRange();
+        updateMinAmount('');
+        updateMaxAmount('');
+        updateCategoryIds([]);
+        updateTags([]);
         break;
       default:
         break;
     }
   };
+
+  const hasActiveFilters =
+    !!search ||
+    !!transactionType ||
+    !!bankAccount ||
+    !!customDateRange ||
+    !!minAmount ||
+    !!maxAmount ||
+    categoryIds.length > 0 ||
+    tags.length > 0;
 
   const groupedData: { [index: string]: Itransaction[] } = transactions.reduce(
     (acc: { [index: string]: Itransaction[] }, item: Itransaction) => {
@@ -202,23 +349,30 @@ export default function Index() {
   const income = groupedDataArray.reduce((acc, item) => acc + item.credit, 0);
   const expense = groupedDataArray.reduce((acc, item) => acc + item.debit, 0);
 
-  useEffect(() => {
-    if (!accounts || accounts.length === 0) {
-      setBalance(0);
-      return;
-    }
-    if (carryBalance) {
-      const totalBalance = accounts
-        .filter((acc) => acc.exp_ba_is_active && !acc.exp_ba_is_deleted)
-        .reduce((sum, acc) => sum + (parseFloat(acc.exp_ba_balance) || 0), 0);
+  const selectedTransactionTypes = useMemo(() => {
+    const types = new Set<number>();
+    transactions.forEach((item: Itransaction) => {
+      if (selectedIds.has(item.exp_ts_id)) types.add(item.exp_tt_id);
+    });
+    return types;
+  }, [transactions, selectedIds]);
 
-      setBalance(totalBalance);
-    } else if (!showBalance) {
-      setBalance(income - expense);
-    } else {
-      setBalance(0);
-    }
-  }, [carryBalance, showBalance, accounts, income, expense]);
+  const bulkCategoryOptions = useMemo(() => {
+    if (selectedTransactionTypes.size !== 1) return [];
+    const [type] = selectedTransactionTypes;
+    return categories.filter((category) => category.exp_tc_transaction_type === type);
+  }, [categories, selectedTransactionTypes]);
+
+  const displayedGroups = selectedDay
+    ? groupedDataArray.filter((g) => g.date === selectedDay)
+    : groupedDataArray;
+
+  const balance = useMemo(() => {
+    if (!accounts || accounts.length === 0) return 0;
+    if (carryBalance) return netWorth;
+    if (!showBalance) return income - expense;
+    return 0;
+  }, [accounts, carryBalance, showBalance, income, expense, netWorth]);
 
   return (
     <ThemedView style={{ flex: 1 }}>
@@ -249,24 +403,53 @@ export default function Index() {
             paddingHorizontal: 15,
             flexDirection: 'row',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             overflow: 'hidden',
           }}>
-          <MonthSwitcher
-            nextMonth={goToNext}
-            prevMonth={goToPrevious}
-            currentMonth={formattedTitle}
-          />
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
-            <TransactionFilters
-              applyFilters={applyFilters}
-              searchText={search}
-              selectedTransaction={transactionType}
-              selectedAccount={bankAccount}
-              accounts={accounts}
-              hasActiveFilters={!!search || !!transactionType || !!bankAccount}
+          <View
+            style={{ flex: 1, minWidth: 0, opacity: customDateRange ? 0.4 : 1 }}
+            pointerEvents={customDateRange ? 'none' : 'auto'}>
+            <MonthSwitcher
+              nextMonth={goToNext}
+              prevMonth={goToPrevious}
+              currentMonth={formattedTitle}
             />
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {selectionMode ? (
+              <TouchableOpacity onPress={exitSelectionMode} style={styles.iconTrigger}>
+                <MaterialIcons name="close" size={16} color={colors.arrowColor} />
+              </TouchableOpacity>
+            ) : (
+              <>
+                {!customDateRange && (
+                  <TouchableOpacity
+                    onPress={() => setViewMode((v) => (v === 'list' ? 'calendar' : 'list'))}
+                    style={styles.iconTrigger}>
+                    <MaterialIcons
+                      name={viewMode === 'list' ? 'calendar-today' : 'view-list'}
+                      size={16}
+                      color={colors.arrowColor}
+                    />
+                  </TouchableOpacity>
+                )}
+                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
+                <TransactionFilters
+                  applyFilters={applyFilters}
+                  searchText={search}
+                  selectedTransaction={transactionType}
+                  selectedAccount={bankAccount}
+                  accounts={accounts}
+                  categories={categories}
+                  selectedTags={tags}
+                  selectedDateRange={customDateRange}
+                  selectedMinAmount={minAmount}
+                  selectedMaxAmount={maxAmount}
+                  selectedCategoryIds={categoryIds}
+                  hasActiveFilters={hasActiveFilters}
+                />
+              </>
+            )}
           </View>
         </View>
         <Animated.View style={[{ paddingHorizontal: 15 }, headerAnimatedStyle]}>
@@ -277,25 +460,45 @@ export default function Index() {
             showBalance={showBalance}
             balance={balance}
             transactions={transactions}
+            netWorth={netWorth}
           />
           <HomeNudges />
         </Animated.View>
-        {(!!search || !!transactionType || !!bankAccount) && (
-          <View
-            style={{
-              flexDirection: 'row',
-              gap: 10,
-              flexWrap: 'wrap',
-              marginVertical: 6,
-              paddingHorizontal: 15,
-            }}>
+        {(hasActiveFilters || !!selectedDay) && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10, paddingHorizontal: 15 }}
+            style={{ marginVertical: 6 }}>
+            <FilterChip
+              label="Clear All"
+              variant="solid"
+              onRemove={() => {
+                removeFilter('default');
+                setSelectedDay(null);
+              }}
+            />
+            {!!selectedDay && (
+              <FilterChip
+                label="Day"
+                value={format(parse(selectedDay, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}
+                variant="solid"
+                onRemove={() => setSelectedDay(null)}
+              />
+            )}
             {!!search && (
-              <FilterChip label="Search" value={search} onRemove={() => removeFilter('search')} />
+              <FilterChip
+                label="Search"
+                value={search}
+                variant="solid"
+                onRemove={() => removeFilter('search')}
+              />
             )}
             {!!transactionType && (
               <FilterChip
                 label="Transaction type"
                 value={transactionType}
+                variant="solid"
                 onRemove={() => removeFilter('t_type')}
               />
             )}
@@ -303,69 +506,187 @@ export default function Index() {
               <FilterChip
                 label="Account"
                 value={accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
+                variant="solid"
                 onRemove={() => removeFilter('account')}
               />
             )}
-            <FilterChip label="Clear Filters" onRemove={() => removeFilter('default')} />
-          </View>
+            {!!customDateRange && (
+              <FilterChip
+                label="Date range"
+                value={`${format(parse(customDateRange.start, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')} - ${format(parse(customDateRange.end, 'yyyy-MM-dd', new Date()), 'MMM d, yyyy')}`}
+                variant="solid"
+                onRemove={() => removeFilter('dateRange')}
+              />
+            )}
+            {(!!minAmount || !!maxAmount) && (
+              <FilterChip
+                label="Amount"
+                value={`${minAmount || '0'}-${maxAmount || '∞'}`}
+                variant="solid"
+                onRemove={() => removeFilter('amount')}
+              />
+            )}
+            {categoryIds.length > 0 && (
+              <FilterChip
+                label="Categories"
+                value={`${categoryIds.length}`}
+                variant="solid"
+                onRemove={() => removeFilter('categories')}
+              />
+            )}
+            {tags.length > 0 && (
+              <FilterChip
+                label="Tags"
+                value={`${tags.length}`}
+                variant="solid"
+                onRemove={() => removeFilter('tags')}
+              />
+            )}
+          </ScrollView>
         )}
       </View>
-      <FlatList
-        bounces
-        showsVerticalScrollIndicator={false}
-        data={groupedDataArray}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 250, flexGrow: 1 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListEmptyComponent={
-          <Emptystate
-            title="No transactions yet"
-            description="Start by adding your income or expenses to see them here."
-          />
-        }
-        renderItem={({ item, index }) => {
-          return (
-            <Animated.View
-              entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
-              style={{ paddingVertical: 6, paddingHorizontal: 20 }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}>
-                <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>
-                  {format(new Date(item.date), 'dd MMMM yyyy')}
-                </Text>
+      {viewMode === 'calendar' ? (
+        <CalendarGrid
+          groupedDataArray={groupedDataArray}
+          currentDate={currentDate}
+          onSelectDay={handleSelectDay}
+          selectedDate={selectedDay ?? undefined}
+        />
+      ) : (
+        <FlatList
+          bounces
+          showsVerticalScrollIndicator={false}
+          data={displayedGroups}
+          extraData={[selectionMode, selectedIds]}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 250, flexGrow: 1 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            <Emptystate
+              title="No transactions yet"
+              description="Start by adding your income or expenses to see them here."
+            />
+          }
+          renderItem={({ item, index }) => {
+            return (
+              <Animated.View
+                entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
+                style={{ paddingVertical: 6, paddingHorizontal: 20 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                  <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>
+                    {format(new Date(item.date), 'dd MMMM yyyy')}
+                  </Text>
 
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  {!!item.debit && (
-                    <Text style={[styles.totalAmount, { color: colors.title }]}>
-                      <Feather name="arrow-up-right" size={12} color={colors.expense} />
-                      {formatToCurrency(item.debit)}
-                    </Text>
-                  )}
-                  {!!item.credit && (
-                    <Text style={[styles.totalAmount, { color: colors.title }]}>
-                      <Feather name="arrow-down-left" size={12} color={colors.income} />
-                      {formatToCurrency(item.credit)}
-                    </Text>
-                  )}
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    {!!item.debit && (
+                      <Text style={[styles.totalAmount, { color: colors.title }]}>
+                        <Feather name="arrow-up-right" size={12} color={colors.expense} />
+                        {formatToCurrency(item.debit)}
+                      </Text>
+                    )}
+                    {!!item.credit && (
+                      <Text style={[styles.totalAmount, { color: colors.title }]}>
+                        <Feather name="arrow-down-left" size={12} color={colors.income} />
+                        {formatToCurrency(item.credit)}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
 
-              {item.data.map((transaction: Itransaction) => (
-                <SwipeableRow
-                  key={transaction.exp_ts_id}
-                  onDelete={() => handleDelete(transaction.exp_ts_id)}>
-                  <TransactionCard {...transaction} showTsTime={value} />
-                </SwipeableRow>
-              ))}
-            </Animated.View>
-          );
-        }}
-        keyExtractor={(item) => item.date}
-      />
+                {item.data.map((transaction: Itransaction) => {
+                  const isSelected = selectedIds.has(transaction.exp_ts_id);
+                  return (
+                    <SwipeableRow
+                      key={transaction.exp_ts_id}
+                      disabled={selectionMode}
+                      onDelete={() => handleDelete(transaction.exp_ts_id)}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {selectionMode && (
+                          <MaterialIcons
+                            name={isSelected ? 'check-box' : 'check-box-outline-blank'}
+                            size={20}
+                            color={isSelected ? colors.primary : colors.lighterTitle}
+                            style={{ marginRight: 8 }}
+                          />
+                        )}
+                        <View style={{ flex: 1 }}>
+                          <TransactionCard
+                            {...transaction}
+                            showTsTime={value}
+                            noRedirect={selectionMode}
+                            onPress={
+                              selectionMode
+                                ? () => toggleSelect(transaction.exp_ts_id)
+                                : undefined
+                            }
+                            onLongPress={() => enterSelectionMode(transaction.exp_ts_id)}
+                          />
+                        </View>
+                      </View>
+                    </SwipeableRow>
+                  );
+                })}
+              </Animated.View>
+            );
+          }}
+          keyExtractor={(item) => item.date}
+        />
+      )}
+
+      {selectionMode && selectedIds.size > 0 && (
+        <View
+          style={[
+            styles.bulkActionBar,
+            { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+          ]}>
+          <Text style={{ color: colors.title, fontFamily: 'Inter-600' }}>
+            {selectedIds.size} selected
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 20 }}>
+            <TouchableOpacity
+              onPress={() => {
+                setBulkCategoryId('');
+                setCategoryModalVisible(true);
+              }}>
+              <MaterialIcons name="label-outline" size={22} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleBulkDelete}>
+              <MaterialIcons name="delete-outline" size={22} color={colors.expense} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      <ModalCard
+        visible={categoryModalVisible}
+        onClose={() => setCategoryModalVisible(false)}
+        title="Change Category">
+        {selectedTransactionTypes.size > 1 ? (
+          <Text style={{ color: colors.description, fontFamily: 'Inter-500' }}>
+            Select transactions of the same type (all income or all expense) to change their
+            category.
+          </Text>
+        ) : (
+          <>
+            <CategorySelector
+              categories={bulkCategoryOptions}
+              selected={bulkCategoryId}
+              onSelect={setBulkCategoryId}
+            />
+            <Spacer height={20} />
+            <TouchableOpacity
+              style={[styles.applyButton, { backgroundColor: colors.primary }]}
+              onPress={handleBulkCategoryChange}>
+              <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-600' }}>Apply</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </ModalCard>
     </ThemedView>
   );
 }
@@ -401,5 +722,30 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     zIndex: 2,
     marginRight: 10,
+  },
+  iconTrigger: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bulkActionBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+  },
+  applyButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 50,
+    paddingVertical: 10,
   },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -17,24 +17,34 @@ const SWIPE_THRESHOLD = BUTTON_WIDTH / 2;
 type Props = {
   children: React.ReactNode;
   onDelete?: () => void;
+  disabled?: boolean;
 };
 
-export default function SwipeableRow({ children, onDelete }: Props) {
+export default function SwipeableRow({ children, onDelete, disabled = false }: Props) {
   const { colors } = useThemeContext();
   const translateX = useSharedValue(0);
   const startX = useSharedValue(0);
 
+  useEffect(() => {
+    if (disabled) {
+      translateX.value = withSpring(0);
+    }
+  }, [disabled]);
+
   const panGesture = Gesture.Pan()
+    .enabled(!disabled)
     .activeOffsetX([-10, 10])
     .failOffsetY([-5, 5])
     .onStart(() => {
       startX.value = translateX.value;
     })
     .onUpdate((event) => {
+      // eslint-disable-next-line react-hooks/immutability -- Reanimated shared value, safe to mutate outside render
       translateX.value = Math.min(0, startX.value + event.translationX);
     })
     .onEnd(() => {
       if (translateX.value < -SWIPE_THRESHOLD) {
+        // eslint-disable-next-line react-hooks/immutability -- Reanimated shared value, safe to mutate outside render
         translateX.value = withSpring(-BUTTON_WIDTH);
       } else {
         translateX.value = withSpring(0);
@@ -57,6 +67,7 @@ export default function SwipeableRow({ children, onDelete }: Props) {
 
   const handleDelete = () => {
     if (onDelete) onDelete();
+    // eslint-disable-next-line react-hooks/immutability -- Reanimated shared value, safe to mutate outside render
     translateX.value = withSpring(0);
   };
 

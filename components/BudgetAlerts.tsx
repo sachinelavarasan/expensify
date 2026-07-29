@@ -5,24 +5,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { IBudget } from '@/types';
 import { FontSize } from '@/utils/Typography';
-
-const BUDGET_ALERT_THRESHOLD = 90;
+import { getBudgetAlerts } from '@/utils/budgetAlerts';
 
 export default function BudgetAlerts({ budgetedCategories }: { budgetedCategories: IBudget[] }) {
   const { colors } = useThemeContext();
 
-  const alerts = useMemo(
-    () =>
-      budgetedCategories
-        .filter((item) => item.exp_bg_id && Number(item.budgetAmount) > 0)
-        .map((item) => ({
-          category: item.category,
-          percentage: (item.totalAmount / Number(item.budgetAmount)) * 100,
-        }))
-        .filter((item) => item.percentage >= BUDGET_ALERT_THRESHOLD)
-        .sort((a, b) => b.percentage - a.percentage),
-    [budgetedCategories],
-  );
+  const alerts = useMemo(() => getBudgetAlerts(budgetedCategories), [budgetedCategories]);
 
   if (alerts.length === 0) {
     return null;
@@ -31,7 +19,7 @@ export default function BudgetAlerts({ budgetedCategories }: { budgetedCategorie
   return (
     <View style={styles.container}>
       {alerts.map((alert) => {
-        const exceeded = alert.percentage >= 100;
+        const exceeded = alert.exceeded;
         return (
           <View
             key={alert.category}

@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
+import FormErrorBanner from '@/components/FormErrorBanner';
 
 import { otpValidation, passwordValidation } from '@/utils/Validation-custom';
 import { deviceWidth } from '@/utils/functions';
@@ -38,6 +38,7 @@ const ChangePassword = () => {
   const router = useRouter();
 
   const [otpVerifyLoading, setIsOtpVerifyLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const handleTextChange = (data: string) => {
     setOtp(data);
@@ -53,6 +54,7 @@ const ChangePassword = () => {
   const verify = async () => {
     if (!newPassword) return;
     setIsOtpVerifyLoading(true);
+    setServerError(null);
     try {
       const response = await apiClient.post('/expensify/auth/reset-password', {
         email,
@@ -69,7 +71,9 @@ const ChangePassword = () => {
         visibilityTime: 3000,
       });
     } catch (err) {
-      Alert.alert('Error', getApiErrorMessage(err, 'Verification failed. Please check your code and try again.'));
+      setServerError(
+        getApiErrorMessage(err, 'Verification failed. Please check your code and try again.'),
+      );
     } finally {
       setIsOtpVerifyLoading(false);
     }
@@ -92,13 +96,15 @@ const ChangePassword = () => {
             keyboardShouldPersistTaps={'always'}>
             <Spacer height={100} />
             <View style={{ alignItems: 'center' }}>
-              <Text style={[styles.header, { color: colors.title }]}>Change Password</Text>
+              <Text style={[styles.header, { color: colors.title }]}>Reset password </Text>
               <Text style={[styles.subtext, { color: colors.description }]}>
                 Enter the 6-digit code that has been sent to{' '}
                 <Text style={[styles.subtext, { color: colors.description }]}>{email}</Text>
               </Text>
             </View>
-            <Spacer height={30} />
+            <Spacer height={20} />
+            <FormErrorBanner message={serverError} />
+            <Spacer height={serverError ? 16 : 30} />
             <OTPTextInput
               inputCount={6}
               containerStyle={styles.textInputContainer}

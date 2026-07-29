@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Link } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -25,22 +25,47 @@ const TransactionCard = ({
   isStarred,
   showTsTime = true,
   noRedirect = false,
-}: Itransaction & { isStarred?: boolean; showTsTime?: boolean; noRedirect?: boolean }) => {
+  onPress,
+  onLongPress,
+}: Itransaction & {
+  isStarred?: boolean;
+  showTsTime?: boolean;
+  noRedirect?: boolean;
+  onPress?: () => void;
+  onLongPress?: () => void;
+}) => {
   const { colors } = useThemeContext();
-  return (
-    <Link
-      href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`}
-      asChild
-      disabled={noRedirect}>
-      <TouchableOpacity
-        onPress={() => {}}
-        activeOpacity={0.2}
-        style={{
-          width: '100%',
-          borderRadius: 5,
-          paddingVertical: 4,
-        }}>
-        <View style={styles.innerContainer}>
+  // TouchableOpacity can fire onPress right after onLongPress completes on
+  // release - without suppressing that trailing press, a long-press-to-select
+  // would immediately get toggled back off by the press that follows it.
+  const wasLongPress = useRef(false);
+
+  // Link's `disabled` prop isn't specially handled by expo-router - it just
+  // falls through to the underlying TouchableOpacity as React Native's native
+  // `disabled`, which kills ALL touch handling (onPress/onLongPress/onPressIn),
+  // not just Link's own navigation. So when noRedirect is true (selection mode),
+  // skip Link entirely instead of trying to "disable" it - that's the only way
+  // to keep onPress/onLongPress alive while suppressing navigation.
+  const cardBody = (
+    <TouchableOpacity
+      onPressIn={() => {
+        wasLongPress.current = false;
+      }}
+      onLongPress={() => {
+        wasLongPress.current = true;
+        onLongPress?.();
+      }}
+      onPress={() => {
+        if (wasLongPress.current) return;
+        (onPress ?? (() => {}))();
+      }}
+      activeOpacity={0.2}
+      style={{
+        width: '100%',
+        borderRadius: 5,
+        paddingVertical: 4,
+      }}>
+      <View style={styles.innerContainer}>
           <View style={styles.left}>
             <View
               style={{
@@ -119,6 +144,17 @@ const TransactionCard = ({
           </View>
         </View>
       </TouchableOpacity>
+  );
+
+  if (noRedirect) {
+    return cardBody;
+  }
+
+  return (
+    <Link
+      href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`}
+      asChild>
+      {cardBody}
     </Link>
   );
 };

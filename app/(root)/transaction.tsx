@@ -21,6 +21,10 @@ import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
+import ModalCard from '@/components/ModalCard';
+import TagInput from '@/components/TagInput';
+import TemplateChip from '@/components/TemplateChip';
+import { useTransactionTemplates, ITransactionTemplate } from '@/hooks/useTransactionTemplates';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
@@ -33,6 +37,7 @@ import {
   useSaveTransaction,
 } from '@/hooks/useTransaction';
 import { showToast } from '@/components/ToastMessage';
+import { notifyBudgetThresholdIfCrossed } from '@/utils/notifyBudgetThreshold';
 import ProfileHeader from '@/components/ProfileHeader';
 import CategorySelector from '@/components/CategorySelector';
 import DatePickerPaper from '@/components/DatePickerPaper';
@@ -57,6 +62,9 @@ export default function Transaction() {
   const { data, isLoading: isFetching } = useFetchTransaction(exp_ts_id);
   const { mutateAsync: saveTransaction, isPending: isLoading } = useSaveTransaction(starred);
   const { mutateAsync: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
+  const { templates, saveTemplate, deleteTemplate } = useTransactionTemplates();
+  const [templateModalVisible, setTemplateModalVisible] = useState(false);
+  const [templateName, setTemplateName] = useState('');
 
   const router = useRouter();
 
@@ -92,6 +100,7 @@ export default function Transaction() {
       exp_tt_id: 1,
       exp_st_id: false,
       exp_ts_bank_account_id: undefined,
+      exp_ts_tags: [] as string[],
     },
     resolver: zodResolver(transactionSchema),
   });
@@ -112,6 +121,7 @@ export default function Transaction() {
           exp_tt_id: data.exp_tt_id || 1,
           exp_st_id: !!data.exp_st_id,
           exp_ts_bank_account_id: data.exp_ts_bank_account_id || undefined,
+          exp_ts_tags: data.exp_ts_tags || [],
         },
         {
           keepDirty: false,
@@ -148,6 +158,7 @@ export default function Transaction() {
             type: 'success',
             position: 'bottom',
           });
+          notifyBudgetThresholdIfCrossed(formattedData.exp_ts_category);
           if (!isBulk) {
             router.back();
           } else {
@@ -161,6 +172,7 @@ export default function Transaction() {
                 exp_tt_id: 1,
                 exp_st_id: false,
                 exp_ts_bank_account_id: primary?.exp_ba_id || undefined,
+                exp_ts_tags: [],
               },
               {
                 keepDirty: false,
@@ -231,6 +243,52 @@ export default function Transaction() {
     return categories.find((item) => item.exp_tc_id === exp_tc_id)?.exp_tc_label || '';
   };
 
+  const applyTemplate = (template: ITransactionTemplate) => {
+    setValue('exp_ts_title', template.exp_ts_title, { shouldDirty: true, shouldValidate: true });
+    setValue('exp_ts_note', template.exp_ts_note ?? '', { shouldDirty: true });
+    setValue('exp_ts_amount', template.exp_ts_amount, { shouldDirty: true, shouldValidate: true });
+    setValue('exp_tc_id', template.exp_tc_id, { shouldDirty: true, shouldValidate: true });
+    setValue('exp_tt_id', template.exp_tt_id, { shouldDirty: true });
+    setValue('exp_st_id', template.exp_st_id ?? false, { shouldDirty: true });
+    setValue('exp_ts_bank_account_id', template.exp_ts_bank_account_id, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
+  const handleOpenTemplateModal = () => {
+    const values = getValues();
+    if (!values.exp_ts_title || !values.exp_ts_amount || !values.exp_tc_id || !values.exp_ts_bank_account_id) {
+      showToast({
+        text1: 'Fill in title, amount, category and account first',
+        type: 'error',
+        position: 'bottom',
+      });
+      return;
+    }
+    setTemplateModalVisible(true);
+  };
+
+  const handleSaveTemplate = () => {
+    const trimmed = templateName.trim();
+    if (!trimmed) return;
+
+    const values = getValues();
+    saveTemplate(trimmed, {
+      exp_ts_title: values.exp_ts_title || '',
+      exp_ts_note: values.exp_ts_note || '',
+      exp_ts_amount: values.exp_ts_amount || '',
+      exp_tc_id: values.exp_tc_id || '',
+      exp_tt_id: values.exp_tt_id || 1,
+      exp_st_id: values.exp_st_id || false,
+      exp_ts_bank_account_id: values.exp_ts_bank_account_id || '',
+    });
+
+    setTemplateName('');
+    setTemplateModalVisible(false);
+    showToast({ text1: `Template "${trimmed}" saved`, type: 'success', position: 'bottom' });
+  };
+
   const switchType = useCallback(
     (data: number | string) => {
       if (!data || !exp_ts_id) return;
@@ -276,6 +334,21 @@ export default function Transaction() {
                   <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
                     <View>
                       <View style={[styles.sectionContainer]}>
+                        {!exp_ts_id && templates.length > 0 && (
+                          <>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                              {templates.map((t) => (
+                                <TemplateChip
+                                  key={t.id}
+                                  name={t.name}
+                                  onPress={() => applyTemplate(t)}
+                                  onDelete={() => deleteTemplate(t.id)}
+                                />
+                              ))}
+                            </View>
+                            <Spacer height={20} />
+                          </>
+                        )}
                         <Controller
                           control={control}
                           name="exp_ts_bank_account_id"
@@ -503,6 +576,14 @@ export default function Transaction() {
                         )}
                         name="exp_ts_note"
                       />
+                      <Spacer height={Spacing.md} />
+                      <Controller
+                        control={control}
+                        render={({ field }) => (
+                          <TagInput value={field.value ?? []} onChange={field.onChange} label="Tags" />
+                        )}
+                        name="exp_ts_tags"
+                      />
                       <View style={styles.subTextContainer}>
                         {!!data?.exp_ts_created_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
@@ -545,6 +626,12 @@ export default function Transaction() {
                   color={colors.favorite}
                 />
               </TouchableOpacity>
+
+              {!exp_ts_id && (
+                <TouchableOpacity onPress={handleOpenTemplateModal}>
+                  <MaterialIcons name="bookmark-add" size={20} color={colors.text} />
+                </TouchableOpacity>
+              )}
 
               {exp_ts_id ? (
                 <>
@@ -595,6 +682,25 @@ export default function Transaction() {
             </TouchableOpacity>
           </View>
         </View>
+
+        <ModalCard
+          visible={templateModalVisible}
+          onClose={() => setTemplateModalVisible(false)}
+          title="Save as Template">
+          <Input
+            value={templateName}
+            onChangeText={setTemplateName}
+            placeholder="e.g. Morning Coffee"
+            label="Template name"
+            borderLess
+          />
+          <Spacer height={20} />
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.primary }]}
+            onPress={handleSaveTemplate}>
+            <Text style={[styles.title, { color: colors.onPrimary }]}>Save</Text>
+          </TouchableOpacity>
+        </ModalCard>
       </View>
     </SafeAreaViewComponent>
   );

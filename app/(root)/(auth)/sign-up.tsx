@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Text,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { z } from 'zod';
@@ -19,6 +18,7 @@ import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import AuthLink from '@/components/AuthLink';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
+import FormErrorBanner from '@/components/FormErrorBanner';
 
 import { apiClient, getApiErrorMessage } from '@/lib/apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -40,6 +40,7 @@ const Register = () => {
   const router = useRouter();
   const { colors } = useThemeContext();
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -56,13 +57,14 @@ const Register = () => {
 
   const register = async (data: SignUpForm) => {
     setIsLoading(true);
+    setServerError(null);
     try {
       await apiClient.post('/expensify/auth/signup', data);
       await AsyncStorage.setItem('current-verify-email', data.email);
       setIsLoading(false);
       router.dismissTo('/(root)/(auth)/mobile-verify');
     } catch (err) {
-      Alert.alert('Error', getApiErrorMessage(err, 'Could not create your account'));
+      setServerError(getApiErrorMessage(err, 'Could not create your account'));
       setIsLoading(false);
     }
   };
@@ -87,11 +89,16 @@ const Register = () => {
                       color: colors.title,
                     },
                   ]}>
-                  Create your account 👋
+                  Join <Text style={{ color: colors.primary }}>Expensify</Text> 👋
+                </Text>
+                <Text style={[styles.subtext, { color: colors.description }]}>
+                  Start tracking your income and expenses in seconds
                 </Text>
               </View>
               <Spacer height={25} />
               <View style={styles.loginContainer}>
+                <FormErrorBanner message={serverError} />
+                {!!serverError && <Spacer height={16} />}
                 <Controller
                   control={control}
                   render={({ field }) => (
@@ -120,7 +127,9 @@ const Register = () => {
                       label="Email address"
                       keyboardType="email-address"
                       autoCapitalize="none"
-                      autoComplete="off"
+                      enableAutofill
+                      autoComplete="email"
+                      textContentType="emailAddress"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
                       error={errors.email?.message}
@@ -139,6 +148,9 @@ const Register = () => {
                       label="Password"
                       autoCapitalize="none"
                       isPassword
+                      enableAutofill
+                      autoComplete="new-password"
+                      textContentType="newPassword"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
                       error={errors.password?.message}
@@ -246,6 +258,14 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 2,
     fontFamily: 'Inter-800',
+    letterSpacing: -0.5,
+  },
+  subtext: {
+    fontSize: 14,
+    fontFamily: 'Inter-400',
+    paddingTop: 6,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

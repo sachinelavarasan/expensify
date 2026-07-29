@@ -2,14 +2,47 @@ import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import React, { useState } from 'react';
 import Spacer from './Spacer';
 import ModalCard from './ModalCard';
-import { FontAwesome6 } from '@expo/vector-icons';
+import Input from './Input';
+import TagInput from './TagInput';
+import CategorySelector from './CategorySelector';
+import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import { transactionExportType } from '@/utils/common-data';
 import SearchBar from './SearchBar';
 import CustomRadioButton from './CustomRadioButton';
+import DatePickerWithOutValue from './DatePickerWithOutValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CustomSelectInput } from './CustomSelectInput';
-import { BankAccount } from '@/types';
+import { BankAccount, ICategory } from '@/types';
+import { DATE_RANGE_PRESETS, DateRangePresetId, getPresetRange } from '@/utils/functions';
+
+type CustomDateRange = { start: string; end: string } | null;
+
+interface Props {
+  selectedTransaction: string;
+  searchText: string;
+  applyFilters: (
+    search: string,
+    transactionType: string,
+    bankAccount: number | string,
+    extras: {
+      tags: string[];
+      customDateRange: CustomDateRange;
+      minAmount: string;
+      maxAmount: string;
+      categoryIds: string[];
+    },
+  ) => void;
+  accounts: BankAccount[];
+  categories: ICategory[];
+  selectedAccount: number | string;
+  selectedTags?: string[];
+  selectedDateRange?: CustomDateRange;
+  selectedMinAmount?: string;
+  selectedMaxAmount?: string;
+  selectedCategoryIds?: string[];
+  hasActiveFilters?: boolean;
+}
 
 const TransactionFilters = ({
   selectedTransaction,
@@ -17,15 +50,14 @@ const TransactionFilters = ({
   selectedAccount,
   applyFilters,
   accounts,
+  categories,
+  selectedTags = [],
+  selectedDateRange = null,
+  selectedMinAmount = '',
+  selectedMaxAmount = '',
+  selectedCategoryIds = [],
   hasActiveFilters = false,
-}: {
-  selectedTransaction: string;
-  searchText: string;
-  applyFilters: (search: string, transactionType: string, bankAccount: number | string) => void;
-  accounts: BankAccount[];
-  selectedAccount: number | string;
-  hasActiveFilters?: boolean;
-}) => {
+}: Props) => {
   const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
   const primaryAccountId = accounts.find((account) => account.exp_ba_is_primary)?.exp_ba_id;
@@ -34,20 +66,71 @@ const TransactionFilters = ({
     search: searchText,
     transactionType: selectedTransaction,
     bankAccount: selectedAccount || primaryAccountId || '',
+    tags: selectedTags,
+    customDateRange: selectedDateRange,
+    minAmount: selectedMinAmount,
+    maxAmount: selectedMaxAmount,
+    categoryIds: selectedCategoryIds,
   });
   const [draft, setDraft] = useState(draftFromProps);
+  const [datePreset, setDatePreset] = useState<DateRangePresetId | 'none'>(
+    selectedDateRange ? 'custom' : 'none',
+  );
 
   const openModal = () => {
     setDraft(draftFromProps());
+    setDatePreset(selectedDateRange ? 'custom' : 'none');
     setShow(true);
   };
   const closeModal = () => setShow(false);
 
+  const selectDatePreset = (id: DateRangePresetId) => {
+    setDatePreset(id);
+    if (id === 'custom') return;
+    const range = getPresetRange(id);
+    setDraft((prev) => ({ ...prev, customDateRange: range }));
+  };
+
+  const clearDateRange = () => {
+    setDatePreset('none');
+    setDraft((prev) => ({ ...prev, customDateRange: null }));
+  };
+
+  const sanitizeAmount = (value: string) => {
+    const cleaned = value.replace(/[^0-9.]/g, '');
+    const [whole, ...rest] = cleaned.split('.');
+    return rest.length ? `${whole}.${rest.join('')}` : whole;
+  };
+
+  const toggleCategory = (id: string) => {
+    setDraft((prev) => ({
+      ...prev,
+      categoryIds: prev.categoryIds.includes(id)
+        ? prev.categoryIds.filter((c) => c !== id)
+        : [...prev.categoryIds, id],
+    }));
+  };
+
   const handlePress = () => {
-    if (!draft.search.trim() && !draft.transactionType && !draft.bankAccount) {
+    if (
+      !draft.search.trim() &&
+      !draft.transactionType &&
+      !draft.bankAccount &&
+      !draft.tags.length &&
+      !draft.customDateRange &&
+      !draft.minAmount &&
+      !draft.maxAmount &&
+      !draft.categoryIds.length
+    ) {
       return;
     }
-    applyFilters(draft.search, draft.transactionType, draft.bankAccount);
+    applyFilters(draft.search, draft.transactionType, draft.bankAccount, {
+      tags: draft.tags,
+      customDateRange: draft.customDateRange,
+      minAmount: draft.minAmount,
+      maxAmount: draft.maxAmount,
+      categoryIds: draft.categoryIds,
+    });
     closeModal();
   };
 
@@ -84,7 +167,7 @@ const TransactionFilters = ({
             value={draft.transactionType}
             options={transactionExportType}
             onChange={(data) => {
-              setDraft((prev) => ({ ...prev, transactionType: data as string }));
+              setDraft((prev) => ({ ...prev, transactionType: data as string, categoryIds: [] }));
             }}
           />
         </View>
@@ -100,7 +183,129 @@ const TransactionFilters = ({
             onChange={(selectId) => setDraft((prev) => ({ ...prev, bankAccount: selectId }))}
           />
         </View>
-        <Spacer height={30} />
+        <Spacer height={20} />
+
+        <View style={{ paddingHorizontal: 5 }}>
+          <TagInput
+            value={draft.tags}
+            onChange={(tags) => setDraft((prev) => ({ ...prev, tags }))}
+            label="Tags"
+          />
+        </View>
+        <Spacer height={20} />
+
+        <View style={{ paddingHorizontal: 5 }}>
+          <Text style={[styles.label, { color: colors.title }]}>Date Range</Text>
+          <View style={styles.chipRow}>
+            {DATE_RANGE_PRESETS.map((item) => {
+              const selected = datePreset === item.id;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  onPress={() => selectDatePreset(item.id)}
+                  style={[
+                    styles.dateChip,
+                    {
+                      backgroundColor: selected ? colors.primary : colors.inputColor,
+                      borderColor: selected ? colors.primary : colors.inputBorder,
+                    },
+                  ]}>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontFamily: 'Inter-500',
+                      color: selected ? colors.onPrimary : colors.title,
+                    }}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            {datePreset !== 'none' && (
+              <TouchableOpacity onPress={clearDateRange} style={styles.dateChip}>
+                <MaterialIcons name="close" size={14} color={colors.expense} />
+              </TouchableOpacity>
+            )}
+          </View>
+          {datePreset === 'custom' && (
+            <>
+              <Spacer height={12} />
+              <DatePickerWithOutValue
+                label="From:"
+                value={draft.customDateRange?.start}
+                onChange={(v) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    customDateRange: { start: v, end: prev.customDateRange?.end || v },
+                  }))
+                }
+                placeholder="Start date"
+              />
+              <Spacer height={10} />
+              <DatePickerWithOutValue
+                label="To:"
+                value={draft.customDateRange?.end}
+                onChange={(v) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    customDateRange: { start: prev.customDateRange?.start || v, end: v },
+                  }))
+                }
+                placeholder="End date"
+                minimumDate={draft.customDateRange?.start}
+              />
+            </>
+          )}
+        </View>
+        <Spacer height={20} />
+
+        <View style={{ paddingHorizontal: 5, flexDirection: 'row', gap: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Input
+              value={draft.minAmount}
+              onChangeText={(v) =>
+                setDraft((prev) => ({ ...prev, minAmount: sanitizeAmount(v) }))
+              }
+              placeholder="Min"
+              label="Min Amount"
+              keyboardType="numeric"
+              borderLess
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Input
+              value={draft.maxAmount}
+              onChangeText={(v) =>
+                setDraft((prev) => ({ ...prev, maxAmount: sanitizeAmount(v) }))
+              }
+              placeholder="Max"
+              label="Max Amount"
+              keyboardType="numeric"
+              borderLess
+            />
+          </View>
+        </View>
+        <Spacer height={20} />
+
+        {(draft.transactionType === 'income' || draft.transactionType === 'expense') && (
+          <>
+            <View style={{ paddingHorizontal: 5 }}>
+              <Text style={[styles.label, { color: colors.title }]}>Categories</Text>
+              <CategorySelector
+                categories={categories.filter(
+                  (category) =>
+                    category.exp_tc_transaction_type ===
+                    (draft.transactionType === 'income' ? 2 : 1),
+                )}
+                selected={draft.categoryIds}
+                onSelect={toggleCategory}
+                multiple
+              />
+            </View>
+            <Spacer height={30} />
+          </>
+        )}
+
         <View>
           <TouchableOpacity onPress={handlePress}>
             <LinearGradient
@@ -164,5 +369,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     borderRadius: 10,
     flexWrap: 'wrap',
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  dateChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 50,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

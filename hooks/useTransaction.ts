@@ -27,6 +27,7 @@ export const useSaveTransaction = (starred: boolean | undefined) => {
         queryClient.invalidateQueries({ queryKey: ['transactions'] });
       }
       queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
     },
   });
 };
@@ -98,6 +99,94 @@ export const useDeleteTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      queryClient.invalidateQueries({ queryKey: ['trashed-transactions'] });
+    },
+  });
+};
+
+export const useGetTrashedTransactions = () => {
+  const {
+    data: trashed,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['trashed-transactions'],
+    queryFn: async () => {
+      const res = await apiClient.get('/expensify/transactions/trash');
+      return res.data;
+    },
+  });
+
+  return {
+    trashed: trashed || [],
+    isLoading,
+    error: isError ? error?.message : null,
+    refetch,
+  };
+};
+
+export const useRestoreTransaction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.patch(`/expensify/transaction/${id}/restore`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      queryClient.invalidateQueries({ queryKey: ['trashed-transactions'] });
+    },
+  });
+};
+
+export const usePurgeTransaction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/expensify/transaction/${id}/purge`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['trashed-transactions'] });
+    },
+  });
+};
+
+export const useBulkDeleteTransactions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      await apiClient.delete('/expensify/transactions/bulk', { data: { ids } });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      queryClient.invalidateQueries({ queryKey: ['trashed-transactions'] });
+    },
+  });
+};
+
+export const useBulkUpdateTransactions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      ids,
+      patch,
+    }: {
+      ids: string[];
+      patch: { exp_tc_id?: string; exp_ts_tags?: string[] };
+    }) => {
+      await apiClient.patch('/expensify/transactions/bulk', { ids, patch });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      queryClient.invalidateQueries({ queryKey: ['trashed-transactions'] });
     },
   });
 };

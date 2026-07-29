@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
+import FormErrorBanner from '@/components/FormErrorBanner';
 
 import AuthLink from '@/components/AuthLink';
 import { apiClient, getApiErrorCode, getApiErrorMessage } from '@/lib/apiClient';
@@ -39,6 +39,7 @@ export default function SignIn() {
   const router = useRouter();
   const { signIn } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -54,6 +55,7 @@ export default function SignIn() {
 
   const onSubmit = async (data: SignInForm) => {
     setIsLoading(true);
+    setServerError(null);
     try {
       const response = await apiClient.post('/expensify/auth/login', data);
       await signIn(response.data);
@@ -73,7 +75,7 @@ export default function SignIn() {
           });
           router.dismissTo('/(root)/(auth)/change-password');
         } catch (sendErr) {
-          Alert.alert('Error', getApiErrorMessage(sendErr));
+          setServerError(getApiErrorMessage(sendErr));
         }
       } else if (errorCode === 'EMAIL_NOT_VERIFIED') {
         try {
@@ -90,10 +92,10 @@ export default function SignIn() {
           });
           router.dismissTo('/(root)/(auth)/mobile-verify');
         } catch (sendErr) {
-          Alert.alert('Error', getApiErrorMessage(sendErr));
+          setServerError(getApiErrorMessage(sendErr));
         }
       } else {
-        Alert.alert('Error', getApiErrorMessage(err, 'Invalid email or password'));
+        setServerError(getApiErrorMessage(err, 'Invalid email or password'));
       }
     } finally {
       setIsLoading(false);
@@ -120,11 +122,16 @@ export default function SignIn() {
                       color: colors.title,
                     },
                   ]}>
-                  Welcome Back! 👋{' '}
+                  Welcome back to <Text style={{ color: colors.primary }}>Expensify</Text> 👋
+                </Text>
+                <Text style={[styles.subtext, { color: colors.description }]}>
+                  Sign in to continue tracking your expenses
                 </Text>
               </View>
               <Spacer height={25} />
               <View style={styles.loginContainer}>
+                <FormErrorBanner message={serverError} />
+                {!!serverError && <Spacer height={16} />}
                 <Controller
                   control={control}
                   render={({ field }) => (
@@ -134,7 +141,9 @@ export default function SignIn() {
                       label="Email address"
                       keyboardType="email-address"
                       autoCapitalize="none"
-                      autoComplete="off"
+                      enableAutofill
+                      autoComplete="email"
+                      textContentType="emailAddress"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
                       error={errors.email?.message}
@@ -153,6 +162,9 @@ export default function SignIn() {
                       label="Password"
                       autoCapitalize="none"
                       isPassword
+                      enableAutofill
+                      autoComplete="password"
+                      textContentType="password"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
                       error={errors.password?.message}
@@ -268,5 +280,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 2,
     fontFamily: 'Inter-800',
+    letterSpacing: -0.5,
+  },
+  subtext: {
+    fontSize: 14,
+    fontFamily: 'Inter-400',
+    paddingTop: 6,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

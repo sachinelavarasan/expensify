@@ -6,7 +6,7 @@ import { useReminderSettings } from '@/hooks/useReminder';
 import { useAuthContext } from '@/contexts/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { useThemeContext } from '@/contexts/ThemedContext';
+import { THEME_STORAGE_KEY, useThemeContext } from '@/contexts/ThemedContext';
 
 const LogoutButton = () => {
   const { colors } = useThemeContext();
@@ -43,7 +43,8 @@ const LogoutButton = () => {
     try {
       await signOut();
       await disableNotification();
-      await AsyncStorage.clear();
+      const keys = await AsyncStorage.getAllKeys();
+      await AsyncStorage.removeMany(keys.filter((key) => key !== THEME_STORAGE_KEY));
       router.replace('/(root)/(auth)/login');
     } catch (e) {
       console.log('Logout failed:', e);

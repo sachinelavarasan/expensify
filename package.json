@@ -57,6 +57,7 @@
     "react-hook-form": "^7.83.0",
     "react-native": "0.86.0",
     "react-native-bouncy-checkbox": "^4.1.4",
+    "react-native-calendars": "^1.1314.0",
     "react-native-date-picker": "^5.0.13",
     "react-native-draggable-flatlist": "^4.0.3",
     "react-native-dropdown-select-list": "^2.0.5",

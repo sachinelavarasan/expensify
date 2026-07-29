@@ -22,6 +22,7 @@ interface Props {
   showBalance: boolean;
   carryBalance: boolean;
   transactions: Itransaction[];
+  netWorth: number;
 }
 
 export default function HomeSummaryCard({
@@ -31,6 +32,7 @@ export default function HomeSummaryCard({
   showBalance,
   carryBalance,
   transactions,
+  netWorth,
 }: Props) {
   const { colors } = useThemeContext();
   const { trend } = useSpendTrend(6);
@@ -141,16 +143,20 @@ export default function HomeSummaryCard({
         )}
       </View>
 
-      {!!topCategory && (
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.onPrimary }]}>
-            Top category:{' '}
-            <Text style={styles.footerValue}>
-              {topCategory.label} · {formatToCurrency(topCategory.amount)}
-            </Text>
+      <View style={[styles.footer, styles.footerRow]}>
+        <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
+          Net worth:{' '}
+          <Text style={styles.footerValue}>{formatToCurrency(netWorth)}</Text>
+        </Text>
+        {!!topCategory && (
+          <Text
+            style={[styles.footerText, { color: colors.onPrimary, flexShrink: 1 }]}
+            numberOfLines={1}>
+            Top:{' '}
+            <Text style={styles.footerValue}>{topCategory.label}</Text>
           </Text>
-        </View>
-      )}
+        )}
+      </View>
     </LinearGradient>
   );
 }
@@ -214,6 +220,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.22)',
+  },
+  footerRow: {
+    justifyContent: 'space-between',
+    gap: 10,
   },
   footerText: {
     fontSize: FontSize.sm,

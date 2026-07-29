@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { format, startOfMonth, startOfWeek, startOfYear, subDays } from 'date-fns';
+import { format } from 'date-fns';
 
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -25,36 +25,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
-
-type PresetId = 'today' | 'week' | 'month' | '30d' | 'year' | 'custom';
-
-const DATE_PRESETS: { id: PresetId; label: string }[] = [
-  { id: 'today', label: 'Today' },
-  { id: 'week', label: 'This Week' },
-  { id: 'month', label: 'This Month' },
-  { id: '30d', label: 'Last 30 Days' },
-  { id: 'year', label: 'This Year' },
-  { id: 'custom', label: 'Custom' },
-];
-
-const getPresetRange = (preset: PresetId): { start: string; end: string } | null => {
-  const today = new Date();
-  const end = format(today, 'yyyy-MM-dd');
-  switch (preset) {
-    case 'today':
-      return { start: end, end };
-    case 'week':
-      return { start: format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd'), end };
-    case 'month':
-      return { start: format(startOfMonth(today), 'yyyy-MM-dd'), end };
-    case '30d':
-      return { start: format(subDays(today, 29), 'yyyy-MM-dd'), end };
-    case 'year':
-      return { start: format(startOfYear(today), 'yyyy-MM-dd'), end };
-    default:
-      return null;
-  }
-};
+import { DATE_RANGE_PRESETS as DATE_PRESETS, DateRangePresetId as PresetId, getPresetRange } from '@/utils/functions';
 
 const FORMAT_OPTIONS: {
   id: string;

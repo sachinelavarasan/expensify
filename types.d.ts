@@ -54,6 +54,8 @@ export interface Itransaction {
   exp_tc_icon: string;
   exp_tc_icon_bg_color: string;
   exp_ba_name: string;
+  exp_ts_deleted_at?: string | null;
+  exp_ts_tags?: string[];
 }
 
 export interface ICategory {

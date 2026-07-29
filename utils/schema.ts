@@ -16,6 +16,7 @@ export const transactionSchema = z.object({
   exp_ts_bank_account_id: z
     .string({ message: 'Choose Account' })
     .min(1, { message: 'Choose Account' }),
+  exp_ts_tags: z.array(z.string()).optional(),
 });
 
 export type transactionSchemaType = z.infer<typeof transactionSchema>;
