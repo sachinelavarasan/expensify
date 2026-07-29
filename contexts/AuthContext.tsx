@@ -5,6 +5,7 @@ import { getStoredTokens, setStoredTokens, clearStoredTokens } from '@/lib/secur
 import { clearTokens, getAccessToken, onUnauthorized, setTokens as setStoreTokens } from '@/lib/tokenStore';
 import { useNotification } from '@/contexts/NotificationContext';
 import { useEnableNotificationToken, useDisableNotificationToken } from '@/hooks/useSettings';
+import { showToast } from '@/components/ToastMessage';
 
 interface AuthTokens {
   accessToken: string;
@@ -74,6 +75,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     onUnauthorized(() => {
+      showToast({
+        text1: 'Your session expired — please sign in again',
+        type: 'info',
+        position: 'bottom',
+        visibilityTime: 4000,
+      });
       signOutRef.current();
     });
 
