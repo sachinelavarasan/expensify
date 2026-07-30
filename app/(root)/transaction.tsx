@@ -23,6 +23,11 @@ import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
 import ModalCard from '@/components/ModalCard';
 import TagInput from '@/components/TagInput';
+import AttachmentPicker, { AttachmentValue } from '@/components/AttachmentPicker';
+import {
+  useDeleteTransactionAttachment,
+  useUploadTransactionAttachment,
+} from '@/hooks/useTransactionAttachment';
 import TemplateChip from '@/components/TemplateChip';
 import { useTransactionTemplates, ITransactionTemplate } from '@/hooks/useTransactionTemplates';
 
@@ -59,8 +64,12 @@ export default function Transaction() {
     exp_ts_id?: string;
     starred?: boolean;
   };
-  const { data, isLoading: isFetching } = useFetchTransaction(exp_ts_id);
+  const { data: existingTransaction, isLoading: isFetching } = useFetchTransaction(exp_ts_id);
   const { mutateAsync: saveTransaction, isPending: isLoading } = useSaveTransaction(starred);
+  const { mutateAsync: uploadAttachment, isPending: isUploadingAttachment } =
+    useUploadTransactionAttachment();
+  const { mutateAsync: deleteAttachment } = useDeleteTransactionAttachment();
+  const isSaving = isLoading || isUploadingAttachment;
   const { mutateAsync: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
   const { templates, saveTemplate, deleteTemplate } = useTransactionTemplates();
   const [templateModalVisible, setTemplateModalVisible] = useState(false);
@@ -101,6 +110,7 @@ export default function Transaction() {
       exp_st_id: false,
       exp_ts_bank_account_id: undefined,
       exp_ts_tags: [] as string[],
+      exp_ts_attachment_url: null as AttachmentValue,
     },
     resolver: zodResolver(transactionSchema),
   });
@@ -109,19 +119,22 @@ export default function Transaction() {
   const exp_tt_id = watch('exp_tt_id');
 
   useEffect(() => {
-    if (data) {
+    if (existingTransaction) {
       reset(
         {
-          exp_ts_title: data.exp_ts_title || '',
-          exp_ts_date: data.exp_ts_date || '',
-          exp_ts_note: data.exp_ts_note || '',
-          exp_ts_time: data.exp_ts_time || '',
-          exp_ts_amount: data.exp_ts_amount?.toString() || '',
-          exp_tc_id: data.exp_tc_id,
-          exp_tt_id: data.exp_tt_id || 1,
-          exp_st_id: !!data.exp_st_id,
-          exp_ts_bank_account_id: data.exp_ts_bank_account_id || undefined,
-          exp_ts_tags: data.exp_ts_tags || [],
+          exp_ts_title: existingTransaction.exp_ts_title || '',
+          exp_ts_date: existingTransaction.exp_ts_date || '',
+          exp_ts_note: existingTransaction.exp_ts_note || '',
+          exp_ts_time: existingTransaction.exp_ts_time || '',
+          exp_ts_amount: existingTransaction.exp_ts_amount?.toString() || '',
+          exp_tc_id: existingTransaction.exp_tc_id,
+          exp_tt_id: existingTransaction.exp_tt_id || 1,
+          exp_st_id: !!existingTransaction.exp_st_id,
+          exp_ts_bank_account_id: existingTransaction.exp_ts_bank_account_id || undefined,
+          exp_ts_tags: existingTransaction.exp_ts_tags || [],
+          exp_ts_attachment_url: existingTransaction.exp_ts_attachment_url
+            ? { kind: 'remote', url: existingTransaction.exp_ts_attachment_url }
+            : null,
         },
         {
           keepDirty: false,
@@ -134,15 +147,38 @@ export default function Transaction() {
         setValue('exp_ts_bank_account_id', primary.exp_ba_id);
       }
     }
-  }, [data, reset]);
+  }, [existingTransaction, reset]);
 
-  const onSubmit = (data: transactionSchemaType & { exp_ts_id?: string }) => {
+  const onSubmit = async (data: transactionSchemaType & { exp_ts_id?: string }) => {
     try {
+      const attachmentField = data.exp_ts_attachment_url;
+      let finalAttachmentUrl: string | null = null;
+
+      if (attachmentField?.kind === 'local') {
+        try {
+          const uploaded = await uploadAttachment(
+            `data:${attachmentField.mimeType};base64,${attachmentField.base64}`,
+          );
+          finalAttachmentUrl = uploaded.url;
+        } catch (err) {
+          console.error('Attachment upload failed', err);
+          showToast({
+            text1: 'Failed to upload attachment. Please try again.',
+            type: 'error',
+            position: 'bottom',
+          });
+          return;
+        }
+      } else if (attachmentField?.kind === 'remote') {
+        finalAttachmentUrl = attachmentField.url;
+      }
+
       const formattedData = {
         ...data,
         exp_ts_amount: data.exp_ts_amount,
         exp_ts_transaction_type: data.exp_tt_id || 1,
         exp_ts_category: data.exp_tc_id,
+        exp_ts_attachment_url: finalAttachmentUrl,
       };
 
       if (exp_ts_id) {
@@ -158,6 +194,13 @@ export default function Transaction() {
             type: 'success',
             position: 'bottom',
           });
+          // Only now that the save has actually succeeded is it safe to delete the
+          // previously-persisted attachment (if it was replaced or removed this session) -
+          // deleting any earlier would risk orphaning the DB reference if the save failed.
+          const previousUrl = existingTransaction?.exp_ts_attachment_url;
+          if (previousUrl && previousUrl !== finalAttachmentUrl) {
+            deleteAttachment(previousUrl).catch(() => {});
+          }
           notifyBudgetThresholdIfCrossed(formattedData.exp_ts_category);
           if (!isBulk) {
             router.back();
@@ -173,6 +216,7 @@ export default function Transaction() {
                 exp_st_id: false,
                 exp_ts_bank_account_id: primary?.exp_ba_id || undefined,
                 exp_ts_tags: [],
+                exp_ts_attachment_url: null,
               },
               {
                 keepDirty: false,
@@ -310,7 +354,7 @@ export default function Transaction() {
   return (
     <SafeAreaViewComponent>
       <View style={{ flex: 1 }}>
-        {(isFetching || isDeleting || isLoading) && <OverlayLoader />}
+        {(isFetching || isDeleting || isSaving) && <OverlayLoader />}
         <ThemedView
           style={{
             flex: 1,
@@ -557,6 +601,17 @@ export default function Transaction() {
                       <Controller
                         control={control}
                         render={({ field }) => (
+                          <AttachmentPicker
+                            value={field.value ?? null}
+                            onChange={field.onChange}
+                          />
+                        )}
+                        name="exp_ts_attachment_url"
+                      />
+                      <Spacer height={Spacing.md} />
+                      <Controller
+                        control={control}
+                        render={({ field }) => (
                           <Input
                             {...field}
                             value={field.value ?? ''}
@@ -585,14 +640,14 @@ export default function Transaction() {
                         name="exp_ts_tags"
                       />
                       <View style={styles.subTextContainer}>
-                        {!!data?.exp_ts_created_at && (
+                        {!!existingTransaction?.exp_ts_created_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
-                            Created: {format(data.exp_ts_created_at, 'do MMMM yyyy HH:mm')}
+                            Created: {format(existingTransaction.exp_ts_created_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
-                        {!!data?.exp_ts_updated_at && (
+                        {!!existingTransaction?.exp_ts_updated_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
-                            Modified: {format(data.exp_ts_updated_at, 'do MMMM yyyy HH:mm')}
+                            Modified: {format(existingTransaction.exp_ts_updated_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
                       </View>
@@ -664,18 +719,18 @@ export default function Transaction() {
               style={[
                 styles.button,
                 { backgroundColor: colors.primary },
-                !isDirty || isFetching || isDeleting || isLoading ? styles.disable : {},
+                !isDirty || isFetching || isDeleting || isSaving ? styles.disable : {},
               ]}
-              disabled={!isDirty || isFetching || isDeleting || isLoading}
+              disabled={!isDirty || isFetching || isDeleting || isSaving}
               onPress={handleSubmit(onSubmit)}>
-              {isLoading ? (
+              {isSaving ? (
                 <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
               ) : null}
               <Text
                 style={[
                   styles.title,
                   { color: colors.onPrimary },
-                  isLoading ? styles.textDisable : {},
+                  isSaving ? styles.textDisable : {},
                 ]}>
                 {exp_ts_id ? 'Update' : 'Add'}
               </Text>

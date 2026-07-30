@@ -155,6 +155,43 @@ export type UpdateBudgetDto = Pick<
   'exp_bg_amount' | 'exp_bg_id'
 >;
 
+export type DebtDirection = 'owed_to_me' | 'owed_by_me';
+
+export interface IDebtRepayment {
+  exp_dr_id: string;
+  exp_dr_debt_id: string;
+  exp_dr_amount: string;
+  exp_dr_date: string;
+  exp_dr_note?: string | null;
+  exp_dr_created_at: string;
+}
+
+export interface IDebt {
+  exp_dt_id: string;
+  exp_dt_user_id: string;
+  exp_dt_person_name: string;
+  exp_dt_direction: DebtDirection;
+  exp_dt_amount: string;
+  exp_dt_due_date?: string | null;
+  exp_dt_note?: string | null;
+  exp_dt_created_at: string;
+  exp_dt_updated_at?: string | null;
+  exp_dt_deleted_at?: string | null;
+  repaid_amount: string;
+}
+
+export interface IDebtDetail extends IDebt {
+  repayments: IDebtRepayment[];
+  repaidAmount: number;
+}
+
+export type CreateDebtDto = Pick<
+  IDebt,
+  'exp_dt_person_name' | 'exp_dt_direction' | 'exp_dt_amount' | 'exp_dt_due_date' | 'exp_dt_note'
+>;
+export type UpdateDebtDto = Partial<CreateDebtDto>;
+export type CreateRepaymentDto = Pick<IDebtRepayment, 'exp_dr_amount' | 'exp_dr_date' | 'exp_dr_note'>;
+
 export interface IRecurringTransaction {
   exp_rt_id: string;
   exp_rt_title: string;

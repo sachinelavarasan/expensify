@@ -51,6 +51,12 @@ const MENU_ITEMS: {
     subtitle: 'Get reminders for bills and income that repeat',
   },
   {
+    href: '/(root)/debts',
+    icon: 'handshake',
+    title: 'Debts & Loans',
+    subtitle: 'Track money you’ve lent or borrowed',
+  },
+  {
     href: '/(root)/export-transactions',
     icon: 'import-export',
     title: 'Import / Export Transactions',

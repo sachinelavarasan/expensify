@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '@/lib/apiClient';
@@ -47,33 +46,18 @@ export const useUpdateProfile = () => {
 
 export const useUploadProfileImage = () => {
   const queryClient = useQueryClient();
-  const [progress, setProgress] = useState(0);
 
-  const mutation = useMutation({
+  return useMutation({
     mutationFn: async (imageBase64: string) => {
-      setProgress(0);
-      const response = await apiClient.post<IExpUser>(
-        '/expensify/profile/image',
-        { imageBase64 },
-        {
-          onUploadProgress: (event) => {
-            if (event.total) {
-              setProgress(Math.round((event.loaded / event.total) * 100));
-            }
-          },
-        },
-      );
+      const response = await apiClient.post<IExpUser>('/expensify/profile/image', {
+        imageBase64,
+      });
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.currentuser });
     },
-    onSettled: () => {
-      setProgress(0);
-    },
   });
-
-  return { ...mutation, progress };
 };
 
 export const useRemoveProfileImage = () => {

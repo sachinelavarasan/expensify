@@ -376,3 +376,14 @@ export const recurringFrequencyType = [
     label: 'Yearly',
   },
 ];
+
+export const debtDirectionType = [
+  {
+    id: 'owed_to_me',
+    label: 'They owe me',
+  },
+  {
+    id: 'owed_by_me',
+    label: 'I owe them',
+  },
+];
