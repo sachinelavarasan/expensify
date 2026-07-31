@@ -60,7 +60,11 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
               {exceeded ? 'Over by' : 'Remaining'}
             </Text>
             <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(Math.abs(animatedTotalRemaining), undefined, Math.abs(totalRemaining))}
+              {formatToCurrency(
+                Math.abs(animatedTotalRemaining),
+                undefined,
+                Math.abs(totalRemaining),
+              )}
             </Text>
           </View>
         </View>
@@ -93,13 +97,13 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   balance: {
-    fontSize: 30,
+    fontSize: 24,
     fontFamily: 'Inter-600',
     marginTop: 2,
   },
   row: {
     flexDirection: 'row',
-    gap: 18,
+    gap: 24,
     marginTop: 10,
   },
   stat: {

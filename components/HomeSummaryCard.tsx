@@ -145,15 +145,13 @@ export default function HomeSummaryCard({
 
       <View style={[styles.footer, styles.footerRow]}>
         <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
-          Net worth:{' '}
-          <Text style={styles.footerValue}>{formatToCurrency(netWorth)}</Text>
+          Net worth: <Text style={styles.footerValue}>{formatToCurrency(netWorth)}</Text>
         </Text>
         {!!topCategory && (
           <Text
             style={[styles.footerText, { color: colors.onPrimary, flexShrink: 1 }]}
             numberOfLines={1}>
-            Top:{' '}
-            <Text style={styles.footerValue}>{topCategory.label}</Text>
+            Top: <Text style={styles.footerValue}>{topCategory.label}</Text>
           </Text>
         )}
       </View>
@@ -174,7 +172,7 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   balance: {
-    fontSize: 30,
+    fontSize: 24,
     fontFamily: 'Inter-600',
     marginTop: 2,
   },
@@ -187,7 +185,7 @@ const styles = StyleSheet.create({
   },
   stats: {
     flexDirection: 'row',
-    gap: 18,
+    gap: 24,
   },
   stat: {
     flexDirection: 'row',

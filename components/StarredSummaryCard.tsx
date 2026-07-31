@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   count: {
-    fontSize: 30,
+    fontSize: 24,
     fontFamily: 'Inter-600',
     marginTop: 4,
   },
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 18,
-    marginTop: 16,
+    marginTop: 8,
   },
   stat: {
     flexDirection: 'row',

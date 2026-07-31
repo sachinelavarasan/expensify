@@ -82,14 +82,14 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   net: {
-    fontSize: 30,
+    fontSize: 24,
     fontFamily: 'Inter-600',
     marginTop: 2,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 18,
+    gap: 24,
     marginTop: 10,
   },
   stat: {
