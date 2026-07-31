@@ -16,6 +16,22 @@ export const transactionSchema = z.object({
   exp_ts_bank_account_id: z
     .string({ message: 'Choose Account' })
     .min(1, { message: 'Choose Account' }),
+  exp_ts_tags: z.array(z.string()).optional(),
+  // Holds either an already-uploaded attachment (`remote`) or a picked-but-not-yet-uploaded
+  // file (`local`) - the actual upload only happens at submit time, see transaction.tsx's
+  // onSubmit, so nothing is sent to storage until the transaction save itself succeeds.
+  exp_ts_attachment_url: z
+    .union([
+      z.object({ kind: z.literal('remote'), url: z.string() }),
+      z.object({
+        kind: z.literal('local'),
+        previewUri: z.string(),
+        base64: z.string(),
+        mimeType: z.string(),
+      }),
+    ])
+    .nullable()
+    .optional(),
 });
 
 export type transactionSchemaType = z.infer<typeof transactionSchema>;

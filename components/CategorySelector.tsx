@@ -6,22 +6,26 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 
 interface Props {
   categories: ICategory[] | [];
-  selected: number | string | undefined;
+  selected: number | string | string[] | undefined;
   onSelect: (id: string) => void;
+  multiple?: boolean;
 }
 
 const MAX_VISIBLE = 7;
 
-export default function CategorySelector({ categories, selected, onSelect }: Props) {
+export default function CategorySelector({ categories, selected, onSelect, multiple = false }: Props) {
   const { colors, theme } = useThemeContext();
   const [showAll, setShowAll] = useState(false);
 
-    const reorderedCategories = useMemo(() => {
-    if (!selected) return categories;
+  const isSelected = (id: string) =>
+    multiple ? (selected as string[] | undefined)?.includes(id) ?? false : selected === id;
+
+  const reorderedCategories = useMemo(() => {
+    if (multiple || !selected) return categories;
     const selectedItem = categories.find((item) => item.exp_tc_id === selected);
     const otherItems = categories.filter((item) => item.exp_tc_id !== selected);
     return selectedItem ? [selectedItem, ...otherItems] : categories;
-  }, [categories, selected]);
+  }, [categories, selected, multiple]);
 
   const visibleItems = showAll ? reorderedCategories : reorderedCategories.slice(0, MAX_VISIBLE);
 
@@ -42,8 +46,7 @@ export default function CategorySelector({ categories, selected, onSelect }: Pro
                   width: 'auto',
                 },
                 {
-                  backgroundColor:
-                    selected === item.exp_tc_id ? item.exp_tc_icon_bg_color : undefined,
+                  backgroundColor: isSelected(item.exp_tc_id) ? item.exp_tc_icon_bg_color : undefined,
                 },
               ]}
               onPress={() => onSelect(item.exp_tc_id)}>
@@ -65,7 +68,7 @@ export default function CategorySelector({ categories, selected, onSelect }: Pro
                   fontSize: 12,
                   padding: 5,
                   color:
-                    selected === item.exp_tc_id || theme !== 'light'
+                    isSelected(item.exp_tc_id) || theme !== 'light'
                       ? colors.onPrimary
                       : colors.title,
                 }}>

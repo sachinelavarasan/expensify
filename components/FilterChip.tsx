@@ -8,35 +8,50 @@ interface Props {
   label: string;
   value?: string;
   onRemove: () => void;
+  variant?: 'outline' | 'solid';
 }
 
-export default function FilterChip({ label, value, onRemove }: Props) {
+export default function FilterChip({ label, value, onRemove, variant = 'outline' }: Props) {
   const { colors } = useThemeContext();
+  const isSolid = variant === 'solid';
 
   return (
     <Pressable
       style={{
-        borderWidth: 1,
+        borderWidth: isSolid ? 0 : 1,
         borderColor: colors.primary,
-        paddingVertical: 2,
-        paddingHorizontal: 10,
+        backgroundColor: isSolid ? `${colors.primary}22` : 'transparent',
+        paddingVertical: isSolid ? 4 : 2,
+        paddingHorizontal: isSolid ? 10 : 10,
         borderRadius: 50,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 5,
+        gap: 4,
       }}
       onPress={onRemove}>
-      <Text style={{ color: colors.secondary, fontFamily: 'Inter-500' }}>
+      <Text
+        style={{
+          color: isSolid ? colors.primary : colors.secondary,
+          fontFamily: 'Inter-500',
+          fontSize: isSolid ? 12 : 14,
+        }}>
         {value ? (
           <>
             {label}:{' '}
-            <Text style={{ color: colors.title, textTransform: 'capitalize' }}>{value}</Text>
+            <Text
+              style={{
+                color: isSolid ? colors.primary : colors.title,
+                textTransform: 'capitalize',
+                fontFamily: 'Inter-700',
+              }}>
+              {value}
+            </Text>
           </>
         ) : (
           label
         )}
       </Text>
-      <Entypo name="cross" size={20} color={colors.secondary} />
+      <Entypo name="cross" size={isSolid ? 13 : 16} color={isSolid ? colors.primary : colors.secondary} />
     </Pressable>
   );
 }

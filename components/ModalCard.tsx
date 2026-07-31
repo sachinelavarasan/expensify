@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
@@ -40,6 +40,7 @@ export default function ModalCard({
       animationOutTiming={180}
       useNativeDriver
       useNativeDriverForBackdrop
+      avoidKeyboard
       onBackButtonPress={closeDisabled ? undefined : onClose}
       coverScreen>
       <View style={styles.wrapper}>
@@ -68,7 +69,12 @@ export default function ModalCard({
               )}
             </View>
           )}
-          {children}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -83,6 +89,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: width - 60,
+    maxHeight: height * 0.8,
     borderRadius: 20,
     paddingHorizontal: 22,
     paddingTop: 18,

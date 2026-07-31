@@ -22,73 +22,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CategoryTrendSparkline from './CategoryTrendSparkline';
 import Emptystate from './Emptystate';
 import { FontSize } from '@/utils/Typography';
+import ProgressBar from './ProgressBar';
 
 const width = deviceWidth();
 const barWidth2 = Math.round((width - 40) * 0.3);
 
-function CategoryProgressBar({
-  spentAmount,
-  budgetAmount,
-  exceeded,
-  colors,
-}: {
-  spentAmount: number;
-  budgetAmount: number;
-  exceeded: boolean;
-  colors: ThemeColors;
-}) {
-  const percentage = Math.min((spentAmount / budgetAmount) * 100, 100);
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    progress.value = withTiming(percentage, { duration: 800 });
-  }, [percentage, progress]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    width: `${progress.value}%`,
-  }));
-
-  return (
-    <View
-      style={{
-        height: 20,
-        backgroundColor: colors.borderColor,
-        borderRadius: 10,
-        overflow: 'hidden',
-        marginTop: 6,
-        width: barWidth2,
-      }}>
-      <Animated.View
-        style={[
-          {
-            height: '100%',
-            backgroundColor: exceeded ? colors.expense : colors.primary,
-            borderRadius: 0,
-          },
-          animatedStyle,
-        ]}
-      />
-      <View style={StyleSheet.absoluteFill}>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <Text
-            style={{
-              fontSize: 10,
-              color: colors.onPrimary,
-              lineHeight: 20,
-              fontFamily: 'Inter-600',
-            }}>
-            {exceeded ? 'Exceeded' : `${percentage.toFixed(2)}% used`}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-}
 
 export function BudgetedCategoriesList({
   budgetedCategories,
@@ -269,11 +207,20 @@ function CollapsibleCategoryCard({
             </View>
           </View>
           <View style={{ paddingVertical: 8 }}>
-            <CategoryProgressBar
-              spentAmount={category.totalAmount}
-              budgetAmount={Number(category.budgetAmount)}
-              exceeded={category.remainingBudget < 0}
-              colors={colors}
+            <ProgressBar
+              percentage={(category.totalAmount / Number(category.budgetAmount)) * 100}
+              height={20}
+              fillColor={category.remainingBudget < 0 ? colors.expense : colors.primary}
+              trackColor={colors.borderColor}
+              label={
+                category.remainingBudget < 0
+                  ? 'Exceeded'
+                  : `${Math.min(
+                      (category.totalAmount / Number(category.budgetAmount)) * 100,
+                      100,
+                    ).toFixed(2)}% used`
+              }
+              style={{ marginTop: 6, width: barWidth2 }}
             />
           </View>
         </View>

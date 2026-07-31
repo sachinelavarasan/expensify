@@ -16,6 +16,7 @@ import { ThemedView } from '@/components/ThemedView';
 import ProfileHeaderCard from '@/components/ProfileHeaderCard';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
+import { useNetWorth } from '@/hooks/useNetWorth';
 import AddAccount from '@/components/AddAccount';
 import Spacer from '@/components/Spacer';
 import { useGetUserData } from '@/hooks/useUserStore';
@@ -50,10 +51,22 @@ const MENU_ITEMS: {
     subtitle: 'Get reminders for bills and income that repeat',
   },
   {
+    href: '/(root)/debts',
+    icon: 'handshake',
+    title: 'Debts & Loans',
+    subtitle: 'Track money you’ve lent or borrowed',
+  },
+  {
     href: '/(root)/export-transactions',
     icon: 'import-export',
     title: 'Import / Export Transactions',
     subtitle: 'Download and share your transaction history',
+  },
+  {
+    href: '/(root)/trash',
+    icon: 'delete-outline',
+    title: 'Trash',
+    subtitle: 'Restore or permanently delete removed transactions',
   },
   {
     href: '/(root)/settings',
@@ -69,10 +82,7 @@ const Profile = () => {
   const { accounts, loading } = useBankAccounts();
   const { user: currentUser, refetch } = useGetUserData();
 
-  const overAllAmount = accounts.reduce(
-    (previous, current) => Number(previous) + Number(current.exp_ba_balance) || 0,
-    0,
-  );
+  const { netWorth: overAllAmount } = useNetWorth(accounts);
   const primaryAccount = accounts.find((item) => item.exp_ba_is_primary);
 
   return (

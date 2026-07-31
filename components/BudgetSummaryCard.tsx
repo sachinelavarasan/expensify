@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ColorValue, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import useCountUp from '@/hooks/useCountUp';
+import ProgressBar from './ProgressBar';
 
 interface Props {
   totalBudget: number;
@@ -19,15 +19,6 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
   const { colors } = useThemeContext();
   const exceeded = totalRemaining < 0;
   const percentage = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0;
-
-  const progress = useSharedValue(0);
-  useEffect(() => {
-    progress.value = withTiming(percentage, { duration: 800 });
-  }, [percentage, progress]);
-
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progress.value}%`,
-  }));
 
   const animatedTotalBudget = useCountUp(totalBudget);
   const animatedTotalSpent = useCountUp(totalSpent);
@@ -69,21 +60,23 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
               {exceeded ? 'Over by' : 'Remaining'}
             </Text>
             <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(Math.abs(animatedTotalRemaining), undefined, Math.abs(totalRemaining))}
+              {formatToCurrency(
+                Math.abs(animatedTotalRemaining),
+                undefined,
+                Math.abs(totalRemaining),
+              )}
             </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.progressTrack}>
-        <Animated.View
-          style={[
-            styles.progressFill,
-            { backgroundColor: exceeded ? colors.danger : 'rgba(255,255,255,0.95)' },
-            progressStyle,
-          ]}
-        />
-      </View>
+      <ProgressBar
+        percentage={percentage}
+        height={8}
+        fillColor={exceeded ? colors.danger : 'rgba(255,255,255,0.95)'}
+        trackColor="rgba(255,255,255,0.22)"
+        style={styles.progressTrack}
+      />
       <Text style={[styles.progressLabel, { color: colors.onPrimary }]}>
         {exceeded ? 'Budget exceeded this month' : `${percentage.toFixed(0)}% used this month`}
       </Text>
@@ -104,13 +97,13 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   balance: {
-    fontSize: 30,
+    fontSize: 24,
     fontFamily: 'Inter-600',
     marginTop: 2,
   },
   row: {
     flexDirection: 'row',
-    gap: 18,
+    gap: 24,
     marginTop: 10,
   },
   stat: {
@@ -139,15 +132,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   progressTrack: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    overflow: 'hidden',
     marginTop: 10,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
   },
   progressLabel: {
     fontSize: FontSize.sm,

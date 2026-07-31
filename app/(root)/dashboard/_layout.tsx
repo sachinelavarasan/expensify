@@ -1,13 +1,10 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 
-import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Feather from '@expo/vector-icons/Feather';
 
 import BottomTab from '@/components/BottomTabBar';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
-import { FontAwesome } from '@expo/vector-icons';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 export default function TabLayout() {
@@ -25,28 +22,26 @@ export default function TabLayout() {
     {
       name: 'index',
       title: 'Home',
-      icon: <Entypo name="home" size={24} color={colors.lighterTitle} />,
-      activeIcon: <Entypo name="home" size={24} color={colors.onPrimary} />,
+      icon: <Ionicons name="home-outline" size={24} color={colors.lighterTitle} />,
+      activeIcon: <Ionicons name="home" size={24} color={colors.onPrimary} />,
     },
     {
       name: 'budget',
       title: 'Budget',
-      icon: <FontAwesome name="get-pocket" size={24} color={colors.lighterTitle} />,
-      activeIcon: <FontAwesome name="get-pocket" size={24} color={colors.onPrimary} />,
+      icon: <Ionicons name="wallet-outline" size={24} color={colors.lighterTitle} />,
+      activeIcon: <Ionicons name="wallet" size={24} color={colors.onPrimary} />,
     },
     {
       name: 'stats',
       title: 'Stats',
-      icon: <Ionicons name="stats-chart" size={24} color={colors.lighterTitle} />,
-      activeIcon: <Ionicons name="stats-chart" size={24} color={colors.onPrimary} />,
+      icon: <Ionicons name="bar-chart-outline" size={24} color={colors.lighterTitle} />,
+      activeIcon: <Ionicons name="bar-chart" size={24} color={colors.onPrimary} />,
     },
     {
       name: 'profile',
       title: 'Profile',
-      icon: <Feather name="user" size={24} color={colors.lighterTitle} />,
-      activeIcon: <Feather name="user" size={24} color={colors.onPrimary} />,
-      // icon: <Feather name="menu" size={24} color={colors.lighterTitle} />,
-      // activeIcon: <Feather name="menu" size={24} color="#FFFFFF" />,
+      icon: <Ionicons name="person-outline" size={24} color={colors.lighterTitle} />,
+      activeIcon: <Ionicons name="person" size={24} color={colors.onPrimary} />,
     },
     // {
     //   name: 'profile',

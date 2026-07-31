@@ -14,7 +14,8 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'APP_THEME';
+export const THEME_STORAGE_KEY = 'APP_THEME';
+const STORAGE_KEY = THEME_STORAGE_KEY;
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>('dark');

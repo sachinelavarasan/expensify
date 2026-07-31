@@ -8,13 +8,13 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AuthLink from '@/components/AuthLink';
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import { ThemedView } from '@/components/ThemedView';
+import FormErrorBanner from '@/components/FormErrorBanner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Controller, useForm } from 'react-hook-form';
@@ -35,6 +35,7 @@ export default function ForgotPasswordScreen() {
   const { colors } = useThemeContext();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     control,
@@ -49,6 +50,7 @@ export default function ForgotPasswordScreen() {
 
   const onResetPasswordPress = async (data: ForgotPasswordForm) => {
     setIsLoading(true);
+    setServerError(null);
     try {
       await apiClient.post('/expensify/auth/forgot-password', { email: data.email });
       setIsLoading(false);
@@ -61,7 +63,7 @@ export default function ForgotPasswordScreen() {
       await AsyncStorage.setItem('current-verify-email', data.email);
       router.dismissTo('/(root)/(auth)/change-password');
     } catch (err) {
-      Alert.alert('Error', getApiErrorMessage(err, 'Could not send reset code'));
+      setServerError(getApiErrorMessage(err, 'Could not send reset code'));
       setIsLoading(false);
     }
   };
@@ -86,11 +88,16 @@ export default function ForgotPasswordScreen() {
                       color: colors.title,
                     },
                   ]}>
-                  Forgot Password
+                  Forgot password
+                </Text>
+                <Text style={[styles.subtext, { color: colors.description }]}>
+                  Enter your email and we&apos;ll send you a reset code
                 </Text>
               </View>
               <Spacer height={35} />
               <View style={styles.loginContainer}>
+                <FormErrorBanner message={serverError} />
+                {!!serverError && <Spacer height={16} />}
                 <Controller
                   control={control}
                   render={({ field }) => (
@@ -209,5 +216,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 2,
     fontFamily: 'Inter-800',
+    letterSpacing: -0.5,
+  },
+  subtext: {
+    fontSize: 14,
+    fontFamily: 'Inter-400',
+    paddingTop: 6,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

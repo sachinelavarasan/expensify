@@ -1,68 +1,66 @@
-import { Image, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
-import ModalCard from '@/components/ModalCard';
-
-import Spacer from '@/components/Spacer';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useThemeContext } from '@/contexts/ThemedContext';
 
 const NetworkInfoModal = () => {
-  const [netInfo, setNetInfo] = useState<{ type: string; connected: any }>({
-    type: '',
-    connected: null,
-  });
+  const [connected, setConnected] = useState<boolean | null>(null);
   const { colors } = useThemeContext();
+
   useEffect(() => {
-    // Subscribe to network state updates
     const unsubscribe = NetInfo.addEventListener((state) => {
-      setNetInfo({
-        type: state.type,
-        connected: state.isConnected,
-      });
+      setConnected(state.isConnected);
     });
 
     return () => {
-      // Unsubscribe to network state updates
       unsubscribe();
     };
   }, []);
 
-  if (netInfo.connected !== false) {
+  if (connected !== false) {
     return null;
   }
+
   return (
-    <ModalCard visible contentStyle={styles.modal}>
-      <Image source={require('@/assets/icons/network-warning.png')} />
-      <Text style={[styles.title, { color: colors.title }]}>Network Error</Text>
-      <Spacer height={15} />
-      <Text style={[styles.subTitle, { color: colors.description }]}>
-        There is an error occurred while connecting to network. Please check your mobile network.
-      </Text>
-    </ModalCard>
+    <View pointerEvents="none" style={styles.wrapper}>
+      <View style={[styles.banner, { backgroundColor: colors.cardBg, shadowColor: colors.shadow }]}>
+        <Ionicons name="cloud-offline-outline" size={16} color={colors.description} />
+        <Text style={[styles.text, { color: colors.description }]}>
+          You&apos;re offline — showing saved data
+        </Text>
+      </View>
+    </View>
   );
 };
 
 export default NetworkInfoModal;
 
 const styles = StyleSheet.create({
-  modal: {
-    paddingTop: 30,
-    paddingBottom: 30,
+  wrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 50,
+    zIndex: 999,
   },
-  title: {
-    fontSize: 20,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginTop: 16,
-    fontFamily: 'Inter-700',
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  subTitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 24,
+  text: {
+    fontSize: 13,
     fontFamily: 'Inter-500',
   },
 });

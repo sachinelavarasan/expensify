@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -7,8 +7,7 @@ import { useRecurringTransactions } from '@/hooks/useRecurringTransaction';
 import useBudgetsForMonth from '@/hooks/useBudget';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
-
-const BUDGET_ALERT_THRESHOLD = 90;
+import { getBudgetAlerts } from '@/utils/budgetAlerts';
 
 export default function HomeNudges() {
   const { colors } = useThemeContext();
@@ -21,85 +20,78 @@ export default function HomeNudges() {
     [recurringTransactions],
   );
 
-  const budgetAlert = useMemo(() => {
-    const atRisk = budgets
-      .filter((item) => item.exp_bg_id && Number(item.budgetAmount) > 0)
-      .map((item) => ({
-        category: item.category,
-        percentage: (item.totalAmount / Number(item.budgetAmount)) * 100,
-      }))
-      .filter((item) => item.percentage >= BUDGET_ALERT_THRESHOLD)
-      .sort((a, b) => b.percentage - a.percentage);
+  const budgetAlert = useMemo(() => getBudgetAlerts(budgets)[0], [budgets]);
 
-    return atRisk[0];
-  }, [budgets]);
+  if (activeRecurringCount === 0 && !budgetAlert) {
+    return null;
+  }
 
   return (
     <>
-      {activeRecurringCount > 0 && (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={[styles.nudge, { backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}
-          onPress={() => router.push('/import-recurring-transactions')}>
-          <View style={[styles.iconBox, { backgroundColor: `${colors.primary}22` }]}>
-            <MaterialIcons name="autorenew" size={16} color={colors.primary} />
-          </View>
-          <Text style={[styles.text, { color: colors.title }]}>
-            <Text style={styles.bold}>
-              {activeRecurringCount} recurring transaction{activeRecurringCount > 1 ? 's' : ''}
-            </Text>{' '}
-            ready to import this month
-          </Text>
-          <MaterialIcons name="chevron-right" size={20} color={colors.lighterTitle} />
-        </TouchableOpacity>
-      )}
+      <Text style={[styles.sectionLabel, { color: colors.description }]}>Important Actions</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}>
+        {activeRecurringCount > 0 && (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[
+              styles.pill,
+              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            ]}
+            onPress={() => router.push('/import-recurring-transactions')}>
+            <MaterialIcons name="autorenew" size={14} color={colors.primary} />
+            <Text style={[styles.pillText, { color: colors.title }]} numberOfLines={1}>
+              Import Recurring ({activeRecurringCount})
+            </Text>
+          </TouchableOpacity>
+        )}
 
-      {!!budgetAlert && (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={[styles.nudge, { backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}
-          onPress={() => router.push('/dashboard/budget')}>
-          <View style={[styles.iconBox, { backgroundColor: `${colors.accent}33` }]}>
-            <MaterialIcons name="warning" size={16} color={colors.accent} />
-          </View>
-          <Text style={[styles.text, { color: colors.title }]}>
-            <Text style={[styles.bold, { color: colors.expense }]}>{budgetAlert.category} budget</Text>{' '}
-            —{' '}
-            {budgetAlert.percentage >= 100
-              ? 'exceeded this month'
-              : `${budgetAlert.percentage.toFixed(0)}% used this month`}
-          </Text>
-          <MaterialIcons name="chevron-right" size={20} color={colors.lighterTitle} />
-        </TouchableOpacity>
-      )}
+        {!!budgetAlert && (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[
+              styles.pill,
+              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            ]}
+            onPress={() => router.push('/dashboard/budget')}>
+            <MaterialIcons name="warning-amber" size={14} color={colors.accent} />
+            <Text style={[styles.pillText, { color: colors.expense }]} numberOfLines={1}>
+              {budgetAlert.category} Budget:{' '}
+              {budgetAlert.exceeded ? 'exceeded' : `${budgetAlert.percentage.toFixed(0)}%`}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  nudge: {
+  sectionLabel: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 11,
-    marginTop: 10,
+    borderRadius: 50,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
-  iconBox: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    flex: 1,
+  pillText: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
-    lineHeight: 17,
-  },
-  bold: {
-    fontFamily: 'Inter-600',
   },
 });

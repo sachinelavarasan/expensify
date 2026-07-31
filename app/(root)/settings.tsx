@@ -181,15 +181,13 @@ export default function Setting() {
                             } else disableNotification();
                           }}
                         />
-                        <View style={!enabled ? { opacity: 0.4 } : undefined}>
-                          <TimePickerPaperWithButton
-                            value={time}
-                            onChange={(value) => {
-                              scheduleNotification(value);
-                            }}
-                            disabled={!enabled}
-                          />
-                        </View>
+                        <TimePickerPaperWithButton
+                          value={time}
+                          onChange={(value) => {
+                            scheduleNotification(value);
+                          }}
+                          disabled={!enabled}
+                        />
                       </View>
                     }
                   />

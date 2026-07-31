@@ -1,6 +1,10 @@
 import { LogBox } from 'react-native';
 import { Stack } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, onlineManager } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
@@ -49,17 +53,39 @@ SplashScreen.setOptions({
   fade: true,
 });
 
-const queryClient = new QueryClient();
+const ONE_DAY = 1000 * 60 * 60 * 24;
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: ONE_DAY,
+    },
+  },
+});
+
+const asyncStoragePersister = createAsyncStoragePersister({
+  storage: AsyncStorage,
+  key: 'EXPENSIFY_QUERY_CACHE',
+});
+
+onlineManager.setEventListener((setOnline) => {
+  return NetInfo.addEventListener((state) => {
+    setOnline(!!state.isConnected);
+  });
+});
 
 export default function RootLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister: asyncStoragePersister, maxAge: ONE_DAY }}
+    >
       <NotificationProvider>
         <AuthProvider>
           <LayoutBuilder />
         </AuthProvider>
       </NotificationProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 
@@ -117,6 +143,7 @@ function AppStack() {
       <Stack.Screen name="(root)/settings" />
       <Stack.Screen name="(root)/categories/index" />
       <Stack.Screen name="(root)/starred" />
+      <Stack.Screen name="(root)/trash" />
       <Stack.Screen name="(root)/recurring-transactions" />
       <Stack.Screen name="(root)/recurring-transaction" />
       <Stack.Screen name="(root)/export-transactions" />

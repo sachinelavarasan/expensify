@@ -39,6 +39,23 @@ type HeadersMap = {
   account: string | number;
 };
 
+type PossibleDuplicateRow = {
+  row: number;
+  title: string;
+  amount: number;
+  date: string;
+  transaction_type: string;
+  note: string;
+  possibleDuplicate: true;
+  matchedTransaction: {
+    exp_ts_id: string;
+    exp_ts_title: string;
+    exp_ts_amount: string;
+    exp_ts_date: string;
+  } | null;
+  matchedStagedRow: { row: number } | null;
+};
+
 // Importing more than this in a single request times out on the backend, so
 // large imports are split into sequential batches of this size instead.
 const IMPORT_BATCH_SIZE = 100;
@@ -76,17 +93,51 @@ export default function ImportTransactions() {
 
   const validSheetRef = useRef<BottomSheet>(null);
   const invalidSheetRef = useRef<BottomSheet>(null);
+  const duplicateSheetRef = useRef<BottomSheet>(null);
+  const confirmSheetRef = useRef<BottomSheet>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const validRows = useMemo(() => data?.validRows || [], [data?.validRows]);
   const invalidRows = useMemo(() => data?.invalidRows || [], [data?.invalidRows]);
+  const possibleDuplicates = useMemo(
+    () => (data?.possibleDuplicates || []) as PossibleDuplicateRow[],
+    [data?.possibleDuplicates],
+  );
+
+  // Possible duplicates are excluded from the import by default - the user must
+  // explicitly opt in per row via the checkbox in the duplicates bottom sheet.
+  const [includedDuplicateRows, setIncludedDuplicateRows] = useState<Set<number>>(new Set());
+  const toggleDuplicateInclusion = useCallback((rowId: number) => {
+    setIncludedDuplicateRows((prev) => {
+      const next = new Set(prev);
+      next.has(rowId) ? next.delete(rowId) : next.add(rowId);
+      return next;
+    });
+  }, []);
+
+  const rowsToImport = useMemo(
+    () => [...validRows, ...possibleDuplicates.filter((r) => includedDuplicateRows.has(r.row))],
+    [validRows, possibleDuplicates, includedDuplicateRows],
+  );
+
+  const importBreakdown = useMemo(() => {
+    const includedDuplicateCount = possibleDuplicates.filter((r) =>
+      includedDuplicateRows.has(r.row),
+    ).length;
+    return [
+      `${validRows.length} valid`,
+      includedDuplicateCount > 0 ? `${includedDuplicateCount} duplicate` : null,
+    ]
+      .filter(Boolean)
+      .join(' + ');
+  }, [validRows.length, possibleDuplicates, includedDuplicateRows]);
 
   const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(
     null,
   );
   const isImporting = importProgress !== null;
-  const importBatchCount = Math.ceil(validRows.length / IMPORT_BATCH_SIZE);
-  const totalRows = validRows.length + invalidRows.length;
+  const importBatchCount = Math.ceil(rowsToImport.length / IMPORT_BATCH_SIZE);
+  const totalRows = validRows.length + invalidRows.length + possibleDuplicates.length;
   const selectedAccountName = useMemo(
     () => accounts.find((a) => String(a.exp_ba_id) === String(headersMap.account))?.exp_ba_name,
     [accounts, headersMap.account],
@@ -131,6 +182,7 @@ export default function ImportTransactions() {
       note: '',
       account: '',
     });
+    setIncludedDuplicateRows(new Set());
   };
 
   const pickExcelFile = async () => {
@@ -149,7 +201,12 @@ export default function ImportTransactions() {
       });
 
       const result = await DocumentPicker.getDocumentAsync({
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        type: [
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'text/csv',
+          'text/comma-separated-values',
+          'text/plain',
+        ],
       });
 
       if (result.canceled) return;
@@ -164,11 +221,21 @@ export default function ImportTransactions() {
 
       setIsReadingFile(true);
 
-      const fileContent = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      const isCsv = /\.csv$/i.test(file.name || '');
 
-      const workbook = XLSX.read(fileContent, { type: 'base64' });
+      const workbook = isCsv
+        ? XLSX.read(
+            await FileSystem.readAsStringAsync(file.uri, {
+              encoding: FileSystem.EncodingType.UTF8,
+            }),
+            { type: 'string' },
+          )
+        : XLSX.read(
+            await FileSystem.readAsStringAsync(file.uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            }),
+            { type: 'base64' },
+          );
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
 
@@ -232,7 +299,10 @@ export default function ImportTransactions() {
         { headers: headersMap, data: excelData },
         {
           onError: () => Alert.alert('Error', 'Failed to process file.'),
-          onSuccess: () => setStep(2),
+          onSuccess: () => {
+            setIncludedDuplicateRows(new Set());
+            setStep(2);
+          },
         },
       );
     } catch {
@@ -240,11 +310,25 @@ export default function ImportTransactions() {
     }
   };
 
+  const openImportConfirm = () => {
+    if (rowsToImport.length === 0 || isImporting) return;
+    confirmSheetRef.current?.expand();
+  };
+
+  const handleCancelImport = () => {
+    confirmSheetRef.current?.close();
+  };
+
+  const handleConfirmImport = async () => {
+    confirmSheetRef.current?.close();
+    await finalizeImport();
+  };
+
   const finalizeImport = async () => {
-    const total = validRows.length;
-    const batches: typeof validRows[] = [];
+    const total = rowsToImport.length;
+    const batches: typeof rowsToImport[] = [];
     for (let i = 0; i < total; i += IMPORT_BATCH_SIZE) {
-      batches.push(validRows.slice(i, i + IMPORT_BATCH_SIZE));
+      batches.push(rowsToImport.slice(i, i + IMPORT_BATCH_SIZE));
     }
 
     let completed = 0;
@@ -282,6 +366,11 @@ export default function ImportTransactions() {
 
   const toggleInvalid = useCallback(() => {
     isSheetOpen ? invalidSheetRef.current?.close() : invalidSheetRef.current?.expand();
+    setIsSheetOpen((s) => !s);
+  }, [isSheetOpen]);
+
+  const toggleDuplicate = useCallback(() => {
+    isSheetOpen ? duplicateSheetRef.current?.close() : duplicateSheetRef.current?.expand();
     setIsSheetOpen((s) => !s);
   }, [isSheetOpen]);
 
@@ -345,6 +434,64 @@ export default function ImportTransactions() {
       </View>
     ),
     [colors],
+  );
+
+  const renderDuplicateItem = useCallback(
+    ({ item }: { item: PossibleDuplicateRow }) => {
+      const included = includedDuplicateRows.has(item.row);
+      return (
+        <TouchableOpacity
+          style={[styles.itemContainer, { backgroundColor: colors.bottomBarBackground }]}
+          onPress={() => toggleDuplicateInclusion(item.row)}>
+          <View style={styles.left}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.name, { color: colors.description }]}>{item.title}</Text>
+              <View style={styles.subTextContainer}>
+                <Text
+                  style={[
+                    styles.subText,
+                    { marginRight: 6, fontFamily: 'Inter-600', maxWidth: 150, color: colors.description },
+                  ]}>
+                  {formatToCurrency(item.amount)} <Text>{'•'}</Text>
+                </Text>
+                <Text
+                  style={[
+                    styles.subText,
+                    { marginRight: 6, fontFamily: 'Inter-500', color: colors.description },
+                  ]}>
+                  {item.transaction_type}
+                  <Text> {'•'} </Text>
+                </Text>
+                <Text
+                  style={[
+                    styles.subText,
+                    { marginRight: 6, fontFamily: 'Inter-400', color: colors.description },
+                  ]}>
+                  {item.date}
+                </Text>
+              </View>
+              {item.matchedTransaction ? (
+                <Text style={[styles.subText, { color: colors.accent, maxWidth: 300 }]} numberOfLines={2}>
+                  Matches existing: &quot;{item.matchedTransaction.exp_ts_title}&quot; on{' '}
+                  {item.matchedTransaction.exp_ts_date} for{' '}
+                  {formatToCurrency(Number(item.matchedTransaction.exp_ts_amount))}
+                </Text>
+              ) : item.matchedStagedRow ? (
+                <Text style={[styles.subText, { color: colors.accent, maxWidth: 300 }]} numberOfLines={2}>
+                  Matches row {item.matchedStagedRow.row} in this file
+                </Text>
+              ) : null}
+            </View>
+          </View>
+          <Feather
+            name={included ? 'check-square' : 'square'}
+            size={20}
+            color={included ? colors.primary : colors.description}
+          />
+        </TouchableOpacity>
+      );
+    },
+    [colors, includedDuplicateRows, toggleDuplicateInclusion],
   );
 
   return (
@@ -417,8 +564,9 @@ export default function ImportTransactions() {
                   .
                 </Text>
                 <Text style={[styles.subText, { color: colors.description }]}>
-                  Supported format{' '}
-                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>.xlsx</Text> only
+                  Supported formats{' '}
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>.xlsx</Text> and{' '}
+                  <Text style={{ fontFamily: 'Inter-600', color: colors.primary }}>.csv</Text>
                 </Text>
                 <Text style={[styles.subText, { color: colors.description }]}>
                   Please upload a file smaller than{' '}
@@ -663,40 +811,54 @@ export default function ImportTransactions() {
 
                 <Spacer height={14} />
 
-                <View style={styles.previewCards}>
+                <View style={styles.previewRows}>
                   <View
                     style={[
-                      styles.previewCard,
-                      invalidRows.length === 0 && { flex: 1 },
+                      styles.previewRow,
                       { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
                     ]}>
-                    <View style={styles.previewCardHeader}>
-                      <Feather name="check-circle" size={14} color={colors.income} />
-                      <Text style={[styles.previewTitle, { color: colors.income }]}>Valid</Text>
+                    <View style={styles.previewRowTop}>
+                      <View style={styles.previewRowLabel}>
+                        <Feather name="check-circle" size={16} color={colors.income} />
+                        <Text style={[styles.previewRowTitle, { color: colors.income }]}>Valid</Text>
+                        <Text style={[styles.previewRowCount, { color: colors.income }]}>
+                          {validRows.length}
+                        </Text>
+                      </View>
+                      {validRows.length > 0 && (
+                        <TouchableOpacity style={styles.previewRowAction} onPress={toggleValid}>
+                          <Text style={[styles.previewRowActionText, { color: colors.income }]}>
+                            View all
+                          </Text>
+                          <Feather name="chevron-right" size={16} color={colors.income} />
+                        </TouchableOpacity>
+                      )}
                     </View>
-                    <Text style={[styles.previewCount, { color: colors.income }]}>{validRows.length}</Text>
-                    {validRows.length > 0 && (
-                      <TouchableOpacity
-                        style={[styles.button, styles.accent, { backgroundColor: colors.income }]}
-                        onPress={toggleValid}>
-                        <Text style={[styles.title, { color: colors.onPrimary }]}>View all</Text>
-                      </TouchableOpacity>
-                    )}
                   </View>
 
                   {invalidRows.length > 0 && (
                     <View
                       style={[
-                        styles.previewCard,
+                        styles.previewRow,
                         { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
                       ]}>
-                      <View style={styles.previewCardHeader}>
-                        <Feather name="alert-circle" size={14} color={colors.expense} />
-                        <Text style={[styles.previewTitle, { color: colors.expense }]}>Invalid</Text>
+                      <View style={styles.previewRowTop}>
+                        <View style={styles.previewRowLabel}>
+                          <Feather name="alert-circle" size={16} color={colors.expense} />
+                          <Text style={[styles.previewRowTitle, { color: colors.expense }]}>
+                            Invalid
+                          </Text>
+                          <Text style={[styles.previewRowCount, { color: colors.expense }]}>
+                            {invalidRows.length}
+                          </Text>
+                        </View>
+                        <TouchableOpacity style={styles.previewRowAction} onPress={toggleInvalid}>
+                          <Text style={[styles.previewRowActionText, { color: colors.expense }]}>
+                            View all
+                          </Text>
+                          <Feather name="chevron-right" size={16} color={colors.expense} />
+                        </TouchableOpacity>
                       </View>
-                      <Text style={[styles.previewCount, { color: colors.expense }]}>
-                        {invalidRows.length}
-                      </Text>
                       <View style={styles.reasonList}>
                         {invalidReasonCounts.map(([reason, count]) => (
                           <View
@@ -710,12 +872,36 @@ export default function ImportTransactions() {
                           </View>
                         ))}
                       </View>
-                      <Spacer height={8} />
-                      <TouchableOpacity
-                        style={[styles.button, styles.danger, { backgroundColor: colors.expense }]}
-                        onPress={toggleInvalid}>
-                        <Text style={[styles.title, { color: colors.onPrimary }]}>View all</Text>
-                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  {possibleDuplicates.length > 0 && (
+                    <View
+                      style={[
+                        styles.previewRow,
+                        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                      ]}>
+                      <View style={styles.previewRowTop}>
+                        <View style={styles.previewRowLabel}>
+                          <Feather name="copy" size={16} color={colors.accent} />
+                          <Text style={[styles.previewRowTitle, { color: colors.accent }]}>
+                            Duplicates
+                          </Text>
+                          <Text style={[styles.previewRowCount, { color: colors.accent }]}>
+                            {possibleDuplicates.length}
+                          </Text>
+                        </View>
+                        <TouchableOpacity style={styles.previewRowAction} onPress={toggleDuplicate}>
+                          <Text style={[styles.previewRowActionText, { color: colors.accent }]}>
+                            Review
+                          </Text>
+                          <Feather name="chevron-right" size={16} color={colors.accent} />
+                        </TouchableOpacity>
+                      </View>
+                      <Text style={[styles.subText, { color: colors.description, marginTop: 4 }]}>
+                        {includedDuplicateRows.size} of {possibleDuplicates.length} selected to
+                        include
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -777,7 +963,7 @@ export default function ImportTransactions() {
                         </View>
                       </View>
                     ) : (
-                      validRows.length > 0 &&
+                      rowsToImport.length > 0 &&
                       importBatchCount > 1 && (
                         <Text style={[styles.subText, { marginBottom: 10, color: colors.description }]}>
                           Sent in{' '}
@@ -790,15 +976,15 @@ export default function ImportTransactions() {
                     )}
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                       <TouchableOpacity
-                        disabled={isImporting || validRows.length === 0}
+                        disabled={isImporting || rowsToImport.length === 0}
                         style={[
                           styles.button,
                           styles.accent,
                           { flex: 1 },
                           { backgroundColor: colors.primary },
-                          (isImporting || validRows.length === 0) && styles.disable,
+                          (isImporting || rowsToImport.length === 0) && styles.disable,
                         ]}
-                        onPress={finalizeImport}>
+                        onPress={openImportConfirm}>
                         {isImporting && (
                           <ActivityIndicator color={colors.primary} style={styles.loader} />
                         )}
@@ -867,9 +1053,16 @@ export default function ImportTransactions() {
               enableDynamicSizing={false}
               backgroundStyle={{ backgroundColor: colors.cardBg }}
               handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
-              <Text style={[styles.sheetTitle, { color: colors.title }]}>
-                {validRows.length} valid records
-              </Text>
+              <View style={styles.sheetHeader}>
+                <Text style={[styles.sheetTitle, { color: colors.title }]}>
+                  {validRows.length} valid records
+                </Text>
+                <TouchableOpacity
+                  hitSlop={10}
+                  onPress={() => validSheetRef.current?.close()}>
+                  <Feather name="x" size={20} color={colors.description} />
+                </TouchableOpacity>
+              </View>
               <BottomSheetFlatList
                 data={validRows}
                 keyExtractor={(_, i) => `v-${i}`}
@@ -893,9 +1086,16 @@ export default function ImportTransactions() {
               enableDynamicSizing={false}
               backgroundStyle={{ backgroundColor: colors.cardBg }}
               handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
-              <Text style={[styles.sheetTitle, { color: colors.expense }]}>
-                {invalidRows.length} invalid records
-              </Text>
+              <View style={styles.sheetHeader}>
+                <Text style={[styles.sheetTitle, { color: colors.expense }]}>
+                  {invalidRows.length} invalid records
+                </Text>
+                <TouchableOpacity
+                  hitSlop={10}
+                  onPress={() => invalidSheetRef.current?.close()}>
+                  <Feather name="x" size={20} color={colors.description} />
+                </TouchableOpacity>
+              </View>
               <BottomSheetFlatList
                 data={invalidRows}
                 keyExtractor={(_, i) => `i-${i}`}
@@ -907,6 +1107,84 @@ export default function ImportTransactions() {
               />
             </BottomSheet>
           )}
+
+          {possibleDuplicates.length > 0 && (
+            <BottomSheet
+              ref={duplicateSheetRef}
+              index={-1}
+              snapPoints={['45%', '80%']}
+              enablePanDownToClose
+              onChange={onSheetChange}
+              backdropComponent={renderBackdrop}
+              enableDynamicSizing={false}
+              backgroundStyle={{ backgroundColor: colors.cardBg }}
+              handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
+              <View style={styles.sheetHeader}>
+                <Text style={[styles.sheetTitle, { color: colors.accent }]}>
+                  {possibleDuplicates.length} possible duplicate
+                  {possibleDuplicates.length === 1 ? '' : 's'} · not imported unless selected
+                </Text>
+                <TouchableOpacity
+                  hitSlop={10}
+                  onPress={() => duplicateSheetRef.current?.close()}>
+                  <Feather name="x" size={20} color={colors.description} />
+                </TouchableOpacity>
+              </View>
+              <BottomSheetFlatList
+                data={possibleDuplicates}
+                keyExtractor={(item) => `d-${item.row}`}
+                renderItem={renderDuplicateItem}
+                contentContainerStyle={styles.contentContainer}
+                initialNumToRender={16}
+                maxToRenderPerBatch={16}
+                windowSize={7}
+              />
+            </BottomSheet>
+          )}
+
+          <BottomSheet
+            ref={confirmSheetRef}
+            index={-1}
+            snapPoints={['38%']}
+            enablePanDownToClose={!isImporting}
+            backdropComponent={renderBackdrop}
+            enableDynamicSizing={false}
+            backgroundStyle={{ backgroundColor: colors.cardBg }}
+            handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
+            <View style={styles.confirmContent}>
+              <View style={[styles.confirmIconBadge, { backgroundColor: `${colors.primary}1A` }]}>
+                <MaterialIcons name="upload-file" size={28} color={colors.primary} />
+              </View>
+              <Text style={[styles.confirmTitle, { color: colors.title }]}>
+                Import {rowsToImport.length} transaction{rowsToImport.length === 1 ? '' : 's'}?
+              </Text>
+              <Text style={[styles.confirmDescription, { color: colors.description }]}>
+                {importBreakdown} record{rowsToImport.length === 1 ? '' : 's'} will be added to{' '}
+                {selectedAccountName}.
+              </Text>
+              <View style={styles.confirmButtonRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.confirmButton,
+                    { borderColor: colors.inputBorder, borderWidth: 1 },
+                  ]}
+                  disabled={isImporting}
+                  onPress={handleCancelImport}>
+                  <Text style={[styles.confirmButtonText, { color: colors.description }]}>
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.confirmButton, { backgroundColor: colors.primary }]}
+                  disabled={isImporting}
+                  onPress={handleConfirmImport}>
+                  <Text style={[styles.confirmButtonText, { color: colors.onPrimary }]}>
+                    Import
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </BottomSheet>
         </ThemedView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
@@ -1014,17 +1292,22 @@ const styles = StyleSheet.create({
   targetTotalLabel: { fontSize: FontSize.sm, fontFamily: 'Inter-500' },
 
   // preview
-  previewCards: { flexDirection: 'row', gap: 10 },
-  previewCard: {
-    flex: 1,
+  previewRows: { gap: 10 },
+  previewRow: {
     borderWidth: 1,
     borderRadius: 10,
     padding: 12,
-    alignItems: 'center',
   },
-  previewCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  previewTitle: { fontFamily: 'Inter-600', fontSize: FontSize.base },
-  previewCount: { fontFamily: 'Inter-700', fontSize: 22, marginVertical: 6 },
+  previewRowTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  previewRowLabel: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  previewRowTitle: { fontFamily: 'Inter-600', fontSize: FontSize.base },
+  previewRowCount: { fontFamily: 'Inter-700', fontSize: FontSize.base },
+  previewRowAction: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  previewRowActionText: { fontFamily: 'Inter-600', fontSize: FontSize.sm },
   sectionLabel: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
@@ -1062,7 +1345,7 @@ const styles = StyleSheet.create({
   },
 
   // invalid reason breakdown
-  reasonList: { alignItems: 'center', gap: 4 },
+  reasonList: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   reasonChip: {
     borderWidth: 1,
     borderRadius: 20,
@@ -1085,11 +1368,61 @@ const styles = StyleSheet.create({
   subTextContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' },
 
   // sheet titles
-  sheetTitle: {
-    fontSize: FontSize.md,
-    fontFamily: 'Inter-600',
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 8,
     paddingTop: 6,
+  },
+  sheetTitle: {
+    flex: 1,
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-600',
+    marginRight: 12,
+  },
+
+  // import confirm sheet
+  confirmContent: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    alignItems: 'center',
+  },
+  confirmIconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  confirmTitle: {
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-600',
+    textAlign: 'center',
+  },
+  confirmDescription: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-400',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  confirmButtonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+    width: '100%',
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmButtonText: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-600',
   },
 });

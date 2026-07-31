@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
+import FormErrorBanner from '@/components/FormErrorBanner';
 
 import { otpValidation } from '@/utils/Validation-custom';
 import { deviceWidth } from '@/utils/functions';
@@ -36,6 +36,7 @@ const MobileVerify = () => {
 
   const [otpVerifyLoading, setIsOtpVerifyLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const handleTextChange = (data: string) => {
     setOtp(data);
@@ -50,6 +51,7 @@ const MobileVerify = () => {
 
   const verify = async () => {
     setIsOtpVerifyLoading(true);
+    setServerError(null);
     try {
       const response = await apiClient.post('/expensify/auth/verify-signup-otp', {
         email,
@@ -64,7 +66,7 @@ const MobileVerify = () => {
       });
       router.dismissTo('/(root)/dashboard');
     } catch (err) {
-      Alert.alert('Error', getApiErrorMessage(err, 'Verification failed. Please try again.'));
+      setServerError(getApiErrorMessage(err, 'Verification failed. Please try again.'));
     } finally {
       setIsOtpVerifyLoading(false);
     }
@@ -72,6 +74,7 @@ const MobileVerify = () => {
 
   const resendCode = async () => {
     setResendLoading(true);
+    setServerError(null);
     try {
       await apiClient.post('/expensify/auth/resend-otp', { email, purpose: 'signup_verify' });
       showToast({
@@ -80,7 +83,7 @@ const MobileVerify = () => {
         position: 'bottom',
       });
     } catch (err) {
-      Alert.alert('Error', getApiErrorMessage(err, 'Could not resend code'));
+      setServerError(getApiErrorMessage(err, 'Could not resend code'));
     } finally {
       setResendLoading(false);
     }
@@ -103,12 +106,16 @@ const MobileVerify = () => {
             }}
             keyboardShouldPersistTaps={'always'}>
             <Spacer height={100} />
-            <Text style={[styles.header, { color: colors.title }]}>Verify Email</Text>
+            <Text style={[styles.header, { color: colors.title }]}>
+              Verify your <Text style={{ color: colors.primary }}>Expensify</Text> email
+            </Text>
             <Text style={[styles.subtext, { color: colors.description }]}>
               Enter the 6-digit code that has been sent to{' '}
               <Text style={[styles.subtext, { color: colors.description }]}>{email}</Text>
             </Text>
-            <Spacer height={30} />
+            <Spacer height={20} />
+            <FormErrorBanner message={serverError} />
+            <Spacer height={serverError ? 16 : 30} />
             <OTPTextInput
               inputCount={6}
               containerStyle={styles.textInputContainer}

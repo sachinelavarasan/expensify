@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/apiClient';
 import { Itransaction } from '@/types';
 
 type DateRangeType = 'daily' | 'weekly' | 'monthly';
+type CustomDateRange = { start: string; end: string };
 
 const useTransactions = (
   initialDate?: Date,
@@ -16,33 +17,58 @@ const useTransactions = (
   const [search, setSearch] = useState('');
   const [transactionType, setTransactionType] = useState<string>('');
   const [bankAccount, setBankAccount] = useState<number | string>('');
+  const [customDateRange, setCustomDateRange] = useState<CustomDateRange | null>(null);
+  const [minAmount, setMinAmount] = useState<string>('');
+  const [maxAmount, setMaxAmount] = useState<string>('');
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
 
   const {
     isLoading,
     data: transactions,
     refetch,
   } = useQuery({
-    queryKey: ['transactions', currentDate, search, transactionType, dateRangeType, bankAccount],
+    queryKey: [
+      'transactions',
+      currentDate,
+      search,
+      transactionType,
+      dateRangeType,
+      bankAccount,
+      customDateRange,
+      minAmount,
+      maxAmount,
+      categoryIds,
+      tags,
+    ],
     enabled,
     queryFn: async ({ queryKey }): Promise<Itransaction[]> => {
       const [_, date, searchText, txType, rangeType] = queryKey as [string, Date, string, string, DateRangeType];
 
-      let start: Date;
-      let end: Date;
+      let startDate: string;
+      let endDate: string;
 
-      if (rangeType === 'daily') {
-        start = startOfDay(date);
-        end = addDays(start, 1);
-      } else if (rangeType === 'weekly') {
-        start = startOfWeek(date, { weekStartsOn: 1 });
-        end = addWeeks(start, 1);
+      if (customDateRange) {
+        startDate = customDateRange.start;
+        endDate = customDateRange.end;
       } else {
-        start = startOfMonth(date);
-        end = addMonths(start, 1);
-      }
+        let start: Date;
+        let end: Date;
 
-      const startDate = format(start, 'yyyy-MM-dd');
-      const endDate = format(end, 'yyyy-MM-dd');
+        if (rangeType === 'daily') {
+          start = startOfDay(date);
+          end = addDays(start, 1);
+        } else if (rangeType === 'weekly') {
+          start = startOfWeek(date, { weekStartsOn: 1 });
+          end = addWeeks(start, 1);
+        } else {
+          start = startOfMonth(date);
+          end = addMonths(start, 1);
+        }
+
+        startDate = format(start, 'yyyy-MM-dd');
+        endDate = format(end, 'yyyy-MM-dd');
+      }
 
       const response = await apiClient.get<Itransaction[]>('/expensify/transactions', {
         params: {
@@ -51,6 +77,10 @@ const useTransactions = (
           search: searchText || undefined,
           transaction_type: txType || undefined,
           account: bankAccount || undefined,
+          minAmount: minAmount || undefined,
+          maxAmount: maxAmount || undefined,
+          categories: categoryIds.length ? categoryIds.join(',') : undefined,
+          tags: tags.length ? tags.join(',') : undefined,
         },
       });
 
@@ -78,6 +108,12 @@ const useTransactions = (
   const updateTransactionType = (type: string) => setTransactionType(type);
   const updateDateRangeType = (range: DateRangeType) => setDateRangeType(range);
   const updateBankAccount = (account: number | string) => setBankAccount(account);
+  const updateCustomDateRange = (range: CustomDateRange) => setCustomDateRange(range);
+  const clearCustomDateRange = () => setCustomDateRange(null);
+  const updateMinAmount = (value: string) => setMinAmount(value);
+  const updateMaxAmount = (value: string) => setMaxAmount(value);
+  const updateCategoryIds = (ids: string[]) => setCategoryIds(ids);
+  const updateTags = (newTags: string[]) => setTags(newTags);
 
   const refetchData = (customDate?: Date) => {
     if (customDate) {
@@ -88,6 +124,9 @@ const useTransactions = (
   };
 
   const getFormattedTitle = () => {
+    if (customDateRange) {
+      return `${format(new Date(customDateRange.start), 'MMM dd, yy')} - ${format(new Date(customDateRange.end), 'MMM dd, yy')}`;
+    }
     if (dateRangeType === 'daily') return format(currentDate, 'dd MMM yyyy');
     if (dateRangeType === 'weekly') {
       const start = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -105,6 +144,11 @@ const useTransactions = (
     transactionType,
     dateRangeType,
     bankAccount,
+    customDateRange,
+    minAmount,
+    maxAmount,
+    categoryIds,
+    tags,
     goToPrevious,
     goToNext,
     updateSearch,
@@ -113,6 +157,12 @@ const useTransactions = (
     refetch: refetchData,
     refetchManual: refetch,
     updateBankAccount,
+    updateCustomDateRange,
+    clearCustomDateRange,
+    updateMinAmount,
+    updateMaxAmount,
+    updateCategoryIds,
+    updateTags,
     formattedTitle: getFormattedTitle(),
   };
 };

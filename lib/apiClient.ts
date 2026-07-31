@@ -70,9 +70,12 @@ apiClient.interceptors.response.use(
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
       return apiClient(originalRequest);
     } catch (refreshError) {
-      clearTokens();
-      await clearStoredTokens();
-      notifyUnauthorized();
+      const isAuthRejection = (refreshError as AxiosError)?.response !== undefined;
+      if (isAuthRejection) {
+        clearTokens();
+        await clearStoredTokens();
+        notifyUnauthorized();
+      }
       return Promise.reject(refreshError);
     }
   },

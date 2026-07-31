@@ -19,6 +19,7 @@ interface ExtraInputProps {
   error?: string | null;
   isTitle?: boolean;
   isRequired?: boolean;
+  enableAutofill?: boolean;
 }
 
 const Input = forwardRef(function MyInput(
@@ -36,8 +37,10 @@ const Input = forwardRef(function MyInput(
     isTitle,
     editable = true,
     isRequired = false,
+    enableAutofill = false,
     onFocus,
     onBlur,
+    autoComplete,
     ...otherProps
   } = props;
   const [show, setShow] = useState(false);
@@ -89,12 +92,13 @@ const Input = forwardRef(function MyInput(
             ]}
             secureTextEntry={isPassword && !show}
             autoCorrect={false}
-            autoComplete={'off'}
+            autoComplete={enableAutofill ? autoComplete : 'off'}
+            importantForAutofill={enableAutofill ? 'yes' : 'no'}
             selectTextOnFocus={false}
             autoCapitalize="none"
             spellCheck={false}
             placeholderTextColor={colors.inputPlaceholder}
-            selectionColor={colors.text}
+            selectionColor={colors.primary + '40'}
             cursorColor={colors.secondary}
             editable={editable}
             onFocus={(e) => {

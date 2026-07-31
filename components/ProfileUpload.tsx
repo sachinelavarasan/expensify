@@ -1,5 +1,13 @@
-import React, { useCallback, useRef } from 'react';
-import { View, Image, Text, TouchableOpacity, Pressable, StyleSheet } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  View,
+  Image,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  StyleSheet,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -9,16 +17,17 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { useGetUserData, useRemoveProfileImage, useUploadProfileImage } from '@/hooks/useUserStore';
 
 const AVATAR_SIZE = 70;
-const MAX_FILE_SIZE_BYTES = 500 * 1024;
+const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 export default function ProfileImageUploader({ isSmall = false }: { isSmall?: boolean }) {
   const { colors } = useThemeContext();
   const { user, loading } = useGetUserData();
-  const { mutateAsync: uploadImage, isPending: uploading, progress } = useUploadProfileImage();
+  const { mutateAsync: uploadImage, isPending: uploading } = useUploadProfileImage();
   const { mutateAsync: removeImage, isPending: removing } = useRemoveProfileImage();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   const openOptions = useCallback(() => {
     bottomSheetModalRef.current?.present();
@@ -27,6 +36,11 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
   const closeOptions = useCallback(() => {
     bottomSheetModalRef.current?.dismiss();
   }, []);
+
+  const viewCurrentImage = () => {
+    closeOptions();
+    setShowPreview(true);
+  };
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -94,7 +108,7 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
     const sizeInBytes = Math.ceil((base64.length * 3) / 4);
     if (sizeInBytes > MAX_FILE_SIZE_BYTES) {
       showToast({
-        text1: 'Image is too large. Maximum size is 500KB.',
+        text1: 'Image is too large. Maximum size is 1MB.',
         type: 'error',
         position: 'bottom',
         visibilityTime: 2500,
@@ -159,13 +173,20 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        snapPoints={['28%']}
+        snapPoints={['36%']}
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         <View style={styles.sheetContent}>
           <Text style={[styles.sheetTitle, { color: colors.title }]}>Profile Picture</Text>
+
+          <Pressable style={styles.optionRow} onPress={viewCurrentImage}>
+            <View style={[styles.optionIconBadge, { backgroundColor: colors.primary + '1A' }]}>
+              <FontAwesome6 name="expand" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.optionText, { color: colors.title }]}>View Photo</Text>
+          </Pressable>
 
           <Pressable style={styles.optionRow} onPress={pickImage}>
             <View style={[styles.optionIconBadge, { backgroundColor: colors.primary + '1A' }]}>
@@ -183,16 +204,24 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
         </View>
       </BottomSheetModal>
 
-      <ModalCard visible={uploading} closeDisabled title="Uploading Photo">
-        <View style={styles.progressTrack}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${progress}%`, backgroundColor: colors.primary },
-            ]}
+      <ModalCard
+        visible={showPreview}
+        onClose={() => setShowPreview(false)}
+        title="Profile Picture">
+        {!!user?.exp_us_profile_url && (
+          <Image
+            source={{ uri: user.exp_us_profile_url }}
+            style={styles.previewImage}
+            resizeMode="contain"
           />
+        )}
+      </ModalCard>
+
+      <ModalCard visible={uploading} closeDisabled title="Uploading Photo">
+        <View style={styles.uploadingRow}>
+          <ActivityIndicator size="small" color={colors.primary} />
+          <Text style={[styles.progressLabel, { color: colors.description }]}>Uploading…</Text>
         </View>
-        <Text style={[styles.progressLabel, { color: colors.description }]}>{progress}%</Text>
       </ModalCard>
     </>
   );
@@ -257,22 +286,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
   },
 
-  progressTrack: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(128,128,128,0.25)',
-    overflow: 'hidden',
-  },
-
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
+  uploadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
 
   progressLabel: {
-    marginTop: 10,
     fontSize: 13,
     fontFamily: 'Inter-500',
     textAlign: 'center',
+  },
+
+  previewImage: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 12,
   },
 });
