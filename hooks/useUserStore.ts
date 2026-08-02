@@ -34,8 +34,8 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (name: string) => {
-      const response = await apiClient.put<IExpUser>('/expensify/profile', { name });
+    mutationFn: async ({ name, phone }: { name: string; phone?: string }) => {
+      const response = await apiClient.put<IExpUser>('/expensify/profile', { name, phone });
       return response.data;
     },
     onSuccess: () => {

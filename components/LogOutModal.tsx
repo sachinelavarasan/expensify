@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
-import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useReminderSettings } from '@/hooks/useReminder';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -10,6 +11,7 @@ import { THEME_STORAGE_KEY, useThemeContext } from '@/contexts/ThemedContext';
 
 const LogoutButton = () => {
   const { colors } = useThemeContext();
+  const insets = useSafeAreaInsets();
   const { disableNotification } = useReminderSettings();
   const { signOut } = useAuthContext();
   const router = useRouter();
@@ -59,7 +61,7 @@ const LogoutButton = () => {
 
   const renderBottomSheetContent = useCallback(
     () => (
-      <View style={styles.contentContainer}>
+      <BottomSheetView style={[styles.contentContainer, { paddingBottom: 16 + insets.bottom }]}>
         <View style={[styles.iconBadge, { backgroundColor: colors.danger + '1A' }]}>
           <Ionicons name="log-out-outline" size={30} color={colors.danger} />
         </View>
@@ -88,9 +90,9 @@ const LogoutButton = () => {
             )}
           </Pressable>
         </View>
-      </View>
+      </BottomSheetView>
     ),
-    [colors, loading, handleCancel],
+    [colors, loading, handleCancel, insets.bottom],
   );
 
   return (
@@ -105,10 +107,9 @@ const LogoutButton = () => {
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        snapPoints={['32%']}
+        enableDynamicSizing
         enablePanDownToClose={!loading}
         backdropComponent={renderBackdrop}
-        enableDynamicSizing={false}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
         {renderBottomSheetContent()}

@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import { QueryObserverResult } from '@tanstack/react-query';
 
 import ProfileImageUploader from './ProfileUpload';
-import UpdateProfile from './UpdateProfile';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
 import { IExpUser } from '@/types';
@@ -23,20 +22,16 @@ export default function ProfileHeaderCard({ title, subtitle, refetch }: Props) {
         styles.card,
         { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
       ]}>
-      <ProfileImageUploader />
-      <View style={styles.headerContent}>
-        <View style={styles.textOverlay}>
-          <Text style={[styles.name, { color: colors.title }]} numberOfLines={1}>
-            {title}
+      <ProfileImageUploader refetch={refetch} />
+      <View style={styles.textOverlay}>
+        <Text style={[styles.name, { color: colors.title }]} numberOfLines={1}>
+          {title}
+        </Text>
+        {!!subtitle && (
+          <Text style={[styles.email, { color: colors.description }]} numberOfLines={1}>
+            {subtitle}
           </Text>
-          {!!subtitle && (
-            <Text style={[styles.email, { color: colors.description }]} numberOfLines={1}>
-              {subtitle}
-            </Text>
-          )}
-        </View>
-
-        <UpdateProfile refetch={refetch} />
+        )}
       </View>
     </View>
   );
@@ -50,13 +45,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 14,
   },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   textOverlay: {
+    flex: 1,
     flexShrink: 1,
   },
   name: {

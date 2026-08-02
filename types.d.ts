@@ -82,6 +82,7 @@ export interface IBudget {
 
 export interface ICategoryWithCount extends ICategory {
   transaction_count: string;
+  total_spend: string;
 }
 
 export interface IBankAccount {

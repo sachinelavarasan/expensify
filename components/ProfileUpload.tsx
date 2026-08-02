@@ -9,24 +9,35 @@ import {
   StyleSheet,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { QueryObserverResult } from '@tanstack/react-query';
 import { showToast } from './ToastMessage';
 import ModalCard from './ModalCard';
+import UpdateProfile, { UpdateProfileHandle } from './UpdateProfile';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { useGetUserData, useRemoveProfileImage, useUploadProfileImage } from '@/hooks/useUserStore';
+import { IExpUser } from '@/types';
 
 const AVATAR_SIZE = 70;
 const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-export default function ProfileImageUploader({ isSmall = false }: { isSmall?: boolean }) {
+type Props = {
+  isSmall?: boolean;
+  refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
+};
+
+export default function ProfileImageUploader({ isSmall = false, refetch }: Props) {
   const { colors } = useThemeContext();
+  const insets = useSafeAreaInsets();
   const { user, loading } = useGetUserData();
   const { mutateAsync: uploadImage, isPending: uploading } = useUploadProfileImage();
   const { mutateAsync: removeImage, isPending: removing } = useRemoveProfileImage();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const updateProfileRef = useRef<UpdateProfileHandle>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   const openOptions = useCallback(() => {
@@ -40,6 +51,11 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
   const viewCurrentImage = () => {
     closeOptions();
     setShowPreview(true);
+  };
+
+  const editProfile = () => {
+    closeOptions();
+    updateProfileRef.current?.open();
   };
 
   const renderBackdrop = useCallback(
@@ -138,10 +154,6 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
   };
 
   const handlePress = () => {
-    if (!user?.exp_us_profile_url) {
-      pickImage();
-      return;
-    }
     openOptions();
   };
 
@@ -165,44 +177,58 @@ export default function ProfileImageUploader({ isSmall = false }: { isSmall?: bo
           </View>
         )}
         {!isSmall && (
-          <View style={[styles.editBadge, { backgroundColor: colors.scrim }]}>
-            <FontAwesome6 name="camera" size={11} color={colors.onPrimary} />
+          <View style={[styles.editBadge, { backgroundColor: colors.primary }]}>
+            <FontAwesome6 name="pen" size={11} color={colors.onPrimary} />
           </View>
         )}
       </TouchableOpacity>
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        snapPoints={['36%']}
-        enableDynamicSizing={false}
+        enableDynamicSizing
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
-        <View style={styles.sheetContent}>
-          <Text style={[styles.sheetTitle, { color: colors.title }]}>Profile Picture</Text>
+        <BottomSheetView style={[styles.sheetContent, { paddingBottom: 30 + insets.bottom }]}>
+          <Text style={[styles.sheetTitle, { color: colors.title }]}>Profile</Text>
 
-          <Pressable style={styles.optionRow} onPress={viewCurrentImage}>
+          <Pressable style={styles.optionRow} onPress={editProfile}>
             <View style={[styles.optionIconBadge, { backgroundColor: colors.primary + '1A' }]}>
-              <FontAwesome6 name="expand" size={16} color={colors.primary} />
+              <FontAwesome6 name="user-pen" size={16} color={colors.primary} />
             </View>
-            <Text style={[styles.optionText, { color: colors.title }]}>View Photo</Text>
+            <Text style={[styles.optionText, { color: colors.title }]}>Edit Profile</Text>
           </Pressable>
+
+          {!!user?.exp_us_profile_url && (
+            <Pressable style={styles.optionRow} onPress={viewCurrentImage}>
+              <View style={[styles.optionIconBadge, { backgroundColor: colors.primary + '1A' }]}>
+                <FontAwesome6 name="expand" size={16} color={colors.primary} />
+              </View>
+              <Text style={[styles.optionText, { color: colors.title }]}>View Photo</Text>
+            </Pressable>
+          )}
 
           <Pressable style={styles.optionRow} onPress={pickImage}>
             <View style={[styles.optionIconBadge, { backgroundColor: colors.primary + '1A' }]}>
               <FontAwesome6 name="camera" size={16} color={colors.primary} />
             </View>
-            <Text style={[styles.optionText, { color: colors.title }]}>Change Photo</Text>
+            <Text style={[styles.optionText, { color: colors.title }]}>
+              {user?.exp_us_profile_url ? 'Change Photo' : 'Add Photo'}
+            </Text>
           </Pressable>
 
-          <Pressable style={styles.optionRow} onPress={removeCurrentImage}>
-            <View style={[styles.optionIconBadge, { backgroundColor: colors.danger + '1A' }]}>
-              <FontAwesome6 name="trash" size={16} color={colors.danger} />
-            </View>
-            <Text style={[styles.optionText, { color: colors.danger }]}>Remove Photo</Text>
-          </Pressable>
-        </View>
+          {!!user?.exp_us_profile_url && (
+            <Pressable style={styles.optionRow} onPress={removeCurrentImage}>
+              <View style={[styles.optionIconBadge, { backgroundColor: colors.danger + '1A' }]}>
+                <FontAwesome6 name="trash" size={16} color={colors.danger} />
+              </View>
+              <Text style={[styles.optionText, { color: colors.danger }]}>Remove Photo</Text>
+            </Pressable>
+          )}
+        </BottomSheetView>
       </BottomSheetModal>
+
+      <UpdateProfile ref={updateProfileRef} refetch={refetch} />
 
       <ModalCard
         visible={showPreview}

@@ -1,4 +1,4 @@
-import { ICategory } from '@/types';
+import { ICategory, ICategoryWithCount } from '@/types';
 import { apiClient } from '@/lib/apiClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -13,10 +13,10 @@ export const useCategoryList = () => {
     isError,
     error,
     refetch,
-  } = useQuery<ICategory[], Error>({
+  } = useQuery<ICategoryWithCount[], Error>({
     queryKey: queryKeys.categories,
-    queryFn: async (): Promise<ICategory[]> => {
-      const response = await apiClient.get<ICategory[]>('/expensify/categories');
+    queryFn: async (): Promise<ICategoryWithCount[]> => {
+      const response = await apiClient.get<ICategoryWithCount[]>('/expensify/categories');
       return response.data;
     },
   });

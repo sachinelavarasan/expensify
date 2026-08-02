@@ -18,7 +18,7 @@ import DraggableFlatList, {
 } from 'react-native-draggable-flatlist';
 import { Link, useRouter } from 'expo-router';
 import { Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { ICategory } from '@/types';
+import { ICategoryWithCount } from '@/types';
 import OverlayLoader from '@/components/Overlay';
 import Spacer from '@/components/Spacer';
 import Emptystate from '@/components/Emptystate';
@@ -26,6 +26,7 @@ import Emptystate from '@/components/Emptystate';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
+import { formatToCurrency } from '@/utils/formatter';
 
 export default function Category() {
   const { colors } = useThemeContext();
@@ -34,8 +35,8 @@ export default function Category() {
   const { mutateAsync: reorderList, isPending: isLoading } = useReorderCategories();
   // const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
-  const [dataList, setDataList] = useState<ICategory[]>([]);
-  const [systemList, setSystemList] = useState<ICategory[]>([]);
+  const [dataList, setDataList] = useState<ICategoryWithCount[]>([]);
+  const [systemList, setSystemList] = useState<ICategoryWithCount[]>([]);
 
   // const onRefresh = useCallback(() => {
   //   setRefreshing(true);
@@ -49,7 +50,7 @@ export default function Category() {
     () =>
       categories
         .filter(
-          (item: ICategory) =>
+          (item: ICategoryWithCount) =>
             item.exp_tc_transaction_type === 2 && item.exp_tc_user_id !== null,
         )
         .sort(
@@ -63,7 +64,7 @@ export default function Category() {
     () =>
       categories
         .filter(
-          (item: ICategory) =>
+          (item: ICategoryWithCount) =>
             item.exp_tc_transaction_type === 1 && item.exp_tc_user_id !== null,
         )
         .sort(
@@ -77,7 +78,7 @@ export default function Category() {
     if(categories?.length){
       setDataList(activeTab === 'income' ? incomeCategories : expenseCategories);
     const list = categories?.filter(
-      (item: ICategory) =>
+      (item: ICategoryWithCount) =>
         ((item.exp_tc_transaction_type === 1 && activeTab === 'expense') ||
           (item.exp_tc_transaction_type === 2 && activeTab === 'income')) &&
         item.exp_tc_user_id === null,
@@ -86,7 +87,7 @@ export default function Category() {
     }
   }, [activeTab, categories, expenseCategories, incomeCategories]);
 
-  const reArrangeOrder = (data: ICategory[]) => {
+  const reArrangeOrder = (data: ICategoryWithCount[]) => {
     const updatedData = data.map((item, index) => ({
       ...item,
       exp_tc_sort_order: index + 1,
@@ -100,6 +101,15 @@ export default function Category() {
 
   const scrollY = useSharedValue(0);
   const buttonVisible = useSharedValue(1);
+  const tabIndex = useSharedValue(0);
+
+  useEffect(() => {
+    tabIndex.value = withTiming(activeTab === 'income' ? 0 : 1, { duration: 220 });
+  }, [activeTab]);
+
+  const tabIndicatorStyle = useAnimatedStyle(() => ({
+    left: `${tabIndex.value * 50}%`,
+  }));
 
   const scrollHandler = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset } = event.nativeEvent;
@@ -139,25 +149,20 @@ export default function Category() {
             { backgroundColor: colors.primary, shadowColor: colors.shadow },
             animatedButtonStyle,
           ]}>
-          <TouchableOpacity
-            style={{
-              width: '100%',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onPress={handlePress}>
-            <Entypo name="plus" size={24} color={colors.onPrimary} />
+          <TouchableOpacity style={styles.floatingButtonInner} onPress={handlePress}>
+            <Entypo name="plus" size={18} color={colors.onPrimary} />
+            <Text style={[styles.floatingButtonText, { color: colors.onPrimary }]}>
+              Add Category
+            </Text>
           </TouchableOpacity>
         </Animated.View>
         <ProfileHeader title="Categories" />
         <View style={[styles.tabContainer, { backgroundColor: colors.barBackground }]}>
+          <Animated.View
+            style={[styles.tabIndicator, { backgroundColor: colors.primary }, tabIndicatorStyle]}
+          />
           <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'income' && styles.activeTab,
-              activeTab === 'income' && { backgroundColor: colors.primary },
-            ]}
+            style={styles.tab}
             onPress={() => {
               setActiveTab('income');
               setDataList(incomeCategories);
@@ -173,11 +178,7 @@ export default function Category() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'expense' && styles.activeTab,
-              activeTab === 'expense' && { backgroundColor: colors.primary },
-            ]}
+            style={styles.tab}
             onPress={() => {
               setActiveTab('expense');
               setDataList(expenseCategories);
@@ -219,7 +220,11 @@ export default function Category() {
                         key={item.exp_tc_id}
                         style={[
                           styles.card,
-                          { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+                          {
+                            backgroundColor: colors.inputColor,
+                            borderColor: colors.inputBorder,
+                            shadowColor: colors.shadow,
+                          },
                         ]}>
                         <View style={styles.left}>
                           <View
@@ -242,9 +247,20 @@ export default function Category() {
                               />
                             )}
                           </View>
-                          <Text style={[styles.name, { color: colors.title }]}>
-                            {item.exp_tc_label}
-                          </Text>
+                          <View style={{ flexShrink: 1 }}>
+                            <Text
+                              style={[styles.name, { color: colors.title }]}
+                              numberOfLines={1}>
+                              {item.exp_tc_label}
+                            </Text>
+                            <Text
+                              style={[styles.stat, { color: colors.description }]}
+                              numberOfLines={1}>
+                              {Number(item.transaction_count) > 0
+                                ? `${formatToCurrency(item.total_spend)} · ${item.transaction_count} txns`
+                                : 'No transactions yet'}
+                            </Text>
+                          </View>
                         </View>
                         <Ionicons name="lock-closed" size={16} color={colors.lighterTitle} />
                       </View>
@@ -271,7 +287,7 @@ export default function Category() {
             scrollEnabled={true}
             bounces={false}
             keyExtractor={(item, index) => item.exp_tc_label + index}
-            renderItem={({ item, drag, isActive }: RenderItemParams<ICategory>) => (
+            renderItem={({ item, drag, isActive }: RenderItemParams<ICategoryWithCount>) => (
               <ScaleDecorator activeScale={1.05}>
                 <Link
                   disabled={isActive}
@@ -280,54 +296,70 @@ export default function Category() {
                     params: { id: item.exp_tc_id, data: JSON.stringify(item) },
                   }}
                   asChild>
-                  <TouchableOpacity>
-                    <View
-                      style={[
-                        styles.card,
-                        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
-                      ]}>
-                      <View style={styles.left}>
-                        <View
-                          style={[
-                            styles.iconBox,
-                            {
-                              backgroundColor:
-                                item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                            },
-                          ]}>
-                          {item.exp_tc_icon && (
-                            <MaterialIcons
-                              name={
-                                item.exp_tc_icon as React.ComponentProps<
-                                  typeof MaterialIcons
-                                >['name']
-                              }
-                              size={22}
-                              color={colors.categoryFallbackIcon}
-                            />
-                          )}
+                  <Pressable>
+                    {({ pressed }) => (
+                      <View
+                        style={[
+                          styles.card,
+                          {
+                            backgroundColor: pressed ? colors.barBackground : colors.inputColor,
+                            borderColor: colors.inputBorder,
+                            shadowColor: colors.shadow,
+                          },
+                        ]}>
+                        <View style={styles.left}>
+                          <View
+                            style={[
+                              styles.iconBox,
+                              {
+                                backgroundColor:
+                                  item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
+                              },
+                            ]}>
+                            {item.exp_tc_icon && (
+                              <MaterialIcons
+                                name={
+                                  item.exp_tc_icon as React.ComponentProps<
+                                    typeof MaterialIcons
+                                  >['name']
+                                }
+                                size={22}
+                                color={colors.categoryFallbackIcon}
+                              />
+                            )}
+                          </View>
+                          <View style={{ flexShrink: 1 }}>
+                            <Text
+                              style={[styles.name, { color: colors.title }]}
+                              numberOfLines={1}>
+                              {item.exp_tc_label}
+                            </Text>
+                            <Text
+                              style={[styles.stat, { color: colors.description }]}
+                              numberOfLines={1}>
+                              {Number(item.transaction_count) > 0
+                                ? `${formatToCurrency(item.total_spend)} · ${item.transaction_count} txns`
+                                : 'No transactions yet'}
+                            </Text>
+                          </View>
                         </View>
-                        <Text style={[styles.name, { color: colors.title }]}>
-                          {item.exp_tc_label}
-                        </Text>
-                      </View>
 
-                      <View>
                         {item.exp_tc_user_id && (
                           <Pressable
                             onLongPress={drag}
                             style={{
-                              alignItems: 'flex-end',
+                              alignItems: 'center',
                               justifyContent: 'center',
                               height: 35,
                               width: 35,
+                              flexShrink: 0,
                             }}>
-                            <Ionicons name="reorder-two" size={22} color={colors.description} />
+                            <MaterialIcons name="drag-handle" size={22} color={colors.description} />
                           </Pressable>
                         )}
                       </View>
-                    </View>
-                  </TouchableOpacity>
+                    )}
+                  </Pressable>
                 </Link>
               </ScaleDecorator>
             )}
@@ -342,17 +374,22 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     marginBottom: 16,
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 5,
     marginHorizontal: 10,
+    position: 'relative',
+  },
+  tabIndicator: {
+    position: 'absolute',
+    top: 5,
+    bottom: 5,
+    width: '50%',
+    borderRadius: 8,
   },
   tab: {
     flex: 1,
     padding: 8,
     alignItems: 'center',
-  },
-  activeTab: {
-    borderRadius: 8,
   },
   tabText: {
     fontSize: FontSize.sm,
@@ -374,6 +411,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   left: {
     display: 'flex',
@@ -393,12 +434,13 @@ const styles = StyleSheet.create({
     fontSize: FontSize.base,
     fontFamily: 'Inter-600',
   },
+  stat: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-500',
+    marginTop: 2,
+  },
   floatingButton: {
-    width: 50,
-    height: 50,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
     position: 'absolute',
     bottom: 45,
     right: 0,
@@ -408,5 +450,16 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     zIndex: 2,
     marginRight: 20,
+  },
+  floatingButtonInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+  },
+  floatingButtonText: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
   },
 });

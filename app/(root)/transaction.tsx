@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -30,6 +30,9 @@ import {
 } from '@/hooks/useTransactionAttachment';
 import TemplateChip from '@/components/TemplateChip';
 import { useTransactionTemplates, ITransactionTemplate } from '@/hooks/useTransactionTemplates';
+import CategorySuggestionChip from '@/components/CategorySuggestionChip';
+import { useAICategorySuggestion } from '@/hooks/useAICategorySuggestion';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
@@ -117,6 +120,60 @@ export default function Transaction() {
   const exp_st_id = watch('exp_st_id');
   const exp_tc_id = watch('exp_tc_id');
   const exp_tt_id = watch('exp_tt_id');
+  const exp_ts_title = watch('exp_ts_title');
+
+  const [categorySuggestion, setCategorySuggestion] = useState<{
+    id: string;
+    label: string;
+    icon: string;
+    iconBgColor: string;
+  } | null>(null);
+  const [suggestionsDisabled, setSuggestionsDisabled] = useState(false);
+  const lastSuggestionKeyRef = useRef<string | null>(null);
+  const { mutateAsync: fetchCategorySuggestion } = useAICategorySuggestion();
+  const debouncedTitle = useDebouncedValue(exp_ts_title, 600);
+
+  useEffect(() => {
+    const trimmedTitle = (debouncedTitle || '').trim();
+    const suggestionKey = `${trimmedTitle}::${exp_tt_id}`;
+
+    if (
+      exp_ts_id ||
+      exp_tc_id ||
+      suggestionsDisabled ||
+      trimmedTitle.length < 3 ||
+      lastSuggestionKeyRef.current === suggestionKey
+    ) {
+      return;
+    }
+    lastSuggestionKeyRef.current = suggestionKey;
+
+    fetchCategorySuggestion({ title: trimmedTitle, exp_tt_id })
+      .then((categoryId) => {
+        const category = categoryId
+          ? categories.find((item) => item.exp_tc_id === categoryId)
+          : null;
+        setCategorySuggestion(
+          category
+            ? {
+                id: category.exp_tc_id,
+                label: category.exp_tc_label,
+                icon: category.exp_tc_icon,
+                iconBgColor: category.exp_tc_icon_bg_color,
+              }
+            : null,
+        );
+      })
+      .catch(() => setCategorySuggestion(null));
+  }, [
+    debouncedTitle,
+    exp_ts_id,
+    exp_tc_id,
+    exp_tt_id,
+    suggestionsDisabled,
+    categories,
+    fetchCategorySuggestion,
+  ]);
 
   useEffect(() => {
     if (existingTransaction) {
@@ -342,20 +399,19 @@ export default function Transaction() {
 
   const switchType = useCallback(
     (data: number | string) => {
-      if (!data || !exp_ts_id) return;
+      if (!data) return;
 
-      const filtered = categories.filter((item) => item.exp_tc_transaction_type === data);
-
-      const othersCategory = filtered.find((item) => item.exp_tc_label.toLowerCase() === 'others');
-
-      if (othersCategory) {
-        setValue('exp_tc_id', othersCategory.exp_tc_id, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
+      // A category from the previous type doesn't belong to the new type's
+      // list, so it must always be cleared on switch - otherwise it lingers
+      // selected but hidden from CategorySelector's filtered options, and
+      // blocks the AI suggestion gate (which requires no category chosen).
+      setValue('exp_tc_id', '', {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setCategorySuggestion(null);
     },
-    [exp_ts_id, categories, setValue],
+    [setValue],
   );
 
   return (
@@ -528,7 +584,9 @@ export default function Transaction() {
                       <View style={[styles.sectionContainer]}>
                         <View
                           style={{
-                            borderColor: colors.inputBorder,
+                            borderColor: errors.exp_tc_id?.message
+                              ? colors.expense
+                              : colors.inputBorder,
                             borderWidth: 1,
                             borderRadius: 8,
                             paddingVertical: 5,
@@ -586,6 +644,27 @@ export default function Transaction() {
                               </TouchableOpacity>
                             </View>
                           </View>
+
+                          {!!categorySuggestion && !exp_tc_id && (
+                            <View style={{ paddingHorizontal: 5, paddingBottom: 10 }}>
+                              <CategorySuggestionChip
+                                label={categorySuggestion.label}
+                                icon={categorySuggestion.icon}
+                                iconBgColor={categorySuggestion.iconBgColor}
+                                onPress={() => {
+                                  setValue('exp_tc_id', categorySuggestion.id, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                  });
+                                  setCategorySuggestion(null);
+                                }}
+                                onDismiss={() => {
+                                  setCategorySuggestion(null);
+                                  setSuggestionsDisabled(true);
+                                }}
+                              />
+                            </View>
+                          )}
 
                           <CategorySelector
                             categories={categoriesList}

@@ -14,6 +14,7 @@ import BottomSheet, {
   BottomSheetSectionList,
   BottomSheetModal,
 } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IBudget, Itransaction } from '@/types';
 import { ThemeColors } from '@/utils/Colors';
 import { format } from 'date-fns';
@@ -73,6 +74,7 @@ function CollapsibleCategoryCard({
   const [expanded, setExpanded] = useState(false);
   const animatedHeight = useSharedValue(0);
   const validSheetRef = useRef<BottomSheetModal>(null);
+  const insets = useSafeAreaInsets();
 
   const animatedStyle = useAnimatedStyle(
     () => ({
@@ -326,7 +328,7 @@ function CollapsibleCategoryCard({
           keyExtractor={(item, index) => `${item.exp_ts_id}-${index}`}
           renderItem={renderPreviewItem}
           renderSectionHeader={renderSectionHeader}
-          contentContainerStyle={styles.contentContainer}
+          contentContainerStyle={[styles.contentContainer, { paddingBottom: 30 + insets.bottom }]}
           stickySectionHeadersEnabled={false}
           initialNumToRender={16}
           maxToRenderPerBatch={16}

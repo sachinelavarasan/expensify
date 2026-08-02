@@ -12,7 +12,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FontAwesome6 } from '@expo/vector-icons';
 
 import ModalCard from './ModalCard';
@@ -38,6 +39,7 @@ interface Props {
 
 export default function AttachmentPicker({ value, onChange }: Props) {
   const { colors } = useThemeContext();
+  const insets = useSafeAreaInsets();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -221,12 +223,11 @@ export default function AttachmentPicker({ value, onChange }: Props) {
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        snapPoints={['32%']}
-        enableDynamicSizing={false}
+        enableDynamicSizing
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
-        <View style={styles.sheetContent}>
+        <BottomSheetView style={[styles.sheetContent, { paddingBottom: 30 + insets.bottom }]}>
           <Text style={[styles.sheetTitle, { color: colors.title }]}>Attach Receipt</Text>
 
           <Pressable style={styles.optionRow} onPress={takePhoto}>
@@ -249,7 +250,7 @@ export default function AttachmentPicker({ value, onChange }: Props) {
             </View>
             <Text style={[styles.optionText, { color: colors.title }]}>Choose PDF</Text>
           </Pressable>
-        </View>
+        </BottomSheetView>
       </BottomSheetModal>
 
       <ModalCard visible={previewVisible} onClose={() => setPreviewVisible(false)} title="Receipt">
