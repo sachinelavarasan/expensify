@@ -11,19 +11,29 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
-const BUTTON_WIDTH = 100;
-const SWIPE_THRESHOLD = BUTTON_WIDTH / 2;
+const ACTION_WIDTH = 70;
 
 type Props = {
   children: React.ReactNode;
   onDelete?: () => void;
+  onStar?: () => void;
+  isStarred?: boolean;
   disabled?: boolean;
 };
 
-export default function SwipeableRow({ children, onDelete, disabled = false }: Props) {
+export default function SwipeableRow({
+  children,
+  onDelete,
+  onStar,
+  isStarred = false,
+  disabled = false,
+}: Props) {
   const { colors } = useThemeContext();
   const translateX = useSharedValue(0);
   const startX = useSharedValue(0);
+
+  const revealWidth = onStar ? ACTION_WIDTH * 2 : ACTION_WIDTH;
+  const swipeThreshold = revealWidth / 2;
 
   useEffect(() => {
     if (disabled) {
@@ -43,9 +53,9 @@ export default function SwipeableRow({ children, onDelete, disabled = false }: P
       translateX.value = Math.min(0, startX.value + event.translationX);
     })
     .onEnd(() => {
-      if (translateX.value < -SWIPE_THRESHOLD) {
+      if (translateX.value < -swipeThreshold) {
         // eslint-disable-next-line react-hooks/immutability -- Reanimated shared value, safe to mutate outside render
-        translateX.value = withSpring(-BUTTON_WIDTH);
+        translateX.value = withSpring(-revealWidth);
       } else {
         translateX.value = withSpring(0);
       }
@@ -55,10 +65,10 @@ export default function SwipeableRow({ children, onDelete, disabled = false }: P
     transform: [{ translateX: translateX.value }],
   }));
 
-  const deleteStyle = useAnimatedStyle(() => {
+  const actionsStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       translateX.value,
-      [-BUTTON_WIDTH, -BUTTON_WIDTH + 20],
+      [-revealWidth, -revealWidth + 20],
       [1, 0],
       Extrapolation.CLAMP,
     );
@@ -71,11 +81,26 @@ export default function SwipeableRow({ children, onDelete, disabled = false }: P
     translateX.value = withSpring(0);
   };
 
+  const handleStar = () => {
+    if (onStar) onStar();
+    // eslint-disable-next-line react-hooks/immutability -- Reanimated shared value, safe to mutate outside render
+    translateX.value = withSpring(0);
+  };
+
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.deleteContainer, deleteStyle]}>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <MaterialIcons name="delete" size={30} color={colors.expense} />
+      <Animated.View style={[styles.actionsContainer, actionsStyle]}>
+        {!!onStar && (
+          <TouchableOpacity style={styles.actionButton} onPress={handleStar}>
+            <MaterialIcons
+              name={isStarred ? 'star' : 'star-outline'}
+              size={24}
+              color={colors.favorite}
+            />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
+          <MaterialIcons name="delete-outline" size={24} color={colors.expense} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -89,25 +114,21 @@ export default function SwipeableRow({ children, onDelete, disabled = false }: P
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: 8,
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  deleteContainer: {
+  actionsContainer: {
     ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
-  deleteButton: {
+  actionButton: {
+    width: ACTION_WIDTH,
     height: 50,
-    width: 50,
     justifyContent: 'center',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     borderRadius: 4,
-  },
-  actionText: {
-    color: 'white',
-    fontFamily: 'Inter-700',
-    fontSize: 16,
   },
 });

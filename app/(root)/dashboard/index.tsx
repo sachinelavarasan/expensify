@@ -48,9 +48,11 @@ import SwipeableRow from '@/components/Swippable';
 import { showToast } from '@/components/ToastMessage';
 import {
   useBulkDeleteTransactions,
+  useBulkStarTransactions,
   useBulkUpdateTransactions,
   useDeleteTransaction,
 } from '@/hooks/useTransaction';
+import { useStarTransaction, useUnstarTransaction } from '@/hooks/useStarredTransactions';
 import GroupingModal from '@/components/GroupingModal';
 import { FontSize } from '@/utils/Typography';
 
@@ -92,6 +94,9 @@ export default function Index() {
   const { mutateAsync: deleteTransaction } = useDeleteTransaction();
   const { mutateAsync: bulkDeleteTransactions } = useBulkDeleteTransactions();
   const { mutateAsync: bulkUpdateTransactions } = useBulkUpdateTransactions();
+  const { mutateAsync: bulkStarTransactions } = useBulkStarTransactions();
+  const { mutateAsync: starTransaction } = useStarTransaction();
+  const { mutateAsync: unstarTransaction } = useUnstarTransaction();
   const { categories } = useCategoryList();
   useGetUserData();
   const { value: showBalance } = useGetSettingsFromStore('balance');
@@ -185,6 +190,21 @@ export default function Index() {
     }
   };
 
+  const handleStar = (exp_ts_id: string, isStarred: boolean) => {
+    const mutate = isStarred ? unstarTransaction : starTransaction;
+    mutate(exp_ts_id)
+      .then(() => {
+        showToast({
+          text1: isStarred ? 'Transaction unstarred' : 'Transaction starred',
+          type: 'success',
+          position: 'bottom',
+        });
+      })
+      .catch(() => {
+        showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+      });
+  };
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -221,6 +241,17 @@ export default function Index() {
     try {
       await bulkDeleteTransactions(Array.from(selectedIds));
       showToast({ text1: 'Transactions moved to Trash', type: 'success', position: 'bottom' });
+    } catch {
+      showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+    } finally {
+      exitSelectionMode();
+    }
+  };
+
+  const handleBulkStar = async () => {
+    try {
+      await bulkStarTransactions(Array.from(selectedIds));
+      showToast({ text1: 'Transactions starred', type: 'success', position: 'bottom' });
     } catch {
       showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
     } finally {
@@ -604,7 +635,9 @@ export default function Index() {
                     <SwipeableRow
                       key={transaction.exp_ts_id}
                       disabled={selectionMode}
-                      onDelete={() => handleDelete(transaction.exp_ts_id)}>
+                      isStarred={!!transaction.exp_st_id}
+                      onDelete={() => handleDelete(transaction.exp_ts_id)}
+                      onStar={() => handleStar(transaction.exp_ts_id, !!transaction.exp_st_id)}>
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         {selectionMode && (
                           <MaterialIcons
@@ -648,6 +681,9 @@ export default function Index() {
             {selectedIds.size} selected
           </Text>
           <View style={{ flexDirection: 'row', gap: 20 }}>
+            <TouchableOpacity onPress={handleBulkStar}>
+              <MaterialIcons name="star-outline" size={22} color={colors.favorite} />
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 setBulkCategoryId('');

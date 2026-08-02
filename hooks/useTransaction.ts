@@ -190,3 +190,31 @@ export const useBulkUpdateTransactions = () => {
     },
   });
 };
+
+export const useBulkStarTransactions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      await apiClient.post('/expensify/starred/bulk', { ids });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['starred-transactions'] });
+    },
+  });
+};
+
+export const useBulkUnstarTransactions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      await apiClient.delete('/expensify/starred/bulk', { data: { ids } });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['starred-transactions'] });
+    },
+  });
+};

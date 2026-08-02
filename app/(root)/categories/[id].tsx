@@ -3,7 +3,6 @@ import {
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -208,6 +207,46 @@ const Category = () => {
             deleteAction={id === 'add' ? undefined : handleDelete}
           />
         </View>
+
+        <View style={{ paddingHorizontal: 20 }}>
+          <View
+            style={[
+              styles.previewCard,
+              {
+                backgroundColor: colors.inputColor,
+                borderColor: colors.inputBorder,
+                shadowColor: colors.shadow,
+              },
+            ]}>
+            <View
+              style={[
+                styles.previewIconBox,
+                {
+                  backgroundColor: categoryDetail.exp_tc_icon_bg_color || colors.categoryFallbackBg,
+                },
+              ]}>
+              {!!categoryDetail.exp_tc_icon && (
+                <MaterialIcons
+                  name={
+                    categoryDetail.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']
+                  }
+                  size={16}
+                  color={colors.categoryFallbackIcon}
+                />
+              )}
+            </View>
+            <Text
+              style={[
+                styles.previewName,
+                { color: categoryDetail.exp_tc_label ? colors.title : colors.lighterTitle },
+              ]}
+              numberOfLines={1}>
+              {categoryDetail.exp_tc_label || 'Category Name'}
+            </Text>
+          </View>
+        </View>
+        <Spacer height={10} />
+
         <FlatList
           data={[1]}
           contentContainerStyle={{
@@ -245,42 +284,6 @@ const Category = () => {
                   borderLess
                 />
                 <Spacer height={30} />
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text
-                    style={{
-                      color: colors.title,
-                      fontSize: 18,
-                      marginVertical: 10,
-                      marginHorizontal: 5,
-                      fontFamily: 'Inter-700',
-                    }}>
-                    Preview
-                  </Text>
-                  <Pressable style={[styles.iconBox]}>
-                    <View
-                      style={{
-                        backgroundColor: categoryDetail.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                        padding: 5,
-                        borderRadius: 5,
-                        height: 40,
-                        width: 40,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                      {categoryDetail?.exp_tc_icon && (
-                        <MaterialIcons
-                          name={
-                            categoryDetail.exp_tc_icon as React.ComponentProps<
-                              typeof MaterialIcons
-                            >['name']
-                          }
-                          size={24}
-                          color={colors.categoryFallbackIcon}
-                        />
-                      )}
-                    </View>
-                  </Pressable>
-                </View>
                 <CustomColorSwatches
                   currentValue={categoryDetail.exp_tc_icon_bg_color}
                   onSelect={(icon) => {
@@ -308,9 +311,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  iconBox: {
+  previewCard: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  previewIconBox: {
+    height: 30,
+    width: 30,
     borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewName: {
+    fontSize: 14,
+    fontFamily: 'Inter-600',
+    flexShrink: 1,
   },
   floatingButton: {
     width: 50,

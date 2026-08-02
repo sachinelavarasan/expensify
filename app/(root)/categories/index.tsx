@@ -242,7 +242,7 @@ export default function Category() {
                                     typeof MaterialIcons
                                   >['name']
                                 }
-                                size={22}
+                                size={18}
                                 color={colors.categoryFallbackIcon}
                               />
                             )}
@@ -323,7 +323,7 @@ export default function Category() {
                                     typeof MaterialIcons
                                   >['name']
                                 }
-                                size={22}
+                                size={18}
                                 color={colors.categoryFallbackIcon}
                               />
                             )}
@@ -404,34 +404,35 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    marginBottom: 6,
+    borderRadius: 12,
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 0,
   },
   left: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
   },
   iconBox: {
-    height: 40,
-    width: 40,
-    borderRadius: 10,
+    height: 32,
+    width: 32,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
   name: {
-    fontSize: FontSize.base,
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
   },
   stat: {

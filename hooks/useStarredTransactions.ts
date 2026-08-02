@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/apiClient';
 
 export const useGetStarredTransactions = () => {
@@ -22,4 +22,32 @@ export const useGetStarredTransactions = () => {
     error: isError ? error?.message : null,
     refetch,
   };
+};
+
+export const useStarTransaction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (transactionId: string) => {
+      await apiClient.post('/expensify/starred', { exp_st_transaction_id: transactionId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['starred-transactions'] });
+    },
+  });
+};
+
+export const useUnstarTransaction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (transactionId: string) => {
+      await apiClient.delete(`/expensify/starred/${transactionId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['starred-transactions'] });
+    },
+  });
 };

@@ -22,10 +22,10 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
         borderTopColor: colors.borderColor,
         borderTopWidth: 1,
         shadowColor: colors.shadow,
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: theme === 'dark' ? 0.45 : 0.15,
-        shadowRadius: 8,
-        elevation: 10,
+        shadowOffset: { width: 0, height: -1 },
+        shadowOpacity: theme === 'dark' ? 0.15 : 0.06,
+        shadowRadius: 3,
+        elevation: 0,
       }}>
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];

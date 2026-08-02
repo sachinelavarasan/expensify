@@ -66,84 +66,96 @@ const TransactionCard = ({
         paddingVertical: 4,
       }}>
       <View style={styles.innerContainer}>
-          <View style={styles.left}>
-            <View
-              style={{
-                backgroundColor: exp_tc_icon_bg_color ? exp_tc_icon_bg_color : colors.categoryFallbackBg,
-                padding: 8,
-                borderRadius: 5,
-                marginTop:2,
-                alignSelf: 'flex-start'
-              }}>
-              <MaterialIcons
-                name={
-                  exp_tc_icon
-                    ? (exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name'])
-                    : exp_tt_id === 2
-                      ? 'trending-up'
-                      : 'trending-down'
-                }
-                size={24}
-                color={colors.categoryFallbackIcon}
-              />
-            </View>
+        <View style={styles.left}>
+          <View
+            style={{
+              backgroundColor: exp_tc_icon_bg_color
+                ? exp_tc_icon_bg_color
+                : colors.categoryFallbackBg,
+              padding: 6,
+              borderRadius: 5,
+              marginTop: 2,
+              alignSelf: 'flex-start',
+            }}>
+            <MaterialIcons
+              name={
+                exp_tc_icon
+                  ? (exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name'])
+                  : exp_tt_id === 2
+                    ? 'trending-up'
+                    : 'trending-down'
+              }
+              size={20}
+              color={colors.categoryFallbackIcon}
+            />
+          </View>
+          <View style={{ flexShrink: 1 }}>
             <View>
-              <View>
-                <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>
-                  {exp_ts_title}
-                </Text>
-              </View>
-              <View style={styles.subTextContainer}>
+              <Text style={[styles.name, { color: colors.title }]} numberOfLines={1}>
+                {exp_ts_title}
+              </Text>
+            </View>
+            <View style={styles.subTextContainer}>
+              <Text
+                style={[
+                  styles.subText,
+                  {
+                    marginRight: 6,
+                    fontFamily: 'Inter-500',
+                    color: colors.lighterTitle,
+                    flexShrink: 1,
+                  },
+                ]}
+                numberOfLines={1}>
+                {exp_ts_category}
+              </Text>
+              {!!showTsTime && (
                 <Text
                   style={[
                     styles.subText,
-                    { marginRight: 6, fontFamily: 'Inter-500', color: colors.lighterTitle },
-                  ]}>
-                  {exp_ts_category}
+                    {
+                      marginRight: 6,
+                      fontFamily: 'Inter-500',
+                      color: colors.description,
+                      flexShrink: 0,
+                    },
+                  ]}
+                  numberOfLines={1}>
+                  <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
                 </Text>
-                <View
-                  style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-                  {!!showTsTime && (
-                    <Text
-                      style={[
-                        styles.subText,
-                        { fontFamily: 'Inter-500', color: colors.description },
-                      ]}>
-                      <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
-                    </Text>
-                  )}
-                </View>
-              </View>
-              <View style={{ alignItems: 'flex-start' }}>
-                <View
-                  style={{
-                    borderColor: colors.borderColor,
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    paddingHorizontal: 5,
-                    paddingVertical: 2,
-                    alignItems: 'center',
-                    marginTop: 2,
-                    flexDirection:'row',
-                    gap: 4
-                  }}>
-                  <Text
-                    style={[styles.subText, { fontSize: 10, color: colors.secondary }]}>
-                    {exp_ba_name}
-                  </Text>
-                </View>
+              )}
+              <View
+                style={{
+                  borderColor: colors.borderColor,
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  paddingHorizontal: 4,
+                  paddingVertical: 1,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  gap: 4,
+                  flexShrink: 0,
+                  maxWidth: 90,
+                }}>
+                <Text
+                  style={[styles.subText, { fontSize: 9, color: colors.secondary }]}
+                  numberOfLines={1}>
+                  {exp_ba_name}
+                </Text>
               </View>
             </View>
           </View>
-          <View style={styles.right}>
-            <Text
-              style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
-              {exp_tt_id === 2 ? '+' : '-'}
-              {formatToCurrency(exp_ts_amount)}
-            </Text>
-          </View>
         </View>
-      </TouchableOpacity>
+        <View style={styles.right}>
+          {!!exp_st_id && <MaterialIcons name="star" size={12} color={colors.favorite} />}
+          <Text
+            style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
+            {exp_tt_id === 2 ? '+' : '-'}
+            {formatToCurrency(exp_ts_amount)}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 
   if (noRedirect) {
@@ -151,9 +163,7 @@ const TransactionCard = ({
   }
 
   return (
-    <Link
-      href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`}
-      asChild>
+    <Link href={`/transaction?exp_ts_id=${exp_ts_id}${isStarred ? '&starred=true' : ''}`} asChild>
       {cardBody}
     </Link>
   );
@@ -166,26 +176,24 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    // backgroundColor: '#1e1a32',
-    // paddingHorizontal: 14,
-    // paddingVertical: 10,
+    gap: 8,
     borderRadius: 5,
   },
   name: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter-600',
     maxWidth: deviceWidth() - 150,
   },
   subText: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-400',
   },
   subTextContainer: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 6,
+    flexWrap: 'nowrap',
   },
   image: {
     transform: [{ rotateY: '180deg' }],
@@ -194,17 +202,17 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
   },
   right: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
   },
   amount: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-600',
   },
 });
