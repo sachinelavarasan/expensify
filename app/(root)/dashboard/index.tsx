@@ -101,6 +101,7 @@ export default function Index() {
   useGetUserData();
   const { value: showBalance } = useGetSettingsFromStore('balance');
   const { value: carryBalance } = useGetSettingsFromStore('over-balance');
+  const { value: showNetWorth } = useGetSettingsFromStore('net-worth');
 
   const [refreshing, setRefreshing] = useState(false);
   const { value } = useGetSettingsFromStore('tt-time');
@@ -398,12 +399,14 @@ export default function Index() {
     ? groupedDataArray.filter((g) => g.date === selectedDay)
     : groupedDataArray;
 
+  // The real value is always computed here - hiding it is purely a display
+  // concern handled inside HomeSummaryCard (mask + peek toggle), not something
+  // that should zero out the underlying number.
   const balance = useMemo(() => {
     if (!accounts || accounts.length === 0) return 0;
     if (carryBalance) return netWorth;
-    if (!showBalance) return income - expense;
-    return 0;
-  }, [accounts, carryBalance, showBalance, income, expense, netWorth]);
+    return income - expense;
+  }, [accounts, carryBalance, income, expense, netWorth]);
 
   return (
     <ThemedView style={{ flex: 1 }}>
@@ -492,6 +495,7 @@ export default function Index() {
             balance={balance}
             transactions={transactions}
             netWorth={netWorth}
+            showNetWorth={showNetWorth}
           />
           <HomeNudges />
         </Animated.View>

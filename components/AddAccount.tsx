@@ -19,8 +19,15 @@ import { accountIcon } from '@/utils/common-data';
 import { showToast } from './ToastMessage';
 import { AddAccountButtonGradient } from '@/utils/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useAddBankAccount, useUpdateBankAccount } from '@/hooks/useBankAccountOperation';
+import {
+  useAddBankAccount,
+  useSetPrimaryBankAccount,
+  useUpdateBankAccount,
+} from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { formatToCurrency } from '@/utils/formatter';
+import { FontSize } from '@/utils/Typography';
+import CustomSwitch from './Switch';
 
 const schema = z.object({
   exp_ba_name: z.string().trim().min(3, { message: 'Name should be minimum 3 characters' }),
@@ -31,6 +38,7 @@ const schema = z.object({
     })
     .optional(),
   exp_ba_icon: z.string().optional(),
+  exp_ba_is_primary: z.boolean().optional(),
 });
 
 type BankAccount = z.infer<typeof schema>;
@@ -40,6 +48,8 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
   const [show, setShow] = useState(false);
   const { mutateAsync: addBankAccount, isPending: isLoading } = useAddBankAccount();
   const { mutateAsync: updateBankAccount, isPending: isUpdating } = useUpdateBankAccount();
+  const { mutateAsync: setPrimaryAccount, isPending: isSettingPrimary } =
+    useSetPrimaryBankAccount();
 
   const {
     control,
@@ -53,6 +63,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
       exp_ba_name: '',
       exp_ba_balance: '0',
       exp_ba_icon: 'attach-money',
+      exp_ba_is_primary: false,
     },
     resolver: zodResolver(schema),
   });
@@ -83,13 +94,21 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
       return;
     }
     if (exp_ba_id) {
+      // exp_ba_balance is intentionally omitted here - it's the live running
+      // balance maintained by transactions, not something this form should touch.
       const body = {
-        ...data,
-        exp_ba_balance: data.exp_ba_balance || '0',
+        exp_ba_name: data.exp_ba_name,
         exp_ba_icon: data.exp_ba_icon || 'attach-money',
         exp_ba_id,
       };
       updateBankAccount({ ...body })
+        .then(() => {
+          // Only ever promotes to primary here - setPrimaryAccount unsets it on
+          // every other account, so it's never called when already primary.
+          if (data.exp_ba_is_primary && !account?.exp_ba_is_primary) {
+            return setPrimaryAccount(exp_ba_id);
+          }
+        })
         .then(() => {
           showToast({
             text1: 'Account updated successfully',
@@ -155,7 +174,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
         visible={show}
         onClose={toggleModal}
         title={exp_ba_id ? 'Edit Account' : 'Add Account'}
-        closeDisabled={isLoading || isUpdating}>
+        closeDisabled={isLoading || isUpdating || isSettingPrimary}>
         <Controller
           control={control}
           render={({ field }) => (
@@ -173,24 +192,51 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
           )}
           name="exp_ba_name"
         />
-        <Spacer height={20} />
-        <Controller
-          control={control}
-          render={({ field }) => (
+        {!!exp_ba_id && (
+          <>
+            <Spacer height={20} />
             <Input
-              {...field}
-              label="Initial Amount"
-              keyboardType="numeric"
-              onBlur={field.onBlur}
-              onChangeText={field.onChange}
-              error={errors.exp_ba_balance?.message}
+              label="Current Balance"
+              value={formatToCurrency(account?.exp_ba_balance ?? 0)}
+              editable={false}
               borderLess
-              editable={!exp_ba_id}
-              isRequired
             />
-          )}
-          name="exp_ba_balance"
-        />
+          </>
+        )}
+        <Spacer height={20} />
+        {account?.exp_ba_is_primary ? (
+          <View
+            style={[
+              styles.primaryCard,
+              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            ]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.primaryTitle, { color: colors.title }]}>Primary Account</Text>
+              <Text style={[styles.primarySubtitle, { color: colors.description }]}>
+                This is your default account
+              </Text>
+            </View>
+            <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.primaryCard,
+              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            ]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.primaryTitle, { color: colors.title }]}>Set as Primary</Text>
+              <Text style={[styles.primarySubtitle, { color: colors.description }]}>
+                Used as the default account filter on your dashboard
+              </Text>
+            </View>
+            <Controller
+              control={control}
+              render={({ field }) => <CustomSwitch value={field.value} onChange={field.onChange} />}
+              name="exp_ba_is_primary"
+            />
+          </View>
+        )}
         <Spacer height={20} />
         <Text style={[styles.label, { color: colors.title }]}>Select Icon</Text>
         <View
@@ -205,6 +251,7 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             showsVerticalScrollIndicator={false}
             horizontal
             data={accountIcon}
+            extraData={selectedIcon}
             contentContainerStyle={{
               gap: 5,
             }}
@@ -245,18 +292,18 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             style={[
               styles.button,
               { backgroundColor: colors.primary },
-              !isDirty || isLoading || isUpdating ? styles.disable : {},
+              !isDirty || isLoading || isUpdating || isSettingPrimary ? styles.disable : {},
             ]}
             onPress={handleSubmit(handlePress)}
-            disabled={!isDirty || isLoading || isUpdating}>
-            {isLoading || isUpdating ? (
+            disabled={!isDirty || isLoading || isUpdating || isSettingPrimary}>
+            {isLoading || isUpdating || isSettingPrimary ? (
               <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
             ) : null}
             <Text
               style={[
                 styles.btntitle,
                 { color: colors.onPrimary },
-                isLoading || isUpdating ? styles.textDisable : {},
+                isLoading || isUpdating || isSettingPrimary ? styles.textDisable : {},
               ]}>
               {exp_ba_id ? 'Update' : 'Create'}
             </Text>
@@ -297,9 +344,27 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   label: {
-    fontSize: 14,
+    fontSize: 12,
     marginBottom: 6,
-    fontFamily: 'Inter-400',
+    fontFamily: 'Inter-500',
+  },
+  primaryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  primaryTitle: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-600',
+  },
+  primarySubtitle: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    marginTop: 2,
   },
   addbutton: {
     paddingVertical: 8,

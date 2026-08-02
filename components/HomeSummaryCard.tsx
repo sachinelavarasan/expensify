@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { ColorValue, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import Svg, { Circle, Polygon, Polyline } from 'react-native-svg';
@@ -23,6 +23,7 @@ interface Props {
   carryBalance: boolean;
   transactions: Itransaction[];
   netWorth: number;
+  showNetWorth: boolean;
 }
 
 export default function HomeSummaryCard({
@@ -33,11 +34,21 @@ export default function HomeSummaryCard({
   carryBalance,
   transactions,
   netWorth,
+  showNetWorth,
 }: Props) {
   const { colors } = useThemeContext();
   const { trend } = useSpendTrend(6);
 
-  const isBalanceVisible = carryBalance || !showBalance;
+  // "base" reflects the persisted setting; a peek toggle can temporarily
+  // override it for this render only - it resets next time the card mounts.
+  const [balancePeeked, setBalancePeeked] = useState(false);
+  const [netWorthPeeked, setNetWorthPeeked] = useState(false);
+
+  const isBaseBalanceVisible = carryBalance || !showBalance;
+  const isBalanceVisible = isBaseBalanceVisible || balancePeeked;
+
+  const isBaseNetWorthVisible = !showBalance;
+  const isNetWorthVisible = isBaseNetWorthVisible || netWorthPeeked;
 
   const animatedBalance = useCountUp(balance);
   const animatedIncome = useCountUp(income);
@@ -84,7 +95,20 @@ export default function HomeSummaryCard({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}>
-      <Text style={[styles.label, { color: colors.onPrimary }]}>Balance</Text>
+      <View style={styles.labelRow}>
+        <Text style={[styles.label, { color: colors.onPrimary }]}>Balance</Text>
+        {!isBaseBalanceVisible && (
+          <TouchableOpacity
+            onPress={() => setBalancePeeked((prev) => !prev)}
+            hitSlop={8}>
+            <Feather
+              name={isBalanceVisible ? 'eye' : 'eye-off'}
+              size={13}
+              color={colors.onPrimary}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
       <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
         {isBalanceVisible ? formatToCurrency(animatedBalance, undefined, balance) : '••••••'}
       </Text>
@@ -143,18 +167,36 @@ export default function HomeSummaryCard({
         )}
       </View>
 
-      <View style={[styles.footer, styles.footerRow]}>
-        <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
-          Net worth: <Text style={styles.footerValue}>{formatToCurrency(netWorth)}</Text>
-        </Text>
-        {!!topCategory && (
-          <Text
-            style={[styles.footerText, { color: colors.onPrimary, flexShrink: 1 }]}
-            numberOfLines={1}>
-            Top: <Text style={styles.footerValue}>{topCategory.label}</Text>
-          </Text>
-        )}
-      </View>
+      {showNetWorth && (
+        <View style={[styles.footer, styles.footerRow]}>
+          <View style={styles.netWorthRow}>
+            <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
+              Net worth:{' '}
+              <Text style={styles.footerValue}>
+                {isNetWorthVisible ? formatToCurrency(netWorth) : '••••••'}
+              </Text>
+            </Text>
+            {!isBaseNetWorthVisible && (
+              <TouchableOpacity
+                onPress={() => setNetWorthPeeked((prev) => !prev)}
+                hitSlop={8}>
+                <Feather
+                  name={isNetWorthVisible ? 'eye' : 'eye-off'}
+                  size={12}
+                  color={colors.onPrimary}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          {!!topCategory && (
+            <Text
+              style={[styles.footerText, { color: colors.onPrimary, flexShrink: 1 }]}
+              numberOfLines={1}>
+              Top: <Text style={styles.footerValue}>{topCategory.label}</Text>
+            </Text>
+          )}
+        </View>
+      )}
     </LinearGradient>
   );
 }
@@ -171,6 +213,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     opacity: 0.75,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  netWorthRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
   balance: {
     fontSize: 24,
     fontFamily: 'Inter-600',
@@ -178,7 +230,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
     marginTop: 10,
     gap: 14,

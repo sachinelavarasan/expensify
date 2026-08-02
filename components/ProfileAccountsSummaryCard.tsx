@@ -1,5 +1,5 @@
-import React from 'react';
-import { ColorValue, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
@@ -13,16 +13,25 @@ interface Props {
   totalBalance: number;
   accountsCount: number;
   primaryAccountName?: string;
+  // Mirrors the "Hide Balance" setting - true means the balance should be masked.
+  showBalance?: boolean;
 }
 
 export default function ProfileAccountsSummaryCard({
   totalBalance,
   accountsCount,
   primaryAccountName,
+  showBalance,
 }: Props) {
   const { colors } = useThemeContext();
   const animatedBalance = useCountUp(totalBalance);
   const animatedAccountsCount = useCountUp(accountsCount, 600);
+
+  // "base" reflects the persisted setting; a peek toggle can temporarily
+  // override it for this render only - it resets next time the card mounts.
+  const [peeked, setPeeked] = useState(false);
+  const isBaseBalanceVisible = !showBalance;
+  const isBalanceVisible = isBaseBalanceVisible || peeked;
 
   return (
     <LinearGradient
@@ -30,9 +39,20 @@ export default function ProfileAccountsSummaryCard({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}>
-      <Text style={[styles.label, { color: colors.onPrimary }]}>Total Balance</Text>
+      <View style={styles.labelRow}>
+        <Text style={[styles.label, { color: colors.onPrimary }]}>Total Balance</Text>
+        {!isBaseBalanceVisible && (
+          <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
+            <Feather
+              name={isBalanceVisible ? 'eye' : 'eye-off'}
+              size={13}
+              color={colors.onPrimary}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
       <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
-        {formatToCurrency(animatedBalance, undefined, totalBalance)}
+        {isBalanceVisible ? formatToCurrency(animatedBalance, undefined, totalBalance) : '••••••'}
       </Text>
 
       <View style={styles.row}>
@@ -88,6 +108,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     opacity: 0.75,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   balance: {
     fontSize: 24,

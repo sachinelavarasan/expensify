@@ -41,6 +41,7 @@ export default function AccountScreen() {
   const { account, loading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useAccountGroupedTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
+  const { value: showBalance } = useGetSettingsFromStore('balance');
   const { user: currentUser } = useGetUserData();
   const { mutateAsync: deleteAccount, isPending: isDeleting } = useDeleteBankAccount();
 
@@ -139,6 +140,8 @@ export default function AccountScreen() {
                 holderName={currentUser?.exp_us_name || ''}
                 icon={account.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 balance={account.exp_ba_balance}
+                showBalance={showBalance}
+                isPrimary={account.exp_ba_is_primary}
                 income={totals.income}
                 expense={totals.expense}
                 transactionCount={totals.transactionCount}

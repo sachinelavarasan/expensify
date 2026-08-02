@@ -47,6 +47,24 @@ export const useUpdateBankAccount = () => {
   });
 };
 
+export const useSetPrimaryBankAccount = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiClient.patch(`/expensify/accounts/${id}/primary`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+      // Setting a primary demotes whichever account held it before, so any
+      // mounted account-detail view (not just the one just promoted) may be
+      // showing a stale exp_ba_is_primary - invalidate the whole family.
+      queryClient.invalidateQueries({ queryKey: ['accountDetailPaginated'] });
+    },
+  });
+};
+
 export const useDeleteBankAccount = () => {
   const queryClient = useQueryClient();
 

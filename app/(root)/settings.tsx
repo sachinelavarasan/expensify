@@ -24,6 +24,7 @@ export default function Setting() {
   const { enabled, time, scheduleNotification, disableNotification } = useReminderSettings();
   const [showBalance, setShowBalance] = useState(false);
   const [carryBalance, setCarryBalance] = useState(false);
+  const [showNetWorth, setShowNetWorth] = useState(false);
   const [generalSettings, setGeneralSettings] = useState<{
     currency: string;
     grouping: string;
@@ -43,6 +44,9 @@ export default function Setting() {
         break;
       case 'over-balance':
         setCarryBalance(value as boolean);
+        break;
+      case 'net-worth':
+        setShowNetWorth(value as boolean);
         break;
 
       case 'tt-time':
@@ -78,6 +82,7 @@ export default function Setting() {
     const getValuesFromStore = async () => {
       const balance = await getAsyncValue('balance');
       const overBalance = await getAsyncValue('over-balance');
+      const netWorth = await getAsyncValue('net-worth');
       const ttTime = await getAsyncValue('tt-time');
       const currency = await AsyncStorage.getItem('currency');
       const grouping = await getAsyncValue('grouping');
@@ -87,6 +92,9 @@ export default function Setting() {
       }
       if (overBalance) {
         setCarryBalance(JSON.parse(overBalance));
+      }
+      if (netWorth) {
+        setShowNetWorth(JSON.parse(netWorth));
       }
       if (ttTime) {
         setTtime(JSON.parse(ttTime));
@@ -230,6 +238,21 @@ export default function Setting() {
                         value={carryBalance}
                         onChange={(value) => {
                           updateSettingPreference('over-balance', value);
+                        }}
+                      />
+                    }
+                  />
+                  <SettingsRow
+                    icon={
+                      <MaterialCommunityIcons name="chart-line" size={18} color={colors.onPrimary} />
+                    }
+                    title="Show Net Worth"
+                    subtitle="Display net worth and top spending category on the dashboard"
+                    right={
+                      <CustomSwitch
+                        value={showNetWorth}
+                        onChange={(value) => {
+                          updateSettingPreference('net-worth', value);
                         }}
                       />
                     }

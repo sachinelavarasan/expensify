@@ -134,7 +134,7 @@ export interface BankAccount {
 export type CreateBankAccountDto = Pick<
   BankAccount,
   'exp_ba_name' | 'exp_ba_balance' | 'exp_ba_icon'
->;
+> & { exp_ba_is_primary?: boolean };
 export type UpdateBankAccountDto = Partial<CreateBankAccountDto> & { exp_ba_id: string };
 export interface Budget {
   exp_bg_id: string;

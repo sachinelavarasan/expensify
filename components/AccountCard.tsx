@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
@@ -19,6 +19,9 @@ type BankCardProps = {
   income?: number;
   expense?: number;
   transactionCount?: number;
+  // Mirrors the "Hide Balance" setting - true means the balance should be masked.
+  showBalance?: boolean;
+  isPrimary?: boolean;
 };
 
 const BankCard = ({
@@ -31,11 +34,20 @@ const BankCard = ({
   income,
   expense,
   transactionCount,
+  showBalance,
+  isPrimary,
 }: BankCardProps) => {
   const { colors } = useThemeContext();
 
   const numericBalance = Number(balance) || 0;
   const animatedBalance = useCountUp(numericBalance);
+
+  // "base" reflects the persisted setting; a peek toggle can temporarily
+  // override it for this render only - it resets next time the card mounts.
+  const [peeked, setPeeked] = useState(false);
+  const isBaseBalanceVisible = !showBalance;
+  const isBalanceVisible = isBaseBalanceVisible || peeked;
+
   const showActivity = income !== undefined && expense !== undefined;
   const animatedIncome = useCountUp(income ?? 0);
   const animatedExpense = useCountUp(expense ?? 0);
@@ -57,16 +69,39 @@ const BankCard = ({
           </View>
           <View style={styles.identity}>
             <Text style={[styles.label, { color: colors.lighterTitle }]}>Account</Text>
-            <Text style={[styles.value, { color: colors.title }]} numberOfLines={1}>
-              {bankName}
-            </Text>
+            <View style={styles.nameRow}>
+              <Text
+                style={[styles.value, { color: colors.title, flexShrink: 1 }]}
+                numberOfLines={1}>
+                {bankName}
+              </Text>
+              {isPrimary && (
+                <View style={[styles.primaryBadge, { backgroundColor: `${colors.primary}1A` }]}>
+                  <Feather name="star" size={10} color={colors.primary} />
+                  <Text style={[styles.primaryBadgeText, { color: colors.primary }]}>Primary</Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
 
         <View style={styles.right}>
-          <Text style={[styles.label, { color: colors.lighterTitle }]}>Balance</Text>
+          <View style={styles.labelRow}>
+            <Text style={[styles.label, { color: colors.lighterTitle }]}>Balance</Text>
+            {!isBaseBalanceVisible && (
+              <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
+                <Feather
+                  name={isBalanceVisible ? 'eye' : 'eye-off'}
+                  size={12}
+                  color={colors.lighterTitle}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={[styles.balance, { color: colors.title }]} numberOfLines={1}>
-            {formatToCurrency(animatedBalance, undefined, numericBalance)}
+            {isBalanceVisible
+              ? formatToCurrency(animatedBalance, undefined, numericBalance)
+              : '••••••'}
           </Text>
         </View>
       </View>
@@ -100,7 +135,8 @@ const BankCard = ({
 
       <View style={[styles.footer, { borderTopColor: colors.borderColor }]}>
         <Text style={[styles.footerText, { color: colors.description }]} numberOfLines={1}>
-          Card Holder: <Text style={[styles.footerValue, { color: colors.title }]}>{holderName}</Text>
+          Card Holder:{' '}
+          <Text style={[styles.footerValue, { color: colors.title }]}>{holderName}</Text>
           {!!transactionCount && (
             <Text style={[styles.footerText, { color: colors.description }]}>
               {'  ·  '}
@@ -138,8 +174,30 @@ const styles = StyleSheet.create({
   identity: {
     flexShrink: 1,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  primaryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 20,
+  },
+  primaryBadgeText: {
+    fontSize: 10,
+    fontFamily: 'Inter-600',
+  },
   right: {
     alignItems: 'flex-end',
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   dot: {
     width: 32,

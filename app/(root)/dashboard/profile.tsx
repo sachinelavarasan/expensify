@@ -1,14 +1,7 @@
 import { Link, useRouter, type Href } from 'expo-router';
 import React from 'react';
 
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 import { deviceWidth } from '@/utils/functions';
 
@@ -25,6 +18,7 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import LogoutButton from '@/components/LogOutModal';
 import ProfileAccountsSummaryCard from '@/components/ProfileAccountsSummaryCard';
 import { FontSize } from '@/utils/Typography';
+import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
 const MENU_ITEMS: {
   href: Href;
@@ -81,27 +75,26 @@ const Profile = () => {
   const router = useRouter();
   const { accounts, loading } = useBankAccounts();
   const { user: currentUser, refetch } = useGetUserData();
+  const { value: showBalance } = useGetSettingsFromStore('balance');
 
   const { netWorth: overAllAmount } = useNetWorth(accounts);
   const primaryAccount = accounts.find((item) => item.exp_ba_is_primary);
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <ProfileHeaderCard
           title={currentUser?.exp_us_name || ''}
           subtitle={currentUser?.exp_us_email || ''}
           refetch={refetch}
         />
         <Spacer height={20} />
-        <Animated.View
-          entering={FadeInDown.duration(650).easing(Easing.out(Easing.quad))}>
+        <Animated.View entering={FadeInDown.duration(650).easing(Easing.out(Easing.quad))}>
           <ProfileAccountsSummaryCard
             totalBalance={overAllAmount}
             accountsCount={accounts.length}
             primaryAccountName={primaryAccount?.exp_ba_name}
+            showBalance={showBalance}
           />
         </Animated.View>
         <Spacer height={20} />
@@ -111,10 +104,10 @@ const Profile = () => {
             { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
           ]}>
           <View style={styles.left}>
-            <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 10 }}>
+            <View style={{ backgroundColor: colors.primary, padding: 6, borderRadius: 8 }}>
               <MaterialIcons name="account-balance" size={24} color={colors.onPrimary} />
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <View>
                 <Text style={[styles.option, { color: colors.title }]}>Manage Accounts</Text>
               </View>
@@ -157,6 +150,8 @@ const Profile = () => {
               holderName={currentUser?.exp_us_name || ''}
               icon={item.exp_ba_icon as React.ComponentProps<typeof MaterialIcons>['name']}
               balance={item.exp_ba_balance}
+              showBalance={showBalance}
+              isPrimary={item.exp_ba_is_primary}
               onPress={() => {
                 router.push(`/accounts/${item.exp_ba_id}`);
               }}
@@ -174,10 +169,10 @@ const Profile = () => {
                   { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
                 ]}>
                 <View style={styles.left}>
-                  <View style={{ backgroundColor: colors.primary, padding: 8, borderRadius: 10 }}>
+                  <View style={{ backgroundColor: colors.primary, padding: 6, borderRadius: 8 }}>
                     <MaterialIcons name={item.icon} size={24} color={colors.onPrimary} />
                   </View>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <View>
                       <Text style={[styles.option, { color: colors.title }]}>{item.title}</Text>
                     </View>
@@ -194,9 +189,9 @@ const Profile = () => {
             </TouchableOpacity>
           </Link>
         ))}
-        <Spacer height={40}/>
+        <Spacer height={40} />
         <View style={[styles.btnContainer, { paddingHorizontal: 5, flex: 1 }]}>
-            <LogoutButton/>
+          <LogoutButton />
         </View>
       </ScrollView>
     </ThemedView>
@@ -214,14 +209,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   card: {
-    paddingVertical: 12,
-    marginBottom: 12,
-    borderRadius: 14,
+    paddingVertical: 8,
+    marginBottom: 10,
+    borderRadius: 10,
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
   },
   left: {
     display: 'flex',
@@ -237,14 +232,14 @@ const styles = StyleSheet.create({
   subText: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
-    wordWrap: 'wrap',
-    maxWidth: deviceWidth() - 100,
+    flexShrink: 1,
   },
   subTextContainer: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    flexShrink: 1,
+    marginTop: 2,
   },
 });
 
