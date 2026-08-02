@@ -48,7 +48,7 @@ export default {
           "imageWidth": 200,
           "backgroundColor": "#FfFfFf",
           "dark": {
-            "image": "./assets/images/app-splash-screen.png",
+            "image": "./assets/images/app-splash-screen-dark.png",
             "backgroundColor": "#0E0E10"
           }
         }
