@@ -1,18 +1,21 @@
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text } from 'react-native';
 import Animated from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 
 export default function BottomTab({ state, descriptors, navigation }: any) {
   const { theme, colors } = useThemeContext();
 
   return (
-    <View
+    <BlurView
+      tint={theme === 'dark' ? 'dark' : 'light'}
+      intensity={70}
       style={{
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: colors.bottomBarBackground,
+        backgroundColor: colors.bottomBarBackgroundTranslucent,
         paddingBottom: 0,
         paddingTop: 5,
         bottom: 0,
@@ -101,6 +104,6 @@ export default function BottomTab({ state, descriptors, navigation }: any) {
           </TouchableOpacity>
         );
       })}
-    </View>
+    </BlurView>
   );
 }

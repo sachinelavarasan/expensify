@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { deviceHeight, deviceWidth } from '@/utils/functions';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
@@ -25,11 +26,17 @@ export default function ModalCard({
   closeDisabled,
   contentStyle,
 }: Props) {
-  const { colors } = useThemeContext();
+  const { theme, colors } = useThemeContext();
 
   return (
     <Modal
-      backdropColor={colors.scrim}
+      customBackdrop={
+        <BlurView
+          tint={theme === 'dark' ? 'dark' : 'light'}
+          intensity={40}
+          style={[StyleSheet.absoluteFill, { backgroundColor: colors.scrim }]}
+        />
+      }
       isVisible={visible}
       hasBackdrop
       deviceHeight={height}

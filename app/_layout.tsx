@@ -1,4 +1,5 @@
 import { LogBox } from 'react-native';
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { QueryClient, onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
@@ -8,7 +9,6 @@ import NetInfo from '@react-native-community/netinfo';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Notifications from 'expo-notifications';
-import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import ToastMessage from '@/components/ToastMessage';

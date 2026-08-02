@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { ColorSchemeName } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SystemUI from 'expo-system-ui';
 import { LightColors, DarkColors, ThemeColors } from '../utils/Colors';
 
 type Theme = 'light' | 'dark';
@@ -35,6 +36,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     loadTheme();
   }, []);
 
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(themeColors.bottomBarBackground);
+  }, [themeColors]);
+
   const toggleTheme = async () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     try {
@@ -53,7 +58,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       colorScheme: theme,
       colors: themeColors,
     }),
-    [theme, themeColors]
+    [theme, themeColors],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

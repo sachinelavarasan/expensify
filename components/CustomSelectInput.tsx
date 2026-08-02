@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { FontAwesome } from '@expo/vector-icons';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -69,8 +69,9 @@ export const CustomSelectInput = ({
         </View>
       ) : null}
       <Dropdown
-        mode="default"
+        mode="auto"
         data={options}
+        // statusBarIsTranslucent={true}
         labelField="value"
         valueField="key"
         value={value}
@@ -104,6 +105,7 @@ export const CustomSelectInput = ({
           fontSize: 16,
           fontFamily: 'Inter-400',
         }}
+        autoScroll={false}
         itemTextStyle={{ color: colors.title, fontSize: 16, fontFamily: 'Inter-400' }}
         itemContainerStyle={{ backgroundColor: popupBackgroundColor }}
         style={{
@@ -139,7 +141,9 @@ export const CustomSelectInput = ({
             width: 0,
             height: 0,
           },
-          marginTop: -50,
+          // react-native-element-dropdown adds StatusBar.currentHeight to the popup's measured
+          // top position, but on an edge-to-edge Android layout the measured position already
+          marginTop: Platform.OS === 'android' ? -(StatusBar.currentHeight || 0) : 0,
           shadowOpacity: 0.1,
           shadowRadius: 2.84,
           elevation: 1,

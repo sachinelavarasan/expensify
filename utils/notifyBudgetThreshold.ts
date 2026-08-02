@@ -1,5 +1,6 @@
 import { format, startOfMonth, addMonths } from 'date-fns';
 import * as Notifications from 'expo-notifications';
+import * as Haptics from 'expo-haptics';
 
 import { apiClient } from '@/lib/apiClient';
 import { getAsyncValue, setAsyncValue } from '@/utils/functions';
@@ -34,6 +35,8 @@ export async function notifyBudgetThresholdIfCrossed(categoryId: string | undefi
 
     const granted = await registerForPushNotificationsCheck();
     if (!granted) return;
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
     await Notifications.scheduleNotificationAsync({
       identifier: `${guardKey}-${Date.now()}`,

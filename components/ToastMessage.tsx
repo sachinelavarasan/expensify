@@ -3,6 +3,7 @@
 import React from 'react';
 import Toast, { ToastConfig, BaseToast, ErrorToast, InfoToast } from 'react-native-toast-message';
 import { StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { ToastPalette } from '@/utils/Colors';
 
 // Define custom styles for different toast types
@@ -56,6 +57,10 @@ export const showToast = ({
   topOffset?: number;
   bottomOffset?: number;
 }) => {
+  if (type === 'success') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  else if (type === 'error') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+  else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+
   Toast.show({
     type,
     text1,
