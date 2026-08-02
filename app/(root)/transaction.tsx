@@ -101,7 +101,7 @@ export default function Transaction() {
   } = useForm({
     defaultValues: {
       exp_ts_title: '',
-      exp_ts_date: '',
+      exp_ts_date: format(new Date(), 'yyyy-MM-dd'),
       exp_ts_note: '',
       exp_ts_time: '',
       exp_ts_amount: undefined,
@@ -209,6 +209,8 @@ export default function Transaction() {
             reset(
               {
                 exp_ts_title: '',
+                exp_ts_date: getValues('exp_ts_date') || format(new Date(), 'yyyy-MM-dd'),
+                exp_ts_time: getValues('exp_ts_time'),
                 exp_ts_note: '',
                 exp_ts_amount: undefined,
                 exp_tc_id: undefined,
@@ -302,7 +304,12 @@ export default function Transaction() {
 
   const handleOpenTemplateModal = () => {
     const values = getValues();
-    if (!values.exp_ts_title || !values.exp_ts_amount || !values.exp_tc_id || !values.exp_ts_bank_account_id) {
+    if (
+      !values.exp_ts_title ||
+      !values.exp_ts_amount ||
+      !values.exp_tc_id ||
+      !values.exp_ts_bank_account_id
+    ) {
       showToast({
         text1: 'Fill in title, amount, category and account first',
         type: 'error',
@@ -404,6 +411,7 @@ export default function Transaction() {
                                 key: account.exp_ba_id,
                                 value: account.exp_ba_name,
                               }))}
+                              search={false}
                               placeholder="Select account"
                               label="Choose Account"
                               onChange={(selectedId) => {
@@ -601,10 +609,7 @@ export default function Transaction() {
                       <Controller
                         control={control}
                         render={({ field }) => (
-                          <AttachmentPicker
-                            value={field.value ?? null}
-                            onChange={field.onChange}
-                          />
+                          <AttachmentPicker value={field.value ?? null} onChange={field.onChange} />
                         )}
                         name="exp_ts_attachment_url"
                       />
@@ -635,19 +640,25 @@ export default function Transaction() {
                       <Controller
                         control={control}
                         render={({ field }) => (
-                          <TagInput value={field.value ?? []} onChange={field.onChange} label="Tags" />
+                          <TagInput
+                            value={field.value ?? []}
+                            onChange={field.onChange}
+                            label="Tags"
+                          />
                         )}
                         name="exp_ts_tags"
                       />
                       <View style={styles.subTextContainer}>
                         {!!existingTransaction?.exp_ts_created_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
-                            Created: {format(existingTransaction.exp_ts_created_at, 'do MMMM yyyy HH:mm')}
+                            Created:{' '}
+                            {format(existingTransaction.exp_ts_created_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
                         {!!existingTransaction?.exp_ts_updated_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
-                            Modified: {format(existingTransaction.exp_ts_updated_at, 'do MMMM yyyy HH:mm')}
+                            Modified:{' '}
+                            {format(existingTransaction.exp_ts_updated_at, 'do MMMM yyyy HH:mm')}
                           </Text>
                         )}
                       </View>

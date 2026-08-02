@@ -11,7 +11,6 @@ import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
-// import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import ToastMessage from '@/components/ToastMessage';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { AuthProvider, useAuthContext } from '@/contexts/AuthContext';

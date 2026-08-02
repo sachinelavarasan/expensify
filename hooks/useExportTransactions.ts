@@ -32,9 +32,13 @@ export const useExportExcelTransactions = () => {
     }: ExportParams) => {
       const token = getAccessToken();
       const url = `${API_URL}/expensify/export-excel?format=${fileType}&startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
-      const response = await fetch(url, {
-        method: 'GET',
 
+      const timestamp = format(now, 'yyyy-MM-dd-HH-mm-ss');
+      const extension = fileType === 'csv' ? 'csv' : 'xlsx';
+      const filename = `transactions-${timestamp}.${extension}`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      const { status } = await FileSystem.downloadAsync(url, fileUri, {
         headers: {
           Accept: MIME_TYPES[fileType],
           Authorization: `Bearer ${token}`,
@@ -42,33 +46,16 @@ export const useExportExcelTransactions = () => {
         },
       });
 
-      if (response.status === 204) {
+      if (status === 204) {
+        await FileSystem.deleteAsync(fileUri, { idempotent: true });
         Alert.alert('No Data', 'No transactions found for the selected date range.');
         return;
       }
 
-      if (!response.ok) {
+      if (status !== 200) {
+        await FileSystem.deleteAsync(fileUri, { idempotent: true });
         throw new Error('Failed to download file');
       }
-
-      const blob = await response.blob();
-
-      const reader = new FileReader();
-      const base64Data: string = await new Promise((resolve, reject) => {
-        reader.onloadend = () => {
-          resolve((reader.result as string).split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
-      const timestamp = format(now, 'yyyy-MM-dd-HH-mm-ss');
-      const extension = fileType === 'csv' ? 'csv' : 'xlsx';
-      const filename = `transactions-${timestamp}.${extension}`;
-      const fileUri = FileSystem.documentDirectory + filename;
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
 
       await saveFile(fileUri, filename, MIME_TYPES[fileType]);
     },
@@ -88,9 +75,11 @@ export const useExportPdfTransactions = () => {
     }) => {
       const token = getAccessToken();
       const url = `${API_URL}/expensify/export-pdf?startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
-      const response = await fetch(url, {
-        method: 'GET',
 
+      const filename = `transactions-${format(now, 'yyyy-MM-dd-HH-mm-ss')}.pdf`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      const { status } = await FileSystem.downloadAsync(url, fileUri, {
         headers: {
           Accept: 'application/pdf',
           Authorization: `Bearer ${token}`,
@@ -98,32 +87,16 @@ export const useExportPdfTransactions = () => {
         },
       });
 
-      if (response.status === 204) {
+      if (status === 204) {
+        await FileSystem.deleteAsync(fileUri, { idempotent: true });
         Alert.alert('No Data', 'No transactions found for the selected date range.');
         return;
       }
 
-      if (!response.ok) {
+      if (status !== 200) {
+        await FileSystem.deleteAsync(fileUri, { idempotent: true });
         throw new Error('Failed to download file');
       }
-
-      const blob = await response.blob();
-
-      const reader = new FileReader();
-      const base64Data: string = await new Promise((resolve, reject) => {
-        reader.onloadend = () => {
-          resolve((reader.result as string).split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
-      const filename = `transactions-${format(now, 'yyyy-MM-dd-HH-mm-ss')}.pdf`;
-
-      const fileUri = FileSystem.documentDirectory + filename;
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
 
       await saveFile(fileUri, filename, 'application/pdf');
     },

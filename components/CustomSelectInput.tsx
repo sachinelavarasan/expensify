@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SelectList } from 'react-native-dropdown-select-list';
+import { Dropdown } from 'react-native-element-dropdown';
 import { FontAwesome } from '@expo/vector-icons';
 import { useThemeContext } from '@/contexts/ThemedContext';
 
+interface Option {
+  key: any;
+  value: any;
+}
+
 interface CustomSelectInputProps {
-  options: { key: any; value: any }[];
-  defaultOption?: { key: any; value: any } | undefined;
+  options: Option[];
+  defaultOption?: Option | undefined;
   label: string;
   placeholder?: string;
   onChange: (id: number | string) => void;
@@ -15,6 +20,7 @@ interface CustomSelectInputProps {
   isSmall?: boolean;
   error?: string | null;
   clearable?: boolean;
+  search?: boolean | undefined;
 }
 
 export const CustomSelectInput = ({
@@ -27,32 +33,21 @@ export const CustomSelectInput = ({
   isSmall = false,
   error,
   clearable = false,
+  search = true,
 }: CustomSelectInputProps) => {
-  const [selected, setSelected] = useState(value);
-  const { colors, theme } = useThemeContext();
-  const [defaultOption, setDefaultOption] = useState<{ key: any; value: any } | undefined>();
-  // Bumped on clear to force SelectList to remount - it only reflects prop
-  // changes back into its own displayed text on mount/defaultOption change,
-  // so resetting `value` alone wouldn't clear the text it shows.
-  const [resetKey, setResetKey] = useState(0);
-
-  useEffect(() => {
-    const curr = options.find((opt) => opt.key == value);
-    setDefaultOption(curr);
-    setSelected(value);
-  }, [value, options]);
+  const { colors } = useThemeContext();
+  const popupBackgroundColor = colors.cardBg;
+  const [focused, setFocused] = useState(false);
 
   const handleClear = () => {
-    setSelected('');
-    setDefaultOption(undefined);
     onChange('');
-    setResetKey((k) => k + 1);
   };
 
   return (
     <View style={styles.selectBoxContainer}>
       {label ? (
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={{ display: 'flex', flexDirection: 'row' }}>
             <Text style={[styles.labelStyles, { color: colors.title }]}>{label}</Text>
             {isRequired ? (
@@ -64,31 +59,66 @@ export const CustomSelectInput = ({
               </View>
             ) : null}
           </View>
-          {clearable && !!selected && (
-            <TouchableOpacity onPress={handleClear} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+          {clearable && !!value && (
+            <TouchableOpacity
+              onPress={handleClear}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
               <Text style={[styles.clearText, { color: colors.expense }]}>Clear</Text>
             </TouchableOpacity>
           )}
         </View>
       ) : null}
-      <SelectList
-        key={resetKey}
-        onSelect={() => onChange(selected)}
-        setSelected={setSelected}
-        fontFamily={isSmall? "Inter-400": "Inter-500"}
+      <Dropdown
+        mode="default"
         data={options}
-        arrowicon={<FontAwesome name="chevron-down" size={10} color={colors.arrowColor} />}
-        search={false}
-        boxStyles={{
+        labelField="value"
+        valueField="key"
+        value={value}
+        onChange={(item) => onChange(item.key)}
+        activeColor={`${colors.primary}26`}
+        fontFamily={isSmall ? 'Inter-400' : 'Inter-500'}
+        renderRightIcon={() => (
+          <FontAwesome name="chevron-down" size={10} color={colors.arrowColor} />
+        )}
+        disable={options.length === 0}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        search={search}
+        searchField="value"
+        searchPlaceholder="Search..."
+        searchPlaceholderTextColor={colors.inputPlaceholder}
+        inputSearchStyle={{
+          borderRadius: 8,
+          borderColor: colors.inputBorder,
+          color: colors.title,
+          fontSize: 16,
+          fontFamily: 'Inter-400',
+        }}
+        dropdownPosition="auto"
+        placeholder={options.length === 0 ? 'No options available' : placeholder}
+        placeholderStyle={{
+          color: colors.inputPlaceholder,
+        }}
+        selectedTextStyle={{
+          color: colors.title,
+          fontSize: 16,
+          fontFamily: 'Inter-400',
+        }}
+        itemTextStyle={{ color: colors.title, fontSize: 16, fontFamily: 'Inter-400' }}
+        itemContainerStyle={{ backgroundColor: popupBackgroundColor }}
+        style={{
           padding: 0,
-          display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           borderRadius: 8,
           borderWidth: 1,
-          borderColor: error ? colors.expense :colors.inputBorder,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
+          borderColor: error
+            ? colors.expense
+            : focused
+              ? colors.borderSelected
+              : colors.inputBorder,
+          paddingHorizontal: 20,
+          paddingVertical: Platform.OS === 'android' ? 8 : 16,
           shadowColor: colors.inputColor,
           shadowOffset: {
             width: 0,
@@ -99,25 +129,23 @@ export const CustomSelectInput = ({
           elevation: 1,
           backgroundColor: colors.inputColor,
         }}
-        defaultOption={defaultOption}
-        dropdownStyles={{
-          backgroundColor: colors.inputColor,
+        containerStyle={{
+          backgroundColor: popupBackgroundColor,
           borderColor: colors.inputBorder,
           borderRadius: 8,
           borderWidth: 1,
+          overflow: 'hidden',
           shadowOffset: {
             width: 0,
             height: 0,
           },
+          marginTop: -50,
           shadowOpacity: 0.1,
           shadowRadius: 2.84,
           elevation: 1,
-          shadowColor: colors.inputColor,
+          shadowColor: popupBackgroundColor,
         }}
-        inputStyles={{ color: selected? colors.title: colors.inputPlaceholder, paddingVertical: Platform.OS === 'android' ? 1 : 6 }}
-        dropdownTextStyles={{ color: colors.title }}
-        maxHeight={150}
-        placeholder={placeholder}
+        maxHeight={180}
       />
       {error ? <Text style={[styles.error, { color: colors.expense }]}>{error}</Text> : null}
     </View>
@@ -141,7 +169,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontFamily: 'Inter-600',
   },
-   error: {
+  error: {
     fontSize: 12,
     bottom: 0,
     position: 'absolute',
