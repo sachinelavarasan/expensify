@@ -1,4 +1,9 @@
-export const TransactionType = [
+// Income/Expense only - used anywhere "Transfer" wouldn't make sense: a
+// category's own type (there's only ever one system Transfer category, not
+// user-creatable), a recurring transaction's type (transfers are one-off,
+// not scheduled), and the "default transaction type" setting (defaulting
+// straight into Transfer mode isn't a sensible everyday default).
+export const CoreTransactionType = [
   {
     id: 2,
     label: 'Income',
@@ -8,6 +13,9 @@ export const TransactionType = [
     label: 'Expense',
   },
 ];
+
+// Full set for the actual Add/Edit Transaction screen only.
+export const TransactionType = [...CoreTransactionType, { id: 3, label: 'Transfer' }];
 
 export const genders = [
   {
@@ -328,6 +336,10 @@ export const transactionExportType = [
   {
     id: 'expense',
     label: 'Expense',
+  },
+  {
+    id: 'transfer',
+    label: 'Transfer',
   },
 ];
 

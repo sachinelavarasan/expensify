@@ -189,6 +189,43 @@ export const formatToCurrency = (
   return `${prefix}${symbol}${abs.toFixed(2)}`;
 };
 
+// Same currency/show-hide rules as formatToCurrency above, but never
+// abbreviates into K/L/Cr - used where the exact figure matters more than
+// compactness (e.g. a validation message quoting a balance/limit the user
+// needs to act on precisely).
+export const formatFullCurrency = (amount: number | string | bigint): string => {
+  if (amount === null || amount === undefined || (typeof amount === 'number' && isNaN(amount))) {
+    return '-';
+  }
+
+  const showCurrency = shouldShowCurrency();
+  const currency = getAppCurrency();
+  const currencySymbols: Record<SupportedCurrency, string> = {
+    '$': '$',
+    '€': '€',
+    '£': '£',
+    '¥': '¥',
+    '₹': '₹',
+  };
+  const symbol = showCurrency ? currencySymbols[currency] || '' : '';
+
+  let value: Decimal;
+  try {
+    value = new Decimal(amount);
+  } catch {
+    return '-';
+  }
+
+  const isNegative = value.isNeg();
+  const abs = value.abs();
+  const prefix = isNegative ? '-' : '';
+
+  return `${prefix}${symbol}${abs.toNumber().toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
 export const timeCoverter = (time: any) => {
   if(!time) return ''
   const parsed = parse(time, 'HH:mm', new Date());

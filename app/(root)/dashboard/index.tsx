@@ -54,6 +54,7 @@ import {
 } from '@/hooks/useTransaction';
 import { useStarTransaction, useUnstarTransaction } from '@/hooks/useStarredTransactions';
 import GroupingModal from '@/components/GroupingModal';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { FontSize } from '@/utils/Typography';
 
 export default function Index() {
@@ -179,9 +180,9 @@ export default function Index() {
               position: 'bottom',
             });
           })
-          .catch(() => {
+          .catch((err) => {
             showToast({
-              text1: 'Server Error',
+              text1: getApiErrorMessage(err, 'Server Error'),
               type: 'error',
               position: 'bottom',
             });
@@ -201,8 +202,8 @@ export default function Index() {
           position: 'bottom',
         });
       })
-      .catch(() => {
-        showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+      .catch((err) => {
+        showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
       });
   };
 
@@ -242,8 +243,8 @@ export default function Index() {
     try {
       await bulkDeleteTransactions(Array.from(selectedIds));
       showToast({ text1: 'Transactions moved to Trash', type: 'success', position: 'bottom' });
-    } catch {
-      showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+    } catch (err) {
+      showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
     } finally {
       exitSelectionMode();
     }
@@ -253,8 +254,8 @@ export default function Index() {
     try {
       await bulkStarTransactions(Array.from(selectedIds));
       showToast({ text1: 'Transactions starred', type: 'success', position: 'bottom' });
-    } catch {
-      showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+    } catch (err) {
+      showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
     } finally {
       exitSelectionMode();
     }
@@ -268,8 +269,8 @@ export default function Index() {
         patch: { exp_tc_id: bulkCategoryId },
       });
       showToast({ text1: 'Category updated', type: 'success', position: 'bottom' });
-    } catch {
-      showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+    } catch (err) {
+      showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
     } finally {
       setCategoryModalVisible(false);
       setBulkCategoryId('');

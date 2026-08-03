@@ -166,6 +166,7 @@ const TransactionFilters = ({
             label="Transaction Type"
             value={draft.transactionType}
             options={transactionExportType}
+            grid
             onChange={(data) => {
               setDraft((prev) => ({ ...prev, transactionType: data as string, categoryIds: [] }));
             }}

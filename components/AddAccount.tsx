@@ -25,6 +25,7 @@ import {
   useUpdateBankAccount,
 } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import CustomSwitch from './Switch';
@@ -116,9 +117,9 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             position: 'bottom',
           });
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });
@@ -140,9 +141,9 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             position: 'bottom',
           });
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });

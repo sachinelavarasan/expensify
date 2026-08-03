@@ -14,6 +14,7 @@ import { showToast } from './ToastMessage';
 import { IExpUser } from '@/types';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 
 const schema = z.object({
   grouping: z.string(),
@@ -83,9 +84,9 @@ const DefaultGroupingModal = ({
         });
         updateSettings('grouping', datas.grouping)
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Server Error',
+          text1: getApiErrorMessage(err, 'Server Error'),
           type: 'error',
           position: 'bottom',
         });

@@ -11,6 +11,7 @@ import { IExpUser } from '@/types';
 import { showToast } from './ToastMessage';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { useGetUserData, useUpdateProfile } from '@/hooks/useUserStore';
+import { getApiErrorMessage } from '@/lib/apiClient';
 
 const schema = z.object({
   name: z.string().min(3, { message: 'Minimum 3 characters' }),
@@ -78,7 +79,7 @@ const UpdateProfile = forwardRef<UpdateProfileHandle, Props>(({ refetch }, ref) 
     } catch (error) {
       console.error('Error updating profile:', error);
       showToast({
-        text1: 'Server Error',
+        text1: getApiErrorMessage(error, 'Server Error'),
         type: 'error',
         position: 'bottom',
       });

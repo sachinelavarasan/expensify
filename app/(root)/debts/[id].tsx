@@ -33,6 +33,7 @@ import {
   useDeleteDebtRepayment,
 } from '@/hooks/useDebtOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 
@@ -83,8 +84,8 @@ export default function DebtDetail() {
         showToast({ text1: 'Debt removed', type: 'success', position: 'bottom' });
         router.back();
       })
-      .catch(() => {
-        showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+      .catch((err) => {
+        showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
       });
   };
 
@@ -99,8 +100,8 @@ export default function DebtDetail() {
         setRepaymentModalVisible(false);
         reset();
       })
-      .catch(() => {
-        showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+      .catch((err) => {
+        showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
       });
   };
 
@@ -114,8 +115,8 @@ export default function DebtDetail() {
     );
     if (!confirm) return;
 
-    deleteRepayment({ debtId: debt.exp_dt_id, repaymentId }).catch(() => {
-      showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+    deleteRepayment({ debtId: debt.exp_dt_id, repaymentId }).catch((err) => {
+      showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
     });
   };
 

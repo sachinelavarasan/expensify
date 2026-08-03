@@ -18,7 +18,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import ProfileHeader from '@/components/ProfileHeader';
-import { TransactionType } from '@/utils/common-data';
+import { CoreTransactionType } from '@/utils/common-data';
 import { showToast } from '@/components/ToastMessage';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import {
@@ -30,6 +30,7 @@ import CustomRadioButton from '@/components/CustomRadioButton';
 import OverlayLoader from '@/components/Overlay';
 import { ICategoryWithCount } from '@/types';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 
 const Category = () => {
   const router = useRouter();
@@ -86,9 +87,9 @@ const Category = () => {
           });
           router.back();
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });
@@ -103,9 +104,9 @@ const Category = () => {
           });
           router.back();
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });
@@ -141,9 +142,9 @@ const Category = () => {
           });
           router.back();
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });
@@ -266,7 +267,7 @@ const Category = () => {
                 <CustomRadioButton
                   // label="Transaction Type"
                   value={categoryDetail.exp_tc_transaction_type}
-                  options={TransactionType}
+                  options={CoreTransactionType}
                   onChange={(data) => {
                     onSelect('exp_tc_transaction_type', data);
                   }}

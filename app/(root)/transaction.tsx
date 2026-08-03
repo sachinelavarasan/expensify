@@ -40,6 +40,7 @@ import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import OverlayLoader from '@/components/Overlay';
 import {
+  useCreateTransfer,
   useDeleteTransaction,
   useFetchTransaction,
   useSaveTransaction,
@@ -56,6 +57,8 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import CustomSwitch from '@/components/Switch';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
+import { formatFullCurrency } from '@/utils/formatter';
+import { getApiErrorMessage } from '@/lib/apiClient';
 
 export default function Transaction() {
   const [isBulk, setIsBulk] = useState(false);
@@ -69,10 +72,11 @@ export default function Transaction() {
   };
   const { data: existingTransaction, isLoading: isFetching } = useFetchTransaction(exp_ts_id);
   const { mutateAsync: saveTransaction, isPending: isLoading } = useSaveTransaction(starred);
+  const { mutateAsync: createTransfer, isPending: isCreatingTransfer } = useCreateTransfer();
   const { mutateAsync: uploadAttachment, isPending: isUploadingAttachment } =
     useUploadTransactionAttachment();
   const { mutateAsync: deleteAttachment } = useDeleteTransactionAttachment();
-  const isSaving = isLoading || isUploadingAttachment;
+  const isSaving = isLoading || isUploadingAttachment || isCreatingTransfer;
   const { mutateAsync: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
   const { templates, saveTemplate, deleteTemplate } = useTransactionTemplates();
   const [templateModalVisible, setTemplateModalVisible] = useState(false);
@@ -96,11 +100,14 @@ export default function Transaction() {
   const {
     control,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitted },
     watch,
     reset,
     getValues,
     setValue,
+    setError,
+    clearErrors,
+    trigger,
   } = useForm({
     defaultValues: {
       exp_ts_title: '',
@@ -112,6 +119,7 @@ export default function Transaction() {
       exp_tt_id: 1,
       exp_st_id: false,
       exp_ts_bank_account_id: undefined,
+      exp_ts_to_bank_account_id: undefined,
       exp_ts_tags: [] as string[],
       exp_ts_attachment_url: null as AttachmentValue,
     },
@@ -121,6 +129,11 @@ export default function Transaction() {
   const exp_tc_id = watch('exp_tc_id');
   const exp_tt_id = watch('exp_tt_id');
   const exp_ts_title = watch('exp_ts_title');
+  const exp_ts_bank_account_id = watch('exp_ts_bank_account_id');
+  const exp_ts_to_bank_account_id = watch('exp_ts_to_bank_account_id');
+  const isTransfer = exp_tt_id === 3;
+  // A transfer is delete-only once created - block editing it as a form.
+  const isExistingTransfer = !!existingTransaction?.exp_ts_transfer_group_id;
 
   const [categorySuggestion, setCategorySuggestion] = useState<{
     id: string;
@@ -207,6 +220,42 @@ export default function Transaction() {
   }, [existingTransaction, reset]);
 
   const onSubmit = async (data: transactionSchemaType & { exp_ts_id?: string }) => {
+    if (data.exp_tt_id === 3) {
+      const fromAccount = accounts.find((a) => a.exp_ba_id === data.exp_ts_bank_account_id);
+      const fromBalance = fromAccount ? parseFloat(fromAccount.exp_ba_balance) || 0 : 0;
+
+      if (parseFloat(data.exp_ts_amount) > fromBalance) {
+        setError('exp_ts_amount', {
+          type: 'manual',
+          message: `Amount exceeds ${fromAccount?.exp_ba_name || 'account'} balance (${formatFullCurrency(fromBalance)})`,
+        });
+        return;
+      }
+      clearErrors('exp_ts_amount');
+
+      createTransfer({
+        exp_ts_title: data.exp_ts_title,
+        exp_ts_amount: data.exp_ts_amount,
+        exp_ts_date: data.exp_ts_date,
+        exp_ts_time: data.exp_ts_time,
+        exp_ts_note: data.exp_ts_note,
+        exp_ts_from_bank_account_id: data.exp_ts_bank_account_id,
+        exp_ts_to_bank_account_id: data.exp_ts_to_bank_account_id!,
+      })
+        .then(() => {
+          showToast({
+            text1: 'Transfer added successfully',
+            type: 'success',
+            position: 'bottom',
+          });
+          router.back();
+        })
+        .catch((err) => {
+          showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
+        });
+      return;
+    }
+
     try {
       const attachmentField = data.exp_ts_attachment_url;
       let finalAttachmentUrl: string | null = null;
@@ -284,9 +333,9 @@ export default function Transaction() {
             );
           }
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });
@@ -321,9 +370,9 @@ export default function Transaction() {
             });
             router.back();
           })
-          .catch(() => {
+          .catch((err) => {
             showToast({
-              text1: 'Server Error',
+              text1: getApiErrorMessage(err, 'Server Error'),
               type: 'error',
               position: 'bottom',
             });
@@ -340,6 +389,15 @@ export default function Transaction() {
   const categoriesList = useMemo(
     () => categories.filter((cate) => cate.exp_tc_transaction_type === exp_tt_id) || [],
     [categories, exp_tt_id],
+  );
+
+  // Turning an existing expense/income into a transfer mid-edit isn't
+  // supported - editTransaction's balance math assumes type 1/2, and a
+  // transfer is create-only via its own endpoint. So Transfer is only
+  // offered as a type option when adding a brand new transaction.
+  const availableTransactionTypes = useMemo(
+    () => (exp_ts_id ? TransactionType.filter((t) => t.id !== 3) : TransactionType),
+    [exp_ts_id],
   );
 
   const selectedCategory = () => {
@@ -410,8 +468,37 @@ export default function Transaction() {
         shouldDirty: true,
       });
       setCategorySuggestion(null);
+      // A stale "amount exceeds balance" error is specific to the transfer
+      // flow (set manually in onSubmit, since it depends on the selected
+      // account's balance) - it must not linger once the type changes away
+      // from or into Transfer.
+      clearErrors('exp_ts_amount');
+
+      if (data === 3) {
+        // The account field may already hold an auto-picked primary account
+        // from a regular expense/income entry - that's not necessarily the
+        // intended "from" account for a transfer, so force an explicit
+        // re-selection of both accounts instead of carrying it forward.
+        // Not validated eagerly here - errors should only appear after the
+        // user attempts to submit, not immediately on switching type.
+        setValue('exp_ts_bank_account_id', '');
+        setValue('exp_ts_to_bank_account_id', undefined);
+      } else {
+        setValue('exp_ts_to_bank_account_id', undefined);
+      }
+
+      // react-hook-form's reValidateMode only re-checks the specific field
+      // that changed, so an already-shown error on an unrelated field (e.g.
+      // Title) would otherwise sit stale after switching type until that
+      // exact field is touched again. Once the user has attempted a submit,
+      // re-run validation across the whole form so every error reflects the
+      // current values/type - but don't do this before a submit attempt, or
+      // it would bring back eager errors before the user has pressed Add.
+      if (isSubmitted) {
+        trigger();
+      }
     },
-    [setValue],
+    [setValue, clearErrors, isSubmitted, trigger],
   );
 
   return (
@@ -437,6 +524,41 @@ export default function Transaction() {
                 </View>
               )}
               renderItem={() => {
+                if (isExistingTransfer) {
+                  return (
+                    <Animated.View
+                      style={[
+                        styles.formContainer,
+                        formAnimatedStyle,
+                        styles.transferLockedWrapper,
+                      ]}>
+                      <View style={styles.transferLockedContainer}>
+                        <View
+                          style={[
+                            styles.transferLockedIconBadge,
+                            { backgroundColor: `${colors.transfer}1A` },
+                          ]}>
+                          <MaterialIcons name="swap-horiz" size={32} color={colors.transfer} />
+                        </View>
+                        <Spacer height={20} />
+                        <Text
+                          style={[styles.transferLockedTitle, { color: colors.title }]}>
+                          Transfers can&apos;t be edited
+                        </Text>
+                        <Spacer height={8} />
+                        <Text
+                          style={[
+                            styles.subText,
+                            styles.transferLockedDescription,
+                            { color: colors.lighterTitle },
+                          ]}>
+                          Delete this transfer and create a new one if you need to change it.
+                        </Text>
+                      </View>
+                    </Animated.View>
+                  );
+                }
+
                 return (
                   <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
                     <View>
@@ -462,14 +584,18 @@ export default function Transaction() {
                           render={({ field }) => (
                             <CustomSelectInput
                               {...field}
-                              value={field.value}
-                              options={accounts.map((account) => ({
-                                key: account.exp_ba_id,
-                                value: account.exp_ba_name,
-                              }))}
+                              value={field.value ?? ''}
+                              options={accounts
+                                .filter(
+                                  (account) => account.exp_ba_id !== exp_ts_to_bank_account_id,
+                                )
+                                .map((account) => ({
+                                  key: account.exp_ba_id,
+                                  value: account.exp_ba_name,
+                                }))}
                               search={false}
                               placeholder="Select account"
-                              label="Choose Account"
+                              label={isTransfer ? 'From Account' : 'Choose Account'}
                               onChange={(selectedId) => {
                                 field.onChange(selectedId);
                               }}
@@ -477,6 +603,50 @@ export default function Transaction() {
                             />
                           )}
                         />
+
+                        {isTransfer && (
+                          <>
+                            {errors.exp_ts_bank_account_id?.message ? <Spacer height={14} /> : null}
+                            <View style={styles.transferArrowContainer}>
+                              <View
+                                style={[
+                                  styles.transferArrowBadge,
+                                  { backgroundColor: colors.transfer },
+                                ]}>
+                                <MaterialIcons
+                                  name="arrow-downward"
+                                  size={18}
+                                  color={colors.onPrimary}
+                                />
+                              </View>
+                            </View>
+                            <Controller
+                              control={control}
+                              name="exp_ts_to_bank_account_id"
+                              render={({ field }) => (
+                                <CustomSelectInput
+                                  {...field}
+                                  value={field.value ?? ''}
+                                  options={accounts
+                                    .filter(
+                                      (account) => account.exp_ba_id !== exp_ts_bank_account_id,
+                                    )
+                                    .map((account) => ({
+                                      key: account.exp_ba_id,
+                                      value: account.exp_ba_name,
+                                    }))}
+                                  search={false}
+                                  placeholder="Select destination account"
+                                  label="To Account"
+                                  onChange={(selectedId) => {
+                                    field.onChange(selectedId);
+                                  }}
+                                  error={errors.exp_ts_to_bank_account_id?.message}
+                                />
+                              )}
+                            />
+                          </>
+                        )}
 
                         <Spacer height={30} />
                         <View
@@ -523,7 +693,7 @@ export default function Transaction() {
                             <CustomRadioButton
                               label="Transaction Type"
                               value={field.value}
-                              options={TransactionType}
+                              options={availableTransactionTypes}
                               onChange={(data) => {
                                 field.onChange(data);
                                 switchType(data);
@@ -581,117 +751,131 @@ export default function Transaction() {
                         />
                       </View>
                       <Spacer height={Spacing.lg} />
-                      <View style={[styles.sectionContainer]}>
-                        <View
-                          style={{
-                            borderColor: errors.exp_tc_id?.message
-                              ? colors.expense
-                              : colors.inputBorder,
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            paddingVertical: 5,
-                            paddingHorizontal: 8,
-                            backgroundColor: colors.inputColor,
-                          }}>
+                      {!isTransfer && (
+                        <View style={[styles.sectionContainer]}>
                           <View
                             style={{
-                              flexDirection: 'row',
-                              justifyContent: 'space-between',
-                              paddingVertical: 10,
-                              paddingHorizontal: 5,
-                              flexWrap: 'wrap',
+                              borderColor: errors.exp_tc_id?.message
+                                ? colors.expense
+                                : colors.inputBorder,
+                              borderWidth: 1,
+                              borderRadius: 8,
+                              paddingVertical: 5,
+                              paddingHorizontal: 8,
+                              backgroundColor: colors.inputColor,
                             }}>
-                            <Text
-                              style={[
-                                styles.categoryLabel,
-                                { flex: 1, flexWrap: 'wrap', lineHeight: 20, color: colors.title },
-                              ]}>
-                              Category
-                              {!!selectedCategory() && (
-                                <Text
-                                  style={{
-                                    fontFamily: 'Inter-500',
-                                    color: colors.text,
-                                  }}>
-                                  {' '}
-                                  : {selectedCategory()}
-                                </Text>
-                              )}
-                            </Text>
                             <View
                               style={{
                                 flexDirection: 'row',
                                 justifyContent: 'space-between',
-                                alignItems: 'center',
-                                gap: 10,
-                                marginLeft: 30,
+                                paddingVertical: 10,
+                                paddingHorizontal: 5,
+                                flexWrap: 'wrap',
                               }}>
-                              <TouchableOpacity
-                                activeOpacity={0.2}
+                              <Text
+                                style={[
+                                  styles.categoryLabel,
+                                  {
+                                    flex: 1,
+                                    flexWrap: 'wrap',
+                                    lineHeight: 20,
+                                    color: colors.title,
+                                  },
+                                ]}>
+                                Category
+                                {!!selectedCategory() && (
+                                  <Text
+                                    style={{
+                                      fontFamily: 'Inter-500',
+                                      color: colors.text,
+                                    }}>
+                                    {' '}
+                                    : {selectedCategory()}
+                                  </Text>
+                                )}
+                              </Text>
+                              <View
                                 style={{
-                                  paddingHorizontal: 10,
-                                }}
-                                onPress={redirectToCategory}>
-                                <MaterialIcons name="edit" size={22} color={colors.text} />
-                              </TouchableOpacity>
-                              <TouchableOpacity
-                                activeOpacity={0.2}
-                                style={{
-                                  paddingHorizontal: 10,
-                                }}
-                                onPress={redirectToCategory}>
-                                <MaterialIcons name="add" size={22} color={colors.text} />
-                              </TouchableOpacity>
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  gap: 10,
+                                  marginLeft: 30,
+                                }}>
+                                <TouchableOpacity
+                                  activeOpacity={0.2}
+                                  style={{
+                                    paddingHorizontal: 10,
+                                  }}
+                                  onPress={redirectToCategory}>
+                                  <MaterialIcons name="edit" size={22} color={colors.text} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                  activeOpacity={0.2}
+                                  style={{
+                                    paddingHorizontal: 10,
+                                  }}
+                                  onPress={redirectToCategory}>
+                                  <MaterialIcons name="add" size={22} color={colors.text} />
+                                </TouchableOpacity>
+                              </View>
                             </View>
+
+                            {!!categorySuggestion && !exp_tc_id && (
+                              <View style={{ paddingHorizontal: 5, paddingBottom: 10 }}>
+                                <CategorySuggestionChip
+                                  label={categorySuggestion.label}
+                                  icon={categorySuggestion.icon}
+                                  iconBgColor={categorySuggestion.iconBgColor}
+                                  onPress={() => {
+                                    setValue('exp_tc_id', categorySuggestion.id, {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    });
+                                    setCategorySuggestion(null);
+                                  }}
+                                  onDismiss={() => {
+                                    setCategorySuggestion(null);
+                                    setSuggestionsDisabled(true);
+                                  }}
+                                />
+                              </View>
+                            )}
+
+                            <CategorySelector
+                              categories={categoriesList}
+                              selected={exp_tc_id}
+                              onSelect={(id) =>
+                                setValue('exp_tc_id', id, {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                })
+                              }
+                            />
                           </View>
 
-                          {!!categorySuggestion && !exp_tc_id && (
-                            <View style={{ paddingHorizontal: 5, paddingBottom: 10 }}>
-                              <CategorySuggestionChip
-                                label={categorySuggestion.label}
-                                icon={categorySuggestion.icon}
-                                iconBgColor={categorySuggestion.iconBgColor}
-                                onPress={() => {
-                                  setValue('exp_tc_id', categorySuggestion.id, {
-                                    shouldDirty: true,
-                                    shouldValidate: true,
-                                  });
-                                  setCategorySuggestion(null);
-                                }}
-                                onDismiss={() => {
-                                  setCategorySuggestion(null);
-                                  setSuggestionsDisabled(true);
-                                }}
-                              />
-                            </View>
-                          )}
-
-                          <CategorySelector
-                            categories={categoriesList}
-                            selected={exp_tc_id}
-                            onSelect={(id) =>
-                              setValue('exp_tc_id', id, {
-                                shouldDirty: true,
-                                shouldValidate: true,
-                              })
-                            }
-                          />
+                          {errors.exp_tc_id?.message ? (
+                            <Text style={[styles.errorMessage, { color: colors.expense }]}>
+                              {errors.exp_tc_id?.message}
+                            </Text>
+                          ) : null}
                         </View>
-
-                        {errors.exp_tc_id?.message ? (
-                          <Text style={[styles.errorMessage, { color: colors.expense }]}>
-                            {errors.exp_tc_id?.message}
-                          </Text>
-                        ) : null}
-                      </View>
-                      <Spacer height={Spacing.md} />
-                      <Controller
-                        control={control}
-                        render={({ field }) => (
-                          <AttachmentPicker value={field.value ?? null} onChange={field.onChange} />
-                        )}
-                        name="exp_ts_attachment_url"
-                      />
+                      )}
+                      {!isTransfer && (
+                        <>
+                          <Spacer height={Spacing.md} />
+                          <Controller
+                            control={control}
+                            render={({ field }) => (
+                              <AttachmentPicker
+                                value={field.value ?? null}
+                                onChange={field.onChange}
+                              />
+                            )}
+                            name="exp_ts_attachment_url"
+                          />
+                        </>
+                      )}
                       <Spacer height={Spacing.md} />
                       <Controller
                         control={control}
@@ -715,18 +899,22 @@ export default function Transaction() {
                         )}
                         name="exp_ts_note"
                       />
-                      <Spacer height={Spacing.md} />
-                      <Controller
-                        control={control}
-                        render={({ field }) => (
-                          <TagInput
-                            value={field.value ?? []}
-                            onChange={field.onChange}
-                            label="Tags"
+                      {!isTransfer && (
+                        <>
+                          <Spacer height={Spacing.md} />
+                          <Controller
+                            control={control}
+                            render={({ field }) => (
+                              <TagInput
+                                value={field.value ?? []}
+                                onChange={field.onChange}
+                                label="Tags"
+                              />
+                            )}
+                            name="exp_ts_tags"
                           />
-                        )}
-                        name="exp_ts_tags"
-                      />
+                        </>
+                      )}
                       <View style={styles.subTextContainer}>
                         {!!existingTransaction?.exp_ts_created_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
@@ -758,21 +946,23 @@ export default function Transaction() {
                 alignItems: 'center',
                 gap: 40,
               }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setValue('exp_st_id', !exp_st_id, {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  });
-                }}>
-                <MaterialIcons
-                  name={exp_st_id ? 'star' : 'star-border'}
-                  size={20}
-                  color={colors.favorite}
-                />
-              </TouchableOpacity>
+              {!isTransfer && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setValue('exp_st_id', !exp_st_id, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}>
+                  <MaterialIcons
+                    name={exp_st_id ? 'star' : 'star-border'}
+                    size={20}
+                    color={colors.favorite}
+                  />
+                </TouchableOpacity>
+              )}
 
-              {!exp_ts_id && (
+              {!exp_ts_id && !isTransfer && (
                 <TouchableOpacity onPress={handleOpenTemplateModal}>
                   <MaterialIcons name="bookmark-add" size={20} color={colors.text} />
                 </TouchableOpacity>
@@ -785,47 +975,51 @@ export default function Transaction() {
                   </TouchableOpacity>
                 </>
               ) : (
-                <View
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    flexDirection: 'row',
-                    gap: 2,
-                  }}>
-                  <Text style={[styles.subText, { color: colors.title }]}>Bulk Add</Text>
-                  <CustomSwitch
-                    value={isBulk}
-                    onChange={(value) => {
-                      setIsBulk(value);
-                    }}
-                  />
-                </View>
+                !isTransfer && (
+                  <View
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      gap: 2,
+                    }}>
+                    <Text style={[styles.subText, { color: colors.title }]}>Bulk Add</Text>
+                    <CustomSwitch
+                      value={isBulk}
+                      onChange={(value) => {
+                        setIsBulk(value);
+                      }}
+                    />
+                  </View>
+                )
               )}
             </View>
           </View>
 
-          <View>
-            <TouchableOpacity
-              style={[
-                styles.button,
-                { backgroundColor: colors.primary },
-                !isDirty || isFetching || isDeleting || isSaving ? styles.disable : {},
-              ]}
-              disabled={!isDirty || isFetching || isDeleting || isSaving}
-              onPress={handleSubmit(onSubmit)}>
-              {isSaving ? (
-                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
-              ) : null}
-              <Text
+          {!isExistingTransfer && (
+            <View>
+              <TouchableOpacity
                 style={[
-                  styles.title,
-                  { color: colors.onPrimary },
-                  isSaving ? styles.textDisable : {},
-                ]}>
-                {exp_ts_id ? 'Update' : 'Add'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+                  styles.button,
+                  { backgroundColor: colors.primary },
+                  !isDirty || isFetching || isDeleting || isSaving ? styles.disable : {},
+                ]}
+                disabled={!isDirty || isFetching || isDeleting || isSaving}
+                onPress={handleSubmit(onSubmit)}>
+                {isSaving ? (
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+                ) : null}
+                <Text
+                  style={[
+                    styles.title,
+                    { color: colors.onPrimary },
+                    isSaving ? styles.textDisable : {},
+                  ]}>
+                  {exp_ts_id ? 'Update' : 'Add'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         <ModalCard
@@ -867,6 +1061,42 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginVertical: 10,
+  },
+  transferLockedWrapper: {
+    minHeight: '75%',
+    justifyContent: 'center',
+  },
+  transferLockedContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  transferLockedIconBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  transferLockedTitle: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-600',
+    textAlign: 'center',
+  },
+  transferLockedDescription: {
+    textAlign: 'center',
+    maxWidth: 260,
+  },
+  transferArrowContainer: {
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  transferArrowBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   button: {

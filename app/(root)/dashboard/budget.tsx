@@ -31,6 +31,7 @@ import { BudgetedCategoriesList } from '@/components/CollapsibleCategoryCard';
 import OverlayLoader from '@/components/Overlay';
 import Emptystate from '@/components/Emptystate';
 import { useFocusEffect } from 'expo-router';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
 
@@ -144,9 +145,9 @@ const Budget = () => {
             position: 'bottom',
           });
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });
@@ -168,9 +169,9 @@ const Budget = () => {
             position: 'bottom',
           });
         })
-        .catch(() => {
+        .catch((err) => {
           showToast({
-            text1: 'Server Error',
+            text1: getApiErrorMessage(err, 'Server Error'),
             type: 'error',
             position: 'bottom',
           });
@@ -194,9 +195,9 @@ const Budget = () => {
           position: 'bottom',
         });
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Server Error',
+          text1: getApiErrorMessage(err, 'Server Error'),
           type: 'error',
           position: 'bottom',
         });

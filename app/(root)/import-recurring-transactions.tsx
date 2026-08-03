@@ -12,6 +12,7 @@ import { showToast } from '@/components/ToastMessage';
 import { useRecurringTransactions, useImportRecurringTransactions } from '@/hooks/useRecurringTransaction';
 import { recurringFrequencyType } from '@/utils/common-data';
 import { formatToCurrency } from '@/utils/formatter';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
@@ -70,8 +71,8 @@ export default function ImportRecurringTransactions() {
         });
         router.back();
       })
-      .catch(() => {
-        showToast({ text1: 'Server Error', type: 'error', position: 'bottom' });
+      .catch((err) => {
+        showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
       });
   };
 

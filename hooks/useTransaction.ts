@@ -32,6 +32,31 @@ export const useSaveTransaction = (starred: boolean | undefined) => {
   });
 };
 
+export interface ICreateTransferPayload {
+  exp_ts_title: string;
+  exp_ts_amount: string;
+  exp_ts_date: string;
+  exp_ts_time: string;
+  exp_ts_note?: string | null;
+  exp_ts_from_bank_account_id: string;
+  exp_ts_to_bank_account_id: string;
+}
+
+export const useCreateTransfer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: ICreateTransferPayload) => {
+      const res = await apiClient.post('/expensify/transactions/transfer', payload);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
+    },
+  });
+};
+
 export interface ISpendTrendPoint {
   month: string;
   label: string;

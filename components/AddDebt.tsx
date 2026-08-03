@@ -20,6 +20,7 @@ import { showToast } from './ToastMessage';
 import { debtDirectionType } from '@/utils/common-data';
 import { useAddDebt, useUpdateDebt } from '@/hooks/useDebtOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { IDebt } from '@/types';
 
 const schema = z.object({
@@ -103,9 +104,9 @@ const AddDebt = ({ debt, exp_dt_id }: { debt?: IDebt; exp_dt_id?: string }) => {
           position: 'bottom',
         });
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Server Error',
+          text1: getApiErrorMessage(err, 'Server Error'),
           type: 'error',
           position: 'bottom',
         });

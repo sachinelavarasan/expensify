@@ -15,6 +15,7 @@ import { IExpUser } from '@/types';
 import { useUserSettingChanges } from '@/hooks/useSettings';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const visibleOption = [
@@ -103,9 +104,9 @@ const CurrencyModal = ({
         updateSettings('currency', datas.currency);
         AsyncStorage.setItem('show_currency', JSON.stringify(currencyVisible));
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Server Error',
+          text1: getApiErrorMessage(err, 'Server Error'),
           type: 'error',
           position: 'bottom',
         });

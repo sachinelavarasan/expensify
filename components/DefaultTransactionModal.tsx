@@ -7,13 +7,14 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TransactionType } from '@/utils/common-data';
+import { CoreTransactionType } from '@/utils/common-data';
 import CustomRadioButton from './CustomRadioButton';
 import { IExpUser } from '@/types';
 import { showToast } from './ToastMessage';
 import { useUserSettingChanges } from '@/hooks/useSettings';
 import { QueryObserverResult } from '@tanstack/react-query';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 
 const schema = z.object({
   transaction_type: z.number(),
@@ -82,9 +83,9 @@ const DefaultTransactionModal = ({
         refetch();
         updateSettings('d_transaction', String(datas.transaction_type))
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Server Error',
+          text1: getApiErrorMessage(err, 'Server Error'),
           type: 'error',
           position: 'bottom',
         });
@@ -112,7 +113,7 @@ const DefaultTransactionModal = ({
         <Controller
           control={control}
           render={({ field }) => (
-            <CustomRadioButton isColumn options={TransactionType} {...field} />
+            <CustomRadioButton isColumn options={CoreTransactionType} {...field} />
           )}
           name="transaction_type"
         />

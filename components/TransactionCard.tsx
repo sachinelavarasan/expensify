@@ -22,6 +22,7 @@ const TransactionCard = ({
   exp_tc_icon,
   exp_tc_icon_bg_color,
   exp_ba_name,
+  exp_ts_transfer_direction,
   isStarred,
   showTsTime = true,
   noRedirect = false,
@@ -81,9 +82,11 @@ const TransactionCard = ({
               name={
                 exp_tc_icon
                   ? (exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name'])
-                  : exp_tt_id === 2
-                    ? 'trending-up'
-                    : 'trending-down'
+                  : exp_tt_id === 3
+                    ? 'swap-horiz'
+                    : exp_tt_id === 2
+                      ? 'trending-up'
+                      : 'trending-down'
               }
               size={20}
               color={colors.categoryFallbackIcon}
@@ -149,8 +152,18 @@ const TransactionCard = ({
         <View style={styles.right}>
           {!!exp_st_id && <MaterialIcons name="star" size={12} color={colors.favorite} />}
           <Text
-            style={[styles.amount, { color: exp_tt_id === 2 ? colors.income : colors.expense }]}>
-            {exp_tt_id === 2 ? '+' : '-'}
+            style={[
+              styles.amount,
+              {
+                color:
+                  exp_tt_id === 3
+                    ? colors.transfer
+                    : exp_tt_id === 2
+                      ? colors.income
+                      : colors.expense,
+              },
+            ]}>
+            {exp_tt_id === 3 ? (exp_ts_transfer_direction === 'in' ? '+' : '-') : exp_tt_id === 2 ? '+' : '-'}
             {formatToCurrency(exp_ts_amount)}
           </Text>
         </View>

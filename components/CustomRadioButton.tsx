@@ -11,6 +11,10 @@ interface CustomRadioButtonProps {
   disabled?: boolean;
   isRequired?: boolean;
   isColumn?: boolean;
+  // Wraps options into a fixed-width 2-column grid instead of a single row -
+  // for option sets that no longer fit on one line in a narrower container
+  // (e.g. a 4-way filter inside a modal card).
+  grid?: boolean;
 }
 
 export default function CustomRadioButton({
@@ -21,6 +25,7 @@ export default function CustomRadioButton({
   disabled,
   isRequired = false,
   isColumn = false,
+  grid = false,
 }: CustomRadioButtonProps) {
   const { colors } = useThemeContext();
   const [selectedId, setSelectedId] = useState<string | number | undefined>(value);
@@ -64,6 +69,7 @@ export default function CustomRadioButton({
             alignItems: 'flex-start',
             justifyContent: 'center',
           },
+          grid && styles.gridContainer,
         ]}>
         {options.map((button, index) => (
           <RadioButton
@@ -74,7 +80,7 @@ export default function CustomRadioButton({
             onPress={handlePress}
             borderColor={colors.primary}
             color={colors.primary}
-            containerStyle={{ marginHorizontal: 0 }}
+            containerStyle={grid ? styles.gridItem : { marginHorizontal: 0 }}
             disabled={disabled}
           />
         ))}
@@ -89,6 +95,15 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 10,
+  },
+  gridContainer: {
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    rowGap: 10,
+  },
+  gridItem: {
+    marginHorizontal: 0,
+    width: '47%',
   },
   labelStyle: {
     fontSize: 14,

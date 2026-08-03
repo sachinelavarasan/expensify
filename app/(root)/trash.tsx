@@ -28,6 +28,7 @@ import {
 } from '@/hooks/useTransaction';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import { Itransaction } from '@/types';
@@ -52,9 +53,9 @@ export default function Trash() {
       .then(() => {
         showToast({ text1: 'Transaction restored.', type: 'success', position: 'bottom' });
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Could not restore this transaction.',
+          text1: getApiErrorMessage(err, 'Could not restore this transaction.'),
           type: 'error',
           position: 'bottom',
         });
@@ -79,9 +80,9 @@ export default function Trash() {
       .then(() => {
         showToast({ text1: 'Transaction permanently deleted.', type: 'success', position: 'bottom' });
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Could not delete this transaction.',
+          text1: getApiErrorMessage(err, 'Could not delete this transaction.'),
           type: 'error',
           position: 'bottom',
         });

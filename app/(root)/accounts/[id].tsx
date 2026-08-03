@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useGetUserData } from '@/hooks/useUserStore';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { FontSize } from '@/utils/Typography';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
@@ -90,9 +91,9 @@ export default function AccountScreen() {
             });
             router.back()
           })
-          .catch(() => {
+          .catch((err) => {
             showToast({
-              text1: 'Server Error',
+              text1: getApiErrorMessage(err, 'Server Error'),
               type: 'error',
               position: 'bottom',
             });

@@ -56,6 +56,8 @@ export interface Itransaction {
   exp_ba_name: string;
   exp_ts_deleted_at?: string | null;
   exp_ts_tags?: string[];
+  exp_ts_transfer_group_id?: string | null;
+  exp_ts_transfer_direction?: 'in' | 'out' | null;
 }
 
 export interface ICategory {

@@ -45,6 +45,7 @@ const TRAN_TYPE_OPTIONS: {
   { id: 'all', label: 'All', icon: 'swap-vert' },
   { id: 'income', label: 'Income', icon: 'trending-up' },
   { id: 'expense', label: 'Expense', icon: 'trending-down' },
+  { id: 'transfer', label: 'Transfer', icon: 'swap-horiz' },
 ];
 
 export default function ExportData() {
@@ -254,7 +255,9 @@ export default function ExportData() {
                         ? colors.income
                         : item.id === 'expense'
                           ? colors.expense
-                          : colors.primary;
+                          : item.id === 'transfer'
+                            ? colors.transfer
+                            : colors.primary;
                     return (
                       <TouchableOpacity
                         key={item.id}

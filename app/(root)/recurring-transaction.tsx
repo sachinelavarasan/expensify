@@ -29,7 +29,7 @@ import OverlayLoader from '@/components/Overlay';
 import { showToast } from '@/components/ToastMessage';
 
 import { recurringTransactionSchema, recurringTransactionSchemaType } from '@/utils/schema';
-import { TransactionType, recurringFrequencyType } from '@/utils/common-data';
+import { CoreTransactionType, recurringFrequencyType } from '@/utils/common-data';
 import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import {
@@ -39,6 +39,7 @@ import {
   useUpdateRecurringTransaction,
 } from '@/hooks/useRecurringTransaction';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
 
@@ -150,9 +151,9 @@ export default function RecurringTransaction() {
         });
         router.back();
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Server Error',
+          text1: getApiErrorMessage(err, 'Server Error'),
           type: 'error',
           position: 'bottom',
         });
@@ -183,9 +184,9 @@ export default function RecurringTransaction() {
         });
         router.back();
       })
-      .catch(() => {
+      .catch((err) => {
         showToast({
-          text1: 'Server Error',
+          text1: getApiErrorMessage(err, 'Server Error'),
           type: 'error',
           position: 'bottom',
         });
@@ -315,7 +316,7 @@ export default function RecurringTransaction() {
                         <CustomRadioButton
                           label="Transaction Type"
                           value={field.value}
-                          options={TransactionType}
+                          options={CoreTransactionType}
                           onChange={field.onChange}
                           isRequired
                         />

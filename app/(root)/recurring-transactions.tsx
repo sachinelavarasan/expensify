@@ -24,6 +24,7 @@ import {
 } from '@/hooks/useRecurringTransaction';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { showToast } from '@/components/ToastMessage';
+import { getApiErrorMessage } from '@/lib/apiClient';
 
 export default function RecurringTransactions() {
   const { colors } = useThemeContext();
@@ -40,14 +41,22 @@ export default function RecurringTransactions() {
   }, [refetch]);
 
   const handleDelete = (id: string) => {
-    deleteRecurringTransaction(id).catch(() => {
-      showToast({ text1: 'Failed to delete recurring transaction', type: 'error', position: 'bottom' });
+    deleteRecurringTransaction(id).catch((err) => {
+      showToast({
+        text1: getApiErrorMessage(err, 'Failed to delete recurring transaction'),
+        type: 'error',
+        position: 'bottom',
+      });
     });
   };
 
   const handleToggleActive = (id: string, value: boolean) => {
-    updateRecurringTransaction({ exp_rt_id: id, exp_rt_is_active: value }).catch(() => {
-      showToast({ text1: 'Failed to update recurring transaction', type: 'error', position: 'bottom' });
+    updateRecurringTransaction({ exp_rt_id: id, exp_rt_is_active: value }).catch((err) => {
+      showToast({
+        text1: getApiErrorMessage(err, 'Failed to update recurring transaction'),
+        type: 'error',
+        position: 'bottom',
+      });
     });
   };
 
