@@ -20,7 +20,7 @@ export default function ProfileHeaderCard({ title, subtitle, refetch }: Props) {
     <View
       style={[
         styles.card,
-        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
       ]}>
       <ProfileImageUploader refetch={refetch} />
       <View style={styles.textOverlay}>
@@ -43,19 +43,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     borderWidth: 1,
-    padding: 14,
+    padding: 12,
   },
   textOverlay: {
     flex: 1,
     flexShrink: 1,
   },
   name: {
-    fontSize: FontSize.lg,
+    fontSize: FontSize.base,
     fontFamily: 'Inter-700',
   },
   email: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
-    marginTop: 2,
+    marginTop: 1,
   },
 });

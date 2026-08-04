@@ -19,7 +19,6 @@ import { IBudget, Itransaction } from '@/types';
 import { ThemeColors } from '@/utils/Colors';
 import { format } from 'date-fns';
 import TransactionCard from './TransactionCard';
-import { LinearGradient } from 'expo-linear-gradient';
 import CategoryTrendSparkline from './CategoryTrendSparkline';
 import Emptystate from './Emptystate';
 import { FontSize } from '@/utils/Typography';

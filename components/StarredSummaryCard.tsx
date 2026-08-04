@@ -1,6 +1,5 @@
 import React from 'react';
-import { ColorValue, StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 
@@ -22,11 +21,7 @@ export default function StarredSummaryCard({ count, totalIncome, totalExpense }:
   const animatedExpense = useCountUp(totalExpense);
 
   return (
-    <LinearGradient
-      colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.primary }]}>
       <Text style={[styles.label, { color: colors.onPrimary }]}>Starred Transactions</Text>
       <Text style={[styles.count, { color: colors.onPrimary }]} numberOfLines={1}>
         {Math.round(animatedCount)}
@@ -36,7 +31,7 @@ export default function StarredSummaryCard({ count, totalIncome, totalExpense }:
         <Animated.View
           entering={FadeInDown.duration(550).delay(180).easing(Easing.out(Easing.quad))}
           style={styles.stat}>
-          <View style={styles.dot}>
+          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
             <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
           </View>
           <View>
@@ -49,7 +44,7 @@ export default function StarredSummaryCard({ count, totalIncome, totalExpense }:
         <Animated.View
           entering={FadeInDown.duration(550).delay(260).easing(Easing.out(Easing.quad))}
           style={styles.stat}>
-          <View style={styles.dot}>
+          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
             <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
           </View>
           <View>
@@ -62,13 +57,13 @@ export default function StarredSummaryCard({ count, totalIncome, totalExpense }:
       </View>
 
       {count === 0 && (
-        <View style={styles.footer}>
+        <View style={[styles.footer, { borderTopColor: colors.onPrimaryBorder }]}>
           <Text style={[styles.footerText, { color: colors.onPrimary }]}>
             Star a transaction to pin it here for quick access
           </Text>
         </View>
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -106,7 +101,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   statLabel: {
     fontSize: 10,
@@ -125,7 +119,6 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.22)',
   },
   footerText: {
     fontSize: FontSize.sm,

@@ -118,7 +118,11 @@ export default function IconPickerSheet({
                       ]}>
                       <MaterialIcons name={iconName as any} size={20} color={colors.onPrimary} />
                       {active && (
-                        <View style={[styles.checkBadge, { backgroundColor: colors.primary }]}>
+                        <View
+                          style={[
+                            styles.checkBadge,
+                            { backgroundColor: colors.primary, shadowColor: colors.shadow },
+                          ]}>
                           <MaterialIcons name="check" size={11} color={colors.onPrimary} />
                         </View>
                       )}
@@ -187,7 +191,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 2,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 2,

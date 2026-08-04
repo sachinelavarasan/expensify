@@ -53,7 +53,7 @@ export default function SegmentedControl({ options, value, onChange, label, disa
                   <View
                     style={[
                       styles.badge,
-                      { backgroundColor: selected ? colors.primary : colors.barBackground },
+                      { backgroundColor: selected ? colors.primary : colors.cardBg },
                     ]}>
                     <Text
                       style={[

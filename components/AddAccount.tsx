@@ -17,8 +17,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { accountIcon } from '@/utils/common-data';
 import { showToast } from './ToastMessage';
-import { AddAccountButtonGradient } from '@/utils/Colors';
-import { LinearGradient } from 'expo-linear-gradient';
 import {
   useAddBankAccount,
   useSetPrimaryBankAccount,
@@ -161,13 +159,13 @@ const AddAccount = ({ account, exp_ba_id }: { account?: BankAccount; exp_ba_id?:
             <MaterialCommunityIcons name="circle-edit-outline" size={20} color={colors.primary} />
           </View>
         ) : (
-          <LinearGradient
-            colors={AddAccountButtonGradient as [string, string]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.addbutton]}>
+          <View
+            style={[
+              styles.addbutton,
+              { backgroundColor: colors.primary, shadowColor: colors.primary },
+            ]}>
             <Text style={[styles.text, { color: colors.onPrimary }]}>Add New</Text>
-          </LinearGradient>
+          </View>
         )}
       </Pressable>
 
@@ -373,7 +371,6 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: AddAccountButtonGradient[1],
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

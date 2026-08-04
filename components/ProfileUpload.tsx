@@ -20,7 +20,7 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { useGetUserData, useRemoveProfileImage, useUploadProfileImage } from '@/hooks/useUserStore';
 import { IExpUser } from '@/types';
 
-const AVATAR_SIZE = 70;
+const AVATAR_SIZE = 56;
 const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
@@ -173,7 +173,7 @@ export default function ProfileImageUploader({ isSmall = false, refetch }: Props
               styles.avatarPlaceholder,
               { backgroundColor: colors.primary },
             ]}>
-            <FontAwesome6 name="user" size={isSmall ? 16 : 28} color={colors.onPrimary} />
+            <FontAwesome6 name="user" size={isSmall ? 16 : 22} color={colors.onPrimary} />
           </View>
         )}
         {!isSmall && (
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
-    marginRight: 12,
+    marginRight: 10,
     borderWidth: 2,
   },
 
@@ -274,9 +274,9 @@ const styles = StyleSheet.create({
 
   editBadge: {
     position: 'absolute',
-    bottom: 2,
-    right: 10,
-    padding: 6,
+    bottom: -2,
+    right: 6,
+    padding: 5,
     borderRadius: 20,
   },
 

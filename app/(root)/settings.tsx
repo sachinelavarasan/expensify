@@ -139,30 +139,43 @@ export default function Setting() {
               {/* Appearance Section */}
               <View>
                 <Text style={[styles.sectionLabel, { color: colors.description }]}>Appearance</Text>
-                <View style={styles.section}>
-                  <ThemeToggle />
+                <View
+                  style={[
+                    styles.section,
+                    { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                  ]}>
+                  <ThemeToggle noCard />
                 </View>
               </View>
 
               {/* General Section */}
               <View>
                 <Text style={[styles.sectionLabel, { color: colors.description }]}>General</Text>
-                <View style={styles.section}>
+                <View
+                  style={[
+                    styles.section,
+                    { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                  ]}>
                   <CurrencyModal
                     currency={generalSettings?.currency}
                     refetch={refetch}
                     updateSettings={updateSettingPreference}
+                    noCard
                   />
                   <DefaultTransactionModal
                     transaction_type={Number(generalSettings?.d_transaction)}
                     label={Number(generalSettings?.d_transaction) === 2 ? 'Income' : 'Expense'}
                     refetch={refetch}
                     updateSettings={updateSettingPreference}
+                    noCard
+                    topDivider
                   />
                   <DefaultGroupingModal
                     grouping={generalSettings?.grouping}
                     refetch={refetch}
                     updateSettings={updateSettingPreference}
+                    noCard
+                    topDivider
                   />
                 </View>
               </View>
@@ -170,17 +183,23 @@ export default function Setting() {
               {/* Reminder Section */}
               <View>
                 <Text style={[styles.sectionLabel, { color: colors.description }]}>Reminder</Text>
-                <View style={styles.section}>
+                <View
+                  style={[
+                    styles.section,
+                    { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                  ]}>
                   <SettingsRow
-                    icon={<MaterialIcons name="access-alarm" size={18} color={colors.onPrimary} />}
+                    icon={<MaterialIcons name="access-alarm" size={18} color="#F59E0B" />}
+                    iconBg="#F59E0B1A"
                     title="Daily Reminder"
                     subtitle={
                       enabled
                         ? `Reminds you daily at ${time}`
                         : 'Get a daily notification to add transactions'
                     }
+                    noCard
                     right={
-                      <View style={{ alignItems: 'flex-end', gap: 8 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <CustomSwitch
                           value={enabled}
                           onChange={(value) => {
@@ -207,13 +226,19 @@ export default function Setting() {
                 <Text style={[styles.sectionLabel, { color: colors.description }]}>
                   Display Customization
                 </Text>
-                <View style={styles.section}>
+                <View
+                  style={[
+                    styles.section,
+                    { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                  ]}>
                   <SettingsRow
                     icon={
-                      <MaterialIcons name="account-balance-wallet" size={18} color={colors.onPrimary} />
+                      <MaterialIcons name="account-balance-wallet" size={18} color="#14B8A6" />
                     }
+                    iconBg="#14B8A61A"
                     title="Hide Balance"
                     subtitle="Toggle visibility of your total balance"
+                    noCard
                     right={
                       <CustomSwitch
                         value={showBalance}
@@ -228,11 +253,14 @@ export default function Setting() {
                       <MaterialCommunityIcons
                         name="calendar-arrow-right"
                         size={18}
-                        color={colors.onPrimary}
+                        color="#F97316"
                       />
                     }
+                    iconBg="#F973161A"
                     title="Carry Over Balance"
                     subtitle="Move unused balance to the next period"
+                    noCard
+                    topDivider
                     right={
                       <CustomSwitch
                         value={carryBalance}
@@ -244,10 +272,13 @@ export default function Setting() {
                   />
                   <SettingsRow
                     icon={
-                      <MaterialCommunityIcons name="chart-line" size={18} color={colors.onPrimary} />
+                      <MaterialCommunityIcons name="chart-line" size={18} color="#84CC16" />
                     }
+                    iconBg="#84CC161A"
                     title="Show Net Worth"
                     subtitle="Display net worth and top spending category on the dashboard"
+                    noCard
+                    topDivider
                     right={
                       <CustomSwitch
                         value={showNetWorth}
@@ -258,9 +289,12 @@ export default function Setting() {
                     }
                   />
                   <SettingsRow
-                    icon={<Ionicons name="time-outline" size={18} color={colors.onPrimary} />}
+                    icon={<Ionicons name="time-outline" size={18} color="#F43F5E" />}
+                    iconBg="#F43F5E1A"
                     title="Show Transaction Time"
                     subtitle="Display the time along with each transaction"
+                    noCard
+                    topDivider
                     right={
                       <CustomSwitch
                         value={ttime}
@@ -288,5 +322,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 2,
   },
-  section: {},
+  section: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
 });

@@ -89,7 +89,7 @@ export default function AccountScreen() {
               type: 'success',
               position: 'bottom',
             });
-            router.back()
+            router.back();
           })
           .catch((err) => {
             showToast({
@@ -107,10 +107,10 @@ export default function AccountScreen() {
     <SafeAreaViewComponent edges={['top']}>
       <ThemedView style={styles.container}>
         <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
-          <ProfileHeader title="Account Details" subtitle="All Time" paddingHorizontal={false}>
+          <ProfileHeader title="Account Details" paddingHorizontal={false}>
             <View>
               {!!account?.exp_ba_id && (
-                <View style={{gap: 20, flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ gap: 20, flexDirection: 'row', alignItems: 'center' }}>
                   <AddAccount
                     account={{
                       ...account,
@@ -146,6 +146,7 @@ export default function AccountScreen() {
                 income={totals.income}
                 expense={totals.expense}
                 transactionCount={totals.transactionCount}
+                variant="hero"
                 otherStyle={{
                   width: cardWidth,
                 }}
@@ -179,24 +180,27 @@ export default function AccountScreen() {
                 ) : null
               }
               renderItem={({ item }) => (
-                <View style={{ paddingHorizontal: 5 }}>
+                <View
+                  style={[
+                    styles.row,
+                    { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                  ]}>
                   <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
               renderSectionHeader={({ section: { title, income, expense } }) => (
-                <View
-                  style={[styles.sectionHeader, { backgroundColor: colors.bottomBarBackground }]}>
-                  <Text style={[styles.dateHeader, { color: colors.title }]}>{title}</Text>
+                <View style={[styles.sectionHeader, { backgroundColor: colors.cardBg }]}>
+                  <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>{title}</Text>
 
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!expense && (
-                      <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
+                      <Text style={[styles.totalAmount, { color: colors.expense }]}>
                         <Feather name="arrow-up-right" size={14} color={colors.expense} />
                         {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
-                      <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
+                      <Text style={[styles.totalAmount, { color: colors.income }]}>
                         <Feather name="arrow-down-left" size={14} color={colors.income} />
                         {formatToCurrency(income)}
                       </Text>
@@ -225,21 +229,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  row: {
+    marginHorizontal: 5,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderRadius: 14,
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    marginTop: 6,
     marginBottom: 4,
   },
   dateHeader: {
-    fontSize: FontSize.base,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   totalAmount: {
-    fontSize: FontSize.base,
-    fontFamily: 'Inter-500',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
   },
 });

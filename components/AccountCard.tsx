@@ -22,6 +22,12 @@ type BankCardProps = {
   // Mirrors the "Hide Balance" setting - true means the balance should be masked.
   showBalance?: boolean;
   isPrimary?: boolean;
+  // 'compact' (default) is the neutral card used in horizontal account lists
+  // (e.g. Profile) where several cards sit side by side - a flat colored fill
+  // repeated across all of them would be too loud. 'hero' is a flat
+  // colors.primary card matching Home/Budget/Stats/Profile's summary cards,
+  // meant for a single full-width card (the account detail screen).
+  variant?: 'compact' | 'hero';
 };
 
 const BankCard = ({
@@ -36,6 +42,7 @@ const BankCard = ({
   transactionCount,
   showBalance,
   isPrimary,
+  variant = 'compact',
 }: BankCardProps) => {
   const { colors } = useThemeContext();
 
@@ -52,6 +59,101 @@ const BankCard = ({
   const animatedIncome = useCountUp(income ?? 0);
   const animatedExpense = useCountUp(expense ?? 0);
 
+  const balanceText = isBalanceVisible
+    ? formatToCurrency(animatedBalance, undefined, numericBalance)
+    : '••••••';
+
+  if (variant === 'hero') {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={onPress}
+        disabled={!onPress}
+        style={[styles.heroCard, { backgroundColor: colors.primary }, otherStyle]}>
+        <View style={styles.heroIdRow}>
+          <View style={styles.left}>
+            <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
+              <MaterialIcons name={icon} size={16} color={colors.onPrimary} />
+            </View>
+            <View style={styles.identity}>
+              <Text style={[styles.label, { color: colors.onPrimary }]}>Account</Text>
+              <Text
+                style={[styles.value, { color: colors.onPrimary }]}
+                numberOfLines={1}>
+                {bankName}
+              </Text>
+              {isPrimary && (
+                <View
+                  style={[
+                    styles.primaryBadge,
+                    { backgroundColor: colors.onPrimarySubtle, marginTop: 4 },
+                  ]}>
+                  <Feather name="star" size={10} color={colors.onPrimary} />
+                  <Text style={[styles.primaryBadgeText, { color: colors.onPrimary }]}>
+                    Primary
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+          {!isBaseBalanceVisible && (
+            <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
+              <Feather
+                name={isBalanceVisible ? 'eye' : 'eye-off'}
+                size={15}
+                color={colors.onPrimary}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <Text style={[styles.heroBalanceLabel, { color: colors.onPrimary }]}>Balance</Text>
+        <Text style={[styles.heroBalance, { color: colors.onPrimary }]} numberOfLines={1}>
+          {balanceText}
+        </Text>
+
+        {showActivity && (
+          <View style={styles.heroStats}>
+            <View style={styles.heroStatPill}>
+              <Feather name="arrow-down-left" size={13} color={colors.income} />
+              <View>
+                <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
+                <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+                  {formatToCurrency(animatedIncome, undefined, income)}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.heroStatPill}>
+              <Feather name="arrow-up-right" size={13} color={colors.expense} />
+              <View>
+                <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
+                <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+                  {formatToCurrency(animatedExpense, undefined, expense)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        <View style={[styles.heroFooter, { borderTopColor: colors.onPrimaryBorder }]}>
+          <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
+            Card Holder:{' '}
+            <Text style={[styles.footerValue, { color: colors.onPrimary }]}>{holderName}</Text>
+            {!!transactionCount && (
+              <Text style={[styles.footerText, { color: colors.onPrimary }]}>
+                {'  ·  '}
+                <Text style={[styles.footerValue, { color: colors.onPrimary }]}>
+                  {transactionCount}
+                </Text>
+                {transactionCount === 1 ? ' transaction' : ' transactions'}
+              </Text>
+            )}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -59,7 +161,7 @@ const BankCard = ({
       disabled={!onPress}
       style={[
         styles.card,
-        { backgroundColor: colors.inputColor, borderColor: colors.primary },
+        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
         otherStyle,
       ]}>
       <View style={styles.topRow}>
@@ -99,9 +201,7 @@ const BankCard = ({
             )}
           </View>
           <Text style={[styles.balance, { color: colors.title }]} numberOfLines={1}>
-            {isBalanceVisible
-              ? formatToCurrency(animatedBalance, undefined, numericBalance)
-              : '••••••'}
+            {balanceText}
           </Text>
         </View>
       </View>
@@ -156,7 +256,12 @@ const styles = StyleSheet.create({
   card: {
     width: 350,
     borderRadius: 20,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    padding: 18,
+  },
+  heroCard: {
+    width: 350,
+    borderRadius: 20,
     padding: 18,
   },
   topRow: {
@@ -164,6 +269,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  heroIdRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 18,
   },
   left: {
     flexDirection: 'row',
@@ -182,6 +294,7 @@ const styles = StyleSheet.create({
   primaryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     gap: 3,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -222,12 +335,39 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-700',
     marginTop: 2,
   },
+  heroBalanceLabel: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    opacity: 0.78,
+    marginBottom: 4,
+  },
+  heroBalance: {
+    fontSize: 27,
+    fontFamily: 'Inter-700',
+    marginBottom: 16,
+  },
   activityRow: {
     flexDirection: 'row',
     gap: 24,
     marginTop: 16,
     paddingTop: 12,
     borderTopWidth: 1,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  heroStatPill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 11,
+    padding: 10,
   },
   stat: {
     flexDirection: 'row',
@@ -246,6 +386,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
+    opacity: 0.8,
   },
   statValue: {
     fontSize: FontSize.sm,
@@ -255,6 +396,10 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  heroFooter: {
     paddingTop: 12,
     borderTopWidth: 1,
   },

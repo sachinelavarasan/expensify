@@ -22,16 +22,22 @@ const schema = z.object({
 
 type DefaultTT = z.infer<typeof schema>;
 
+const TINT = '#3B82F6';
+
 const DefaultTransactionModal = ({
   transaction_type,
   label,
   refetch,
-  updateSettings
+  updateSettings,
+  noCard,
+  topDivider,
 }: {
   transaction_type?: number;
   label?: string;
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
   updateSettings: (name: string, value: boolean | string)=> void;
+  noCard?: boolean;
+  topDivider?: boolean;
 }) => {
   const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
@@ -99,10 +105,13 @@ const DefaultTransactionModal = ({
   return (
     <>
       <SettingsRow
-        icon={<FontAwesome name="exchange" size={16} color={colors.onPrimary} />}
+        icon={<FontAwesome name="exchange" size={16} color={TINT} />}
+        iconBg={`${TINT}1A`}
         title="Default Transaction"
         subtitle={label || 'Choose default type: Income or Expense'}
         onPress={toggleModal}
+        noCard={noCard}
+        topDivider={topDivider}
       />
 
       <ModalCard

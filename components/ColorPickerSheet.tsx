@@ -10,6 +10,7 @@ import { Spacing } from '@/utils/Spacing';
 import RowField from '@/components/RowField';
 import { toColumnMajorOrder } from '@/utils/gridLayout';
 import { customColors } from '@/utils/common-data';
+import { SwatchCheckColor } from '@/utils/Colors';
 
 interface Props {
   value: string;
@@ -106,7 +107,7 @@ export default function ColorPickerSheet({
                         { backgroundColor: item.hex },
                         active && { borderWidth: 2, borderColor: colors.primary },
                       ]}>
-                      {active && <MaterialIcons name="check" size={16} color="#fff" />}
+                      {active && <MaterialIcons name="check" size={16} color={SwatchCheckColor} />}
                     </View>
                     <Text
                       numberOfLines={1}

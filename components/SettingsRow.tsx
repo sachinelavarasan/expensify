@@ -12,9 +12,25 @@ interface Props {
   onPress?: () => void;
   right?: React.ReactNode;
   style?: ViewStyle;
+  // When true, renders as a flat list item (no border/radius/margin of its
+  // own) meant to sit inside a shared group card instead of its own box.
+  noCard?: boolean;
+  // Adds a top hairline when grouped with noCard - used for every row after
+  // the first inside a group card, in place of a real CSS adjacent-sibling rule.
+  topDivider?: boolean;
 }
 
-export default function SettingsRow({ icon, iconBg, title, subtitle, onPress, right, style }: Props) {
+export default function SettingsRow({
+  icon,
+  iconBg,
+  title,
+  subtitle,
+  onPress,
+  right,
+  style,
+  noCard,
+  topDivider,
+}: Props) {
   const { colors } = useThemeContext();
   const Wrapper: any = onPress ? TouchableOpacity : View;
 
@@ -22,8 +38,10 @@ export default function SettingsRow({ icon, iconBg, title, subtitle, onPress, ri
     <Wrapper
       {...(onPress ? { onPress, activeOpacity: 0.7 } : {})}
       style={[
-        styles.card,
-        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+        noCard ? styles.rowFlat : styles.card,
+        noCard
+          ? topDivider && { borderTopWidth: 1, borderTopColor: colors.borderColor }
+          : { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
         style,
       ]}>
       <View style={styles.left}>
@@ -58,6 +76,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 10,
+  },
+  rowFlat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 13,
+    paddingHorizontal: 14,
   },
   left: {
     flexDirection: 'row',

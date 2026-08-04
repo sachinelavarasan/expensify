@@ -17,56 +17,82 @@ import BankCard from '@/components/AccountCard';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import LogoutButton from '@/components/LogOutModal';
 import ProfileAccountsSummaryCard from '@/components/ProfileAccountsSummaryCard';
+import SettingsRow from '@/components/SettingsRow';
 import { FontSize } from '@/utils/Typography';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 
-const MENU_ITEMS: {
+type MenuItem = {
   href: Href;
   icon: React.ComponentProps<typeof MaterialIcons>['name'];
   title: string;
   subtitle: string;
-}[] = [
+  color: string;
+};
+
+const MENU_GROUPS: { label: string; items: MenuItem[] }[] = [
   {
-    href: '/(root)/categories',
-    icon: 'category',
-    title: 'Categories',
-    subtitle: 'Keep your spending neatly sorted',
+    label: 'Transactions',
+    items: [
+      {
+        href: '/(root)/starred',
+        icon: 'star',
+        title: 'Starred Transactions',
+        subtitle: 'Access your favorite transactions quickly',
+        color: '#F59E0B',
+      },
+      {
+        href: '/(root)/recurring-transactions',
+        icon: 'event-repeat',
+        title: 'Recurring Transactions',
+        subtitle: 'Get reminders for bills and income that repeat',
+        color: '#3B82F6',
+      },
+      {
+        href: '/(root)/export-transactions',
+        icon: 'import-export',
+        title: 'Import / Export Transactions',
+        subtitle: 'Download and share your transaction history',
+        color: '#14B8A6',
+      },
+      {
+        href: '/(root)/trash',
+        icon: 'delete-outline',
+        title: 'Trash',
+        subtitle: 'Restore or permanently delete removed transactions',
+        color: '#64748B',
+      },
+    ],
   },
   {
-    href: '/(root)/starred',
-    icon: 'star',
-    title: 'Starred Transactions',
-    subtitle: 'Access your favorite transactions quickly',
+    label: 'Organize',
+    items: [
+      {
+        href: '/(root)/categories',
+        icon: 'category',
+        title: 'Categories',
+        subtitle: 'Keep your spending neatly sorted',
+        color: '#A855F7',
+      },
+      {
+        href: '/(root)/debts',
+        icon: 'handshake',
+        title: 'Debts & Loans',
+        subtitle: 'Track money you’ve lent or borrowed',
+        color: '#F97316',
+      },
+    ],
   },
   {
-    href: '/(root)/recurring-transactions',
-    icon: 'event-repeat',
-    title: 'Recurring Transactions',
-    subtitle: 'Get reminders for bills and income that repeat',
-  },
-  {
-    href: '/(root)/debts',
-    icon: 'handshake',
-    title: 'Debts & Loans',
-    subtitle: 'Track money you’ve lent or borrowed',
-  },
-  {
-    href: '/(root)/export-transactions',
-    icon: 'import-export',
-    title: 'Import / Export Transactions',
-    subtitle: 'Download and share your transaction history',
-  },
-  {
-    href: '/(root)/trash',
-    icon: 'delete-outline',
-    title: 'Trash',
-    subtitle: 'Restore or permanently delete removed transactions',
-  },
-  {
-    href: '/(root)/settings',
-    icon: 'settings',
-    title: 'Settings',
-    subtitle: 'Customize your app preferences and controls',
+    label: 'App',
+    items: [
+      {
+        href: '/(root)/settings',
+        icon: 'settings',
+        title: 'Settings',
+        subtitle: 'Customize your app preferences and controls',
+        color: '#6366F1',
+      },
+    ],
   },
 ];
 
@@ -83,6 +109,8 @@ const Profile = () => {
   return (
     <ThemedView style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        <Text style={[styles.screenTitle, { color: colors.title }]}>Profile</Text>
+        <Spacer height={16} />
         <ProfileHeaderCard
           title={currentUser?.exp_us_name || ''}
           subtitle={currentUser?.exp_us_email || ''}
@@ -100,26 +128,17 @@ const Profile = () => {
         <Spacer height={20} />
         <View
           style={[
-            styles.card,
-            { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            styles.section,
+            { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
           ]}>
-          <View style={styles.left}>
-            <View style={{ backgroundColor: colors.primary, padding: 6, borderRadius: 8 }}>
-              <MaterialIcons name="account-balance" size={24} color={colors.onPrimary} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View>
-                <Text style={[styles.option, { color: colors.title }]}>Manage Accounts</Text>
-              </View>
-              <View style={styles.subTextContainer}>
-                <Text style={[styles.subText, { color: colors.description }]}>
-                  Add or edit your bank accounts
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={{ marginRight: -6 }}>{<AddAccount />}</View>
+          <SettingsRow
+            icon={<MaterialIcons name="account-balance" size={20} color={colors.primary} />}
+            iconBg={`${colors.primary}1A`}
+            title="Manage Accounts"
+            subtitle="Add or edit your bank accounts"
+            noCard
+            right={<AddAccount />}
+          />
         </View>
         <FlatList
           contentContainerStyle={{
@@ -160,36 +179,35 @@ const Profile = () => {
           )}
         />
         <Spacer height={4} />
-        {MENU_ITEMS.map((item) => (
-          <Link key={String(item.href)} href={item.href} asChild>
-            <TouchableOpacity>
-              <View
-                style={[
-                  styles.card,
-                  { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
-                ]}>
-                <View style={styles.left}>
-                  <View style={{ backgroundColor: colors.primary, padding: 6, borderRadius: 8 }}>
-                    <MaterialIcons name={item.icon} size={24} color={colors.onPrimary} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View>
-                      <Text style={[styles.option, { color: colors.title }]}>{item.title}</Text>
-                    </View>
-                    <View style={styles.subTextContainer}>
-                      <Text style={[styles.subText, { color: colors.description }]}>
-                        {item.subtitle}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                <MaterialIcons name="chevron-right" size={22} color={colors.lighterTitle} />
-              </View>
-            </TouchableOpacity>
-          </Link>
+        {MENU_GROUPS.map((group) => (
+          <View key={group.label} style={{ marginBottom: 22 }}>
+            <Text style={[styles.sectionLabel, { color: colors.description }]}>{group.label}</Text>
+            <View
+              style={[
+                styles.section,
+                { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+              ]}>
+              {group.items.map((item, index) => (
+                <Link key={String(item.href)} href={item.href} asChild>
+                  <TouchableOpacity activeOpacity={0.7}>
+                    <SettingsRow
+                      icon={<MaterialIcons name={item.icon} size={20} color={item.color} />}
+                      iconBg={`${item.color}1A`}
+                      title={item.title}
+                      subtitle={item.subtitle}
+                      noCard
+                      topDivider={index > 0}
+                      right={
+                        <MaterialIcons name="chevron-right" size={22} color={colors.lighterTitle} />
+                      }
+                    />
+                  </TouchableOpacity>
+                </Link>
+              ))}
+            </View>
+          </View>
         ))}
-        <Spacer height={40} />
+        <Spacer height={18} />
         <View style={[styles.btnContainer, { paddingHorizontal: 5, flex: 1 }]}>
           <LogoutButton />
         </View>
@@ -204,42 +222,31 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 60,
   },
+  screenTitle: {
+    fontSize: FontSize.xxl,
+    fontFamily: 'Inter-700',
+  },
   btnContainer: {
     alignItems: 'center',
     marginTop: 20,
   },
-  card: {
-    paddingVertical: 8,
-    marginBottom: 10,
-    borderRadius: 10,
+  section: {
+    borderRadius: 16,
     borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 8,
+    overflow: 'hidden',
   },
-  left: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  option: {
-    fontSize: FontSize.base,
+  sectionLabel: {
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginBottom: 8,
+    paddingHorizontal: 2,
   },
   subText: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
     flexShrink: 1,
-  },
-  subTextContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexShrink: 1,
-    marginTop: 2,
   },
 });
 

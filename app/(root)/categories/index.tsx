@@ -19,6 +19,7 @@ import DraggableFlatList, {
 } from 'react-native-draggable-flatlist';
 import { Link, useRouter } from 'expo-router';
 import { Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import Svg, { Circle } from 'react-native-svg';
 import { ICategoryWithCount } from '@/types';
 import OverlayLoader from '@/components/Overlay';
 import Spacer from '@/components/Spacer';
@@ -30,10 +31,17 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
 import { formatToCurrency } from '@/utils/formatter';
 
+const RING_SIZE = 44;
+const RING_STROKE = 3;
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+const RING_ICON_SIZE = 26;
+const RING_ICON_OFFSET = (RING_SIZE - RING_ICON_SIZE) / 2;
+
 function CategoryCard({
   item,
   colors,
-  maxSpend,
+  totalSpend,
   locked,
   pressed,
   onDrag,
@@ -41,7 +49,7 @@ function CategoryCard({
 }: {
   item: ICategoryWithCount;
   colors: ReturnType<typeof useThemeContext>['colors'];
-  maxSpend: number;
+  totalSpend: number;
   locked: boolean;
   pressed?: boolean;
   onDrag?: () => void;
@@ -49,31 +57,66 @@ function CategoryCard({
 }) {
   const spend = Number(item.total_spend) || 0;
   const hasTxns = Number(item.transaction_count) > 0;
-  const barPct = hasTxns ? Math.min(100, (spend / maxSpend) * 100) : 0;
-  const barColor = item.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
+  const sharePct = hasTxns ? Math.round(Math.min(100, (spend / totalSpend) * 100)) : 0;
+  const ringDash = RING_CIRCUMFERENCE * (sharePct / 100);
+  const ringColor = locked ? colors.lighterTitle : item.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
 
   return (
     <View
       style={[
         styles.card,
         {
-          backgroundColor: pressed ? colors.barBackground : colors.inputColor,
-          borderColor: colors.inputBorder,
+          backgroundColor: pressed ? colors.barBackground : colors.cardBg,
+          borderColor: colors.borderColor,
           shadowColor: colors.shadow,
         },
       ]}>
       <View style={styles.left}>
-        <View
-          style={[
-            styles.iconBox,
-            { backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg },
-          ]}>
-          {item.exp_tc_icon && (
-            <MaterialIcons
-              name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
-              size={18}
-              color={colors.categoryFallbackIcon}
+        <View style={styles.ringWrap}>
+          <Svg
+            width={RING_SIZE}
+            height={RING_SIZE}
+            style={{ transform: [{ rotate: '-90deg' }] }}>
+            <Circle
+              cx={RING_SIZE / 2}
+              cy={RING_SIZE / 2}
+              r={RING_RADIUS}
+              stroke={colors.barBackground}
+              strokeWidth={RING_STROKE}
+              fill="none"
             />
+            <Circle
+              cx={RING_SIZE / 2}
+              cy={RING_SIZE / 2}
+              r={RING_RADIUS}
+              stroke={ringColor}
+              strokeWidth={RING_STROKE}
+              fill="none"
+              strokeDasharray={`${ringDash}, ${RING_CIRCUMFERENCE}`}
+              strokeLinecap="round"
+            />
+          </Svg>
+          <View
+            style={[
+              styles.iconBox,
+              { backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg },
+            ]}>
+            {item.exp_tc_icon && (
+              <MaterialIcons
+                name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
+                size={15}
+                color={colors.categoryFallbackIcon}
+              />
+            )}
+          </View>
+          {hasTxns && (
+            <View
+              style={[
+                styles.ringPct,
+                { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+              ]}>
+              <Text style={[styles.ringPctText, { color: colors.title }]}>{sharePct}%</Text>
+            </View>
           )}
         </View>
         <View style={{ flexShrink: 1, flex: 1 }}>
@@ -94,9 +137,6 @@ function CategoryCard({
             numberOfLines={1}>
             {hasTxns ? `${item.transaction_count} txns` : 'No transactions yet'}
           </Text>
-          <View style={[styles.barTrack, { backgroundColor: colors.barBackground }]}>
-            <View style={[styles.barFill, { width: `${barPct}%`, backgroundColor: barColor }]} />
-          </View>
         </View>
       </View>
 
@@ -183,13 +223,21 @@ export default function Category() {
     }
   }, [activeTab, categories, expenseCategories, incomeCategories]);
 
-  const maxSpend = useMemo(() => {
-    const max = Math.max(
-      ...systemList.map((item) => Number(item.total_spend) || 0),
-      ...dataList.map((item) => Number(item.total_spend) || 0),
+  const totalSpend = useMemo(() => {
+    const total = [...systemList, ...dataList].reduce(
+      (sum, item) => sum + (Number(item.total_spend) || 0),
       0,
     );
-    return max > 0 ? max : 1;
+    return total > 0 ? total : 1;
+  }, [systemList, dataList]);
+
+  const topCategory = useMemo(() => {
+    return [...systemList, ...dataList].reduce<ICategoryWithCount | null>((top, item) => {
+      const spend = Number(item.total_spend) || 0;
+      if (spend <= 0) return top;
+      if (!top || spend > (Number(top.total_spend) || 0)) return item;
+      return top;
+    }, null);
   }, [systemList, dataList]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -280,6 +328,28 @@ export default function Category() {
           </TouchableOpacity>
         </Animated.View>
         <ProfileHeader title="Categories" />
+        {totalSpend > 0 && (
+          <View style={[styles.summary, { backgroundColor: colors.primary }]}>
+            <View>
+              <Text style={[styles.summaryLabel, { color: colors.onPrimary }]}>
+                {activeTab === 'expense' ? 'Spent this period' : 'Received this period'}
+              </Text>
+              <Text style={[styles.summaryAmt, { color: colors.onPrimary }]}>
+                {formatToCurrency(totalSpend)}
+              </Text>
+            </View>
+            {!!topCategory && (
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={[styles.summaryTopLabel, { color: colors.onPrimary }]}>
+                  Top category
+                </Text>
+                <Text style={[styles.summaryTopName, { color: colors.onPrimary }]} numberOfLines={1}>
+                  {topCategory.exp_tc_label}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
         <View style={styles.segmentWrapper}>
           <SegmentedControl
             value={activeTab}
@@ -299,7 +369,7 @@ export default function Category() {
           <View
             style={[
               styles.searchBox,
-              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+              { backgroundColor: colors.barBackground, borderColor: colors.borderColor },
             ]}>
             <Ionicons name="search" size={14} color={colors.lighterTitle} />
             <TextInput
@@ -313,7 +383,7 @@ export default function Category() {
           <TouchableOpacity
             style={[
               styles.sortChip,
-              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+              { backgroundColor: colors.barBackground, borderColor: colors.borderColor },
             ]}
             onPress={() => setSortMode((prev) => (prev === 'custom' ? 'spend' : 'custom'))}>
             <Text style={[styles.sortChipText, { color: colors.title }]}>
@@ -348,7 +418,7 @@ export default function Category() {
                     </Text>
                     {filteredSystemList.map((item) => (
                       <View key={item.exp_tc_id}>
-                        <CategoryCard item={item} colors={colors} maxSpend={maxSpend} locked />
+                        <CategoryCard item={item} colors={colors} totalSpend={totalSpend} locked />
                       </View>
                     ))}
                   </>
@@ -398,7 +468,7 @@ export default function Category() {
                       <CategoryCard
                         item={item}
                         colors={colors}
-                        maxSpend={maxSpend}
+                        totalSpend={totalSpend}
                         locked={false}
                         pressed={pressed}
                         onDrag={drag}
@@ -485,12 +555,38 @@ const styles = StyleSheet.create({
     gap: 8,
     flex: 1,
   },
+  ringWrap: {
+    position: 'relative',
+    width: RING_SIZE,
+    height: RING_SIZE,
+    flexShrink: 0,
+  },
   iconBox: {
-    height: 32,
-    width: 32,
-    borderRadius: 9,
+    position: 'absolute',
+    top: RING_ICON_OFFSET,
+    left: RING_ICON_OFFSET,
+    height: RING_ICON_SIZE,
+    width: RING_ICON_SIZE,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  ringPct: {
+    position: 'absolute',
+    bottom: -4,
+    right: -6,
+    zIndex: 1,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 2,
+  },
+  ringPctText: {
+    fontSize: 8,
+    fontFamily: 'Inter-700',
   },
   rowTop: {
     flexDirection: 'row',
@@ -513,15 +609,37 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
     marginTop: 2,
   },
-  barTrack: {
-    height: 3,
-    borderRadius: 3,
-    marginTop: 6,
-    overflow: 'hidden',
+  summary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginHorizontal: 10,
+    marginBottom: 16,
   },
-  barFill: {
-    height: '100%',
-    borderRadius: 3,
+  summaryLabel: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    opacity: 0.78,
+    marginBottom: 4,
+  },
+  summaryAmt: {
+    fontSize: 20,
+    fontFamily: 'Inter-700',
+  },
+  summaryTopLabel: {
+    fontSize: FontSize.xs,
+    opacity: 0.78,
+    marginBottom: 3,
+  },
+  summaryTopName: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
   },
   floatingButton: {
     borderRadius: 25,

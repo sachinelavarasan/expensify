@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Alert,
-  ColorValue,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -43,7 +42,6 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import SwipeableRow from '@/components/Swippable';
 import { showToast } from '@/components/ToastMessage';
 import {
@@ -423,13 +421,13 @@ export default function Index() {
           marginRight: 10,
         }}
         onPress={handlePress}>
-        <LinearGradient
-          colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
+        <View
+          style={[
+            styles.floatingButton,
+            { backgroundColor: colors.primary, shadowColor: colors.shadow },
+          ]}>
           <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
       <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
         <View

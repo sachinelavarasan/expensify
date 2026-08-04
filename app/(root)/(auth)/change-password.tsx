@@ -220,16 +220,4 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   textDisable: { opacity: 0 },
-  errorContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    display: 'flex',
-    width: deviceWidth() - 60,
-    paddingBottom: 10,
-  },
-  error: {
-    fontSize: 16,
-    color: 'red',
-    fontFamily: 'Inter-400',
-  },
 });

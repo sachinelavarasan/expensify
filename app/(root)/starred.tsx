@@ -112,24 +112,27 @@ export default function Starred() {
             }
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             renderItem={({ item }) => (
-              <View style={{ paddingVertical: 5 }}>
+              <View
+                style={[
+                  styles.row,
+                  { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                ]}>
                 <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={value} />
               </View>
             )}
             renderSectionHeader={({ section: { title, income, expense } }) => (
-              <View
-                style={[styles.sectionHeader, { backgroundColor: colors.bottomBarBackground }]}>
-                <Text style={[styles.dateHeader, { color: colors.title }]}>{title}</Text>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>{title}</Text>
 
                 <View style={{ flexDirection: 'row', gap: 6 }}>
                   {!!expense && (
-                    <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
+                    <Text style={[styles.totalAmount, { color: colors.expense }]}>
                       <Feather name="arrow-up-right" size={14} color={colors.expense} />
                       {formatToCurrency(expense)}
                     </Text>
                   )}
                   {!!income && (
-                    <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
+                    <Text style={[styles.totalAmount, { color: colors.income }]}>
                       <Feather name="arrow-down-left" size={14} color={colors.income} />
                       {formatToCurrency(income)}
                     </Text>
@@ -151,17 +154,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    marginTop: 6,
     marginBottom: 4,
   },
   dateHeader: {
-    fontSize: FontSize.base,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   totalAmount: {
-    fontSize: FontSize.base,
-    fontFamily: 'Inter-500',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
+  },
+  row: {
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderRadius: 14,
   },
 });

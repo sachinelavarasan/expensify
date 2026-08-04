@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Svg, { Circle, Polygon, Polyline } from 'react-native-svg';
 
@@ -90,11 +89,7 @@ export default function HomeSummaryCard({
   }, [transactions]);
 
   return (
-    <LinearGradient
-      colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.primary }]}>
       <View style={styles.labelRow}>
         <Text style={[styles.label, { color: colors.onPrimary }]}>Balance</Text>
         {!isBaseBalanceVisible && (
@@ -116,7 +111,7 @@ export default function HomeSummaryCard({
       <View style={styles.row}>
         <View style={styles.stats}>
           <View style={styles.stat}>
-            <View style={styles.dot}>
+            <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
               <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
             </View>
             <View>
@@ -127,7 +122,7 @@ export default function HomeSummaryCard({
             </View>
           </View>
           <View style={styles.stat}>
-            <View style={styles.dot}>
+            <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
               <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
             </View>
             <View>
@@ -147,12 +142,12 @@ export default function HomeSummaryCard({
                 `${SPARKLINE_WIDTH - SPARKLINE_PADDING},${SPARKLINE_HEIGHT}`,
                 `${SPARKLINE_PADDING},${SPARKLINE_HEIGHT}`,
               ].join(' ')}
-              fill="rgba(255,255,255,0.18)"
+              fill={colors.onPrimarySubtle}
             />
             <Polyline
               points={sparklinePoints.map((point) => `${point.x},${point.y}`).join(' ')}
               fill="none"
-              stroke="rgba(255,255,255,0.95)"
+              stroke={colors.onPrimaryStrong}
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -161,14 +156,14 @@ export default function HomeSummaryCard({
               cx={sparklinePoints[sparklinePoints.length - 1].x}
               cy={sparklinePoints[sparklinePoints.length - 1].y}
               r={3}
-              fill="#fff"
+              fill={colors.onPrimary}
             />
           </Svg>
         )}
       </View>
 
       {showNetWorth && (
-        <View style={[styles.footer, styles.footerRow]}>
+        <View style={[styles.footer, styles.footerRow, { borderTopColor: colors.onPrimaryBorder }]}>
           <View style={styles.netWorthRow}>
             <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
               Net worth:{' '}
@@ -197,7 +192,7 @@ export default function HomeSummaryCard({
           )}
         </View>
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -250,7 +245,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   statLabel: {
     fontSize: 10,
@@ -269,7 +263,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.22)',
   },
   footerRow: {
     justifyContent: 'space-between',
