@@ -13,16 +13,18 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 
-import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import CustomRadioButton from '@/components/CustomRadioButton';
-import CategorySelector from '@/components/CategorySelector';
-import { CustomSelectInput } from '@/components/CustomSelectInput';
-import DatePickerPaper from '@/components/DatePickerPaper';
+import SegmentedControl from '@/components/SegmentedControl';
+import CategoryPickerSheet from '@/components/CategoryPickerSheet';
+import RowInput from '@/components/RowInput';
+import RowSelectInput from '@/components/RowSelectInput';
+import RowDatePicker from '@/components/RowDatePicker';
+import AmountCalculator from '@/components/AmountCalculator';
 import CustomSwitch from '@/components/Switch';
 import ProfileHeader from '@/components/ProfileHeader';
 import OverlayLoader from '@/components/Overlay';
@@ -40,6 +42,7 @@ import {
 } from '@/hooks/useRecurringTransaction';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { getApiErrorMessage } from '@/lib/apiClient';
+import { getAppCurrency } from '@/utils/functions';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
 
@@ -66,6 +69,7 @@ export default function RecurringTransaction() {
   );
 
   const [hasEndDate, setHasEndDate] = useState(false);
+  const [calculatorVisible, setCalculatorVisible] = useState(false);
 
   const {
     control,
@@ -124,6 +128,13 @@ export default function RecurringTransaction() {
       categories.filter((cate) => cate.exp_tc_transaction_type === exp_rt_transaction_type_id) ||
       [],
     [categories, exp_rt_transaction_type_id],
+  );
+
+  const selectedTypeLabel = useMemo(
+    () =>
+      CoreTransactionType.find((t) => t.id === exp_rt_transaction_type_id)?.label.toLowerCase() ??
+      'transaction',
+    [exp_rt_transaction_type_id],
   );
 
   const redirectToCategory = () => {
@@ -215,14 +226,109 @@ export default function RecurringTransaction() {
               )}
               renderItem={() => (
                 <View style={styles.formContainer}>
-                  <View style={styles.sectionContainer}>
+                  <Controller
+                    control={control}
+                    render={({ field }) => (
+                      <SegmentedControl
+                        value={field.value}
+                        options={CoreTransactionType}
+                        onChange={field.onChange}
+                      />
+                    )}
+                    name="exp_rt_transaction_type_id"
+                  />
+                  {errors.exp_rt_transaction_type_id?.message ? (
+                    <Text style={[styles.errorMessage, { color: colors.expense }]}>
+                      {errors.exp_rt_transaction_type_id?.message}
+                    </Text>
+                  ) : null}
+                  <Spacer height={Spacing.lg} />
+
+                  <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>Details</Text>
+                  <View
+                    style={[
+                      styles.card,
+                      { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                    ]}>
+                    <Controller
+                      control={control}
+                      render={({ field }) => (
+                        <>
+                          <RowInput
+                            icon={
+                              <Text style={[styles.rowGlyph, { color: colors.primary }]}>
+                                {getAppCurrency()}
+                              </Text>
+                            }
+                            label="Amount"
+                            value={field.value}
+                            placeholder="Transaction amount"
+                            keyboardType="numeric"
+                            onBlur={field.onBlur}
+                            onChangeText={field.onChange}
+                            error={errors.exp_rt_amount?.message}
+                            style={{ color: colors.primary, fontSize: FontSize.xxl }}
+                            cursorColor={colors.primary}
+                            selectionColor={colors.primary + '40'}
+                            trailing={
+                              <TouchableOpacity
+                                onPress={() => setCalculatorVisible(true)}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                style={styles.trailingIconBadge}>
+                                <Ionicons
+                                  name="calculator-outline"
+                                  size={20}
+                                  color={colors.primary}
+                                />
+                              </TouchableOpacity>
+                            }
+                          />
+                          <AmountCalculator
+                            visible={calculatorVisible}
+                            onClose={() => setCalculatorVisible(false)}
+                            initialValue={field.value}
+                            onApply={(value) => {
+                              field.onChange(value);
+                              setCalculatorVisible(false);
+                            }}
+                          />
+                        </>
+                      )}
+                      name="exp_rt_amount"
+                    />
+                    <Controller
+                      control={control}
+                      render={({ field }) => (
+                        <RowInput
+                          icon={
+                            <Text style={[styles.rowGlyph, { color: colors.primary }]}>Aa</Text>
+                          }
+                          label="Title"
+                          value={field.value ?? ''}
+                          placeholder="Title"
+                          keyboardType="default"
+                          autoCapitalize="none"
+                          autoComplete="off"
+                          onBlur={field.onBlur}
+                          onChangeText={field.onChange}
+                          error={errors.exp_rt_title?.message}
+                        />
+                      )}
+                      name="exp_rt_title"
+                    />
                     <Controller
                       control={control}
                       name="exp_rt_bank_account_id"
                       render={({ field }) => (
-                        <CustomSelectInput
-                          {...field}
-                          value={field.value}
+                        <RowSelectInput
+                          icon={
+                            <MaterialIcons
+                              name="account-balance"
+                              size={17}
+                              color={colors.primary}
+                            />
+                          }
+                          value={field.value ?? ''}
                           options={accounts.map((account) => ({
                             key: account.exp_ba_id,
                             value: account.exp_ba_name,
@@ -234,12 +340,10 @@ export default function RecurringTransaction() {
                         />
                       )}
                     />
-
-                    <Spacer height={Spacing.xl} />
                     <Controller
                       control={control}
                       render={({ field }) => (
-                        <DatePickerPaper
+                        <RowDatePicker
                           {...field}
                           onBlur={field.onBlur}
                           onChange={(data) => field.onChange(data)}
@@ -247,7 +351,6 @@ export default function RecurringTransaction() {
                           label="Start Date"
                           placeholder="Select start date"
                           error={errors.exp_rt_start_date?.message}
-                          isRequired
                         />
                       )}
                       name="exp_rt_start_date"
@@ -295,198 +398,81 @@ export default function RecurringTransaction() {
                         <Controller
                           control={control}
                           render={({ field }) => (
-                            <DatePickerPaper
+                            <RowDatePicker
                               {...field}
                               onBlur={field.onBlur}
                               onChange={(data) => field.onChange(data)}
                               value={field.value ?? undefined}
                               placeholder="Select end date"
                               error={errors.exp_rt_end_date?.message}
+                              showDivider={false}
                             />
                           )}
                           name="exp_rt_end_date"
                         />
                       </>
                     ) : null}
+                  </View>
 
-                    <Spacer height={Spacing.xl} />
-                    <Controller
-                      control={control}
-                      render={({ field }) => (
-                        <CustomRadioButton
-                          label="Transaction Type"
-                          value={field.value}
-                          options={CoreTransactionType}
-                          onChange={field.onChange}
-                          isRequired
-                        />
-                      )}
-                      name="exp_rt_transaction_type_id"
-                    />
-                    {errors.exp_rt_transaction_type_id?.message ? (
-                      <Text style={[styles.errorMessage, { color: colors.expense }]}>
-                        {errors.exp_rt_transaction_type_id?.message}
-                      </Text>
-                    ) : null}
-
-                    <Spacer height={Spacing.xl} />
-                    <Controller
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="Transaction amount"
-                          label="Amount"
-                          keyboardType="numeric"
-                          onBlur={field.onBlur}
-                          onChangeText={field.onChange}
-                          error={errors.exp_rt_amount?.message}
-                          borderLess
-                          isRequired
-                        />
-                      )}
-                      name="exp_rt_amount"
-                    />
-
-                    <Spacer height={Spacing.xl} />
-                    <Controller
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          value={field.value ?? ''}
-                          placeholder="Title"
-                          label="Title"
-                          keyboardType="default"
-                          autoCapitalize="none"
-                          autoComplete="off"
-                          onBlur={field.onBlur}
-                          onChangeText={field.onChange}
-                          error={errors.exp_rt_title?.message}
-                          borderLess
-                          isRequired
-                        />
-                      )}
-                      name="exp_rt_title"
-                    />
-
-                    <Spacer height={Spacing.xl} />
+                  <Spacer height={Spacing.lg} />
+                  <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>Category</Text>
+                  <View
+                    style={[
+                      styles.card,
+                      {
+                        backgroundColor: colors.cardBg,
+                        borderColor: errors.exp_rt_category_id?.message
+                          ? colors.expense
+                          : colors.borderColor,
+                      },
+                    ]}>
                     <Controller
                       control={control}
                       name="exp_rt_category_id"
                       render={({ field }) => (
-                        <View>
-                          <View
-                            style={{
-                              borderColor: colors.inputBorder,
-                              borderWidth: 1,
-                              borderRadius: 8,
-                              paddingVertical: 5,
-                              paddingHorizontal: 8,
-                              backgroundColor: colors.inputColor,
-                            }}>
-                            <View
-                              style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                paddingVertical: 10,
-                                paddingHorizontal: 5,
-                                flexWrap: 'wrap',
-                              }}>
-                              <Text
-                                style={[
-                                  styles.categoryLabel,
-                                  {
-                                    flex: 1,
-                                    flexWrap: 'wrap',
-                                    lineHeight: 20,
-                                    color: colors.title,
-                                  },
-                                ]}>
-                                Category
-                                {!!categoriesList.find((item) => item.exp_tc_id === field.value)
-                                  ?.exp_tc_label && (
-                                  <Text
-                                    style={{
-                                      fontFamily: 'Inter-500',
-                                      color: colors.text,
-                                    }}>
-                                    {' '}
-                                    :{' '}
-                                    {
-                                      categoriesList.find((item) => item.exp_tc_id === field.value)
-                                        ?.exp_tc_label
-                                    }
-                                  </Text>
-                                )}
-                              </Text>
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: 10,
-                                  marginLeft: 30,
-                                }}>
-                                <TouchableOpacity
-                                  activeOpacity={0.2}
-                                  style={{
-                                    paddingHorizontal: 10,
-                                  }}
-                                  onPress={redirectToCategory}>
-                                  <MaterialIcons name="edit" size={22} color={colors.text} />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                  activeOpacity={0.2}
-                                  style={{
-                                    paddingHorizontal: 10,
-                                  }}
-                                  onPress={redirectToCategory}>
-                                  <MaterialIcons name="add" size={22} color={colors.text} />
-                                </TouchableOpacity>
-                              </View>
-                            </View>
-
-                            <CategorySelector
-                              categories={categoriesList}
-                              selected={field.value}
-                              onSelect={(id) => field.onChange(id)}
-                            />
-                          </View>
-
-                          {errors.exp_rt_category_id?.message ? (
-                            <Text style={[styles.errorMessage, { color: colors.expense }]}>
-                              {errors.exp_rt_category_id?.message}
-                            </Text>
-                          ) : null}
-                        </View>
+                        <CategoryPickerSheet
+                          icon={<MaterialIcons name="category" size={17} color={colors.primary} />}
+                          label="Category"
+                          value={field.value}
+                          categories={categoriesList}
+                          onSelect={field.onChange}
+                          onAddCategory={redirectToCategory}
+                          error={errors.exp_rt_category_id?.message}
+                        />
                       )}
                     />
                   </View>
 
                   <Spacer height={Spacing.lg} />
-                  <Controller
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        value={field.value ?? ''}
-                        placeholder="Notes"
-                        label="Note"
-                        keyboardType="default"
-                        autoCapitalize="none"
-                        autoComplete="off"
-                        onBlur={field.onBlur}
-                        onChangeText={field.onChange}
-                        error={errors.exp_rt_note?.message}
-                        borderLess
-                        multiline={true}
-                        numberOfLines={4}
-                        isTextBox
-                      />
-                    )}
-                    name="exp_rt_note"
-                  />
+                  <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>Extras</Text>
+                  <View
+                    style={[
+                      styles.card,
+                      { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                    ]}>
+                    <Controller
+                      control={control}
+                      render={({ field }) => (
+                        <RowInput
+                          icon={<MaterialIcons name="notes" size={18} color={colors.primary} />}
+                          label="Note"
+                          value={field.value ?? ''}
+                          placeholder="Notes"
+                          keyboardType="default"
+                          autoCapitalize="none"
+                          autoComplete="off"
+                          onBlur={field.onBlur}
+                          onChangeText={field.onChange}
+                          error={errors.exp_rt_note?.message}
+                          multiline
+                          numberOfLines={4}
+                          isTextBox
+                          showDivider={false}
+                        />
+                      )}
+                      name="exp_rt_note"
+                    />
+                  </View>
                   <Spacer height={70} />
                 </View>
               )}
@@ -521,7 +507,7 @@ export default function RecurringTransaction() {
                   { color: colors.onPrimary },
                   isLoading ? styles.textDisable : {},
                 ]}>
-                {existing ? 'Update' : 'Add'}
+                {`${existing ? 'Update' : 'Save'} ${selectedTypeLabel}`}
               </Text>
             </TouchableOpacity>
           </View>
@@ -536,22 +522,39 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 15,
   },
-  sectionContainer: {
-    marginVertical: 10,
-  },
   label: {
     fontSize: 12,
     fontFamily: 'Inter-400',
   },
-  categoryLabel: {
+  cardLabel: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.sm,
+    marginLeft: 4,
+  },
+  card: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: Spacing.lg,
+  },
+  rowGlyph: {
     fontSize: FontSize.base,
-    fontFamily: 'Inter-500',
+    fontFamily: 'Inter-700',
+  },
+  trailingIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    borderRadius: 50,
+    borderRadius: 14,
     paddingHorizontal: Spacing.xl,
     paddingVertical: 9,
     width: 'auto',

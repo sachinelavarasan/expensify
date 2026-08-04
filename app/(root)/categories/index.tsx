@@ -4,10 +4,11 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
 import ProfileHeader from '@/components/ProfileHeader';
@@ -22,11 +23,104 @@ import { ICategoryWithCount } from '@/types';
 import OverlayLoader from '@/components/Overlay';
 import Spacer from '@/components/Spacer';
 import Emptystate from '@/components/Emptystate';
+import SegmentedControl from '@/components/SegmentedControl';
 
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
 import { formatToCurrency } from '@/utils/formatter';
+
+function CategoryCard({
+  item,
+  colors,
+  maxSpend,
+  locked,
+  pressed,
+  onDrag,
+  reorderable = true,
+}: {
+  item: ICategoryWithCount;
+  colors: ReturnType<typeof useThemeContext>['colors'];
+  maxSpend: number;
+  locked: boolean;
+  pressed?: boolean;
+  onDrag?: () => void;
+  reorderable?: boolean;
+}) {
+  const spend = Number(item.total_spend) || 0;
+  const hasTxns = Number(item.transaction_count) > 0;
+  const barPct = hasTxns ? Math.min(100, (spend / maxSpend) * 100) : 0;
+  const barColor = item.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
+
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: pressed ? colors.barBackground : colors.inputColor,
+          borderColor: colors.inputBorder,
+          shadowColor: colors.shadow,
+        },
+      ]}>
+      <View style={styles.left}>
+        <View
+          style={[
+            styles.iconBox,
+            { backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg },
+          ]}>
+          {item.exp_tc_icon && (
+            <MaterialIcons
+              name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
+              size={18}
+              color={colors.categoryFallbackIcon}
+            />
+          )}
+        </View>
+        <View style={{ flexShrink: 1, flex: 1 }}>
+          <View style={styles.rowTop}>
+            <Text
+              style={[styles.name, { color: colors.title }]}
+              numberOfLines={1}>
+              {item.exp_tc_label}
+            </Text>
+            {hasTxns && (
+              <Text style={[styles.amount, { color: colors.title }]}>
+                {formatToCurrency(item.total_spend)}
+              </Text>
+            )}
+          </View>
+          <Text
+            style={[styles.stat, { color: hasTxns ? colors.description : colors.lighterTitle }]}
+            numberOfLines={1}>
+            {hasTxns ? `${item.transaction_count} txns` : 'No transactions yet'}
+          </Text>
+          <View style={[styles.barTrack, { backgroundColor: colors.barBackground }]}>
+            <View style={[styles.barFill, { width: `${barPct}%`, backgroundColor: barColor }]} />
+          </View>
+        </View>
+      </View>
+
+      {locked ? (
+        <Ionicons name="lock-closed" size={16} color={colors.lighterTitle} />
+      ) : (
+        item.exp_tc_user_id &&
+        reorderable && (
+          <Pressable
+            onLongPress={onDrag}
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 35,
+              width: 35,
+              flexShrink: 0,
+            }}>
+            <MaterialIcons name="drag-handle" size={22} color={colors.description} />
+          </Pressable>
+        )
+      )}
+    </View>
+  );
+}
 
 export default function Category() {
   const { colors } = useThemeContext();
@@ -37,6 +131,8 @@ export default function Category() {
   const [activeTab, setActiveTab] = useState<'income' | 'expense'>('income');
   const [dataList, setDataList] = useState<ICategoryWithCount[]>([]);
   const [systemList, setSystemList] = useState<ICategoryWithCount[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortMode, setSortMode] = useState<'custom' | 'spend'>('custom');
 
   // const onRefresh = useCallback(() => {
   //   setRefreshing(true);
@@ -87,6 +183,42 @@ export default function Category() {
     }
   }, [activeTab, categories, expenseCategories, incomeCategories]);
 
+  const maxSpend = useMemo(() => {
+    const max = Math.max(
+      ...systemList.map((item) => Number(item.total_spend) || 0),
+      ...dataList.map((item) => Number(item.total_spend) || 0),
+      0,
+    );
+    return max > 0 ? max : 1;
+  }, [systemList, dataList]);
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const isReorderable = sortMode === 'custom' && !normalizedQuery;
+
+  const applySearchAndSort = useCallback(
+    (list: ICategoryWithCount[]) => {
+      let result = normalizedQuery
+        ? list.filter((item) => item.exp_tc_label.toLowerCase().includes(normalizedQuery))
+        : list;
+      if (sortMode === 'spend') {
+        result = [...result].sort(
+          (a, b) => (Number(b.total_spend) || 0) - (Number(a.total_spend) || 0),
+        );
+      }
+      return result;
+    },
+    [normalizedQuery, sortMode],
+  );
+
+  const filteredSystemList = useMemo(
+    () => applySearchAndSort(systemList),
+    [systemList, applySearchAndSort],
+  );
+  const filteredDataList = useMemo(
+    () => applySearchAndSort(dataList),
+    [dataList, applySearchAndSort],
+  );
+
   const reArrangeOrder = (data: ICategoryWithCount[]) => {
     const updatedData = data.map((item, index) => ({
       ...item,
@@ -101,15 +233,6 @@ export default function Category() {
 
   const scrollY = useSharedValue(0);
   const buttonVisible = useSharedValue(1);
-  const tabIndex = useSharedValue(0);
-
-  useEffect(() => {
-    tabIndex.value = withTiming(activeTab === 'income' ? 0 : 1, { duration: 220 });
-  }, [activeTab]);
-
-  const tabIndicatorStyle = useAnimatedStyle(() => ({
-    left: `${tabIndex.value * 50}%`,
-  }));
 
   const scrollHandler = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset } = event.nativeEvent;
@@ -157,40 +280,46 @@ export default function Category() {
           </TouchableOpacity>
         </Animated.View>
         <ProfileHeader title="Categories" />
-        <View style={[styles.tabContainer, { backgroundColor: colors.barBackground }]}>
-          <Animated.View
-            style={[styles.tabIndicator, { backgroundColor: colors.primary }, tabIndicatorStyle]}
+        <View style={styles.segmentWrapper}>
+          <SegmentedControl
+            value={activeTab}
+            options={[
+              { id: 'income', label: 'Income', count: incomeCategories.length },
+              { id: 'expense', label: 'Expense', count: expenseCategories.length },
+            ]}
+            onChange={(id) => {
+              const type = id as 'income' | 'expense';
+              setActiveTab(type);
+              setDataList(type === 'income' ? incomeCategories : expenseCategories);
+            }}
           />
-          <TouchableOpacity
-            style={styles.tab}
-            onPress={() => {
-              setActiveTab('income');
-              setDataList(incomeCategories);
-            }}>
-            <Text
-              style={[
-                styles.tabText,
-                { color: colors.description },
-                activeTab === 'income' && { color: colors.onPrimary },
-              ]}>
-              Income · {incomeCategories.length}
-            </Text>
-          </TouchableOpacity>
+        </View>
 
+        <View style={styles.toolbar}>
+          <View
+            style={[
+              styles.searchBox,
+              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            ]}>
+            <Ionicons name="search" size={14} color={colors.lighterTitle} />
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search categories"
+              placeholderTextColor={colors.lighterTitle}
+              style={[styles.searchInput, { color: colors.title }]}
+            />
+          </View>
           <TouchableOpacity
-            style={styles.tab}
-            onPress={() => {
-              setActiveTab('expense');
-              setDataList(expenseCategories);
-            }}>
-            <Text
-              style={[
-                styles.tabText,
-                { color: colors.description },
-                activeTab === 'expense' && { color: colors.onPrimary },
-              ]}>
-              Expense · {expenseCategories.length}
+            style={[
+              styles.sortChip,
+              { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            ]}
+            onPress={() => setSortMode((prev) => (prev === 'custom' ? 'spend' : 'custom'))}>
+            <Text style={[styles.sortChipText, { color: colors.title }]}>
+              {sortMode === 'spend' ? 'Top spend' : 'Custom order'}
             </Text>
+            <MaterialIcons name="swap-vert" size={16} color={colors.lighterTitle} />
           </TouchableOpacity>
         </View>
 
@@ -204,72 +333,33 @@ export default function Category() {
             onScrollEndDrag={() => {
               buttonVisible.value = withTiming(1, { duration: 200 });
             }}
-            data={dataList}
+            data={filteredDataList}
             onDragEnd={({ data }) => {
-              reArrangeOrder(data);
+              if (isReorderable) {
+                reArrangeOrder(data);
+              }
             }}
             ListHeaderComponent={() => (
               <>
-                {systemList.length > 0 && (
+                {filteredSystemList.length > 0 && (
                   <>
                     <Text style={[styles.sectionLabel, { color: colors.lighterTitle }]}>
                       Default
                     </Text>
-                    {systemList.map((item) => (
-                      <View
-                        key={item.exp_tc_id}
-                        style={[
-                          styles.card,
-                          {
-                            backgroundColor: colors.inputColor,
-                            borderColor: colors.inputBorder,
-                            shadowColor: colors.shadow,
-                          },
-                        ]}>
-                        <View style={styles.left}>
-                          <View
-                            style={[
-                              styles.iconBox,
-                              {
-                                backgroundColor:
-                                  item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                              },
-                            ]}>
-                            {item.exp_tc_icon && (
-                              <MaterialIcons
-                                name={
-                                  item.exp_tc_icon as React.ComponentProps<
-                                    typeof MaterialIcons
-                                  >['name']
-                                }
-                                size={18}
-                                color={colors.categoryFallbackIcon}
-                              />
-                            )}
-                          </View>
-                          <View style={{ flexShrink: 1 }}>
-                            <Text
-                              style={[styles.name, { color: colors.title }]}
-                              numberOfLines={1}>
-                              {item.exp_tc_label}
-                            </Text>
-                            <Text
-                              style={[styles.stat, { color: colors.description }]}
-                              numberOfLines={1}>
-                              {Number(item.transaction_count) > 0
-                                ? `${formatToCurrency(item.total_spend)} · ${item.transaction_count} txns`
-                                : 'No transactions yet'}
-                            </Text>
-                          </View>
-                        </View>
-                        <Ionicons name="lock-closed" size={16} color={colors.lighterTitle} />
+                    {filteredSystemList.map((item) => (
+                      <View key={item.exp_tc_id}>
+                        <CategoryCard item={item} colors={colors} maxSpend={maxSpend} locked />
                       </View>
                     ))}
                   </>
                 )}
-                {dataList.length > 0 && (
+                {filteredDataList.length > 0 && (
                   <Text style={[styles.sectionLabel, { color: colors.lighterTitle }]}>
-                    Your Categories · long press to reorder
+                    {normalizedQuery
+                      ? `${filteredDataList.length} match${filteredDataList.length === 1 ? '' : 'es'}`
+                      : sortMode === 'spend'
+                        ? 'Your Categories · sorted by top spend'
+                        : 'Your Categories · long press to reorder'}
                   </Text>
                 )}
               </>
@@ -277,16 +367,23 @@ export default function Category() {
             ListFooterComponent={<Spacer height={100} />}
             ListEmptyComponent={
               !loading ? (
-                <Emptystate
-                  title="No custom categories yet"
-                  description={`Tap the + button to add your first ${activeTab} category.`}
-                />
+                normalizedQuery && dataList.length > 0 ? (
+                  <Emptystate
+                    title="No matches"
+                    description={`No categories match "${searchQuery}".`}
+                  />
+                ) : (
+                  <Emptystate
+                    title="No custom categories yet"
+                    description={`Tap the + button to add your first ${activeTab} category.`}
+                  />
+                )
               ) : null
             }
             showsVerticalScrollIndicator={false}
             scrollEnabled={true}
             bounces={false}
-            keyExtractor={(item, index) => item.exp_tc_label + index}
+            keyExtractor={(item) => String(item.exp_tc_id)}
             renderItem={({ item, drag, isActive }: RenderItemParams<ICategoryWithCount>) => (
               <ScaleDecorator activeScale={1.05}>
                 <Link
@@ -298,66 +395,15 @@ export default function Category() {
                   asChild>
                   <Pressable>
                     {({ pressed }) => (
-                      <View
-                        style={[
-                          styles.card,
-                          {
-                            backgroundColor: pressed ? colors.barBackground : colors.inputColor,
-                            borderColor: colors.inputBorder,
-                            shadowColor: colors.shadow,
-                          },
-                        ]}>
-                        <View style={styles.left}>
-                          <View
-                            style={[
-                              styles.iconBox,
-                              {
-                                backgroundColor:
-                                  item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                              },
-                            ]}>
-                            {item.exp_tc_icon && (
-                              <MaterialIcons
-                                name={
-                                  item.exp_tc_icon as React.ComponentProps<
-                                    typeof MaterialIcons
-                                  >['name']
-                                }
-                                size={18}
-                                color={colors.categoryFallbackIcon}
-                              />
-                            )}
-                          </View>
-                          <View style={{ flexShrink: 1 }}>
-                            <Text
-                              style={[styles.name, { color: colors.title }]}
-                              numberOfLines={1}>
-                              {item.exp_tc_label}
-                            </Text>
-                            <Text
-                              style={[styles.stat, { color: colors.description }]}
-                              numberOfLines={1}>
-                              {Number(item.transaction_count) > 0
-                                ? `${formatToCurrency(item.total_spend)} · ${item.transaction_count} txns`
-                                : 'No transactions yet'}
-                            </Text>
-                          </View>
-                        </View>
-
-                        {item.exp_tc_user_id && (
-                          <Pressable
-                            onLongPress={drag}
-                            style={{
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              height: 35,
-                              width: 35,
-                              flexShrink: 0,
-                            }}>
-                            <MaterialIcons name="drag-handle" size={22} color={colors.description} />
-                          </Pressable>
-                        )}
-                      </View>
+                      <CategoryCard
+                        item={item}
+                        colors={colors}
+                        maxSpend={maxSpend}
+                        locked={false}
+                        pressed={pressed}
+                        onDrag={drag}
+                        reorderable={isReorderable}
+                      />
                     )}
                   </Pressable>
                 </Link>
@@ -371,28 +417,43 @@ export default function Category() {
 }
 
 const styles = StyleSheet.create({
-  tabContainer: {
-    flexDirection: 'row',
+  segmentWrapper: {
     marginBottom: 16,
-    borderRadius: 10,
-    padding: 5,
     marginHorizontal: 10,
-    position: 'relative',
   },
-  tabIndicator: {
-    position: 'absolute',
-    top: 5,
-    bottom: 5,
-    width: '50%',
-    borderRadius: 8,
+  toolbar: {
+    flexDirection: 'row',
+    gap: 8,
+    marginHorizontal: 10,
+    marginBottom: 12,
   },
-  tab: {
+  searchBox: {
     flex: 1,
-    padding: 8,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    height: 36,
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingHorizontal: 10,
   },
-  tabText: {
+  searchInput: {
+    flex: 1,
     fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    padding: 0,
+  },
+  sortChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    height: 36,
+    borderWidth: 1,
+    borderRadius: 9,
+    paddingHorizontal: 10,
+  },
+  sortChipText: {
+    fontSize: FontSize.xs,
     fontFamily: 'Inter-600',
   },
   sectionLabel: {
@@ -431,14 +492,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  rowTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
   name: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
+    flexShrink: 1,
+  },
+  amount: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    flexShrink: 0,
   },
   stat: {
     fontSize: FontSize.xs,
     fontFamily: 'Inter-500',
     marginTop: 2,
+  },
+  barTrack: {
+    height: 3,
+    borderRadius: 3,
+    marginTop: 6,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   floatingButton: {
     borderRadius: 25,

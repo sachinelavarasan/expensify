@@ -20,6 +20,11 @@ interface ExtraInputProps {
   isTitle?: boolean;
   isRequired?: boolean;
   enableAutofill?: boolean;
+  rightIcon?: React.ReactNode;
+  // Drops the field's own bordered/background box in favor of sitting
+  // directly on whatever container it's placed in - for use inside an
+  // already-bordered card, where a box-in-a-box look would be redundant.
+  flat?: boolean;
 }
 
 const Input = forwardRef(function MyInput(
@@ -38,6 +43,8 @@ const Input = forwardRef(function MyInput(
     editable = true,
     isRequired = false,
     enableAutofill = false,
+    rightIcon,
+    flat = false,
     onFocus,
     onBlur,
     autoComplete,
@@ -72,12 +79,14 @@ const Input = forwardRef(function MyInput(
         <View
           style={[
             styles.innerView,
-            {
-              borderColor: error ? colors.expense : focused ? colors.borderSelected : colors.inputBorder,
-              backgroundColor: colors.inputColor,
-              borderRadius: 8,
-              borderWidth: 1,
-            },
+            flat
+              ? { borderWidth: 0, backgroundColor: 'transparent' }
+              : {
+                  borderColor: error ? colors.expense : focused ? colors.borderSelected : colors.inputBorder,
+                  backgroundColor: colors.inputColor,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                },
           ]}>
           <TextInput
             ref={ref}
@@ -89,6 +98,7 @@ const Input = forwardRef(function MyInput(
               },
               isTitle ? styles.titleText : null,
               isTextBox ? styles.textBox : null,
+              flat ? styles.inputFlat : null,
             ]}
             secureTextEntry={isPassword && !show}
             autoCorrect={false}
@@ -124,6 +134,7 @@ const Input = forwardRef(function MyInput(
               )}
             </TouchableOpacity>
           ) : null}
+          {rightIcon}
         </View>
       </View>
       {error ? (
@@ -177,6 +188,9 @@ const styles = StyleSheet.create({
   borderNone: {
     borderWidth: 0,
     borderRadius: 6,
+  },
+  inputFlat: {
+    paddingHorizontal: 0,
   },
   titleText: {
     fontSize: 15,

@@ -20,7 +20,7 @@ import Input from '@/components/Input';
 import Spacer from '@/components/Spacer';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
-import CustomRadioButton from '@/components/CustomRadioButton';
+import SegmentedControl from '@/components/SegmentedControl';
 import ModalCard from '@/components/ModalCard';
 import TagInput from '@/components/TagInput';
 import AttachmentPicker, { AttachmentValue } from '@/components/AttachmentPicker';
@@ -37,7 +37,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { transactionSchema, transactionSchemaType } from '@/utils/schema';
 import { TransactionType } from '@/utils/common-data';
 import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import OverlayLoader from '@/components/Overlay';
 import {
   useCreateTransfer,
@@ -48,20 +48,24 @@ import {
 import { showToast } from '@/components/ToastMessage';
 import { notifyBudgetThresholdIfCrossed } from '@/utils/notifyBudgetThreshold';
 import ProfileHeader from '@/components/ProfileHeader';
-import CategorySelector from '@/components/CategorySelector';
-import DatePickerPaper from '@/components/DatePickerPaper';
-import TimePickerPaper from '@/components/TimePickerPaper';
-import { CustomSelectInput } from '@/components/CustomSelectInput';
+import CategoryPickerSheet from '@/components/CategoryPickerSheet';
+import RowInput from '@/components/RowInput';
+import RowSelectInput from '@/components/RowSelectInput';
+import RowDatePicker from '@/components/RowDatePicker';
+import RowTimePicker from '@/components/RowTimePicker';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import CustomSwitch from '@/components/Switch';
+import AmountCalculator from '@/components/AmountCalculator';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
 import { formatFullCurrency } from '@/utils/formatter';
+import { getAppCurrency } from '@/utils/functions';
 import { getApiErrorMessage } from '@/lib/apiClient';
 
 export default function Transaction() {
   const [isBulk, setIsBulk] = useState(false);
+  const [calculatorVisible, setCalculatorVisible] = useState(false);
 
   const { colors } = useThemeContext();
   const { categories } = useGetCategoryCache();
@@ -400,9 +404,10 @@ export default function Transaction() {
     [exp_ts_id],
   );
 
-  const selectedCategory = () => {
-    return categories.find((item) => item.exp_tc_id === exp_tc_id)?.exp_tc_label || '';
-  };
+  const selectedTypeLabel = useMemo(
+    () => TransactionType.find((t) => t.id === exp_tt_id)?.label.toLowerCase() ?? 'transaction',
+    [exp_tt_id],
+  );
 
   const applyTemplate = (template: ITransactionTemplate) => {
     setValue('exp_ts_title', template.exp_ts_title, { shouldDirty: true, shouldValidate: true });
@@ -463,8 +468,10 @@ export default function Transaction() {
       // list, so it must always be cleared on switch - otherwise it lingers
       // selected but hidden from CategorySelector's filtered options, and
       // blocks the AI suggestion gate (which requires no category chosen).
+      // Not validated eagerly here either (see the account field below) -
+      // errors should only appear after the user attempts to submit.
       setValue('exp_tc_id', '', {
-        shouldValidate: true,
+        shouldValidate: isSubmitted,
         shouldDirty: true,
       });
       setCategorySuggestion(null);
@@ -520,7 +527,24 @@ export default function Transaction() {
               ListHeaderComponent={() => (
                 <View>
                   <Spacer height={5} />
-                  <ProfileHeader title={exp_ts_id ? 'Edit transaction' : 'Add transaction'} />
+                  <ProfileHeader title={exp_ts_id ? 'Edit transaction' : 'Add transaction'}>
+                    {!isTransfer && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setValue('exp_st_id', !exp_st_id, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        }}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                        <MaterialIcons
+                          name={exp_st_id ? 'star' : 'star-border'}
+                          size={22}
+                          color={colors.favorite}
+                        />
+                      </TouchableOpacity>
+                    )}
+                  </ProfileHeader>
                 </View>
               )}
               renderItem={() => {
@@ -562,28 +586,131 @@ export default function Transaction() {
                 return (
                   <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
                     <View>
-                      <View style={[styles.sectionContainer]}>
-                        {!exp_ts_id && templates.length > 0 && (
-                          <>
-                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                              {templates.map((t) => (
-                                <TemplateChip
-                                  key={t.id}
-                                  name={t.name}
-                                  onPress={() => applyTemplate(t)}
-                                  onDelete={() => deleteTemplate(t.id)}
-                                />
-                              ))}
-                            </View>
-                            <Spacer height={20} />
-                          </>
+                      {!exp_ts_id && templates.length > 0 && (
+                        <>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                            {templates.map((t) => (
+                              <TemplateChip
+                                key={t.id}
+                                name={t.name}
+                                onPress={() => applyTemplate(t)}
+                                onDelete={() => deleteTemplate(t.id)}
+                              />
+                            ))}
+                          </View>
+                          <Spacer height={20} />
+                        </>
+                      )}
+
+                      <Controller
+                        control={control}
+                        render={({ field }) => (
+                          <SegmentedControl
+                            value={field.value}
+                            options={availableTransactionTypes}
+                            onChange={(data) => {
+                              field.onChange(data);
+                              switchType(data);
+                            }}
+                            disabled={field.disabled}
+                          />
                         )}
+                        name="exp_tt_id"
+                      />
+                      {errors.exp_tt_id?.message ? (
+                        <Text style={[styles.errorMessage, { color: colors.expense }]}>
+                          {errors.exp_tt_id?.message}
+                        </Text>
+                      ) : null}
+                      <Spacer height={Spacing.lg} />
+
+                      <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>
+                        Details
+                      </Text>
+                      <View
+                        style={[
+                          styles.card,
+                          { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                        ]}>
+                        <Controller
+                          control={control}
+                          render={({ field }) => (
+                            <>
+                              <RowInput
+                                icon={
+                                  <Text style={[styles.rowGlyph, { color: colors.primary }]}>
+                                    {getAppCurrency()}
+                                  </Text>
+                                }
+                                label="Amount"
+                                value={field.value}
+                                placeholder="Transaction amount"
+                                keyboardType="numeric"
+                                onBlur={field.onBlur}
+                                onChangeText={field.onChange}
+                                error={errors.exp_ts_amount?.message}
+                                style={{ color: colors.primary, fontSize: FontSize.xxl }}
+                                cursorColor={colors.primary}
+                                selectionColor={colors.primary + '40'}
+                                trailing={
+                                  <TouchableOpacity
+                                    onPress={() => setCalculatorVisible(true)}
+                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    style={[
+                                      styles.trailingIconBadge,
+                                      { backgroundColor: colors.barBackground },
+                                    ]}>
+                                    <Ionicons
+                                      name="calculator-outline"
+                                      size={20}
+                                      color={colors.primary}
+                                    />
+                                  </TouchableOpacity>
+                                }
+                              />
+                              <AmountCalculator
+                                visible={calculatorVisible}
+                                onClose={() => setCalculatorVisible(false)}
+                                initialValue={field.value}
+                                onApply={(value) => {
+                                  field.onChange(value);
+                                  setCalculatorVisible(false);
+                                }}
+                              />
+                            </>
+                          )}
+                          name="exp_ts_amount"
+                        />
+                        <Controller
+                          control={control}
+                          render={({ field }) => (
+                            <RowInput
+                              icon={<Text style={[styles.rowGlyph, { color: colors.primary }]}>Aa</Text>}
+                              label="Title"
+                              value={field.value ?? ''}
+                              placeholder="Title"
+                              keyboardType="default"
+                              autoCapitalize="none"
+                              autoComplete="off"
+                              onBlur={field.onBlur}
+                              onChangeText={field.onChange}
+                              error={errors.exp_ts_title?.message}
+                            />
+                          )}
+                          name="exp_ts_title"
+                        />
                         <Controller
                           control={control}
                           name="exp_ts_bank_account_id"
                           render={({ field }) => (
-                            <CustomSelectInput
-                              {...field}
+                            <RowSelectInput
+                              icon={
+                                <MaterialIcons
+                                  name="account-balance"
+                                  size={17}
+                                  color={colors.primary}
+                                />
+                              }
                               value={field.value ?? ''}
                               options={accounts
                                 .filter(
@@ -593,7 +720,6 @@ export default function Transaction() {
                                   key: account.exp_ba_id,
                                   value: account.exp_ba_name,
                                 }))}
-                              search={false}
                               placeholder="Select account"
                               label={isTransfer ? 'From Account' : 'Choose Account'}
                               onChange={(selectedId) => {
@@ -606,8 +732,13 @@ export default function Transaction() {
 
                         {isTransfer && (
                           <>
-                            {errors.exp_ts_bank_account_id?.message ? <Spacer height={14} /> : null}
                             <View style={styles.transferArrowContainer}>
+                              <View
+                                style={[
+                                  styles.transferConnector,
+                                  { backgroundColor: colors.borderColor },
+                                ]}
+                              />
                               <View
                                 style={[
                                   styles.transferArrowBadge,
@@ -615,7 +746,7 @@ export default function Transaction() {
                                 ]}>
                                 <MaterialIcons
                                   name="arrow-downward"
-                                  size={18}
+                                  size={16}
                                   color={colors.onPrimary}
                                 />
                               </View>
@@ -624,8 +755,14 @@ export default function Transaction() {
                               control={control}
                               name="exp_ts_to_bank_account_id"
                               render={({ field }) => (
-                                <CustomSelectInput
-                                  {...field}
+                                <RowSelectInput
+                                  icon={
+                                    <MaterialIcons
+                                      name="account-balance"
+                                      size={17}
+                                      color={colors.primary}
+                                    />
+                                  }
                                   value={field.value ?? ''}
                                   options={accounts
                                     .filter(
@@ -635,7 +772,6 @@ export default function Transaction() {
                                       key: account.exp_ba_id,
                                       value: account.exp_ba_name,
                                     }))}
-                                  search={false}
                                   placeholder="Select destination account"
                                   label="To Account"
                                   onChange={(selectedId) => {
@@ -648,181 +784,73 @@ export default function Transaction() {
                           </>
                         )}
 
-                        <Spacer height={30} />
-                        <View
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            columnGap: 10,
-                          }}>
-                          <Controller
-                            control={control}
-                            render={({ field }) => (
-                              <DatePickerPaper
-                                {...field}
-                                onBlur={field.onBlur}
-                                onChange={(data) => field.onChange(data)}
-                                value={field.value}
-                                placeholder="Select Date"
-                                error={errors.exp_ts_date?.message}
-                                isRequired
-                              />
-                            )}
-                            name="exp_ts_date"
-                          />
-                          <Controller
-                            control={control}
-                            render={({ field }) => (
-                              <TimePickerPaper
-                                value={field.value}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
-                                placeholder="Select time"
-                                error={errors.exp_ts_time?.message}
-                                isRequired
-                              />
-                            )}
-                            name="exp_ts_time"
-                          />
-                        </View>
-                        <Spacer height={Spacing.xl} />
                         <Controller
                           control={control}
                           render={({ field }) => (
-                            <CustomRadioButton
-                              label="Transaction Type"
+                            <RowDatePicker
+                              {...field}
+                              onBlur={field.onBlur}
+                              onChange={(data) => field.onChange(data)}
                               value={field.value}
-                              options={availableTransactionTypes}
-                              onChange={(data) => {
-                                field.onChange(data);
-                                switchType(data);
-                              }}
-                              disabled={field.disabled}
-                              isRequired
+                              label="Date"
+                              placeholder="Select Date"
+                              error={errors.exp_ts_date?.message}
                             />
                           )}
-                          name="exp_tt_id"
+                          name="exp_ts_date"
                         />
-                        {errors.exp_tt_id?.message ? (
-                          <Text style={[styles.errorMessage, { color: colors.expense }]}>
-                            {errors.exp_tt_id?.message}
-                          </Text>
-                        ) : null}
-                        <Spacer height={Spacing.xl} />
-
                         <Controller
                           control={control}
                           render={({ field }) => (
-                            <Input
-                              {...field}
-                              placeholder="Transaction amount"
-                              label="Amount"
-                              keyboardType="numeric"
+                            <RowTimePicker
+                              value={field.value}
+                              onChange={field.onChange}
                               onBlur={field.onBlur}
-                              onChangeText={field.onChange}
-                              error={errors.exp_ts_amount?.message}
-                              borderLess
-                              isRequired
+                              label="Time"
+                              placeholder="Select time"
+                              error={errors.exp_ts_time?.message}
+                              showDivider={false}
                             />
                           )}
-                          name="exp_ts_amount"
-                        />
-                        <Spacer height={30} />
-                        <Controller
-                          control={control}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              value={field.value ?? ''}
-                              placeholder="Title"
-                              label="Title"
-                              keyboardType="default"
-                              autoCapitalize="none"
-                              autoComplete="off"
-                              onBlur={field.onBlur}
-                              onChangeText={field.onChange}
-                              error={errors.exp_ts_title?.message}
-                              borderLess
-                              isRequired
-                            />
-                          )}
-                          name="exp_ts_title"
+                          name="exp_ts_time"
                         />
                       </View>
-                      <Spacer height={Spacing.lg} />
+
                       {!isTransfer && (
-                        <View style={[styles.sectionContainer]}>
+                        <>
+                          <Spacer height={Spacing.lg} />
+                          <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>
+                            Category
+                          </Text>
                           <View
-                            style={{
-                              borderColor: errors.exp_tc_id?.message
-                                ? colors.expense
-                                : colors.inputBorder,
-                              borderWidth: 1,
-                              borderRadius: 8,
-                              paddingVertical: 5,
-                              paddingHorizontal: 8,
-                              backgroundColor: colors.inputColor,
-                            }}>
-                            <View
-                              style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                paddingVertical: 10,
-                                paddingHorizontal: 5,
-                                flexWrap: 'wrap',
-                              }}>
-                              <Text
-                                style={[
-                                  styles.categoryLabel,
-                                  {
-                                    flex: 1,
-                                    flexWrap: 'wrap',
-                                    lineHeight: 20,
-                                    color: colors.title,
-                                  },
-                                ]}>
-                                Category
-                                {!!selectedCategory() && (
-                                  <Text
-                                    style={{
-                                      fontFamily: 'Inter-500',
-                                      color: colors.text,
-                                    }}>
-                                    {' '}
-                                    : {selectedCategory()}
-                                  </Text>
-                                )}
-                              </Text>
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: 10,
-                                  marginLeft: 30,
-                                }}>
-                                <TouchableOpacity
-                                  activeOpacity={0.2}
-                                  style={{
-                                    paddingHorizontal: 10,
-                                  }}
-                                  onPress={redirectToCategory}>
-                                  <MaterialIcons name="edit" size={22} color={colors.text} />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                  activeOpacity={0.2}
-                                  style={{
-                                    paddingHorizontal: 10,
-                                  }}
-                                  onPress={redirectToCategory}>
-                                  <MaterialIcons name="add" size={22} color={colors.text} />
-                                </TouchableOpacity>
-                              </View>
-                            </View>
+                            style={[
+                              styles.card,
+                              {
+                                backgroundColor: colors.cardBg,
+                                borderColor: errors.exp_tc_id?.message
+                                  ? colors.expense
+                                  : colors.borderColor,
+                              },
+                            ]}>
+                            <CategoryPickerSheet
+                              icon={
+                                <MaterialIcons name="category" size={17} color={colors.primary} />
+                              }
+                              label="Category"
+                              value={exp_tc_id}
+                              categories={categoriesList}
+                              onSelect={(id) =>
+                                setValue('exp_tc_id', id, {
+                                  shouldDirty: true,
+                                  shouldValidate: true,
+                                })
+                              }
+                              onAddCategory={redirectToCategory}
+                              error={errors.exp_tc_id?.message}
+                            />
 
                             {!!categorySuggestion && !exp_tc_id && (
-                              <View style={{ paddingHorizontal: 5, paddingBottom: 10 }}>
+                              <View style={{ paddingTop: Spacing.sm }}>
                                 <CategorySuggestionChip
                                   label={categorySuggestion.label}
                                   icon={categorySuggestion.icon}
@@ -841,29 +869,20 @@ export default function Transaction() {
                                 />
                               </View>
                             )}
-
-                            <CategorySelector
-                              categories={categoriesList}
-                              selected={exp_tc_id}
-                              onSelect={(id) =>
-                                setValue('exp_tc_id', id, {
-                                  shouldDirty: true,
-                                  shouldValidate: true,
-                                })
-                              }
-                            />
                           </View>
-
-                          {errors.exp_tc_id?.message ? (
-                            <Text style={[styles.errorMessage, { color: colors.expense }]}>
-                              {errors.exp_tc_id?.message}
-                            </Text>
-                          ) : null}
-                        </View>
+                        </>
                       )}
-                      {!isTransfer && (
-                        <>
-                          <Spacer height={Spacing.md} />
+
+                      <Spacer height={Spacing.lg} />
+                      <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>
+                        Extras
+                      </Text>
+                      <View
+                        style={[
+                          styles.card,
+                          { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                        ]}>
+                        {!isTransfer && (
                           <Controller
                             control={control}
                             render={({ field }) => (
@@ -874,34 +893,32 @@ export default function Transaction() {
                             )}
                             name="exp_ts_attachment_url"
                           />
-                        </>
-                      )}
-                      <Spacer height={Spacing.md} />
-                      <Controller
-                        control={control}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            value={field.value ?? ''}
-                            placeholder="Notes"
-                            label="Note"
-                            keyboardType="default"
-                            autoCapitalize="none"
-                            autoComplete="off"
-                            onBlur={field.onBlur}
-                            onChangeText={field.onChange}
-                            error={errors.exp_ts_note?.message}
-                            borderLess
-                            multiline={true}
-                            numberOfLines={4}
-                            isTextBox
-                          />
                         )}
-                        name="exp_ts_note"
-                      />
-                      {!isTransfer && (
-                        <>
-                          <Spacer height={Spacing.md} />
+                        <Controller
+                          control={control}
+                          render={({ field }) => (
+                            <RowInput
+                              icon={
+                                <MaterialIcons name="notes" size={18} color={colors.primary} />
+                              }
+                              label="Note"
+                              value={field.value ?? ''}
+                              placeholder="Notes"
+                              keyboardType="default"
+                              autoCapitalize="none"
+                              autoComplete="off"
+                              onBlur={field.onBlur}
+                              onChangeText={field.onChange}
+                              error={errors.exp_ts_note?.message}
+                              multiline
+                              numberOfLines={4}
+                              isTextBox
+                              showDivider={!isTransfer}
+                            />
+                          )}
+                          name="exp_ts_note"
+                        />
+                        {!isTransfer && (
                           <Controller
                             control={control}
                             render={({ field }) => (
@@ -909,12 +926,15 @@ export default function Transaction() {
                                 value={field.value ?? []}
                                 onChange={field.onChange}
                                 label="Tags"
+                                flat
+                                showDivider={false}
                               />
                             )}
                             name="exp_ts_tags"
                           />
-                        </>
-                      )}
+                        )}
+                      </View>
+
                       <View style={styles.subTextContainer}>
                         {!!existingTransaction?.exp_ts_created_at && (
                           <Text style={[styles.subText, { color: colors.lighterTitle }]}>
@@ -946,22 +966,6 @@ export default function Transaction() {
                 alignItems: 'center',
                 gap: 40,
               }}>
-              {!isTransfer && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setValue('exp_st_id', !exp_st_id, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                  }}>
-                  <MaterialIcons
-                    name={exp_st_id ? 'star' : 'star-border'}
-                    size={20}
-                    color={colors.favorite}
-                  />
-                </TouchableOpacity>
-              )}
-
               {!exp_ts_id && !isTransfer && (
                 <TouchableOpacity onPress={handleOpenTemplateModal}>
                   <MaterialIcons name="bookmark-add" size={20} color={colors.text} />
@@ -1015,7 +1019,7 @@ export default function Transaction() {
                     { color: colors.onPrimary },
                     isSaving ? styles.textDisable : {},
                   ]}>
-                  {exp_ts_id ? 'Update' : 'Add'}
+                  {`${exp_ts_id ? 'Update' : 'Save'} ${selectedTypeLabel}`}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1059,8 +1063,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 15,
   },
-  sectionContainer: {
-    marginVertical: 10,
+  cardLabel: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.sm,
+    marginLeft: 4,
+  },
+  card: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: Spacing.lg,
   },
   transferLockedWrapper: {
     minHeight: '75%',
@@ -1087,23 +1101,32 @@ const styles = StyleSheet.create({
     maxWidth: 260,
   },
   transferArrowContainer: {
-    height: 50,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  transferConnector: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: '50%',
+    width: 1,
+    marginLeft: -0.5,
+  },
   transferArrowBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 1,
   },
 
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    borderRadius: 50,
+    borderRadius: 14,
     paddingHorizontal: Spacing.xl,
     paddingVertical: 9,
     width: 'auto',
@@ -1152,5 +1175,16 @@ const styles = StyleSheet.create({
   categoryLabel: {
     fontSize: FontSize.base,
     fontFamily: 'Inter-500',
+  },
+  rowGlyph: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
+  },
+  trailingIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
