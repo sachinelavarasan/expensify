@@ -20,6 +20,10 @@ interface ExportParams {
   endDate: string;
   fileType?: 'xlsx' | 'csv';
   tranType?: string;
+  // Omit (or leave undefined) to include every account - only sent when the
+  // selection is a strict subset, so the default "all accounts" case doesn't
+  // grow the query string for no reason.
+  accountIds?: string[];
 }
 
 export const useExportExcelTransactions = () => {
@@ -29,9 +33,12 @@ export const useExportExcelTransactions = () => {
       endDate,
       fileType = 'xlsx',
       tranType = 'all',
+      accountIds,
     }: ExportParams) => {
       const token = getAccessToken();
-      const url = `${API_URL}/expensify/export-excel?format=${fileType}&startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
+      const url =
+        `${API_URL}/expensify/export-excel?format=${fileType}&startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}` +
+        (accountIds?.length ? `&accountIds=${encodeURIComponent(accountIds.join(','))}` : '');
 
       const timestamp = format(now, 'yyyy-MM-dd-HH-mm-ss');
       const extension = fileType === 'csv' ? 'csv' : 'xlsx';
@@ -68,13 +75,17 @@ export const useExportPdfTransactions = () => {
       startDate,
       endDate,
       tranType = 'all',
+      accountIds,
     }: {
       startDate: string;
       endDate: string;
       tranType?: string;
+      accountIds?: string[];
     }) => {
       const token = getAccessToken();
-      const url = `${API_URL}/expensify/export-pdf?startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}`;
+      const url =
+        `${API_URL}/expensify/export-pdf?startDate=${startDate}&endDate=${endDate}&transaction_type=${tranType}` +
+        (accountIds?.length ? `&accountIds=${encodeURIComponent(accountIds.join(','))}` : '');
 
       const filename = `transactions-${format(now, 'yyyy-MM-dd-HH-mm-ss')}.pdf`;
       const fileUri = FileSystem.documentDirectory + filename;

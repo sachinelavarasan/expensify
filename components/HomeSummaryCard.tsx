@@ -110,7 +110,7 @@ export default function HomeSummaryCard({
 
       <View style={styles.row}>
         <View style={styles.stats}>
-          <View style={styles.stat}>
+          <View style={[styles.stat, styles.statPill]}>
             <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
               <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
             </View>
@@ -121,7 +121,7 @@ export default function HomeSummaryCard({
               </Text>
             </View>
           </View>
-          <View style={styles.stat}>
+          <View style={[styles.stat, styles.statPill]}>
             <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
               <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
             </View>
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   balance: {
-    fontSize: 24,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.display,
+    fontFamily: 'Inter-700',
     marginTop: 2,
   },
   row: {
@@ -232,12 +232,17 @@ const styles = StyleSheet.create({
   },
   stats: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 8,
   },
   stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  statPill: {
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 11,
+    padding: 8,
   },
   dot: {
     width: 22,
@@ -254,8 +259,8 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   statValue: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
     marginTop: 1,
   },
   footer: {

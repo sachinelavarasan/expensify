@@ -48,7 +48,7 @@ const MENU_GROUPS: { label: string; items: MenuItem[] }[] = [
         color: '#3B82F6',
       },
       {
-        href: '/(root)/export-transactions',
+        href: '/(root)/export-import-transactions',
         icon: 'import-export',
         title: 'Import / Export Transactions',
         subtitle: 'Download and share your transaction history',
@@ -114,6 +114,8 @@ const Profile = () => {
         <ProfileHeaderCard
           title={currentUser?.exp_us_name || ''}
           subtitle={currentUser?.exp_us_email || ''}
+          verified={currentUser?.exp_us_email_verified}
+          createdAt={currentUser?.exp_us_created_at}
           refetch={refetch}
         />
         <Spacer height={20} />

@@ -411,23 +411,12 @@ export default function Index() {
     <ThemedView style={{ flex: 1 }}>
       {(loading || !defaultAccountResolved) && <OverlayLoader />}
       <TouchableOpacity
-        style={{
-          width: 30,
-          height: 30,
-          position: 'absolute',
-          bottom: 20,
-          right: 0,
-          zIndex: 2,
-          marginRight: 10,
-        }}
+        style={[
+          styles.floatingButton,
+          { backgroundColor: colors.primary, shadowColor: colors.shadow },
+        ]}
         onPress={handlePress}>
-        <View
-          style={[
-            styles.floatingButton,
-            { backgroundColor: colors.primary, shadowColor: colors.shadow },
-          ]}>
-          <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
-        </View>
+        <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
       </TouchableOpacity>
       <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
         <View
@@ -754,13 +743,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'absolute',
     bottom: 20,
-    right: 0,
+    right: 10,
     elevation: 2,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 1,
     shadowRadius: 3.84,
     zIndex: 2,
-    marginRight: 10,
   },
   iconTrigger: {
     width: 32,

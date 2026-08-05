@@ -23,6 +23,10 @@ interface Props {
   placeholder?: string;
   error?: string | null;
   showDivider?: boolean;
+  // Small secondary line under the value - e.g. a live data sample for the
+  // currently selected option, so you can sanity-check the choice without
+  // opening the sheet.
+  hint?: string;
 }
 
 // Picks from a bottom sheet instead of an inline dropdown - matches the
@@ -38,6 +42,7 @@ export default function RowSelectInput({
   placeholder,
   error,
   showDivider,
+  hint,
 }: Props) {
   const { colors } = useThemeContext();
   const insets = useSafeAreaInsets();
@@ -85,6 +90,11 @@ export default function RowSelectInput({
               ? 'No options available'
               : placeholder}
         </Text>
+        {!!hint && (
+          <Text style={[styles.hint, { color: colors.description }]} numberOfLines={1}>
+            {hint}
+          </Text>
+        )}
       </RowField>
 
       <BottomSheetModal
@@ -136,6 +146,11 @@ const styles = StyleSheet.create({
   value: {
     fontSize: FontSize.base,
     fontFamily: 'Inter-600',
+  },
+  hint: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-400',
+    marginTop: 2,
   },
   sheetContent: {
     paddingHorizontal: 24,

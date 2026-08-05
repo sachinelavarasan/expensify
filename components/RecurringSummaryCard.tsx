@@ -6,75 +6,65 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import useCountUp from '@/hooks/useCountUp';
-import ProgressBar from './ProgressBar';
 
 interface Props {
-  totalBudget: number;
-  totalSpent: number;
-  totalRemaining: number;
+  monthlyOutflow: number;
+  monthlyIncome: number;
+  nextTitle?: string;
+  nextDaysUntil?: number;
 }
 
-export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemaining }: Props) {
+export default function RecurringSummaryCard({
+  monthlyOutflow,
+  monthlyIncome,
+  nextTitle,
+  nextDaysUntil,
+}: Props) {
   const { colors } = useThemeContext();
-  const exceeded = totalRemaining < 0;
-  const percentage = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0;
-
-  const animatedTotalBudget = useCountUp(totalBudget);
-  const animatedTotalSpent = useCountUp(totalSpent);
-  const animatedTotalRemaining = useCountUp(totalRemaining);
+  const animatedOutflow = useCountUp(monthlyOutflow);
+  const animatedIncome = useCountUp(monthlyIncome);
 
   return (
     <View style={[styles.card, { backgroundColor: colors.primary }]}>
-      <Text style={[styles.label, { color: colors.onPrimary }]}>Total Budget</Text>
-      <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
-        {formatToCurrency(animatedTotalBudget, undefined, totalBudget)}
+      <Text style={[styles.label, { color: colors.onPrimary }]}>Monthly Recurring</Text>
+      <Text style={[styles.amount, { color: colors.onPrimary }]} numberOfLines={1}>
+        {formatToCurrency(animatedOutflow, undefined, monthlyOutflow)}
       </Text>
 
       <View style={styles.row}>
         <View style={[styles.stat, styles.statPill]}>
           <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
+            <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
           </View>
           <View>
-            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Spent</Text>
+            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
             <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(animatedTotalSpent, undefined, totalSpent)}
+              {formatToCurrency(animatedIncome, undefined, monthlyIncome)}
             </Text>
           </View>
         </View>
         <View style={[styles.stat, styles.statPill]}>
           <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather
-              name={exceeded ? 'alert-triangle' : 'arrow-down-left'}
-              size={11}
-              color={colors.onPrimary}
-            />
+            <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
           </View>
           <View>
-            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>
-              {exceeded ? 'Over by' : 'Remaining'}
-            </Text>
+            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Outflow</Text>
             <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(
-                Math.abs(animatedTotalRemaining),
-                undefined,
-                Math.abs(totalRemaining),
-              )}
+              {formatToCurrency(animatedOutflow, undefined, monthlyOutflow)}
             </Text>
           </View>
         </View>
       </View>
 
-      <ProgressBar
-        percentage={percentage}
-        height={8}
-        fillColor={exceeded ? colors.danger : colors.onPrimaryStrong}
-        trackColor={colors.onPrimaryBorder}
-        style={styles.progressTrack}
-      />
-      <Text style={[styles.progressLabel, { color: colors.onPrimary }]}>
-        {exceeded ? 'Budget exceeded this month' : `${percentage.toFixed(0)}% used this month`}
-      </Text>
+      {!!nextTitle && nextDaysUntil !== undefined && (
+        <View style={[styles.footer, { borderTopColor: colors.onPrimaryBorder }]}>
+          <Feather name="clock" size={12} color={colors.onPrimary} />
+          <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
+            Next: <Text style={styles.footerValue}>{nextTitle}</Text> in {nextDaysUntil} day
+            {nextDaysUntil === 1 ? '' : 's'}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -91,7 +81,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     opacity: 0.75,
   },
-  balance: {
+  amount: {
     fontSize: FontSize.display,
     fontFamily: 'Inter-700',
     marginTop: 2,
@@ -131,13 +121,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-700',
     marginTop: 1,
   },
-  progressTrack: {
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
   },
-  progressLabel: {
+  footerText: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
-    marginTop: 6,
     opacity: 0.9,
+    flexShrink: 1,
+  },
+  footerValue: {
+    fontFamily: 'Inter-700',
   },
 });

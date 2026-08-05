@@ -53,7 +53,7 @@ export default function ProfileAccountsSummaryCard({
       <View style={styles.row}>
         <Animated.View
           entering={FadeInDown.duration(550).delay(180).easing(Easing.out(Easing.quad))}
-          style={styles.stat}>
+          style={[styles.stat, styles.statPill]}>
           <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
             <Feather name="credit-card" size={11} color={colors.onPrimary} />
           </View>
@@ -67,7 +67,7 @@ export default function ProfileAccountsSummaryCard({
         {!!primaryAccountName && (
           <Animated.View
             entering={FadeInDown.duration(550).delay(260).easing(Easing.out(Easing.quad))}
-            style={styles.stat}>
+            style={[styles.stat, styles.statPill]}>
             <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
               <Feather name="star" size={11} color={colors.onPrimary} />
             </View>
@@ -110,20 +110,26 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   balance: {
-    fontSize: 24,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.display,
+    fontFamily: 'Inter-700',
     marginTop: 4,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 18,
+    gap: 10,
     marginTop: 8,
   },
   stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flex: 1,
+  },
+  statPill: {
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 11,
+    padding: 10,
   },
   dot: {
     width: 22,
@@ -140,8 +146,8 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   statValue: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
     marginTop: 1,
   },
   footer: {

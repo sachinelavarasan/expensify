@@ -1,13 +1,5 @@
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import React, { useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -16,6 +8,8 @@ import RowInput from '@/components/RowInput';
 import IconPickerSheet from '@/components/IconPickerSheet';
 import ColorPickerSheet from '@/components/ColorPickerSheet';
 import SegmentedControl from '@/components/SegmentedControl';
+import CategorySelector from '@/components/CategorySelector';
+import ModalCard from '@/components/ModalCard';
 import Spacer from '@/components/Spacer';
 import ProfileHeader from '@/components/ProfileHeader';
 import { CoreTransactionType } from '@/utils/common-data';
@@ -24,6 +18,7 @@ import {
   useAddCategory,
   useDeleteCategory,
   useEditCategory,
+  useGetCategoryCache,
 } from '@/hooks/useCategoryListOperation';
 import OverlayLoader from '@/components/Overlay';
 import { ICategoryWithCount } from '@/types';
@@ -41,6 +36,7 @@ const Category = () => {
   const { mutateAsync: addCategory, isPending: isAdding } = useAddCategory();
   const { mutateAsync: editCategory, isPending: isEditing } = useEditCategory();
   const { mutateAsync: deleteCategory, isPending: isDeleting } = useDeleteCategory();
+  const { categories: cachedCategories } = useGetCategoryCache();
 
   // `data` is a fixed route param for this screen's lifetime (set once by
   // the Link that navigated here), so the initial state can just be computed
@@ -122,43 +118,57 @@ const Category = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!id) {
-      return;
+  // Categories the deleted category's transactions could be reassigned to:
+  // same transaction type, not the category being deleted itself. 'Others'
+  // (the pre-selected default - see openDeleteConfirm) is moved to the front
+  // so the default choice is visible without scrolling the picker.
+  const reassignOptions = useMemo(() => {
+    const options = cachedCategories.filter(
+      (item) =>
+        item.exp_tc_transaction_type === categoryDetail.exp_tc_transaction_type &&
+        item.exp_tc_id !== id,
+    );
+    const othersIndex = options.findIndex((item) => item.exp_tc_label === 'Others');
+    if (othersIndex > 0) {
+      const [others] = options.splice(othersIndex, 1);
+      options.unshift(others);
     }
-    try {
-      const confirm = await new Promise((resolve) =>
-        Alert.alert(
-          'Delete this category?',
-          `Has ${transactionCount} transactions\n \nAll transactions will be moved to the 'Others' category.`,
-          [
-            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-          ],
-        ),
-      );
+    return options;
+  }, [cachedCategories, categoryDetail.exp_tc_transaction_type, id]);
 
-      if (!confirm) return;
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [reassignCategoryId, setReassignCategoryId] = useState('');
 
-      deleteCategory(id)
-        .then(() => {
-          showToast({
-            text1: 'Category removed successfully',
-            type: 'success',
-            position: 'bottom',
-          });
-          router.back();
-        })
-        .catch((err) => {
-          showToast({
-            text1: getApiErrorMessage(err, 'Server Error'),
-            type: 'error',
-            position: 'bottom',
-          });
+  const openDeleteConfirm = () => {
+    const others = reassignOptions.find((item) => item.exp_tc_label === 'Others');
+    setReassignCategoryId(others?.exp_tc_id || '');
+    setDeleteConfirmVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (!id) return;
+    deleteCategory({
+      id,
+      targetCategoryId: transactionCount > 0 ? reassignCategoryId : undefined,
+    })
+      .then(() => {
+        showToast({
+          text1: 'Category removed successfully',
+          type: 'success',
+          position: 'bottom',
         });
-    } catch (error) {
-      console.error('Error deleting transaction:', error);
-    }
+        router.back();
+      })
+      .catch((err) => {
+        showToast({
+          text1: getApiErrorMessage(err, 'Server Error'),
+          type: 'error',
+          position: 'bottom',
+        });
+      })
+      .finally(() => {
+        setDeleteConfirmVisible(false);
+      });
   };
 
   return (
@@ -169,7 +179,7 @@ const Category = () => {
         <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
           <ProfileHeader
             title={id === 'add' ? 'Add New Category' : 'Update Category'}
-            deleteAction={id === 'add' ? undefined : handleDelete}
+            deleteAction={id === 'add' ? undefined : openDeleteConfirm}
           />
         </View>
 
@@ -245,6 +255,67 @@ const Category = () => {
             </Text>
           </TouchableOpacity>
         </View>
+
+        <ModalCard
+          visible={deleteConfirmVisible}
+          onClose={() => setDeleteConfirmVisible(false)}
+          title="Delete this category?"
+          closeDisabled={isDeleting}>
+          {transactionCount > 0 ? (
+            <>
+              <Text style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+                This category has {transactionCount} transaction{transactionCount === 1 ? '' : 's'}.
+                Choose where they should move to:
+              </Text>
+              <Spacer height={14} />
+              {reassignOptions.length > 0 ? (
+                <CategorySelector
+                  categories={reassignOptions}
+                  selected={reassignCategoryId}
+                  onSelect={setReassignCategoryId}
+                />
+              ) : (
+                <Text style={{ color: colors.expense, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+                  No other {categoryDetail.exp_tc_transaction_type === 2 ? 'income' : 'expense'}{' '}
+                  category exists to move these transactions to.
+                </Text>
+              )}
+            </>
+          ) : (
+            <Text style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+              This category has no transactions.
+            </Text>
+          )}
+          <Spacer height={24} />
+          <View style={{ flexDirection: 'row', gap: Spacing.xl, justifyContent: 'center' }}>
+            <TouchableOpacity
+              style={[styles.modalButton, { borderColor: colors.inputBorder, borderWidth: 1 }]}
+              onPress={() => setDeleteConfirmVisible(false)}
+              disabled={isDeleting}>
+              <Text style={[styles.modalButtonText, { color: colors.description }]}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.modalButton,
+                { backgroundColor: colors.expense },
+                (isDeleting || (transactionCount > 0 && !reassignCategoryId)) ? styles.disable : {},
+              ]}
+              onPress={confirmDelete}
+              disabled={isDeleting || (transactionCount > 0 && !reassignCategoryId)}>
+              {isDeleting ? (
+                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+              ) : null}
+              <Text
+                style={[
+                  styles.modalButtonText,
+                  { color: colors.onPrimary },
+                  isDeleting ? styles.textDisable : {},
+                ]}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ModalCard>
       </ThemedView>
     </SafeAreaViewComponent>
   );
@@ -314,4 +385,16 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   textDisable: { opacity: 0 },
+  modalButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderRadius: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 9,
+  },
+  modalButtonText: {
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-600',
+  },
 });

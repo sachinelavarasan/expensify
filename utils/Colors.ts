@@ -77,7 +77,7 @@ export const DarkColors = {
   sun: '#FFAA00',
   categoryFallbackBg: '#151933',
   categoryFallbackIcon: '#E5E8F4',
-  danger: '#CC1928',
+  danger: '#E5484D',
 };
 
 export type ThemeColors = typeof LightColors;
@@ -103,12 +103,6 @@ export const ToastPalette = {
   text1: '#FFFFFF',
   text2: '#F5F5F5',
   infoText1: '#000000',
-};
-
-export const SwitchPalette = {
-  trackOff: '#81629E61',
-  thumbOn: '#F5F5F5',
-  thumbOff: '#574866',
 };
 
 // Checkmark drawn on top of an arbitrary user-picked category swatch color -

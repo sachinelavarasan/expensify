@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   count: {
-    fontSize: 24,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.display,
+    fontFamily: 'Inter-700',
     marginTop: 4,
   },
   row: {
@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   statValue: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
     marginTop: 1,
   },
   footer: {

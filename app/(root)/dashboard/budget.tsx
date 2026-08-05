@@ -11,11 +11,9 @@ import { ThemedView } from '@/components/ThemedView';
 import MonthSwitcher from '@/components/MonthSwitch';
 import useBudgetsForMonth from '@/hooks/useBudget';
 import BudgetSummaryCard from '@/components/BudgetSummaryCard';
-import BudgetAlerts from '@/components/BudgetAlerts';
 import BudgetCategoryFilters, { BudgetCategoryFilter } from '@/components/BudgetCategoryFilters';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { deviceWidth } from '@/utils/functions';
 import { MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
 import ModalCard from '@/components/ModalCard';
@@ -235,7 +233,6 @@ const Budget = () => {
                     totalBudget={totalBudget}
                     totalRemaining={totalRemaining}
                   />
-                  <BudgetAlerts budgetedCategories={budgetedCategories} />
                 </View>
               )}
 
@@ -280,78 +277,48 @@ const Budget = () => {
 
                   {filteredNonBudgeted.map((category) => (
                     <FadeInView key={category.category}>
-                    <View style={styles.subMenuContainer}>
-                      <View style={styles.card}>
-                        <View style={styles.left}>
-                          <View
-                            style={{
-                              backgroundColor: category.iconBg
-                                ? category.iconBg
-                                : colors.categoryFallbackBg,
-                              padding: 5,
-                              borderRadius: 5,
-                            }}>
-                            <MaterialIcons
-                              name={
-                                category.icon as React.ComponentProps<typeof MaterialIcons>['name']
-                              }
-                              size={24}
-                              color={colors.categoryFallbackIcon}
-                            />
-                          </View>
-                          <View>
-                            <Text
-                              style={[
-                                styles.cardTitle,
-                                { color: colors.title, flex: 1, flexWrap: 'wrap' },
-                              ]}>
-                              {category.category}
-                            </Text>
-                            <View
-                              style={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: Spacing.sm,
-                              }}>
-                              <Text style={[styles.subText, { color: colors.description }]}>
-                                Spent :
-                              </Text>
-                              <Text
-                                style={[
-                                  styles.subText,
-                                  { color: colors.title, fontFamily: 'Inter-600' },
-                                ]}>
-                                {formatToCurrency(category.totalAmount)}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                        <View>
-                          <TouchableOpacity
-                            style={[
-                              styles.buttonRounded,
-                              {
-                                borderColor: colors.secondary,
-                              },
-                            ]}
-                            onPress={() => {
-                              toggleModal(category);
-                            }}>
-                            <Text
-                              style={[
-                                styles.cardTitle,
-                                {
-                                  color: colors.secondary,
-                                  fontSize: FontSize.base,
-                                  fontFamily: 'Inter-600',
-                                },
-                              ]}>
-                              SET LIMIT
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
+                    <View
+                      style={[
+                        styles.unbudgetedRow,
+                        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                      ]}>
+                      <View
+                        style={{
+                          backgroundColor: category.iconBg
+                            ? category.iconBg
+                            : colors.categoryFallbackBg,
+                          padding: 5,
+                          borderRadius: 5,
+                        }}>
+                        <MaterialIcons
+                          name={
+                            category.icon as React.ComponentProps<typeof MaterialIcons>['name']
+                          }
+                          size={24}
+                          color={colors.categoryFallbackIcon}
+                        />
                       </View>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[
+                            styles.cardTitle,
+                            { color: colors.title, flex: 1, flexWrap: 'wrap' },
+                          ]}>
+                          {category.category}
+                        </Text>
+                        <Text style={[styles.subText, { color: colors.description, marginTop: 2 }]}>
+                          Spent {formatToCurrency(category.totalAmount)}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={[styles.setLimitButton, { backgroundColor: `${colors.primary}1A` }]}
+                        onPress={() => {
+                          toggleModal(category);
+                        }}>
+                        <Text style={[styles.setLimitText, { color: colors.primary }]}>
+                          Set Limit
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                     </FadeInView>
                   ))}
@@ -434,21 +401,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
     // color applied inline via theme colors at each usage site
   },
-  left: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-    maxWidth: deviceWidth() * 0.5,
-  },
   cardTitle: {
     fontSize: FontSize.md,
     fontFamily: 'Inter-600',
     // color applied inline via theme colors at each usage site
-  },
-  subMenuContainer: {
-    // paddingVertical: 4,
   },
   subText: {
     fontSize: FontSize.sm,
@@ -456,19 +412,23 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
     // color applied inline via theme colors at each usage site
   },
-  card: {
-    paddingVertical: Spacing.xl,
+  unbudgetedRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: 8,
-  },
-  buttonRounded: {
+    gap: 10,
+    padding: 12,
+    marginBottom: 8,
     borderWidth: 1,
-    borderRadius: 50,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.sm,
-    width: 'auto',
+    borderRadius: 14,
+  },
+  setLimitButton: {
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  setLimitText: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
   },
   budgetButton: {
     alignItems: 'center',

@@ -1,14 +1,16 @@
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
   SectionList,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 
 import SafeAreaViewComponent from '@/components/SafeAreaView';
@@ -18,19 +20,25 @@ import TransactionCard from '@/components/TransactionCard';
 import Emptystate from '@/components/Emptystate';
 import OverlayLoader from '@/components/Overlay';
 import Spacer from '@/components/Spacer';
+import ModalCard from '@/components/ModalCard';
 import StarredSummaryCard from '@/components/StarredSummaryCard';
-import { useGetStarredTransactions } from '@/hooks/useStarredTransactions';
+import { showToast } from '@/components/ToastMessage';
+import { useGetStarredTransactions, useUnstarTransaction } from '@/hooks/useStarredTransactions';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getApiErrorMessage } from '@/lib/apiClient';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
+import { Spacing } from '@/utils/Spacing';
 import { Itransaction } from '@/types';
 
 export default function Starred() {
   const { colors } = useThemeContext();
   const { starred, isLoading, refetch } = useGetStarredTransactions();
+  const { mutateAsync: unstarTransaction, isPending: isUnstarring } = useUnstarTransaction();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [pendingUnstar, setPendingUnstar] = useState<Itransaction | null>(null);
 
   const { value } = useGetSettingsFromStore('tt-time');
 
@@ -38,6 +46,24 @@ export default function Starred() {
     setRefreshing(true);
     refetch().finally(() => setRefreshing(false));
   }, [refetch]);
+
+  const confirmUnstar = () => {
+    if (!pendingUnstar) return;
+    unstarTransaction(pendingUnstar.exp_ts_id)
+      .then(() => {
+        showToast({ text1: 'Removed from starred.', type: 'success', position: 'bottom' });
+      })
+      .catch((err) => {
+        showToast({
+          text1: getApiErrorMessage(err, 'Could not remove this transaction.'),
+          type: 'error',
+          position: 'bottom',
+        });
+      })
+      .finally(() => {
+        setPendingUnstar(null);
+      });
+  };
 
   const totals = useMemo(() => {
     return (starred as Itransaction[]).reduce(
@@ -117,7 +143,14 @@ export default function Starred() {
                   styles.row,
                   { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
                 ]}>
-                <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={value} />
+                <View style={{ flex: 1 }}>
+                  <TransactionCard key={item.exp_ts_id} {...item} isStarred showTsTime={value} />
+                </View>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: `${colors.favorite}1A` }]}
+                  onPress={() => setPendingUnstar(item)}>
+                  <MaterialIcons name="star" size={18} color={colors.favorite} />
+                </TouchableOpacity>
               </View>
             )}
             renderSectionHeader={({ section: { title, income, expense } }) => (
@@ -143,6 +176,43 @@ export default function Starred() {
             stickySectionHeadersEnabled={false}
             keyExtractor={(item) => item.exp_ts_id.toString()}
           />
+
+          <ModalCard
+            visible={!!pendingUnstar}
+            onClose={() => setPendingUnstar(null)}
+            title="Remove from Starred?"
+            closeDisabled={isUnstarring}>
+            <Text
+              style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+              {pendingUnstar?.exp_ts_title} will no longer appear in your starred transactions. You
+              can star it again anytime.
+            </Text>
+            <Spacer height={24} />
+            <View style={{ flexDirection: 'row', gap: Spacing.xl, justifyContent: 'center' }}>
+              <TouchableOpacity
+                style={[styles.modalButton, { borderColor: colors.inputBorder, borderWidth: 1 }]}
+                onPress={() => setPendingUnstar(null)}
+                disabled={isUnstarring}>
+                <Text style={[styles.modalButtonText, { color: colors.description }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: colors.primary }]}
+                onPress={confirmUnstar}
+                disabled={isUnstarring}>
+                {isUnstarring ? (
+                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+                ) : null}
+                <Text
+                  style={[
+                    styles.modalButtonText,
+                    { color: colors.onPrimary },
+                    isUnstarring ? styles.textDisable : {},
+                  ]}>
+                  Remove
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ModalCard>
         </ThemedView>
       </SafeAreaViewComponent>
     </KeyboardAvoidingView>
@@ -170,9 +240,39 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-700',
   },
   row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     padding: 10,
     marginBottom: 8,
     borderWidth: 1,
     borderRadius: 14,
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderRadius: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 9,
+  },
+  modalButtonText: {
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-600',
+  },
+  loader: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textDisable: {
+    opacity: 0,
   },
 });

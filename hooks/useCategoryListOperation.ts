@@ -88,8 +88,8 @@ export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      await apiClient.delete(`/expensify/categories/${id}`);
+    mutationFn: async ({ id, targetCategoryId }: { id: string; targetCategoryId?: string }) => {
+      await apiClient.delete(`/expensify/categories/${id}`, { data: { targetCategoryId } });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });

@@ -1,13 +1,4 @@
-import {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { ThemedView } from '@/components/ThemedView';
@@ -26,7 +17,6 @@ import Spacer from '@/components/Spacer';
 import Emptystate from '@/components/Emptystate';
 import SegmentedControl from '@/components/SegmentedControl';
 
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
 import { formatToCurrency } from '@/utils/formatter';
@@ -68,7 +58,6 @@ function CategoryCard({
         {
           backgroundColor: pressed ? colors.barBackground : colors.cardBg,
           borderColor: colors.borderColor,
-          shadowColor: colors.shadow,
         },
       ]}>
       <View style={styles.left}>
@@ -96,16 +85,12 @@ function CategoryCard({
               strokeLinecap="round"
             />
           </Svg>
-          <View
-            style={[
-              styles.iconBox,
-              { backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg },
-            ]}>
+          <View style={[styles.iconBox, { backgroundColor: `${ringColor}2E` }]}>
             {item.exp_tc_icon && (
               <MaterialIcons
                 name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 size={15}
-                color={colors.categoryFallbackIcon}
+                color={ringColor}
               />
             )}
           </View>
@@ -141,7 +126,7 @@ function CategoryCard({
       </View>
 
       {locked ? (
-        <Ionicons name="lock-closed" size={16} color={colors.lighterTitle} />
+        <Ionicons name="lock-closed" size={14} color={colors.lighterTitle} />
       ) : (
         item.exp_tc_user_id &&
         reorderable && (
@@ -154,7 +139,7 @@ function CategoryCard({
               width: 35,
               flexShrink: 0,
             }}>
-            <MaterialIcons name="drag-handle" size={22} color={colors.description} />
+            <MaterialIcons name="drag-indicator" size={24} color={colors.description} />
           </Pressable>
         )
       )}
@@ -279,33 +264,6 @@ export default function Category() {
     router.push('/(root)/categories/add');
   };
 
-  const scrollY = useSharedValue(0);
-  const buttonVisible = useSharedValue(1);
-
-  const scrollHandler = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset } = event.nativeEvent;
-    const currentY = contentOffset.y;
-
-    if (currentY + 200 > scrollY.value) {
-      buttonVisible.value = withTiming(0);
-    } else {
-      buttonVisible.value = withTiming(1);
-    }
-
-    scrollY.value = currentY;
-  };
-
-  const animatedButtonStyle = useAnimatedStyle(() => {
-    return {
-      opacity: buttonVisible.value,
-      transform: [
-        {
-          translateX: withTiming(buttonVisible.value ? 0 : 150, { duration: 200 }),
-        },
-      ],
-    };
-  });
-
   return (
     <SafeAreaViewComponent>
       <ThemedView
@@ -314,19 +272,12 @@ export default function Category() {
           paddingHorizontal: 10,
         }}>
         {(loading || isLoading) && <OverlayLoader />}
-        <Animated.View
-          style={[
-            styles.floatingButton,
-            { backgroundColor: colors.primary, shadowColor: colors.shadow },
-            animatedButtonStyle,
-          ]}>
-          <TouchableOpacity style={styles.floatingButtonInner} onPress={handlePress}>
-            <Entypo name="plus" size={18} color={colors.onPrimary} />
-            <Text style={[styles.floatingButtonText, { color: colors.onPrimary }]}>
-              Add Category
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
+          onPress={handlePress}>
+          <Entypo name="plus" size={16} color={colors.onPrimary} />
+          <Text style={[styles.fabText, { color: colors.onPrimary }]}>Add Category</Text>
+        </TouchableOpacity>
         <ProfileHeader title="Categories" />
         {totalSpend > 0 && (
           <View style={[styles.summary, { backgroundColor: colors.primary }]}>
@@ -397,11 +348,6 @@ export default function Category() {
           <DraggableFlatList
             contentContainerStyle={{
               paddingHorizontal: 10,
-            }}
-            scrollEventThrottle={16}
-            onScrollBeginDrag={scrollHandler}
-            onScrollEndDrag={() => {
-              buttonVisible.value = withTiming(1, { duration: 200 });
             }}
             data={filteredDataList}
             onDragEnd={({ data }) => {
@@ -535,24 +481,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    marginBottom: 6,
-    borderRadius: 12,
+    paddingVertical: 9,
+    paddingHorizontal: 11,
+    marginBottom: 8,
+    borderRadius: 14,
     borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 0,
+    gap: 11,
   },
   left: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 11,
     flex: 1,
   },
   ringWrap: {
@@ -595,18 +538,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   name: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+    fontSize: 13.5,
+    fontFamily: 'Inter-700',
     flexShrink: 1,
   },
   amount: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+    fontSize: 13.5,
+    fontFamily: 'Inter-700',
     flexShrink: 0,
   },
   stat: {
-    fontSize: FontSize.xs,
-    fontFamily: 'Inter-500',
+    fontSize: 11,
+    fontFamily: 'Inter-400',
     marginTop: 2,
   },
   summary: {
@@ -629,7 +572,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   summaryAmt: {
-    fontSize: 20,
+    fontSize: 26,
     fontFamily: 'Inter-700',
   },
   summaryTopLabel: {
@@ -641,27 +584,25 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     fontFamily: 'Inter-700',
   },
-  floatingButton: {
-    borderRadius: 25,
+  fab: {
     position: 'absolute',
-    bottom: 45,
-    right: 0,
-    elevation: 5,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    zIndex: 2,
-    marginRight: 20,
-  },
-  floatingButtonInner: {
+    left: 15,
+    right: 15,
+    bottom: 16,
+    height: 46,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
+    justifyContent: 'center',
+    gap: 6,
+    elevation: 5,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    zIndex: 2,
   },
-  floatingButtonText: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+  fabText: {
+    fontSize: 13.5,
+    fontFamily: 'Inter-700',
   },
 });
