@@ -23,6 +23,8 @@ const visibleOption = [
   { id: '0', label: "Don't Show" },
 ];
 
+const TINT = '#10B981';
+
 const schema = z.object({
   currency: z.string(),
 });
@@ -33,10 +35,14 @@ const CurrencyModal = ({
   currency,
   refetch,
   updateSettings,
+  noCard,
+  topDivider,
 }: {
   currency?: string;
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
   updateSettings: (name: string, value: boolean | string) => void;
+  noCard?: boolean;
+  topDivider?: boolean;
 }) => {
   const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
@@ -124,10 +130,13 @@ const CurrencyModal = ({
   return (
     <>
       <SettingsRow
-        icon={<FontAwesome name="money" size={16} color={colors.onPrimary} />}
+        icon={<FontAwesome name="money" size={16} color={TINT} />}
+        iconBg={`${TINT}1A`}
         title="Currency"
         subtitle={currency || 'Set your preferred currency symbol'}
         onPress={toggleModal}
+        noCard={noCard}
+        topDivider={topDivider}
       />
 
       <ModalCard visible={show} onClose={toggleModal} title="Select Currency" closeDisabled={isPending}>

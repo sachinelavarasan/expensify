@@ -22,6 +22,12 @@ type BankCardProps = {
   // Mirrors the "Hide Balance" setting - true means the balance should be masked.
   showBalance?: boolean;
   isPrimary?: boolean;
+  // 'compact' (default) is the neutral card used in horizontal account lists
+  // (e.g. Profile) where several cards sit side by side - a flat colored fill
+  // repeated across all of them would be too loud. 'ratio' is a neutral card
+  // with an income-vs-expense proportion bar under the balance, meant for a
+  // single full-width card (the account detail screen).
+  variant?: 'compact' | 'ratio';
 };
 
 const BankCard = ({
@@ -36,6 +42,7 @@ const BankCard = ({
   transactionCount,
   showBalance,
   isPrimary,
+  variant = 'compact',
 }: BankCardProps) => {
   const { colors } = useThemeContext();
 
@@ -52,6 +59,111 @@ const BankCard = ({
   const animatedIncome = useCountUp(income ?? 0);
   const animatedExpense = useCountUp(expense ?? 0);
 
+  const balanceText = isBalanceVisible
+    ? formatToCurrency(animatedBalance, undefined, numericBalance)
+    : '••••••';
+
+  if (variant === 'ratio') {
+    const activityTotal = (income ?? 0) + (expense ?? 0);
+    const incomePct = activityTotal > 0 ? (income! / activityTotal) * 100 : 0;
+    const expensePct = 100 - incomePct;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={onPress}
+        disabled={!onPress}
+        style={[
+          styles.ratioCard,
+          { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+          otherStyle,
+        ]}>
+        <View style={styles.idRow}>
+          <View style={styles.left}>
+            <View style={[styles.dot, { backgroundColor: colors.primary }]}>
+              <MaterialIcons name={icon} size={16} color={colors.onPrimary} />
+            </View>
+            <View style={styles.identity}>
+              <Text style={[styles.label, { color: colors.lighterTitle }]}>Account</Text>
+              <Text style={[styles.value, { color: colors.title }]} numberOfLines={1}>
+                {bankName}
+              </Text>
+              {isPrimary && (
+                <View
+                  style={[
+                    styles.primaryBadge,
+                    { backgroundColor: `${colors.primary}1A`, marginTop: 4 },
+                  ]}>
+                  <Feather name="star" size={10} color={colors.primary} />
+                  <Text style={[styles.primaryBadgeText, { color: colors.primary }]}>Primary</Text>
+                </View>
+              )}
+            </View>
+          </View>
+          {!isBaseBalanceVisible && (
+            <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
+              <Feather
+                name={isBalanceVisible ? 'eye' : 'eye-off'}
+                size={15}
+                color={colors.lighterTitle}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <Text style={[styles.bigBalanceLabel, { color: colors.lighterTitle }]}>Balance</Text>
+        <Text style={[styles.bigBalance, { color: colors.title }]} numberOfLines={1}>
+          {balanceText}
+        </Text>
+
+        {showActivity && (
+          <>
+            <View style={[styles.ratioTrack, { backgroundColor: colors.barBackground }]}>
+              <View style={{ flex: Math.max(incomePct, 0.001), backgroundColor: colors.income }} />
+              <View style={{ flex: Math.max(expensePct, 0.001), backgroundColor: colors.expense }} />
+            </View>
+            <View style={styles.ratioLabels}>
+              <View style={styles.ratioItem}>
+                <View style={[styles.ratioDot, { backgroundColor: colors.income }]} />
+                <Text style={[styles.ratioText, { color: colors.description }]}>
+                  Income{' '}
+                  <Text style={[styles.ratioValue, { color: colors.title }]}>
+                    {formatToCurrency(animatedIncome, undefined, income)}
+                  </Text>
+                </Text>
+              </View>
+              <View style={styles.ratioItem}>
+                <View style={[styles.ratioDot, { backgroundColor: colors.expense }]} />
+                <Text style={[styles.ratioText, { color: colors.description }]}>
+                  Expense{' '}
+                  <Text style={[styles.ratioValue, { color: colors.title }]}>
+                    {formatToCurrency(animatedExpense, undefined, expense)}
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
+
+        <View style={[styles.footer, { borderTopColor: colors.borderColor }]}>
+          <Text style={[styles.footerText, { color: colors.description }]} numberOfLines={1}>
+            Card Holder:{' '}
+            <Text style={[styles.footerValue, { color: colors.title }]}>{holderName}</Text>
+            {!!transactionCount && (
+              <Text style={[styles.footerText, { color: colors.description }]}>
+                {'  ·  '}
+                <Text style={[styles.footerValue, { color: colors.title }]}>
+                  {transactionCount}
+                </Text>
+                {transactionCount === 1 ? ' transaction' : ' transactions'}
+              </Text>
+            )}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -59,7 +171,7 @@ const BankCard = ({
       disabled={!onPress}
       style={[
         styles.card,
-        { backgroundColor: colors.inputColor, borderColor: colors.primary },
+        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
         otherStyle,
       ]}>
       <View style={styles.topRow}>
@@ -99,9 +211,7 @@ const BankCard = ({
             )}
           </View>
           <Text style={[styles.balance, { color: colors.title }]} numberOfLines={1}>
-            {isBalanceVisible
-              ? formatToCurrency(animatedBalance, undefined, numericBalance)
-              : '••••••'}
+            {balanceText}
           </Text>
         </View>
       </View>
@@ -156,7 +266,13 @@ const styles = StyleSheet.create({
   card: {
     width: 350,
     borderRadius: 20,
-    borderWidth: 1.5,
+    borderWidth: 1,
+    padding: 18,
+  },
+  ratioCard: {
+    width: 350,
+    borderRadius: 20,
+    borderWidth: 1,
     padding: 18,
   },
   topRow: {
@@ -164,6 +280,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  idRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 18,
   },
   left: {
     flexDirection: 'row',
@@ -182,6 +305,7 @@ const styles = StyleSheet.create({
   primaryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     gap: 3,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -222,12 +346,54 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-700',
     marginTop: 2,
   },
+  bigBalanceLabel: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    opacity: 0.78,
+    marginBottom: 4,
+  },
+  bigBalance: {
+    fontSize: 26,
+    fontFamily: 'Inter-700',
+    marginBottom: 16,
+  },
   activityRow: {
     flexDirection: 'row',
     gap: 24,
     marginTop: 16,
     paddingTop: 12,
     borderTopWidth: 1,
+  },
+  ratioTrack: {
+    flexDirection: 'row',
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  ratioLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  ratioItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  ratioDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  ratioText: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-600',
+  },
+  ratioValue: {
+    fontFamily: 'Inter-700',
   },
   stat: {
     flexDirection: 'row',
@@ -246,6 +412,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-600',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
+    opacity: 0.8,
   },
   statValue: {
     fontSize: FontSize.sm,

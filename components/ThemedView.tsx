@@ -1,7 +1,6 @@
-import { ColorValue, View, type ViewProps } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export type ThemedViewProps = ViewProps & {
   lightColor?: string;
@@ -9,24 +8,11 @@ export type ThemedViewProps = ViewProps & {
 };
 
 export function ThemedView({ style, children, ...otherProps }: ThemedViewProps) {
-  const { theme, colors } = useThemeContext();
-
-  if (theme === 'light') {
-    return (
-      <View style={[{ flex: 1, backgroundColor: colors.background }, style]} {...otherProps}>
-        {children}
-      </View>
-    );
-  }
+  const { colors } = useThemeContext();
 
   return (
-    <LinearGradient
-      colors={colors.themedViewBg as [ColorValue, ColorValue, ...ColorValue[]]}
-      start={{ x: 2, y: 0 }}
-      end={{ x: 0, y: 2 }}
-      style={[{ flex: 1 }, style]}
-      {...otherProps}>
+    <View style={[{ flex: 1, backgroundColor: colors.background }, style]} {...otherProps}>
       {children}
-    </LinearGradient>
+    </View>
   );
 }

@@ -1,4 +1,4 @@
-import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 import Spacer from './Spacer';
 import ModalCard from './ModalCard';
@@ -11,7 +11,6 @@ import SearchBar from './SearchBar';
 import CustomRadioButton from './CustomRadioButton';
 import DatePickerWithOutValue from './DatePickerWithOutValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import { CustomSelectInput } from './CustomSelectInput';
 import { BankAccount, ICategory } from '@/types';
 import { DATE_RANGE_PRESETS, DateRangePresetId, getPresetRange } from '@/utils/functions';
@@ -309,13 +308,9 @@ const TransactionFilters = ({
 
         <View>
           <TouchableOpacity onPress={handlePress}>
-            <LinearGradient
-              colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.button]}>
+            <View style={[styles.button, { backgroundColor: colors.primary }]}>
               <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
       </ModalCard>

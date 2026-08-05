@@ -1,6 +1,5 @@
 import React from 'react';
-import { ColorValue, StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -25,19 +24,15 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
   const animatedTotalRemaining = useCountUp(totalRemaining);
 
   return (
-    <LinearGradient
-      colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.primary }]}>
       <Text style={[styles.label, { color: colors.onPrimary }]}>Total Budget</Text>
       <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
         {formatToCurrency(animatedTotalBudget, undefined, totalBudget)}
       </Text>
 
       <View style={styles.row}>
-        <View style={styles.stat}>
-          <View style={styles.dot}>
+        <View style={[styles.stat, styles.statPill]}>
+          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
             <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
           </View>
           <View>
@@ -47,8 +42,8 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
             </Text>
           </View>
         </View>
-        <View style={styles.stat}>
-          <View style={styles.dot}>
+        <View style={[styles.stat, styles.statPill]}>
+          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
             <Feather
               name={exceeded ? 'alert-triangle' : 'arrow-down-left'}
               size={11}
@@ -73,14 +68,14 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
       <ProgressBar
         percentage={percentage}
         height={8}
-        fillColor={exceeded ? colors.danger : 'rgba(255,255,255,0.95)'}
-        trackColor="rgba(255,255,255,0.22)"
+        fillColor={exceeded ? colors.danger : colors.onPrimaryStrong}
+        trackColor={colors.onPrimaryBorder}
         style={styles.progressTrack}
       />
       <Text style={[styles.progressLabel, { color: colors.onPrimary }]}>
         {exceeded ? 'Budget exceeded this month' : `${percentage.toFixed(0)}% used this month`}
       </Text>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -97,19 +92,25 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   balance: {
-    fontSize: 24,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.display,
+    fontFamily: 'Inter-700',
     marginTop: 2,
   },
   row: {
     flexDirection: 'row',
-    gap: 24,
+    gap: 10,
     marginTop: 10,
   },
   stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flex: 1,
+  },
+  statPill: {
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 11,
+    padding: 10,
   },
   dot: {
     width: 22,
@@ -117,7 +118,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   statLabel: {
     fontSize: 10,
@@ -127,8 +127,8 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   statValue: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
     marginTop: 1,
   },
   progressTrack: {

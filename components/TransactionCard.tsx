@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   amount: {
-    fontSize: 11,
-    fontFamily: 'Inter-600',
+    fontSize: 15,
+    fontFamily: 'Inter-700',
   },
 });

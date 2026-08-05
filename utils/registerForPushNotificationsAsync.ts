@@ -3,6 +3,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { setAsyncValue } from './functions';
+import { NotificationChannelColor } from './Colors';
 
 export async function registerForPushNotificationsAsync() {
   if (Platform.OS === 'android') {
@@ -10,7 +11,7 @@ export async function registerForPushNotificationsAsync() {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
+      lightColor: NotificationChannelColor,
     });
   }
 
@@ -56,7 +57,7 @@ export async function registerForPushNotificationsCheck() {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
+      lightColor: NotificationChannelColor,
     });
   }
 

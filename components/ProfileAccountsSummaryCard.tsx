@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Animated, { Easing, FadeInDown } from 'react-native-reanimated';
 
@@ -34,11 +33,7 @@ export default function ProfileAccountsSummaryCard({
   const isBalanceVisible = isBaseBalanceVisible || peeked;
 
   return (
-    <LinearGradient
-      colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.primary }]}>
       <View style={styles.labelRow}>
         <Text style={[styles.label, { color: colors.onPrimary }]}>Total Balance</Text>
         {!isBaseBalanceVisible && (
@@ -58,8 +53,8 @@ export default function ProfileAccountsSummaryCard({
       <View style={styles.row}>
         <Animated.View
           entering={FadeInDown.duration(550).delay(180).easing(Easing.out(Easing.quad))}
-          style={styles.stat}>
-          <View style={styles.dot}>
+          style={[styles.stat, styles.statPill]}>
+          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
             <Feather name="credit-card" size={11} color={colors.onPrimary} />
           </View>
           <View>
@@ -72,8 +67,8 @@ export default function ProfileAccountsSummaryCard({
         {!!primaryAccountName && (
           <Animated.View
             entering={FadeInDown.duration(550).delay(260).easing(Easing.out(Easing.quad))}
-            style={styles.stat}>
-            <View style={styles.dot}>
+            style={[styles.stat, styles.statPill]}>
+            <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
               <Feather name="star" size={11} color={colors.onPrimary} />
             </View>
             <View>
@@ -87,13 +82,13 @@ export default function ProfileAccountsSummaryCard({
       </View>
 
       {accountsCount === 0 && (
-        <View style={styles.footer}>
+        <View style={[styles.footer, { borderTopColor: colors.onPrimaryBorder }]}>
           <Text style={[styles.footerText, { color: colors.onPrimary }]}>
             Add your first account to get started
           </Text>
         </View>
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -115,20 +110,26 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   balance: {
-    fontSize: 24,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.display,
+    fontFamily: 'Inter-700',
     marginTop: 4,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 18,
+    gap: 10,
     marginTop: 8,
   },
   stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flex: 1,
+  },
+  statPill: {
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 11,
+    padding: 10,
   },
   dot: {
     width: 22,
@@ -136,7 +137,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   statLabel: {
     fontSize: 10,
@@ -146,8 +146,8 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   statValue: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
     marginTop: 1,
   },
   footer: {
@@ -155,7 +155,6 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.22)',
   },
   footerText: {
     fontSize: FontSize.sm,

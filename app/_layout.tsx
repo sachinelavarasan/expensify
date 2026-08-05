@@ -145,10 +145,7 @@ function AppStack() {
       <Stack.Screen name="(root)/trash" />
       <Stack.Screen name="(root)/recurring-transactions" />
       <Stack.Screen name="(root)/recurring-transaction" />
-      <Stack.Screen name="(root)/export-transactions" />
-      <Stack.Screen name="(root)/import-transactions" options={{
-        presentation: 'fullScreenModal'
-      }}/>
+      <Stack.Screen name="(root)/export-import-transactions" />
       <Stack.Screen name="(root)/accounts/[id]" />
       <Stack.Screen name="(root)/categories/[id]" />
     </Stack>

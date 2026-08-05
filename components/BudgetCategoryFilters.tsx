@@ -67,11 +67,11 @@ const styles = StyleSheet.create({
   chip: {
     borderWidth: 1,
     borderRadius: 50,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   chipText: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-500',
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-600',
   },
 });

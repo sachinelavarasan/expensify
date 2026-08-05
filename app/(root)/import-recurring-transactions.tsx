@@ -8,12 +8,15 @@ import { ThemedView } from '@/components/ThemedView';
 import ProfileHeader from '@/components/ProfileHeader';
 import Emptystate from '@/components/Emptystate';
 import OverlayLoader from '@/components/Overlay';
+import Checkbox from '@/components/Checkbox';
+import ImportSummaryCard from '@/components/ImportSummaryCard';
 import { showToast } from '@/components/ToastMessage';
 import { useRecurringTransactions, useImportRecurringTransactions } from '@/hooks/useRecurringTransaction';
 import { recurringFrequencyType } from '@/utils/common-data';
 import { formatToCurrency } from '@/utils/formatter';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { IRecurringTransaction } from '@/types';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
 
@@ -28,6 +31,14 @@ export default function ImportRecurringTransactions() {
     () => recurringTransactions.filter((item) => item.exp_rt_is_active),
     [recurringTransactions],
   );
+  const incomeItems = useMemo(
+    () => activeTransactions.filter((item) => item.exp_rt_transaction_type_id === 2),
+    [activeTransactions],
+  );
+  const expenseItems = useMemo(
+    () => activeTransactions.filter((item) => item.exp_rt_transaction_type_id !== 2),
+    [activeTransactions],
+  );
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [hasInitializedSelection, setHasInitializedSelection] = useState(false);
@@ -38,8 +49,6 @@ export default function ImportRecurringTransactions() {
       setHasInitializedSelection(true);
     }
   }, [loading, hasInitializedSelection, activeTransactions]);
-
-  const allSelected = selectedIds.size === activeTransactions.length && activeTransactions.length > 0;
 
   const toggleSelected = (id: string) => {
     setSelectedIds((prev) => {
@@ -53,13 +62,34 @@ export default function ImportRecurringTransactions() {
     });
   };
 
-  const toggleSelectAll = () => {
-    if (allSelected) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(activeTransactions.map((item) => item.exp_rt_id)));
-    }
+  const toggleGroup = (items: IRecurringTransaction[]) => {
+    const allSelected = items.every((item) => selectedIds.has(item.exp_rt_id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      items.forEach((item) => {
+        if (allSelected) {
+          next.delete(item.exp_rt_id);
+        } else {
+          next.add(item.exp_rt_id);
+        }
+      });
+      return next;
+    });
   };
+
+  const { selectedIncomeTotal, selectedExpenseTotal } = useMemo(() => {
+    let incomeTotal = 0;
+    let expenseTotal = 0;
+    activeTransactions.forEach((item) => {
+      if (!selectedIds.has(item.exp_rt_id)) return;
+      if (item.exp_rt_transaction_type_id === 2) {
+        incomeTotal += Number(item.exp_rt_amount);
+      } else {
+        expenseTotal += Number(item.exp_rt_amount);
+      }
+    });
+    return { selectedIncomeTotal: incomeTotal, selectedExpenseTotal: expenseTotal };
+  }, [activeTransactions, selectedIds]);
 
   const handleImport = () => {
     importRecurringTransactions(Array.from(selectedIds))
@@ -76,90 +106,114 @@ export default function ImportRecurringTransactions() {
       });
   };
 
+  const renderRow = (item: IRecurringTransaction) => {
+    const isSelected = selectedIds.has(item.exp_rt_id);
+    const frequencyLabel =
+      recurringFrequencyType.find((freq) => freq.id === item.exp_rt_frequency)?.label ||
+      item.exp_rt_frequency;
+
+    return (
+      <TouchableOpacity
+        key={item.exp_rt_id}
+        activeOpacity={0.7}
+        onPress={() => toggleSelected(item.exp_rt_id)}
+        style={[
+          styles.row,
+          { backgroundColor: colors.cardBg, borderColor: isSelected ? colors.primary : colors.borderColor },
+          !isSelected && styles.rowUnselected,
+        ]}>
+        <Checkbox checked={isSelected} onPress={() => toggleSelected(item.exp_rt_id)} />
+        <View
+          style={{
+            backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
+            padding: 8,
+            borderRadius: 10,
+          }}>
+          <MaterialIcons
+            name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
+            size={20}
+            color={colors.categoryFallbackIcon}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.name, { color: colors.title }]} numberOfLines={1}>
+            {item.exp_rt_title}
+          </Text>
+          <Text style={[styles.subText, { color: colors.lighterTitle, marginTop: 2 }]} numberOfLines={1}>
+            {item.exp_tc_label} · {frequencyLabel}
+          </Text>
+        </View>
+        <Text
+          style={[
+            styles.amount,
+            { color: item.exp_rt_transaction_type_id === 2 ? colors.income : colors.expense },
+          ]}>
+          {item.exp_rt_transaction_type_id === 2 ? '+' : '-'}
+          {formatToCurrency(item.exp_rt_amount)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderGroup = (title: string, items: IRecurringTransaction[]) => {
+    if (items.length === 0) return null;
+    const selectedCount = items.filter((item) => selectedIds.has(item.exp_rt_id)).length;
+    const allSelected = selectedCount === items.length;
+
+    return (
+      <View style={{ marginTop: 16 }}>
+        <View style={styles.groupHead}>
+          <View style={styles.groupLabelRow}>
+            <Text style={[styles.groupLabel, { color: colors.lighterTitle }]}>{title}</Text>
+            <View style={[styles.countPill, { backgroundColor: colors.inputColor }]}>
+              <Text style={[styles.countText, { color: colors.description }]}>
+                {selectedCount}/{items.length}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => toggleGroup(items)}>
+            <Text style={[styles.groupToggle, { color: colors.primary }]}>
+              {allSelected ? 'Deselect all' : 'Select all'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ gap: 8 }}>{items.map(renderRow)}</View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaViewComponent>
       <View style={{ flex: 1 }}>
         {(loading || isImporting) && <OverlayLoader />}
         <ThemedView style={{ flex: 1, paddingHorizontal: 5 }}>
-          <ProfileHeader title="Import Recurring">
-            {activeTransactions.length > 0 && (
-              <TouchableOpacity onPress={toggleSelectAll}>
-                <Text style={[styles.selectAll, { color: colors.primary }]}>
-                  {allSelected ? 'Deselect All' : 'Select All'}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </ProfileHeader>
+          <ProfileHeader title="Import Recurring" />
 
           <FlatList
             bounces={false}
             showsVerticalScrollIndicator={false}
-            data={activeTransactions}
+            data={[1]}
+            keyExtractor={() => 'page-wrapper'}
+            renderItem={null as any}
             contentContainerStyle={{ paddingBottom: 50, paddingTop: 5, paddingHorizontal: 15 }}
-            ListEmptyComponent={
-              <Emptystate
-                title="No recurring transactions to import"
-                description="Active recurring transactions you add will show up here at the start of every month."
-              />
-            }
-            renderItem={({ item }) => {
-              const isSelected = selectedIds.has(item.exp_rt_id);
-              const frequencyLabel =
-                recurringFrequencyType.find((freq) => freq.id === item.exp_rt_frequency)?.label ||
-                item.exp_rt_frequency;
-
-              return (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => toggleSelected(item.exp_rt_id)}
-                  style={styles.row}>
-                  <MaterialIcons
-                    name={isSelected ? 'check-box' : 'check-box-outline-blank'}
-                    size={22}
-                    color={isSelected ? colors.primary : colors.description}
+            ListHeaderComponent={
+              activeTransactions.length === 0 ? (
+                <Emptystate
+                  title="No recurring transactions to import"
+                  description="Active recurring transactions you add will show up here at the start of every month."
+                />
+              ) : (
+                <>
+                  <ImportSummaryCard
+                    count={selectedIds.size}
+                    income={selectedIncomeTotal}
+                    expense={selectedExpenseTotal}
                   />
-                  <View
-                    style={{
-                      backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                      padding: 8,
-                      borderRadius: 5,
-                    }}>
-                    <MaterialIcons
-                      name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
-                      size={24}
-                      color={colors.categoryFallbackIcon}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>
-                      {item.exp_rt_title}
-                    </Text>
-                    <View style={styles.subTextContainer}>
-                      <Text
-                        style={[
-                          styles.subText,
-                          { fontFamily: 'Inter-500', color: colors.lighterTitle, marginRight: 6 },
-                        ]}>
-                        {item.exp_tc_label}
-                      </Text>
-                      <Text
-                        style={[styles.subText, { fontFamily: 'Inter-500', color: colors.description }]}>
-                        <Text>{'•'}</Text> {frequencyLabel}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text
-                    style={[
-                      styles.amount,
-                      { color: item.exp_rt_transaction_type_id === 2 ? colors.income : colors.expense },
-                    ]}>
-                    {item.exp_rt_transaction_type_id === 2 ? '+' : '-'}
-                    {formatToCurrency(item.exp_rt_amount)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            }}
-            keyExtractor={(item) => item.exp_rt_id.toString()}
+                  {renderGroup('Income', incomeItems)}
+                  {renderGroup('Expenses', expenseItems)}
+                </>
+              )
+            }
           />
         </ThemedView>
 
@@ -187,32 +241,58 @@ export default function ImportRecurringTransactions() {
 }
 
 const styles = StyleSheet.create({
-  selectAll: {
-    fontSize: 13,
-    fontFamily: 'Inter-600',
+  groupHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  groupLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  groupLabel: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  countPill: {
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 1,
+  },
+  countText: {
+    fontSize: 10,
+    fontFamily: 'Inter-700',
+  },
+  groupToggle: {
+    fontSize: 12,
+    fontFamily: 'Inter-700',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 10,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    padding: 12,
+  },
+  rowUnselected: {
+    opacity: 0.5,
   },
   name: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontFamily: 'Inter-600',
   },
   subText: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-400',
   },
-  subTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
   amount: {
-    fontSize: 12,
-    fontFamily: 'Inter-600',
+    fontSize: 14,
+    fontFamily: 'Inter-700',
   },
   footer: {
     elevation: 10,

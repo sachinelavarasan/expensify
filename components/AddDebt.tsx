@@ -9,11 +9,12 @@ import {
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import ModalCard from './ModalCard';
-import CustomRadioButton from './CustomRadioButton';
-import DatePickerPaper from './DatePickerPaper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import SegmentedControl from './SegmentedControl';
+import RowInput from './RowInput';
+import RowDatePicker from './RowDatePicker';
+import AmountCalculator from './AmountCalculator';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Controller, useForm } from 'react-hook-form';
-import Input from './Input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { showToast } from './ToastMessage';
@@ -21,6 +22,9 @@ import { debtDirectionType } from '@/utils/common-data';
 import { useAddDebt, useUpdateDebt } from '@/hooks/useDebtOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { getApiErrorMessage } from '@/lib/apiClient';
+import { getAppCurrency } from '@/utils/functions';
+import { FontSize } from '@/utils/Typography';
+import { Spacing } from '@/utils/Spacing';
 import { IDebt } from '@/types';
 
 const schema = z.object({
@@ -43,6 +47,7 @@ type DebtFormValues = z.infer<typeof schema>;
 const AddDebt = ({ debt, exp_dt_id }: { debt?: IDebt; exp_dt_id?: string }) => {
   const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
+  const [calculatorVisible, setCalculatorVisible] = useState(false);
   const { mutateAsync: addDebt, isPending: isLoading } = useAddDebt();
   const { mutateAsync: updateDebt, isPending: isUpdating } = useUpdateDebt();
 
@@ -140,32 +145,11 @@ const AddDebt = ({ debt, exp_dt_id }: { debt?: IDebt; exp_dt_id?: string }) => {
         <Controller
           control={control}
           render={({ field }) => (
-            <Input
-              {...field}
-              label="Person"
-              placeholder="Who is this with?"
-              keyboardType="default"
-              autoCapitalize="words"
-              autoComplete="off"
-              onBlur={field.onBlur}
-              onChangeText={field.onChange}
-              error={errors.exp_dt_person_name?.message}
-              borderLess
-              isRequired
-            />
-          )}
-          name="exp_dt_person_name"
-        />
-        <Spacer height={20} />
-        <Controller
-          control={control}
-          render={({ field }) => (
-            <CustomRadioButton
+            <SegmentedControl
               label="Direction"
               value={field.value}
               options={debtDirectionType}
               onChange={(data) => field.onChange(data)}
-              isRequired
             />
           )}
           name="exp_dt_direction"
@@ -175,45 +159,89 @@ const AddDebt = ({ debt, exp_dt_id }: { debt?: IDebt; exp_dt_id?: string }) => {
             {errors.exp_dt_direction?.message}
           </Text>
         ) : null}
-        <Spacer height={20} />
+        <Spacer height={Spacing.lg} />
+
         <Controller
           control={control}
           render={({ field }) => (
-            <Input
-              {...field}
-              label="Amount"
-              keyboardType="numeric"
+            <RowInput
+              icon={<Text style={[styles.rowGlyph, { color: colors.primary }]}>Aa</Text>}
+              label="Person"
+              value={field.value}
+              placeholder="Who is this with?"
+              keyboardType="default"
+              autoCapitalize="words"
+              autoComplete="off"
               onBlur={field.onBlur}
               onChangeText={field.onChange}
-              error={errors.exp_dt_amount?.message}
-              borderLess
-              isRequired
+              error={errors.exp_dt_person_name?.message}
             />
+          )}
+          name="exp_dt_person_name"
+        />
+        <Controller
+          control={control}
+          render={({ field }) => (
+            <>
+              <RowInput
+                icon={
+                  <Text style={[styles.rowGlyph, { color: colors.primary }]}>
+                    {getAppCurrency()}
+                  </Text>
+                }
+                label="Amount"
+                value={field.value}
+                placeholder="Amount"
+                keyboardType="numeric"
+                onBlur={field.onBlur}
+                onChangeText={field.onChange}
+                error={errors.exp_dt_amount?.message}
+                style={{ color: colors.primary, fontSize: FontSize.xxl }}
+                cursorColor={colors.primary}
+                selectionColor={colors.primary + '40'}
+                trailing={
+                  <TouchableOpacity
+                    onPress={() => setCalculatorVisible(true)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    style={styles.trailingIconBadge}>
+                    <Ionicons name="calculator-outline" size={20} color={colors.primary} />
+                  </TouchableOpacity>
+                }
+              />
+              <AmountCalculator
+                visible={calculatorVisible}
+                onClose={() => setCalculatorVisible(false)}
+                initialValue={field.value}
+                onApply={(value) => {
+                  field.onChange(value);
+                  setCalculatorVisible(false);
+                }}
+              />
+            </>
           )}
           name="exp_dt_amount"
         />
-        <Spacer height={20} />
         <Controller
           control={control}
           render={({ field }) => (
-            <DatePickerPaper
+            <RowDatePicker
               value={field.value}
               onBlur={field.onBlur}
               onChange={(date) => field.onChange(date)}
+              label="Due Date"
               placeholder="Select due date (optional)"
               error={errors.exp_dt_due_date?.message}
             />
           )}
           name="exp_dt_due_date"
         />
-        <Spacer height={20} />
         <Controller
           control={control}
           render={({ field }) => (
-            <Input
-              {...field}
-              value={field.value ?? ''}
+            <RowInput
+              icon={<MaterialCommunityIcons name="note-text-outline" size={18} color={colors.primary} />}
               label="Note"
+              value={field.value ?? ''}
               placeholder="Optional note"
               keyboardType="default"
               autoCapitalize="none"
@@ -221,10 +249,10 @@ const AddDebt = ({ debt, exp_dt_id }: { debt?: IDebt; exp_dt_id?: string }) => {
               onBlur={field.onBlur}
               onChangeText={field.onChange}
               error={errors.exp_dt_note?.message}
-              borderLess
               multiline
               numberOfLines={3}
               isTextBox
+              showDivider={false}
             />
           )}
           name="exp_dt_note"
@@ -260,11 +288,22 @@ const AddDebt = ({ debt, exp_dt_id }: { debt?: IDebt; exp_dt_id?: string }) => {
 export default AddDebt;
 
 const styles = StyleSheet.create({
+  rowGlyph: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
+  },
+  trailingIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    borderRadius: 50,
+    borderRadius: 14,
     paddingHorizontal: 20,
     paddingVertical: 9,
     width: 'auto',

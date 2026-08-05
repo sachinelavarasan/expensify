@@ -21,6 +21,10 @@ interface CustomSelectInputProps {
   error?: string | null;
   clearable?: boolean;
   search?: boolean | undefined;
+  // Drops the trigger's own bordered/background box in favor of sitting
+  // directly on whatever container it's placed in - for use inside an
+  // already-bordered card, where a box-in-a-box look would be redundant.
+  flat?: boolean;
 }
 
 export const CustomSelectInput = ({
@@ -34,6 +38,7 @@ export const CustomSelectInput = ({
   error,
   clearable = false,
   search = true,
+  flat = false,
 }: CustomSelectInputProps) => {
   const { colors } = useThemeContext();
   const popupBackgroundColor = colors.cardBg;
@@ -112,24 +117,24 @@ export const CustomSelectInput = ({
           padding: 0,
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderRadius: 8,
-          borderWidth: 1,
+          borderRadius: flat ? 0 : 8,
+          borderWidth: flat ? 0 : 1,
           borderColor: error
             ? colors.expense
             : focused
               ? colors.borderSelected
               : colors.inputBorder,
-          paddingHorizontal: 20,
-          paddingVertical: Platform.OS === 'android' ? 8 : 16,
-          shadowColor: colors.inputColor,
+          paddingHorizontal: flat ? 0 : 20,
+          paddingVertical: flat ? (Platform.OS === 'android' ? 6 : 10) : Platform.OS === 'android' ? 8 : 16,
+          shadowColor: flat ? 'transparent' : colors.inputColor,
           shadowOffset: {
             width: 0,
             height: 0,
           },
-          shadowOpacity: 0.1,
-          shadowRadius: 2.84,
-          elevation: 1,
-          backgroundColor: colors.inputColor,
+          shadowOpacity: flat ? 0 : 0.1,
+          shadowRadius: flat ? 0 : 2.84,
+          elevation: flat ? 0 : 1,
+          backgroundColor: flat ? 'transparent' : colors.inputColor,
         }}
         containerStyle={{
           backgroundColor: popupBackgroundColor,

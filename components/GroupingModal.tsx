@@ -35,10 +35,15 @@ const GroupingModal = ({
 
   return (
     <>
-      <TouchableOpacity style={[styles.card, { backgroundColor: colors.primary }]} onPress={toggleModal}>
+      <TouchableOpacity
+        style={[
+          styles.card,
+          { backgroundColor: colors.barBackground, borderColor: colors.borderColor },
+        ]}
+        onPress={toggleModal}>
         <View style={styles.chip}>
-          <Text style={[styles.subText, { color: colors.onPrimary }]}>{grouping}</Text>
-          <Entypo name="chevron-small-down" size={20} color={colors.onPrimary} />
+          <Text style={[styles.subText, { color: colors.title }]}>{grouping}</Text>
+          <Entypo name="chevron-small-down" size={20} color={colors.lighterTitle} />
         </View>
       </TouchableOpacity>
 
@@ -96,6 +101,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 50,
+    borderWidth: 1,
     flexShrink: 1,
   },
   chip: {

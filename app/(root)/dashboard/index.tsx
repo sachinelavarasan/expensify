@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Alert,
-  ColorValue,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -43,7 +42,6 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import SwipeableRow from '@/components/Swippable';
 import { showToast } from '@/components/ToastMessage';
 import {
@@ -413,23 +411,12 @@ export default function Index() {
     <ThemedView style={{ flex: 1 }}>
       {(loading || !defaultAccountResolved) && <OverlayLoader />}
       <TouchableOpacity
-        style={{
-          width: 30,
-          height: 30,
-          position: 'absolute',
-          bottom: 20,
-          right: 0,
-          zIndex: 2,
-          marginRight: 10,
-        }}
+        style={[
+          styles.floatingButton,
+          { backgroundColor: colors.primary, shadowColor: colors.shadow },
+        ]}
         onPress={handlePress}>
-        <LinearGradient
-          colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
-          <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
-        </LinearGradient>
+        <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
       </TouchableOpacity>
       <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
         <View
@@ -756,13 +743,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'absolute',
     bottom: 20,
-    right: 0,
+    right: 10,
     elevation: 2,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 1,
     shadowRadius: 3.84,
     zIndex: 2,
-    marginRight: 10,
   },
   iconTrigger: {
     width: 32,

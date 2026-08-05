@@ -7,7 +7,6 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
-import { deviceWidth } from '@/utils/functions';
 import CategoryBudgetTable from './CategoryBudgetTable';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -19,14 +18,11 @@ import { IBudget, Itransaction } from '@/types';
 import { ThemeColors } from '@/utils/Colors';
 import { format } from 'date-fns';
 import TransactionCard from './TransactionCard';
-import { LinearGradient } from 'expo-linear-gradient';
 import CategoryTrendSparkline from './CategoryTrendSparkline';
 import Emptystate from './Emptystate';
 import { FontSize } from '@/utils/Typography';
 import ProgressBar from './ProgressBar';
-
-const width = deviceWidth();
-const barWidth2 = Math.round((width - 40) * 0.3);
+import { BUDGET_ALERT_THRESHOLD, BUDGET_EXCEEDED_THRESHOLD } from '@/utils/budgetAlerts';
 
 
 export function BudgetedCategoriesList({
@@ -75,6 +71,15 @@ function CollapsibleCategoryCard({
   const animatedHeight = useSharedValue(0);
   const validSheetRef = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
+
+  // Same thresholds BudgetAlerts used to compute its now-removed separate
+  // warning list - the signal lives on the row itself instead of being said
+  // twice (once up top, once again down here).
+  const usedPct = (category.totalAmount / Number(category.budgetAmount)) * 100;
+  const isExceeded = usedPct >= BUDGET_EXCEEDED_THRESHOLD;
+  const isNearLimit = !isExceeded && usedPct >= BUDGET_ALERT_THRESHOLD;
+  const tierColor = isExceeded ? colors.expense : isNearLimit ? colors.accent : colors.primary;
+  const tierLabel = isExceeded ? 'Exceeded' : `${Math.min(usedPct, 100).toFixed(0)}% used`;
 
   const animatedStyle = useAnimatedStyle(
     () => ({
@@ -154,10 +159,14 @@ function CollapsibleCategoryCard({
 
   return (
     <View
-      style={[styles.subMenuContainer, { borderColor: colors.borderColor, borderBottomWidth: 1 }]}>
-      <TouchableOpacity activeOpacity={0.7} onPress={toggleExpand}>
-        <View style={styles.card}>
-          <View style={styles.left}>
+      style={[
+        styles.subMenuContainer,
+        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+      ]}>
+      <View style={[styles.accentBar, { backgroundColor: tierColor }]} />
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity activeOpacity={0.7} onPress={toggleExpand}>
+          <View style={styles.card}>
             <View
               style={{
                 backgroundColor: category.iconBg ? category.iconBg : colors.categoryFallbackBg,
@@ -170,7 +179,7 @@ function CollapsibleCategoryCard({
                 color={colors.categoryFallbackIcon}
               />
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
                 <Text
                   style={[
@@ -194,61 +203,60 @@ function CollapsibleCategoryCard({
                   style={[
                     styles.subText,
                     {
-                      color: category.remainingBudget > 0 ? colors.title : colors.expense,
+                      color: isExceeded ? colors.expense : colors.title,
                       fontFamily: 'Inter-600',
                     },
                   ]}>
                   {formatToCurrency(category.remainingBudget)}
                 </Text>
-                <MaterialIcons
-                  name={expanded ? 'expand-less' : 'expand-more'}
-                  size={24}
-                  color={colors.description}
-                />
               </View>
+
+              <ProgressBar
+                percentage={usedPct}
+                height={6}
+                fillColor={tierColor}
+                trackColor={colors.borderColor}
+                style={{ marginTop: 7 }}
+              />
+            </View>
+            <View style={styles.rightCol}>
+              <View style={[styles.statusPill, { backgroundColor: `${tierColor}1A` }]}>
+                <View style={[styles.statusDot, { backgroundColor: tierColor }]} />
+                <Text style={[styles.statusPillText, { color: tierColor }]}>{tierLabel}</Text>
+              </View>
+              <MaterialIcons
+                name={expanded ? 'expand-less' : 'expand-more'}
+                size={22}
+                color={colors.description}
+              />
             </View>
           </View>
-          <View style={{ paddingVertical: 8 }}>
-            <ProgressBar
-              percentage={(category.totalAmount / Number(category.budgetAmount)) * 100}
-              height={20}
-              fillColor={category.remainingBudget < 0 ? colors.expense : colors.primary}
-              trackColor={colors.borderColor}
-              label={
-                category.remainingBudget < 0
-                  ? 'Exceeded'
-                  : `${Math.min(
-                      (category.totalAmount / Number(category.budgetAmount)) * 100,
-                      100,
-                    ).toFixed(2)}% used`
-              }
-              style={{ marginTop: 6, width: barWidth2 }}
-            />
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
 
       <Animated.View style={[animatedStyle, { overflow: 'hidden' }]}>
-        <CategoryBudgetTable
-          totalSpent={category.totalAmount}
-          totalBudget={Number(category.budgetAmount)}
-          totalRemaining={category.remainingBudget}
-        />
-        <CategoryTrendSparkline categoryId={category.categoryId} enabled={expanded} />
-        {category.transactions.length > 0 && (
-          <TouchableOpacity onPress={openTransactions}>
-            <Text
-              style={{
-                color: colors.primary,
-                flexWrap: 'wrap',
-                fontFamily: 'Inter-600',
-                fontSize: 14,
-              }}>
-              View Transactions
-            </Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.expandedContent}>
+          <CategoryBudgetTable
+            totalSpent={category.totalAmount}
+            totalBudget={Number(category.budgetAmount)}
+            totalRemaining={category.remainingBudget}
+          />
+          <CategoryTrendSparkline categoryId={category.categoryId} enabled={expanded} />
+          {category.transactions.length > 0 && (
+            <TouchableOpacity onPress={openTransactions}>
+              <Text
+                style={{
+                  color: colors.primary,
+                  flexWrap: 'wrap',
+                  fontFamily: 'Inter-600',
+                  fontSize: 14,
+                }}>
+                View Transactions
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </Animated.View>
+      </View>
 
       <BottomSheetModal
         ref={validSheetRef}
@@ -344,19 +352,46 @@ function CollapsibleCategoryCard({
 
 const styles = StyleSheet.create({
   subMenuContainer: {
-    marginBottom: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderRadius: 14,
     overflow: 'hidden',
+  },
+  accentBar: {
+    height: 4,
+    alignSelf: 'stretch',
   },
   card: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  left: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  expandedContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+  rightCol: {
+    alignItems: 'flex-end',
+    gap: 6,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 20,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  statusDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  statusPillText: {
+    fontSize: 9.5,
+    fontFamily: 'Inter-700',
   },
   row: {
     flexDirection: 'row',

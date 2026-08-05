@@ -8,6 +8,7 @@ import { IRecurringTransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
 import { recurringFrequencyType } from '@/utils/common-data';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { RECURRING_DUE_SOON_DAYS, getDaysUntilDue } from '@/utils/recurringAlerts';
 import CustomSwitch from './Switch';
 
 interface Props extends IRecurringTransaction {
@@ -33,42 +34,54 @@ const RecurringTransactionCard = ({
   const frequencyLabel =
     recurringFrequencyType.find((item) => item.id === exp_rt_frequency)?.label || exp_rt_frequency;
 
+  const daysUntil = getDaysUntilDue(exp_rt_next_due_date);
+  const isDueSoon = exp_rt_is_active && daysUntil <= RECURRING_DUE_SOON_DAYS;
+
   return (
     <TouchableOpacity
-      activeOpacity={0.2}
+      activeOpacity={0.7}
       onPress={() => router.push(`/recurring-transaction?exp_rt_id=${exp_rt_id}`)}
-      style={styles.innerContainer}>
+      style={[
+        styles.innerContainer,
+        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+        !exp_rt_is_active && styles.paused,
+      ]}>
       <View style={styles.left}>
         <View
           style={{
             backgroundColor: exp_tc_icon_bg_color ? exp_tc_icon_bg_color : colors.categoryFallbackBg,
             padding: 8,
-            borderRadius: 5,
-            marginTop: 2,
+            borderRadius: 10,
             alignSelf: 'flex-start',
-            opacity: exp_rt_is_active ? 1 : 0.4,
           }}>
           <MaterialIcons
             name={exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
-            size={24}
+            size={20}
             color={colors.categoryFallbackIcon}
           />
         </View>
-        <View>
-          <Text style={[styles.name, { color: colors.title }]} numberOfLines={2}>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.name, { color: colors.title }]} numberOfLines={1}>
             {exp_rt_title}
           </Text>
-          <View style={styles.subTextContainer}>
-            <Text style={[styles.subText, { fontFamily: 'Inter-500', color: colors.lighterTitle, marginRight: 6 }]}>
-              {exp_tc_label}
-            </Text>
-            <Text style={[styles.subText, { fontFamily: 'Inter-500', color: colors.description }]}>
-              <Text>{'•'}</Text> {frequencyLabel}
-            </Text>
-          </View>
-          <Text style={[styles.subText, { color: colors.description, marginTop: 2 }]}>
-            Next: {format(parseISO(exp_rt_next_due_date), 'MMM d, yyyy')}
+          <Text style={[styles.subText, { color: colors.lighterTitle, marginTop: 2 }]} numberOfLines={1}>
+            {exp_tc_label} · {frequencyLabel}
           </Text>
+          {!exp_rt_is_active ? (
+            <View style={[styles.chip, { backgroundColor: colors.inputColor }]}>
+              <Text style={[styles.chipText, { color: colors.lighterTitle }]}>Paused</Text>
+            </View>
+          ) : isDueSoon ? (
+            <View style={[styles.chip, { backgroundColor: `${colors.accent}29` }]}>
+              <Text style={[styles.chipText, { color: colors.accent }]}>
+                Due in {daysUntil} day{daysUntil === 1 ? '' : 's'}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[styles.subText, { color: colors.lighterTitle, marginTop: 5 }]}>
+              {format(parseISO(exp_rt_next_due_date), 'MMM d, yyyy')}
+            </Text>
+          )}
         </View>
       </View>
       <View style={styles.right}>
@@ -98,22 +111,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
-    borderRadius: 5,
-    paddingVertical: 4,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+  },
+  paused: {
+    opacity: 0.55,
   },
   name: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontFamily: 'Inter-600',
   },
   subText: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'Inter-400',
   },
-  subTextContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
+  chip: {
+    alignSelf: 'flex-start',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginTop: 5,
+  },
+  chipText: {
+    fontSize: 10,
+    fontFamily: 'Inter-700',
   },
   left: {
     display: 'flex',
@@ -125,10 +147,10 @@ const styles = StyleSheet.create({
   right: {
     display: 'flex',
     alignItems: 'flex-end',
-    gap: 6,
+    gap: 7,
   },
   amount: {
-    fontSize: 12,
-    fontFamily: 'Inter-600',
+    fontSize: 14,
+    fontFamily: 'Inter-700',
   },
 });
