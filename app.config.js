@@ -13,14 +13,18 @@ const withIncreasedMetaspace = (config) =>
     return config;
   });
 
+const isDev = process.env.APP_VARIANT === 'development';
+const googleServicesFile =
+  process.env.GOOGLE_SERVICES_JSON || (isDev ? './google-services-dev.json' : './google-services.json');
+
 export default {
   "expo": {
-    "name": "Expensify",
+    "name": isDev ? "Expensify Dev" : "Expensify",
     "slug": "expensify",
     "version": "1.0.32",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expensify",
+    "scheme": isDev ? "expensify-dev" : "expensify",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
@@ -30,8 +34,8 @@ export default {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
-      "package": "com.sachinelavarasan.expensify",
-      "googleServicesFile": process.env.GOOGLE_SERVICES_JSON,
+      "package": isDev ? "com.sachinelavarasan.expensify.dev" : "com.sachinelavarasan.expensify",
+      "googleServicesFile": googleServicesFile,
     },
     "web": {
       "bundler": "metro",
