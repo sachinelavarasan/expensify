@@ -9,7 +9,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { transactionExportType } from '@/utils/common-data';
 import SearchBar from './SearchBar';
 import ChipSelect from './ChipSelect';
-import DatePickerWithOutValue from './DatePickerWithOutValue';
+import DatePickerCalendar from './DatePickerCalendar';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { BankAccount, ICategory } from '@/types';
 import { DATE_RANGE_PRESETS, DateRangePresetId, getPresetRange } from '@/utils/functions';
@@ -230,7 +230,7 @@ const TransactionFilters = ({
           {datePreset === 'custom' && (
             <>
               <Spacer height={12} />
-              <DatePickerWithOutValue
+              <DatePickerCalendar
                 label="From:"
                 value={draft.customDateRange?.start}
                 onChange={(v) =>
@@ -242,7 +242,7 @@ const TransactionFilters = ({
                 placeholder="Start date"
               />
               <Spacer height={10} />
-              <DatePickerWithOutValue
+              <DatePickerCalendar
                 label="To:"
                 value={draft.customDateRange?.end}
                 onChange={(v) =>

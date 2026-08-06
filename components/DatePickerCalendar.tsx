@@ -1,9 +1,9 @@
 import { Entypo } from '@expo/vector-icons';
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { format, parseISO } from 'date-fns';
 import { Calendar, DateData } from 'react-native-calendars';
 import { MarkedDates } from 'react-native-calendars/src/types';
+import { format, parseISO } from 'date-fns';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import ModalCard from '@/components/ModalCard';
 
@@ -18,19 +18,18 @@ interface Props {
   minimumDate?: string;
 }
 
-const DatePickerPaper = forwardRef<any, Props>(
+const DatePickerCalendar = forwardRef<any, Props>(
   ({ value, onChange, onBlur, error, placeholder, isRequired, label, minimumDate }, ref) => {
-    const { colors } = useThemeContext();
     const [open, setOpen] = useState(false);
+    const { colors } = useThemeContext();
     const [minimum, setMinimumDate] = useState<string>();
-    const [pickerDate, setPickerDate] = useState<Date>(new Date());
+    const [pickerDate, setPickerDate] = useState<Date>();
 
     useEffect(() => {
       if (minimumDate) {
         const date = new Date(minimumDate);
         setMinimumDate(formatDateForStorage(date));
-        setPickerDate(date);
-        onChange(formatDateForStorage(date));
+        onChange('');
       }
     }, [minimumDate]);
 
@@ -48,8 +47,8 @@ const DatePickerPaper = forwardRef<any, Props>(
     );
 
     useEffect(() => {
-      const date = value ? parseISO(value) : new Date();
-      if (date) {
+      if (value) {
+        const date = value ? parseISO(value) : new Date();
         setPickerDate(date);
         onChange(formatDateForStorage(date));
       }
@@ -67,39 +66,43 @@ const DatePickerPaper = forwardRef<any, Props>(
 
     return (
       <View>
-        {label ? (
-          <View style={{ display: 'flex', flexDirection: 'row' }}>
-            <Text
-              style={{
-                fontSize: 12,
-                color: colors.title,
-                marginBottom: 6,
-                fontFamily: 'Inter-400',
-              }}>
-              {label}
-            </Text>
+        <View style={label ? { flexDirection: 'row', alignItems: 'center', gap: 10 } : {}}>
+          <View>
+            {label ? (
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: colors.title,
+                  marginBottom: 6,
+                  fontFamily: 'Inter-400',
+                }}>
+                {label}
+              </Text>
+            ) : null}
           </View>
-        ) : null}
-        <TouchableOpacity
-          onPress={() => {
-            setOpen(true);
-            if (onBlur) onBlur();
-          }}
-          style={{
-            backgroundColor: colors.primary,
-            borderWidth: 1,
-            paddingHorizontal: 12,
-            paddingVertical: 5,
-            borderRadius: 20,
-            borderColor: 'transparent',
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <Entypo name="calendar" size={14} color={colors.onPrimary} style={{ marginRight: 5 }} />
-          <Text style={{ color: colors.onPrimary, fontFamily: 'Inter-500' }}>
-            {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setOpen(true);
+              if (onBlur) onBlur();
+            }}
+            style={{
+              borderWidth: 1,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 20,
+              borderColor: colors.inputBorder,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.inputColor,
+              gap: 15,
+            }}>
+            <Entypo name="calendar" size={14} color={colors.title} />
+            <Text style={{ color: colors.title,  fontFamily: 'Inter-500' }}>
+              {value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <ModalCard
           visible={open}
@@ -152,5 +155,5 @@ const DatePickerPaper = forwardRef<any, Props>(
   },
 );
 
-DatePickerPaper.displayName = 'DatePickerPaper';
-export default DatePickerPaper;
+DatePickerCalendar.displayName = 'DatePickerCalendar';
+export default DatePickerCalendar;

@@ -16,7 +16,7 @@ import {
   useExportPdfTransactions,
 } from '@/hooks/useExportTransactions';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
-import DatePickerWithOutValue from '@/components/DatePickerWithOutValue';
+import DatePickerCalendar from '@/components/DatePickerCalendar';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
@@ -178,14 +178,14 @@ export default function ExportTransactionsBody() {
             {preset === 'custom' ? (
               <>
                 <Spacer height={14} />
-                <DatePickerWithOutValue
+                <DatePickerCalendar
                   label="From:"
                   onChange={(data: string) => setCustomStart(data)}
                   value={customStart}
                   placeholder="Start date"
                 />
                 <Spacer height={10} />
-                <DatePickerWithOutValue
+                <DatePickerCalendar
                   label="To:"
                   onChange={(data: string) => setCustomEnd(data)}
                   value={customEnd}

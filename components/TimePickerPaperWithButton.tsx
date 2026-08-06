@@ -1,9 +1,11 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { format, parse } from 'date-fns';
 import { TimePickerModal } from 'react-native-paper-dates';
+import { PaperProvider } from 'react-native-paper';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { getPaperTheme } from '@/utils/paperTheme';
 
 interface Props {
   value: string;
@@ -26,9 +28,10 @@ const TimePickerPaperWithButton = ({
   label,
   disabled = false,
 }: Props) => {
-  const { colors } = useThemeContext();
+  const { colors, theme } = useThemeContext();
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<Date>(new Date());
+  const paperTheme = useMemo(() => getPaperTheme(colors, theme === 'dark'), [colors, theme]);
 
   const formatDisplayTime = (date: Date) => format(date, 'hh:mm a');
 
@@ -98,17 +101,19 @@ const TimePickerPaperWithButton = ({
         </Text>
       </Pressable>
 
-      <TimePickerModal
-        visible={open}
-        onDismiss={onDismiss}
-        onConfirm={onConfirm}
-        hours={time.getHours()}
-        minutes={time.getMinutes()}
-        label={value}
-        defaultInputType="picker"
-        use24HourClock
-        uppercase={true}
-      />
+      <PaperProvider theme={paperTheme}>
+        <TimePickerModal
+          visible={open}
+          onDismiss={onDismiss}
+          onConfirm={onConfirm}
+          hours={time.getHours()}
+          minutes={time.getMinutes()}
+          label={value}
+          defaultInputType="picker"
+          use24HourClock
+          uppercase={true}
+        />
+      </PaperProvider>
 
       {!!error && (
         <Text
