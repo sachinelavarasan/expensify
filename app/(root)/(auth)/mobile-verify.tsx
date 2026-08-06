@@ -108,7 +108,7 @@ const MobileVerify = () => {
 
   return (
     <KeyboardAvoidingView
-      {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
+      {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
       style={{ flex: 1 }}>
       <SafeAreaViewComponent>
         <ThemedView style={{ flex: 1 }}>
@@ -116,7 +116,7 @@ const MobileVerify = () => {
             bounces={false}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              flex: 1,
+              flexGrow: 1,
               display: 'flex',
               alignItems: 'center',
               paddingHorizontal: 20,

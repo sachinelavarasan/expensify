@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -34,6 +34,7 @@ type ForgotPasswordForm = z.infer<typeof schema>;
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { colors } = useThemeContext();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -76,9 +77,10 @@ export default function ForgotPasswordScreen() {
           {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
           style={{ flex: 1 }}>
           <ScrollView
+            ref={scrollViewRef}
             bounces={false}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
               <View style={styles.imageContainer}>
@@ -114,6 +116,12 @@ export default function ForgotPasswordScreen() {
                       autoComplete="off"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
+                      onFocus={() => {
+                        setTimeout(
+                          () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                          100,
+                        );
+                      }}
                       error={errors.email?.message}
                       borderLess
                       tint

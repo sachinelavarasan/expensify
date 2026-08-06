@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import OTPTextInput from 'react-native-otp-textinput';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -42,6 +42,7 @@ const ChangePassword = () => {
   };
 
   const router = useRouter();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const [otpVerifyLoading, setIsOtpVerifyLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -117,13 +118,14 @@ const ChangePassword = () => {
     <SafeAreaViewComponent>
       <ThemedView style={{ flex: 1 }}>
         <KeyboardAvoidingView
-          {...(Platform.OS === 'ios' ? { behavior: 'padding' } : {})}
+          {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
           style={{ flex: 1 }}>
           <ScrollView
+            ref={scrollViewRef}
             bounces={false}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              flex: 1,
+              flexGrow: 1,
               display: 'flex',
               paddingHorizontal: 20,
             }}
@@ -187,6 +189,9 @@ const ChangePassword = () => {
               autoCapitalize="none"
               isPassword
               onChangeText={setNewPassword}
+              onFocus={() => {
+                setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+              }}
               borderLess
               tint
               height={42}
