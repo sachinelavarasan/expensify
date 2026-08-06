@@ -21,7 +21,7 @@ export default {
   "expo": {
     "name": isDev ? "Expensify Dev" : "Expensify",
     "slug": "expensify",
-    "version": "2.0.3",
+    "version": "2.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon-themed.png",
     "scheme": isDev ? "expensify-dev" : "expensify",
