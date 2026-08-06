@@ -77,8 +77,7 @@ export default function RootLayout() {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister: asyncStoragePersister, maxAge: ONE_DAY }}
-    >
+      persistOptions={{ persister: asyncStoragePersister, maxAge: ONE_DAY }}>
       <NotificationProvider>
         <AuthProvider>
           <LayoutBuilder />
@@ -117,13 +116,13 @@ function LayoutBuilder() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
         <BottomSheetModalProvider>
-        {!isBootstrapping && fontsLoaded ? (
-          <>
-            <AppStack />
-            <NetworkInfoModal />
-          </>
-        ) : null}
-        <ToastMessage />
+          {!isBootstrapping && fontsLoaded ? (
+            <>
+              <AppStack />
+              <NetworkInfoModal />
+            </>
+          ) : null}
+          <ToastMessage />
         </BottomSheetModalProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
@@ -134,7 +133,8 @@ function AppStack() {
   const { colors } = useThemeContext();
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+    <Stack
+      screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="(root)/(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(root)/dashboard" options={{ headerShown: false }} />
       <Stack.Screen name="(root)/transaction" options={{ headerShown: false }} />

@@ -1,18 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import Svg, { Circle, Polygon, Polyline } from 'react-native-svg';
 
 import { Itransaction } from '@/types';
-import { useSpendTrend } from '@/hooks/useTransaction';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import useCountUp from '@/hooks/useCountUp';
-
-const SPARKLINE_WIDTH = 96;
-const SPARKLINE_HEIGHT = 34;
-const SPARKLINE_PADDING = 4;
 
 interface Props {
   income: number;
@@ -36,7 +30,6 @@ export default function HomeSummaryCard({
   showNetWorth,
 }: Props) {
   const { colors } = useThemeContext();
-  const { trend } = useSpendTrend(6);
 
   // "base" reflects the persisted setting; a peek toggle can temporarily
   // override it for this render only - it resets next time the card mounts.
@@ -52,25 +45,6 @@ export default function HomeSummaryCard({
   const animatedBalance = useCountUp(balance);
   const animatedIncome = useCountUp(income);
   const animatedExpense = useCountUp(expense);
-
-  const sparklinePoints = useMemo(() => {
-    const values = trend.map((point) => point.income - point.expense);
-    if (values.length < 2) {
-      return null;
-    }
-
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const range = max - min || 1;
-    const innerWidth = SPARKLINE_WIDTH - SPARKLINE_PADDING * 2;
-    const innerHeight = SPARKLINE_HEIGHT - SPARKLINE_PADDING * 2;
-    const stepX = innerWidth / (values.length - 1);
-
-    return values.map((value, index) => ({
-      x: SPARKLINE_PADDING + index * stepX,
-      y: SPARKLINE_PADDING + innerHeight - ((value - min) / range) * innerHeight,
-    }));
-  }, [trend]);
 
   const topCategory = useMemo(() => {
     const totals = new Map<string, { label: string; amount: number }>();
@@ -109,57 +83,28 @@ export default function HomeSummaryCard({
       </Text>
 
       <View style={styles.row}>
-        <View style={styles.stats}>
-          <View style={[styles.stat, styles.statPill]}>
-            <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-              <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
-            </View>
-            <View>
-              <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
-              <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-                {formatToCurrency(animatedIncome, undefined, income)}
-              </Text>
-            </View>
+        <View style={[styles.stat, styles.statPill]}>
+          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
+            <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
           </View>
-          <View style={[styles.stat, styles.statPill]}>
-            <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-              <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
-            </View>
-            <View>
-              <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
-              <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-                {formatToCurrency(animatedExpense, undefined, expense)}
-              </Text>
-            </View>
+          <View style={styles.statText}>
+            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
+            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+              {formatToCurrency(animatedIncome, undefined, income)}
+            </Text>
           </View>
         </View>
-
-        {!!sparklinePoints && (
-          <Svg width={SPARKLINE_WIDTH} height={SPARKLINE_HEIGHT}>
-            <Polygon
-              points={[
-                ...sparklinePoints.map((point) => `${point.x},${point.y}`),
-                `${SPARKLINE_WIDTH - SPARKLINE_PADDING},${SPARKLINE_HEIGHT}`,
-                `${SPARKLINE_PADDING},${SPARKLINE_HEIGHT}`,
-              ].join(' ')}
-              fill={colors.onPrimarySubtle}
-            />
-            <Polyline
-              points={sparklinePoints.map((point) => `${point.x},${point.y}`).join(' ')}
-              fill="none"
-              stroke={colors.onPrimaryStrong}
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <Circle
-              cx={sparklinePoints[sparklinePoints.length - 1].x}
-              cy={sparklinePoints[sparklinePoints.length - 1].y}
-              r={3}
-              fill={colors.onPrimary}
-            />
-          </Svg>
-        )}
+        <View style={[styles.stat, styles.statPill]}>
+          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
+            <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
+          </View>
+          <View style={styles.statText}>
+            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
+            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+              {formatToCurrency(animatedExpense, undefined, expense)}
+            </Text>
+          </View>
+        </View>
       </View>
 
       {showNetWorth && (
@@ -200,6 +145,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
     padding: 16,
+    overflow: 'hidden',
   },
   label: {
     fontSize: FontSize.sm,
@@ -225,24 +171,25 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 10,
-    gap: 14,
-  },
-  stats: {
-    flexDirection: 'row',
     gap: 8,
   },
   stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    flex: 1,
+    minWidth: 0,
   },
   statPill: {
     backgroundColor: 'rgba(255,255,255,0.14)',
     borderRadius: 11,
     padding: 8,
+  },
+  statText: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   dot: {
     width: 22,

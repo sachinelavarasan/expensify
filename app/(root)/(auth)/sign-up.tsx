@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -82,6 +83,13 @@ const Register = () => {
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
               <View style={styles.imageContainer}>
+                <View style={[styles.iconBadge, { backgroundColor: `${colors.primary}1A` }]}>
+                  <Image
+                    source={require('@/assets/images/icon-themed.png')}
+                    style={styles.iconBadgeImage}
+                    resizeMode="contain"
+                  />
+                </View>
                 <Text
                   style={[
                     styles.label,
@@ -104,7 +112,7 @@ const Register = () => {
                   render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Name"
+                      placeholder="Enter your full name"
                       label="Name"
                       keyboardType="default"
                       autoCapitalize="none"
@@ -113,6 +121,8 @@ const Register = () => {
                       onChangeText={field.onChange}
                       error={errors.name?.message}
                       borderLess
+                      tint
+                      height={42}
                     />
                   )}
                   name="name"
@@ -134,6 +144,8 @@ const Register = () => {
                       onChangeText={field.onChange}
                       error={errors.email?.message}
                       borderLess
+                      tint
+                      height={42}
                     />
                   )}
                   name="email"
@@ -155,10 +167,17 @@ const Register = () => {
                       onChangeText={field.onChange}
                       error={errors.password?.message}
                       borderLess
+                      tint
+                      height={42}
                     />
                   )}
                   name="password"
                 />
+                {!errors.password ? (
+                  <Text style={[styles.passwordHint, { color: colors.lighterTitle }]}>
+                    8-16 characters
+                  </Text>
+                ) : null}
                 <Spacer height={35} />
                 <View style={styles.btnContainer}>
                   <TouchableOpacity
@@ -229,9 +248,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 8,
+    height: 44,
     width: '100%',
+  },
+  iconBadge: {
+    width: 62,
+    height: 62,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  iconBadgeImage: {
+    width: 50,
+    height: 50,
+  },
+  passwordHint: {
+    fontSize: 10,
+    fontFamily: 'Inter-400',
+    marginTop: 6,
+    marginLeft: 2,
   },
   loader: {
     position: 'absolute',

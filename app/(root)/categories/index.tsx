@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   summaryAmt: {
-    fontSize: 26,
+    fontSize: FontSize.display,
     fontFamily: 'Inter-700',
   },
   summaryTopLabel: {

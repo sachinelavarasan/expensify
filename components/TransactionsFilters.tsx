@@ -5,13 +5,12 @@ import ModalCard from './ModalCard';
 import Input from './Input';
 import TagInput from './TagInput';
 import CategorySelector from './CategorySelector';
-import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { transactionExportType } from '@/utils/common-data';
 import SearchBar from './SearchBar';
-import CustomRadioButton from './CustomRadioButton';
+import ChipSelect from './ChipSelect';
 import DatePickerWithOutValue from './DatePickerWithOutValue';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { CustomSelectInput } from './CustomSelectInput';
 import { BankAccount, ICategory } from '@/types';
 import { DATE_RANGE_PRESETS, DateRangePresetId, getPresetRange } from '@/utils/functions';
 
@@ -135,23 +134,23 @@ const TransactionFilters = ({
 
   return (
     <>
-      <TouchableOpacity
-        onPress={openModal}
-        style={[
-          styles.trigger,
-          {
-            backgroundColor: hasActiveFilters ? colors.primary : colors.inputColor,
-            borderColor: hasActiveFilters ? colors.primary : colors.inputBorder,
-          },
-        ]}>
-        <FontAwesome6
-          name="filter"
-          size={14}
-          color={hasActiveFilters ? colors.onPrimary : colors.arrowColor}
-        />
-      </TouchableOpacity>
+      <View style={styles.triggerWrap}>
+        <TouchableOpacity
+          onPress={openModal}
+          style={[styles.trigger, { backgroundColor: colors.barBackground }]}>
+          <Ionicons name="filter" size={16} color={colors.primary} />
+        </TouchableOpacity>
+        {hasActiveFilters && (
+          <View
+            style={[
+              styles.activeDot,
+              { backgroundColor: colors.accent, borderColor: colors.background },
+            ]}
+          />
+        )}
+      </View>
 
-      <ModalCard visible={show} onClose={closeModal} title="Apply Filters">
+      <ModalCard visible={show} onClose={closeModal} title="Apply Filters" presentation="sheet">
         <SearchBar
           searchPhrase={draft.search}
           onChange={(e: any) => {
@@ -160,27 +159,28 @@ const TransactionFilters = ({
         />
         <Spacer height={20} />
 
-        <View style={styles.card}>
-          <CustomRadioButton
+        <View style={{ paddingHorizontal: 5 }}>
+          <ChipSelect
+            variant="tile"
             label="Transaction Type"
             value={draft.transactionType}
             options={transactionExportType}
-            grid
-            onChange={(data) => {
-              setDraft((prev) => ({ ...prev, transactionType: data as string, categoryIds: [] }));
+            onChange={(id) => {
+              setDraft((prev) => ({ ...prev, transactionType: id as string, categoryIds: [] }));
             }}
           />
         </View>
         <Spacer height={15} />
         <View style={{ paddingHorizontal: 5 }}>
-          <CustomSelectInput
+          <ChipSelect
+            variant="chip"
+            label="Bank Account"
             value={draft.bankAccount}
             options={accounts.map((account) => ({
-              key: account.exp_ba_id,
-              value: account.exp_ba_name,
+              id: account.exp_ba_id,
+              label: account.exp_ba_name,
             }))}
-            label="Bank Account"
-            onChange={(selectId) => setDraft((prev) => ({ ...prev, bankAccount: selectId }))}
+            onChange={(id) => setDraft((prev) => ({ ...prev, bankAccount: id }))}
           />
         </View>
         <Spacer height={20} />
@@ -263,9 +263,7 @@ const TransactionFilters = ({
           <View style={{ flex: 1 }}>
             <Input
               value={draft.minAmount}
-              onChangeText={(v) =>
-                setDraft((prev) => ({ ...prev, minAmount: sanitizeAmount(v) }))
-              }
+              onChangeText={(v) => setDraft((prev) => ({ ...prev, minAmount: sanitizeAmount(v) }))}
               placeholder="Min"
               label="Min Amount"
               keyboardType="numeric"
@@ -275,9 +273,7 @@ const TransactionFilters = ({
           <View style={{ flex: 1 }}>
             <Input
               value={draft.maxAmount}
-              onChangeText={(v) =>
-                setDraft((prev) => ({ ...prev, maxAmount: sanitizeAmount(v) }))
-              }
+              onChangeText={(v) => setDraft((prev) => ({ ...prev, maxAmount: sanitizeAmount(v) }))}
               placeholder="Max"
               label="Max Amount"
               keyboardType="numeric"
@@ -321,13 +317,24 @@ const TransactionFilters = ({
 export default TransactionFilters;
 
 const styles = StyleSheet.create({
+  triggerWrap: {
+    position: 'relative',
+  },
   trigger: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  activeDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1.5,
   },
   button: {
     alignItems: 'center',
@@ -359,12 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 6,
     fontFamily: 'Inter-400',
-  },
-  card: {
-    paddingVertical: 5,
-    paddingHorizontal: 5,
-    borderRadius: 10,
-    flexWrap: 'wrap',
   },
   chipRow: {
     flexDirection: 'row',

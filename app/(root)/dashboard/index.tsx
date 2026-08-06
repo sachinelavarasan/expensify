@@ -24,7 +24,7 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Feather, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { Feather, FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { format, parse } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeSummaryCard from '@/components/HomeSummaryCard';
@@ -43,6 +43,7 @@ import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import SwipeableRow from '@/components/Swippable';
+import Checkbox from '@/components/Checkbox';
 import { showToast } from '@/components/ToastMessage';
 import {
   useBulkDeleteTransactions,
@@ -50,7 +51,6 @@ import {
   useBulkUpdateTransactions,
   useDeleteTransaction,
 } from '@/hooks/useTransaction';
-import { useStarTransaction, useUnstarTransaction } from '@/hooks/useStarredTransactions';
 import GroupingModal from '@/components/GroupingModal';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { FontSize } from '@/utils/Typography';
@@ -94,8 +94,6 @@ export default function Index() {
   const { mutateAsync: bulkDeleteTransactions } = useBulkDeleteTransactions();
   const { mutateAsync: bulkUpdateTransactions } = useBulkUpdateTransactions();
   const { mutateAsync: bulkStarTransactions } = useBulkStarTransactions();
-  const { mutateAsync: starTransaction } = useStarTransaction();
-  const { mutateAsync: unstarTransaction } = useUnstarTransaction();
   const { categories } = useCategoryList();
   useGetUserData();
   const { value: showBalance } = useGetSettingsFromStore('balance');
@@ -188,21 +186,6 @@ export default function Index() {
     } catch (error) {
       console.error('Error deleting transaction:', error);
     }
-  };
-
-  const handleStar = (exp_ts_id: string, isStarred: boolean) => {
-    const mutate = isStarred ? unstarTransaction : starTransaction;
-    mutate(exp_ts_id)
-      .then(() => {
-        showToast({
-          text1: isStarred ? 'Transaction unstarred' : 'Transaction starred',
-          type: 'success',
-          position: 'bottom',
-        });
-      })
-      .catch((err) => {
-        showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
-      });
   };
 
   const toggleSelect = (id: string) => {
@@ -410,14 +393,16 @@ export default function Index() {
   return (
     <ThemedView style={{ flex: 1 }}>
       {(loading || !defaultAccountResolved) && <OverlayLoader />}
-      <TouchableOpacity
-        style={[
-          styles.floatingButton,
-          { backgroundColor: colors.primary, shadowColor: colors.shadow },
-        ]}
-        onPress={handlePress}>
-        <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
-      </TouchableOpacity>
+      {!selectionMode && (
+        <TouchableOpacity
+          style={[
+            styles.floatingButton,
+            { backgroundColor: colors.primary, shadowColor: colors.shadow },
+          ]}
+          onPress={handlePress}>
+          <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
+        </TouchableOpacity>
+      )}
       <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
         <View
           style={{
@@ -439,23 +424,21 @@ export default function Index() {
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {selectionMode ? (
-              <TouchableOpacity onPress={exitSelectionMode} style={styles.iconTrigger}>
-                <MaterialIcons name="close" size={16} color={colors.arrowColor} />
+              <TouchableOpacity
+                onPress={exitSelectionMode}
+                style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
+                <Ionicons name="close-outline" size={18} color={colors.primary} />
               </TouchableOpacity>
             ) : (
               <>
                 {!customDateRange && (
                   <TouchableOpacity
-                    onPress={() => setViewMode((v) => (v === 'list' ? 'calendar' : 'list'))}
-                    style={styles.iconTrigger}>
-                    <MaterialIcons
-                      name={viewMode === 'list' ? 'calendar-today' : 'view-list'}
-                      size={16}
-                      color={colors.arrowColor}
-                    />
+                    onPress={() => setViewMode('calendar')}
+                    style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
+                    <Ionicons name="calendar-outline" size={16} color={colors.primary} />
                   </TouchableOpacity>
                 )}
-                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
+                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} tint />
                 <TransactionFilters
                   applyFilters={applyFilters}
                   searchText={search}
@@ -568,29 +551,33 @@ export default function Index() {
           </ScrollView>
         )}
       </View>
-      {viewMode === 'calendar' ? (
+      <ModalCard
+        visible={viewMode === 'calendar'}
+        onClose={() => setViewMode('list')}
+        title="Calendar"
+        presentation="sheet">
         <CalendarGrid
           groupedDataArray={groupedDataArray}
           currentDate={currentDate}
           onSelectDay={handleSelectDay}
           selectedDate={selectedDay ?? undefined}
         />
-      ) : (
-        <FlatList
-          bounces
-          showsVerticalScrollIndicator={false}
-          data={displayedGroups}
-          extraData={[selectionMode, selectedIds]}
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 250, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          ListEmptyComponent={
-            <Emptystate
-              title="No transactions yet"
-              description="Start by adding your income or expenses to see them here."
-            />
-          }
-          renderItem={({ item, index }) => {
+      </ModalCard>
+      <FlatList
+        bounces
+        showsVerticalScrollIndicator={false}
+        data={displayedGroups}
+        extraData={[selectionMode, selectedIds]}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 250, flexGrow: 1 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={
+          <Emptystate
+            title="No transactions yet"
+            description="Start by adding your income or expenses to see them here."
+          />
+        }
+        renderItem={({ item, index }) => {
             return (
               <Animated.View
                 entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
@@ -627,17 +614,15 @@ export default function Index() {
                     <SwipeableRow
                       key={transaction.exp_ts_id}
                       disabled={selectionMode}
-                      isStarred={!!transaction.exp_st_id}
-                      onDelete={() => handleDelete(transaction.exp_ts_id)}
-                      onStar={() => handleStar(transaction.exp_ts_id, !!transaction.exp_st_id)}>
+                      onDelete={() => handleDelete(transaction.exp_ts_id)}>
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         {selectionMode && (
-                          <MaterialIcons
-                            name={isSelected ? 'check-box' : 'check-box-outline-blank'}
-                            size={20}
-                            color={isSelected ? colors.primary : colors.lighterTitle}
-                            style={{ marginRight: 8 }}
-                          />
+                          <View style={{ marginRight: 8 }}>
+                            <Checkbox
+                              checked={isSelected}
+                              onPress={() => toggleSelect(transaction.exp_ts_id)}
+                            />
+                          </View>
                         )}
                         <View style={{ flex: 1 }}>
                           <TransactionCard
@@ -661,7 +646,6 @@ export default function Index() {
           }}
           keyExtractor={(item) => item.date}
         />
-      )}
 
       {selectionMode && selectedIds.size > 0 && (
         <View
@@ -672,19 +656,24 @@ export default function Index() {
           <Text style={{ color: colors.title, fontFamily: 'Inter-600' }}>
             {selectedIds.size} selected
           </Text>
-          <View style={{ flexDirection: 'row', gap: 20 }}>
-            <TouchableOpacity onPress={handleBulkStar}>
-              <MaterialIcons name="star-outline" size={22} color={colors.favorite} />
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity
+              style={[styles.bulkActionButton, { backgroundColor: `${colors.favorite}1A` }]}
+              onPress={handleBulkStar}>
+              <MaterialIcons name="star-outline" size={19} color={colors.favorite} />
             </TouchableOpacity>
             <TouchableOpacity
+              style={[styles.bulkActionButton, { backgroundColor: `${colors.primary}1A` }]}
               onPress={() => {
                 setBulkCategoryId('');
                 setCategoryModalVisible(true);
               }}>
-              <MaterialIcons name="label-outline" size={22} color={colors.text} />
+              <MaterialIcons name="label-outline" size={19} color={colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleBulkDelete}>
-              <MaterialIcons name="delete-outline" size={22} color={colors.expense} />
+            <TouchableOpacity
+              style={[styles.bulkActionButton, { backgroundColor: `${colors.expense}1A` }]}
+              onPress={handleBulkDelete}>
+              <MaterialIcons name="delete-outline" size={19} color={colors.expense} />
             </TouchableOpacity>
           </View>
         </View>
@@ -768,6 +757,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderTopWidth: 1,
+  },
+  bulkActionButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   applyButton: {
     alignItems: 'center',

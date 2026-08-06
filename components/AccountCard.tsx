@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   bigBalance: {
-    fontSize: 26,
+    fontSize: FontSize.display,
     fontFamily: 'Inter-700',
     marginBottom: 16,
   },

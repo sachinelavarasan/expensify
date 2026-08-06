@@ -23,7 +23,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Input from '@/components/Input';
 import { showToast } from '@/components/ToastMessage';
-import { useAddBudget, useDeleteBudget, useUpdateBudget } from '@/hooks/useBudgetOperation';
+import {
+  useAddBudget,
+  useCopyPreviousMonthBudgets,
+  useDeleteBudget,
+  useUpdateBudget,
+} from '@/hooks/useBudgetOperation';
 import { IBudget } from '@/types';
 import { BudgetedCategoriesList } from '@/components/CollapsibleCategoryCard';
 import OverlayLoader from '@/components/Overlay';
@@ -72,6 +77,8 @@ const Budget = () => {
   const { mutateAsync: addBudget, isPending: isLoading } = useAddBudget();
   const { mutateAsync: editBudget, isPending: isUpdating } = useUpdateBudget();
   const { mutateAsync: deleteBudget, isPending: isDeleting } = useDeleteBudget();
+  const { mutateAsync: copyPreviousMonthBudgets, isPending: isCopying } =
+    useCopyPreviousMonthBudgets();
 
   const {
     control,
@@ -181,6 +188,27 @@ const Budget = () => {
     }
   };
 
+  const handleCopyPreviousMonth = () => {
+    copyPreviousMonthBudgets({ exp_bg_date: currentDate.toISOString() })
+      .then(({ copied }) => {
+        showToast({
+          text1: copied > 0 ? `Copied ${copied} budget${copied === 1 ? '' : 's'}` : 'No budget found for last month',
+          type: copied > 0 ? 'success' : 'info',
+          position: 'bottom',
+        });
+        if (copied > 0) {
+          refetch();
+        }
+      })
+      .catch((err) => {
+        showToast({
+          text1: getApiErrorMessage(err, 'Server Error'),
+          type: 'error',
+          position: 'bottom',
+        });
+      });
+  };
+
   const handleDelete = () => {
     if (!currentBudget?.exp_bg_id) {
       return;
@@ -265,8 +293,20 @@ const Budget = () => {
               ) : (
                 <Emptystate
                   title="No budget set"
-                  description="Set a budget for this month to start tracking your spending."
-                />
+                  description="Set a budget for this month to start tracking your spending.">
+                  <TouchableOpacity
+                    style={[styles.setLimitButton, { backgroundColor: `${colors.primary}1A` }]}
+                    onPress={handleCopyPreviousMonth}
+                    disabled={isCopying}>
+                    {isCopying ? (
+                      <ActivityIndicator animating color={colors.primary} />
+                    ) : (
+                      <Text style={[styles.setLimitText, { color: colors.primary }]}>
+                        Copy from last month
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </Emptystate>
               )}
 
               {filteredNonBudgeted.length > 0 && (

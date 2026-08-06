@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -115,6 +116,13 @@ export default function SignIn() {
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
               <View style={styles.imageContainer}>
+                <View style={[styles.iconBadge, { backgroundColor: `${colors.primary}1A` }]}>
+                  <Image
+                    source={require('@/assets/images/icon-themed.png')}
+                    style={styles.iconBadgeImage}
+                    resizeMode="contain"
+                  />
+                </View>
                 <Text
                   style={[
                     styles.label,
@@ -148,6 +156,8 @@ export default function SignIn() {
                       onChangeText={field.onChange}
                       error={errors.email?.message}
                       borderLess
+                      tint
+                      height={42}
                     />
                   )}
                   name="email"
@@ -169,6 +179,8 @@ export default function SignIn() {
                       onChangeText={field.onChange}
                       error={errors.password?.message}
                       borderLess
+                      tint
+                      height={42}
                     />
                   )}
                   name="password"
@@ -251,9 +263,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 8,
+    height: 44,
     width: '100%',
+  },
+  iconBadge: {
+    width: 62,
+    height: 62,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  iconBadgeImage: {
+    width: 50,
+    height: 50,
   },
   loader: {
     position: 'absolute',

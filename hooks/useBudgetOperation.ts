@@ -36,3 +36,12 @@ export const useDeleteBudget = () => {
     },
   });
 };
+
+export const useCopyPreviousMonthBudgets = () => {
+  return useMutation({
+    mutationFn: async (data: { exp_bg_date: string }) => {
+      const res = await apiClient.post('/expensify/budgets/copy-previous-month', data);
+      return res.data as { copied: number; skipped: number };
+    },
+  });
+};

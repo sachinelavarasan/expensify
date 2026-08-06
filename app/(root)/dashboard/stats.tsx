@@ -81,7 +81,7 @@ export default function Stat() {
                 currentMonth={formattedTitle}
               />
               <View style={{ flexShrink: 0 }}>
-                <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
+                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} tint />
               </View>
             </View>
 
