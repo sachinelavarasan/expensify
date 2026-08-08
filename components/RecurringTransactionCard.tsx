@@ -30,6 +30,7 @@ const RecurringTransactionCard = ({
 }: Props) => {
   const { colors } = useThemeContext();
   const router = useRouter();
+  const iconColor = exp_tc_icon_bg_color || colors.categoryFallbackIcon;
 
   const frequencyLabel =
     recurringFrequencyType.find((item) => item.id === exp_rt_frequency)?.label || exp_rt_frequency;
@@ -49,7 +50,7 @@ const RecurringTransactionCard = ({
       <View style={styles.left}>
         <View
           style={{
-            backgroundColor: exp_tc_icon_bg_color ? exp_tc_icon_bg_color : colors.categoryFallbackBg,
+            backgroundColor: `${iconColor}2E`,
             padding: 8,
             borderRadius: 10,
             alignSelf: 'flex-start',
@@ -57,7 +58,7 @@ const RecurringTransactionCard = ({
           <MaterialIcons
             name={exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
             size={20}
-            color={colors.categoryFallbackIcon}
+            color={iconColor}
           />
         </View>
         <View style={{ flex: 1 }}>

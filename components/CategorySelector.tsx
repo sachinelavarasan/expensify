@@ -34,6 +34,7 @@ export default function CategorySelector({
       contentContainerStyle={styles.strip}>
       {categories.map((item) => {
         const active = isSelected(item.exp_tc_id);
+        const itemColor = item.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
         return (
           <Pressable
             key={item.exp_tc_id}
@@ -43,13 +44,13 @@ export default function CategorySelector({
             <View
               style={[
                 styles.avatar,
-                { backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg },
+                { backgroundColor: `${itemColor}2E` },
                 active && { borderWidth: 2, borderColor: colors.primary },
               ]}>
               <MaterialIcons
                 name={getCategoryIconName(item.exp_tc_icon)}
                 size={22}
-                color={colors.onPrimary}
+                color={itemColor}
               />
               {active && (
                 <View

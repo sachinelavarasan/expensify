@@ -80,6 +80,7 @@ function CollapsibleCategoryCard({
   const isNearLimit = !isExceeded && usedPct >= BUDGET_ALERT_THRESHOLD;
   const tierColor = isExceeded ? colors.expense : isNearLimit ? colors.accent : colors.primary;
   const tierLabel = isExceeded ? 'Exceeded' : `${Math.min(usedPct, 100).toFixed(0)}% used`;
+  const iconColor = category.iconBg || colors.categoryFallbackIcon;
 
   const animatedStyle = useAnimatedStyle(
     () => ({
@@ -169,14 +170,14 @@ function CollapsibleCategoryCard({
           <View style={styles.card}>
             <View
               style={{
-                backgroundColor: category.iconBg ? category.iconBg : colors.categoryFallbackBg,
-                padding: 5,
-                borderRadius: 5,
+                backgroundColor: `${iconColor}2E`,
+                padding: 8,
+                borderRadius: 10,
               }}>
               <MaterialIcons
                 name={category.icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 size={24}
-                color={colors.categoryFallbackIcon}
+                color={iconColor}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -271,12 +272,12 @@ function CollapsibleCategoryCard({
             <View
               style={[
                 styles.sheetIconBox,
-                { backgroundColor: category.iconBg ? category.iconBg : colors.categoryFallbackBg },
+                { backgroundColor: `${iconColor}2E` },
               ]}>
               <MaterialIcons
                 name={category.icon as React.ComponentProps<typeof MaterialIcons>['name']}
                 size={20}
-                color={colors.categoryFallbackIcon}
+                color={iconColor}
               />
             </View>
             <View>
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
   sheetIconBox: {
     width: 34,
     height: 34,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },

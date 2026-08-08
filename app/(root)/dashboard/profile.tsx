@@ -56,10 +56,10 @@ const MENU_GROUPS: { label: string; items: MenuItem[] }[] = [
       },
       {
         href: '/(root)/trash',
-        icon: 'delete-outline',
+        icon: 'auto-delete',
         title: 'Trash',
         subtitle: 'Restore or permanently delete removed transactions',
-        color: '#64748B',
+        color: '#EF4444',
       },
     ],
   },

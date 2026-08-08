@@ -315,7 +315,9 @@ const Budget = () => {
                     Not Budgeted Categories
                   </Text>
 
-                  {filteredNonBudgeted.map((category) => (
+                  {filteredNonBudgeted.map((category) => {
+                    const iconColor = category.iconBg || colors.categoryFallbackIcon;
+                    return (
                     <FadeInView key={category.category}>
                     <View
                       style={[
@@ -324,18 +326,16 @@ const Budget = () => {
                       ]}>
                       <View
                         style={{
-                          backgroundColor: category.iconBg
-                            ? category.iconBg
-                            : colors.categoryFallbackBg,
-                          padding: 5,
-                          borderRadius: 5,
+                          backgroundColor: `${iconColor}2E`,
+                          padding: 8,
+                          borderRadius: 10,
                         }}>
                         <MaterialIcons
                           name={
                             category.icon as React.ComponentProps<typeof MaterialIcons>['name']
                           }
                           size={24}
-                          color={colors.categoryFallbackIcon}
+                          color={iconColor}
                         />
                       </View>
                       <View style={{ flex: 1 }}>
@@ -361,7 +361,8 @@ const Budget = () => {
                       </TouchableOpacity>
                     </View>
                     </FadeInView>
-                  ))}
+                    );
+                  })}
                 </View>
               )}
             </>

@@ -42,8 +42,6 @@ const COLUMN_GAP = Spacing.md;
 const HEADER_BLOCK_HEIGHT = 46;
 const GRID_BLOCK_HEIGHT = GRID_ROWS * ITEM_HEIGHT + (GRID_ROWS - 1) * ROW_GAP;
 
-type GridEntry = { kind: 'category'; item: ICategory } | { kind: 'add' };
-
 // Same trigger-row + bottom-sheet shape as RowSelectInput, but the sheet body
 // is a grid instead of a flat list - categories read better as icons than as
 // a text list, and a fixed-row, horizontally-scrolling grid (flexWrap on a
@@ -79,13 +77,10 @@ export default function CategoryPickerSheet({
     return selected ? [selected, ...rest] : sorted;
   }, [categories, value, selected]);
 
-  const gridEntries = useMemo<GridEntry[]>(() => {
-    const rowMajorEntries: GridEntry[] = [
-      ...orderedCategories.map((item) => ({ kind: 'category' as const, item })),
-      { kind: 'add' as const },
-    ];
-    return toColumnMajorOrder(rowMajorEntries, GRID_ROWS);
-  }, [orderedCategories]);
+  const gridEntries = useMemo(
+    () => toColumnMajorOrder(orderedCategories, GRID_ROWS),
+    [orderedCategories],
+  );
 
   const open = useCallback(() => {
     sheetRef.current?.present();
@@ -147,28 +142,9 @@ export default function CategoryPickerSheet({
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={[styles.grid, { height: GRID_BLOCK_HEIGHT }]}>
-              {gridEntries.map((entry) => {
-                if (entry.kind === 'add') {
-                  return (
-                    <Pressable
-                      key="add-new"
-                      style={styles.gridItem}
-                      onPress={() => {
-                        close();
-                        onAddCategory();
-                      }}>
-                      <View style={[styles.avatar, styles.addAvatar, { borderColor: colors.inputBorder }]}>
-                        <MaterialIcons name="add" size={22} color={colors.description} />
-                      </View>
-                      <Text numberOfLines={1} style={[styles.itemLabel, { color: colors.description }]}>
-                        Add new
-                      </Text>
-                    </Pressable>
-                  );
-                }
-
-                const { item } = entry;
+              {gridEntries.map((item) => {
                 const active = item.exp_tc_id === value;
+                const itemColor = item.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
                 return (
                   <Pressable
                     key={item.exp_tc_id}
@@ -180,13 +156,13 @@ export default function CategoryPickerSheet({
                     <View
                       style={[
                         styles.avatar,
-                        { backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg },
+                        { backgroundColor: `${itemColor}2E` },
                         active && { borderWidth: 2, borderColor: colors.primary },
                       ]}>
                       <MaterialIcons
                         name={getCategoryIconName(item.exp_tc_icon)}
                         size={22}
-                        color={colors.onPrimary}
+                        color={itemColor}
                       />
                       {active && (
                         <View
@@ -266,10 +242,6 @@ const styles = StyleSheet.create({
     borderRadius: AVATAR_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  addAvatar: {
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
   },
   checkBadge: {
     position: 'absolute',

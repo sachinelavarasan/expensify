@@ -58,6 +58,7 @@ export default function IconPickerSheet({
 
   const open = useCallback(() => sheetRef.current?.present(), []);
   const close = useCallback(() => sheetRef.current?.dismiss(), []);
+  const previewIconColor = previewColor || colors.categoryFallbackIcon;
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -76,8 +77,8 @@ export default function IconPickerSheet({
     <>
       <RowField
         icon={
-          <View style={[styles.rowAvatar, { backgroundColor: previewColor || colors.categoryFallbackBg }]}>
-            <MaterialIcons name={getCategoryIconName(value)} size={16} color={colors.onPrimary} />
+          <View style={[styles.rowAvatar, { backgroundColor: `${previewIconColor}2E` }]}>
+            <MaterialIcons name={getCategoryIconName(value)} size={16} color={previewIconColor} />
           </View>
         }
         label={label}
@@ -113,10 +114,10 @@ export default function IconPickerSheet({
                     <View
                       style={[
                         styles.cellAvatar,
-                        { backgroundColor: previewColor || colors.categoryFallbackBg },
+                        { backgroundColor: `${previewIconColor}2E` },
                         active && { borderWidth: 2, borderColor: colors.primary },
                       ]}>
-                      <MaterialIcons name={iconName as any} size={20} color={colors.onPrimary} />
+                      <MaterialIcons name={iconName as any} size={20} color={previewIconColor} />
                       {active && (
                         <View
                           style={[

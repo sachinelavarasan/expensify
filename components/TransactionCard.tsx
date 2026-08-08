@@ -36,6 +36,7 @@ const TransactionCard = ({
   onLongPress?: () => void;
 }) => {
   const { colors } = useThemeContext();
+  const iconColor = exp_tc_icon_bg_color || colors.categoryFallbackIcon;
   // TouchableOpacity can fire onPress right after onLongPress completes on
   // release - without suppressing that trailing press, a long-press-to-select
   // would immediately get toggled back off by the press that follows it.
@@ -70,12 +71,9 @@ const TransactionCard = ({
         <View style={styles.left}>
           <View
             style={{
-              backgroundColor: exp_tc_icon_bg_color
-                ? exp_tc_icon_bg_color
-                : colors.categoryFallbackBg,
-              padding: 6,
-              borderRadius: 5,
-              marginTop: 2,
+              backgroundColor: `${iconColor}2E`,
+              padding: 8,
+              borderRadius: 10,
               alignSelf: 'flex-start',
             }}>
             <MaterialIcons
@@ -89,7 +87,7 @@ const TransactionCard = ({
                       : 'trending-down'
               }
               size={20}
-              color={colors.categoryFallbackIcon}
+              color={iconColor}
             />
           </View>
           <View style={{ flexShrink: 1 }}>

@@ -111,6 +111,7 @@ export default function ImportRecurringTransactions() {
     const frequencyLabel =
       recurringFrequencyType.find((freq) => freq.id === item.exp_rt_frequency)?.label ||
       item.exp_rt_frequency;
+    const iconColor = item.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
 
     return (
       <TouchableOpacity
@@ -125,14 +126,14 @@ export default function ImportRecurringTransactions() {
         <Checkbox checked={isSelected} onPress={() => toggleSelected(item.exp_rt_id)} />
         <View
           style={{
-            backgroundColor: item.exp_tc_icon_bg_color || colors.categoryFallbackBg,
+            backgroundColor: `${iconColor}2E`,
             padding: 8,
             borderRadius: 10,
           }}>
           <MaterialIcons
             name={item.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']}
             size={20}
-            color={colors.categoryFallbackIcon}
+            color={iconColor}
           />
         </View>
         <View style={{ flex: 1 }}>

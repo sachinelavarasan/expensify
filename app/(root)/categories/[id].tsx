@@ -62,6 +62,7 @@ const Category = () => {
           exp_tc_transaction_type: 1,
         },
   );
+  const heroIconColor = categoryDetail.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
 
   const onSelect = (key: string, data: string | number) => {
     setCategoryDetail((state) => ({
@@ -197,12 +198,12 @@ const Category = () => {
                 <View
                   style={[
                     styles.heroAvatar,
-                    { backgroundColor: categoryDetail.exp_tc_icon_bg_color || colors.categoryFallbackBg },
+                    { backgroundColor: `${heroIconColor}2E` },
                   ]}>
                   <MaterialIcons
                     name={getCategoryIconName(categoryDetail.exp_tc_icon)}
                     size={34}
-                    color={colors.onPrimary}
+                    color={heroIconColor}
                   />
                 </View>
                 <Text style={[styles.heroCaption, { color: colors.description }]}>Live preview</Text>
