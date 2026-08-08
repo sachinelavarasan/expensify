@@ -1,4 +1,11 @@
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, { useMemo, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -57,7 +64,7 @@ const Category = () => {
         }
       : {
           exp_tc_icon: 'category',
-          exp_tc_icon_bg_color: '#36454F',
+          exp_tc_icon_bg_color: '#4682B4',
           exp_tc_label: '',
           exp_tc_transaction_type: 1,
         },
@@ -195,18 +202,16 @@ const Category = () => {
           renderItem={() => (
             <View>
               <View style={styles.hero}>
-                <View
-                  style={[
-                    styles.heroAvatar,
-                    { backgroundColor: `${heroIconColor}2E` },
-                  ]}>
+                <View style={[styles.heroAvatar, { backgroundColor: `${heroIconColor}2E` }]}>
                   <MaterialIcons
                     name={getCategoryIconName(categoryDetail.exp_tc_icon)}
                     size={34}
                     color={heroIconColor}
                   />
                 </View>
-                <Text style={[styles.heroCaption, { color: colors.description }]}>Live preview</Text>
+                <Text style={[styles.heroCaption, { color: colors.description }]}>
+                  Live preview
+                </Text>
               </View>
 
               <SegmentedControl
@@ -218,7 +223,10 @@ const Category = () => {
 
               <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>Details</Text>
               <View
-                style={[styles.card, { backgroundColor: colors.cardBg, borderColor: colors.borderColor }]}>
+                style={[
+                  styles.card,
+                  { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                ]}>
                 <RowInput
                   icon={<Text style={[styles.rowGlyph, { color: colors.primary }]}>Aa</Text>}
                   label="Name"
@@ -245,13 +253,22 @@ const Category = () => {
 
         <View style={[styles.footer, { backgroundColor: colors.bottomBarBackground }]}>
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: colors.primary }, isSaving ? styles.disable : {}]}
+            style={[
+              styles.button,
+              { backgroundColor: colors.primary },
+              isSaving ? styles.disable : {},
+            ]}
             disabled={isSaving}
             onPress={handlePress}>
             {isSaving ? (
               <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
             ) : null}
-            <Text style={[styles.buttonTitle, { color: colors.onPrimary }, isSaving ? styles.textDisable : {}]}>
+            <Text
+              style={[
+                styles.buttonTitle,
+                { color: colors.onPrimary },
+                isSaving ? styles.textDisable : {},
+              ]}>
               {id === 'add' ? 'Save category' : 'Update category'}
             </Text>
           </TouchableOpacity>
@@ -264,7 +281,12 @@ const Category = () => {
           closeDisabled={isDeleting}>
           {transactionCount > 0 ? (
             <>
-              <Text style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+              <Text
+                style={{
+                  color: colors.description,
+                  fontFamily: 'Inter-500',
+                  fontSize: FontSize.sm,
+                }}>
                 This category has {transactionCount} transaction{transactionCount === 1 ? '' : 's'}.
                 Choose where they should move to:
               </Text>
@@ -276,14 +298,16 @@ const Category = () => {
                   onSelect={setReassignCategoryId}
                 />
               ) : (
-                <Text style={{ color: colors.expense, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+                <Text
+                  style={{ color: colors.expense, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
                   No other {categoryDetail.exp_tc_transaction_type === 2 ? 'income' : 'expense'}{' '}
                   category exists to move these transactions to.
                 </Text>
               )}
             </>
           ) : (
-            <Text style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+            <Text
+              style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
               This category has no transactions.
             </Text>
           )}
@@ -299,7 +323,7 @@ const Category = () => {
               style={[
                 styles.modalButton,
                 { backgroundColor: colors.expense },
-                (isDeleting || (transactionCount > 0 && !reassignCategoryId)) ? styles.disable : {},
+                isDeleting || (transactionCount > 0 && !reassignCategoryId) ? styles.disable : {},
               ]}
               onPress={confirmDelete}
               disabled={isDeleting || (transactionCount > 0 && !reassignCategoryId)}>

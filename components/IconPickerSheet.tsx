@@ -1,7 +1,10 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
-import { ScrollView } from 'react-native-gesture-handler';
+import {
+  BottomSheetBackdrop,
+  BottomSheetModal,
+  BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -9,7 +12,6 @@ import { FontSize } from '@/utils/Typography';
 import { Spacing } from '@/utils/Spacing';
 import RowField from '@/components/RowField';
 import { getCategoryIconName } from '@/utils/categoryIcon';
-import { toColumnMajorOrder } from '@/utils/gridLayout';
 import { materialIconList } from '@/utils/common-data';
 
 interface Props {
@@ -21,19 +23,16 @@ interface Props {
   error?: string | null;
 }
 
-const GRID_ROWS = 3;
 const ITEM_WIDTH = 64;
 const ITEM_HEIGHT = 64;
 const AVATAR_SIZE = 44;
 const ROW_GAP = Spacing.sm;
 const COLUMN_GAP = Spacing.sm;
-const GRID_BLOCK_HEIGHT = GRID_ROWS * ITEM_HEIGHT + (GRID_ROWS - 1) * ROW_GAP;
 
-// materialIconList is grouped by category (Food, Finance, ...) for the old
-// vertical picker - flattened here since the horizontal-scroll grid reads as
-// one continuous strip. Group order is preserved, so related icons still
-// cluster together even without visible section labels.
-const ALL_ICONS = Object.values(materialIconList).flat();
+// Kept grouped by category (Food, Finance, ...) instead of flattened - each
+// section renders under its own title, so picking an icon means scanning one
+// familiar group instead of the whole flat set at once.
+const ICON_SECTIONS = Object.entries(materialIconList);
 
 export default function IconPickerSheet({
   value,
@@ -46,15 +45,6 @@ export default function IconPickerSheet({
   const { colors } = useThemeContext();
   const insets = useSafeAreaInsets();
   const sheetRef = useRef<BottomSheetModal>(null);
-
-  // The selected icon leads the grid so it's the first thing you see on
-  // reopen, then arranged for the horizontal-scroll grid's column-fill order
-  // to still read left-to-right, top-to-bottom.
-  const orderedIcons = useMemo(() => {
-    const rest = ALL_ICONS.filter((name) => name !== value);
-    const rowMajor = ALL_ICONS.includes(value) ? [value, ...rest] : ALL_ICONS;
-    return toColumnMajorOrder(rowMajor, GRID_ROWS);
-  }, [value]);
 
   const open = useCallback(() => sheetRef.current?.present(), []);
   const close = useCallback(() => sheetRef.current?.dismiss(), []);
@@ -93,47 +83,54 @@ export default function IconPickerSheet({
 
       <BottomSheetModal
         ref={sheetRef}
-        snapPoints={['50%']}
+        snapPoints={['75%']}
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleComponent={null}>
-        <BottomSheetView style={[styles.sheetContent, { paddingBottom: 20 + insets.bottom }]}>
+        <BottomSheetScrollView
+          style={styles.sheetContent}
+          contentContainerStyle={{ paddingBottom: 20 + insets.bottom }}
+          showsVerticalScrollIndicator={false}>
           <Text style={[styles.sheetTitle, { color: colors.title }]}>Choose an icon</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={[styles.grid, { height: GRID_BLOCK_HEIGHT }]}>
-              {orderedIcons.map((iconName) => {
-                const active = iconName === value;
-                return (
-                  <Pressable
-                    key={iconName}
-                    style={styles.cell}
-                    onPress={() => {
-                      onChange(iconName);
-                      close();
-                    }}>
-                    <View
-                      style={[
-                        styles.cellAvatar,
-                        { backgroundColor: `${previewIconColor}2E` },
-                        active && { borderWidth: 2, borderColor: colors.primary },
-                      ]}>
-                      <MaterialIcons name={iconName as any} size={20} color={previewIconColor} />
-                      {active && (
-                        <View
-                          style={[
-                            styles.checkBadge,
-                            { backgroundColor: colors.primary, shadowColor: colors.shadow },
-                          ]}>
-                          <MaterialIcons name="check" size={11} color={colors.onPrimary} />
-                        </View>
-                      )}
-                    </View>
-                  </Pressable>
-                );
-              })}
+          {ICON_SECTIONS.map(([section, icons]) => (
+            <View key={section} style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.lighterTitle }]}>{section}</Text>
+              <View style={styles.grid}>
+                {icons.map((iconName) => {
+                  const active = iconName === value;
+                  return (
+                    <Pressable
+                      key={iconName}
+                      style={styles.cell}
+                      onPress={() => {
+                        onChange(iconName);
+                        close();
+                      }}>
+                      <View
+                        style={[
+                          styles.cellAvatar,
+                          { backgroundColor: `${previewIconColor}2E` },
+                          active && { borderWidth: 2, borderColor: colors.primary },
+                        ]}>
+                        <MaterialIcons name={iconName as any} size={20} color={previewIconColor} />
+                        {active && (
+                          <View
+                            style={[
+                              styles.checkBadge,
+                              { backgroundColor: colors.primary, shadowColor: colors.shadow },
+                            ]}>
+                            <MaterialIcons name="check" size={11} color={colors.onPrimary} />
+                          </View>
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
-          </ScrollView>
-        </BottomSheetView>
+          ))}
+        </BottomSheetScrollView>
       </BottomSheetModal>
     </>
   );
@@ -162,10 +159,17 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     textAlign: 'center',
   },
+  section: {
+    marginBottom: Spacing.md,
+  },
+  sectionTitle: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    marginBottom: Spacing.xs,
+  },
   grid: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     flexWrap: 'wrap',
-    alignContent: 'flex-start',
     rowGap: ROW_GAP,
     columnGap: COLUMN_GAP,
   },
