@@ -1,5 +1,4 @@
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -32,6 +31,7 @@ import { getApiErrorMessage } from '@/lib/apiClient';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import { Itransaction } from '@/types';
+import { useConfirm } from '@/hooks/useConfirm';
 
 const TRASH_RETENTION_DAYS = 30;
 
@@ -51,6 +51,7 @@ function getDaysLeftTier(daysLeft: number, colors: ReturnType<typeof useThemeCon
 }
 
 export default function Trash() {
+  const { confirm, confirmModal } = useConfirm();
   const { colors } = useThemeContext();
   const { trashed, isLoading, refetch } = useGetTrashedTransactions();
   const { mutateAsync: restoreTransaction } = useRestoreTransaction();
@@ -80,18 +81,15 @@ export default function Trash() {
   };
 
   const handlePurge = async (exp_ts_id: string) => {
-    const confirm = await new Promise((resolve) =>
-      Alert.alert(
-        'Delete forever?',
-        'This transaction will be permanently deleted and cannot be recovered.',
-        [
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-          { text: 'Delete forever', style: 'destructive', onPress: () => resolve(true) },
-        ],
-      ),
-    );
+    const confirmed = await confirm({
+      title: 'Delete forever?',
+      message: 'This transaction will be permanently deleted and cannot be recovered.',
+      confirmText: 'Delete forever',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
 
-    if (!confirm) return;
+    if (!confirmed) return;
 
     purgeTransaction(exp_ts_id)
       .then(() => {
@@ -235,6 +233,7 @@ export default function Trash() {
           />
         </ThemedView>
       </SafeAreaViewComponent>
+      {confirmModal}
     </KeyboardAvoidingView>
   );
 }

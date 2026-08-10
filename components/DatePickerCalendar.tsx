@@ -1,11 +1,11 @@
 import { Entypo } from '@expo/vector-icons';
 import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { Calendar, DateData } from 'react-native-calendars';
+import { DateData } from 'react-native-calendars';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import { format, parseISO } from 'date-fns';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import ModalCard from '@/components/ModalCard';
+import CalendarPickerSheet from '@/components/CalendarPickerSheet';
 
 interface Props {
   value: string | undefined;
@@ -23,7 +23,7 @@ const DatePickerCalendar = forwardRef<any, Props>(
     const [open, setOpen] = useState(false);
     const { colors } = useThemeContext();
     const [minimum, setMinimumDate] = useState<string>();
-    const [pickerDate, setPickerDate] = useState<Date>();
+    const [pickerDate, setPickerDate] = useState<Date>(() => new Date());
 
     useEffect(() => {
       if (minimumDate) {
@@ -104,38 +104,16 @@ const DatePickerCalendar = forwardRef<any, Props>(
           </TouchableOpacity>
         </View>
 
-        <ModalCard
+        <CalendarPickerSheet
           visible={open}
           onClose={onDismissSingle}
-          presentation="sheet"
-          title={label || placeholder || 'Pick a date'}>
-          <Calendar
-            current={pickerDate ? formatDateForStorage(pickerDate) : undefined}
-            minDate={minimum}
-            markedDates={markedDates}
-            onDayPress={onDayPress}
-            firstDay={1}
-            style={{ paddingHorizontal: 10 }}
-            theme={{
-              backgroundColor: 'transparent',
-              calendarBackground: 'transparent',
-              textSectionTitleColor: colors.lighterTitle,
-              dayTextColor: colors.title,
-              textDisabledColor: colors.lighterTitle,
-              todayTextColor: colors.primary,
-              selectedDayBackgroundColor: colors.primary,
-              selectedDayTextColor: colors.onPrimary,
-              monthTextColor: colors.title,
-              arrowColor: colors.arrowColor,
-              textDayFontFamily: 'Inter-500',
-              textMonthFontFamily: 'Inter-700',
-              textDayHeaderFontFamily: 'Inter-600',
-              textDayFontSize: 13,
-              textMonthFontSize: 15,
-              textDayHeaderFontSize: 11,
-            }}
-          />
-        </ModalCard>
+          title={label || placeholder || 'Pick a date'}
+          pickerDate={pickerDate}
+          onBrowse={setPickerDate}
+          onDayPress={onDayPress}
+          minDate={minimum}
+          markedDates={markedDates}
+        />
 
         {!!error && (
           <Text

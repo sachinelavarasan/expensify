@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +23,7 @@ import { useImportBulkTransaction, useImportExcel } from '@/hooks/useExportTrans
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
 import { showToast } from '@/components/ToastMessage';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { useConfirm } from '@/hooks/useConfirm';
 
 type HeadersMap = {
   title: string;
@@ -56,6 +56,7 @@ type PossibleDuplicateRow = {
 const IMPORT_BATCH_SIZE = 100;
 
 export default function ImportTransactionsBody() {
+  const { confirm, confirmModal } = useConfirm();
   const { colors } = useThemeContext();
   const [step, setStep] = useState<0 | 1 | 2>(0);
 
@@ -210,7 +211,7 @@ export default function ImportTransactionsBody() {
       if (!file) return;
 
       if (file.size && file.size > 1 * 1024 * 1024) {
-        Alert.alert('File too large', 'Please upload a file smaller than 1MB.');
+        await confirm({ title: 'File too large', message: 'Please upload a file smaller than 1MB.' });
         return;
       }
 
@@ -238,7 +239,7 @@ export default function ImportTransactionsBody() {
       const headersRow = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] as string[];
 
       if (!headersRow?.length || !jsonData?.length) {
-        Alert.alert('Invalid File', 'This Excel file has no headers or data.');
+        await confirm({ title: 'Invalid File', message: 'This Excel file has no headers or data.' });
         return;
       }
 
@@ -251,7 +252,7 @@ export default function ImportTransactionsBody() {
       setStep(1);
     } catch (e) {
       console.error('Error reading Excel:', e);
-      Alert.alert('Error', 'Something went wrong while reading the file.');
+      await confirm({ title: 'Error', message: 'Something went wrong while reading the file.' });
     } finally {
       setIsReadingFile(false);
     }
@@ -293,7 +294,7 @@ export default function ImportTransactionsBody() {
       await importExcelMutation(
         { headers: headersMap, data: excelData },
         {
-          onError: () => Alert.alert('Error', 'Failed to process file.'),
+          onError: () => confirm({ title: 'Error', message: 'Failed to process file.' }),
           onSuccess: () => {
             setIncludedDuplicateRows(new Set());
             setStep(2);
@@ -301,7 +302,7 @@ export default function ImportTransactionsBody() {
         },
       );
     } catch {
-      Alert.alert('Error', 'Failed to process file.');
+      await confirm({ title: 'Error', message: 'Failed to process file.' });
     }
   };
 
@@ -341,12 +342,13 @@ export default function ImportTransactionsBody() {
       });
       resetAll();
     } catch {
-      Alert.alert(
-        'Import incomplete',
-        completed > 0
-          ? `${completed} of ${total} records were imported before an error occurred. Run the import again to add the rest.`
-          : 'Failed to process file.',
-      );
+      await confirm({
+        title: 'Import incomplete',
+        message:
+          completed > 0
+            ? `${completed} of ${total} records were imported before an error occurred. Run the import again to add the rest.`
+            : 'Failed to process file.',
+      });
     } finally {
       setImportProgress(null);
       confirmSheetRef.current?.close();
@@ -1147,6 +1149,8 @@ export default function ImportTransactionsBody() {
           )}
         </View>
       </BottomSheet>
+
+      {confirmModal}
     </>
   );
 }

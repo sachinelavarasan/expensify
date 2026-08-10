@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
-  Alert,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -54,11 +53,13 @@ import {
 import GroupingModal from '@/components/GroupingModal';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { FontSize } from '@/utils/Typography';
+import { useConfirm } from '@/hooks/useConfirm';
 
 export default function Index() {
   const { colors } = useThemeContext();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { confirm, confirmModal } = useConfirm();
   const { accounts, loading: accountsLoading } = useBankAccounts();
   const { netWorth } = useNetWorth(accounts);
   const [defaultAccountResolved, setDefaultAccountResolved] = useState(false);
@@ -121,7 +122,7 @@ export default function Index() {
     hasAppliedDefaultAccount.current = true;
     const primary = accounts.find((acc) => acc.exp_ba_is_primary);
     if (primary) {
-      updateBankAccount(primary.exp_ba_id);
+      updateBankAccount([primary.exp_ba_id]);
     }
     setDefaultAccountResolved(true);
   }, [accounts, accountsLoading, updateBankAccount]);
@@ -154,18 +155,15 @@ export default function Index() {
 
   const handleDelete = async (exp_ts_id: string) => {
     try {
-      const confirm = await new Promise((resolve) =>
-        Alert.alert(
-          'Delete this transaction?',
-          'Are you sure you want to delete this transaction?',
-          [
-            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-          ],
-        ),
-      );
+      const confirmed = await confirm({
+        title: 'Delete this transaction?',
+        message: 'Are you sure you want to delete this transaction?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        destructive: true,
+      });
 
-      if (!confirm) return;
+      if (!confirmed) return;
 
       if (exp_ts_id)
         deleteTransaction(exp_ts_id)
@@ -209,17 +207,14 @@ export default function Index() {
 
   const handleBulkDelete = async () => {
     const count = selectedIds.size;
-    const confirm = await new Promise((resolve) =>
-      Alert.alert(
-        `Delete ${count} transaction${count > 1 ? 's' : ''}?`,
-        'These will be moved to Trash.',
-        [
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-          { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-        ],
-      ),
-    );
-    if (!confirm) return;
+    const confirmed = await confirm({
+      title: `Delete ${count} transaction${count > 1 ? 's' : ''}?`,
+      message: 'These will be moved to Trash.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+    if (!confirmed) return;
 
     try {
       await bulkDeleteTransactions(Array.from(selectedIds));
@@ -267,7 +262,7 @@ export default function Index() {
   const applyFilters = (
     search: string,
     transactionType: string,
-    selectedId: number | string,
+    selectedIds: (number | string)[],
     extras: {
       tags: string[];
       customDateRange: { start: string; end: string } | null;
@@ -278,7 +273,7 @@ export default function Index() {
   ) => {
     updateSearch(search);
     updateTransactionType(transactionType);
-    updateBankAccount(selectedId);
+    updateBankAccount(selectedIds);
     updateTags(extras.tags);
     if (extras.customDateRange) {
       updateCustomDateRange(extras.customDateRange);
@@ -298,7 +293,7 @@ export default function Index() {
         updateTransactionType('');
         break;
       case 'account':
-        updateBankAccount('');
+        updateBankAccount([]);
         break;
       case 'dateRange':
         clearCustomDateRange();
@@ -316,7 +311,7 @@ export default function Index() {
       case 'default':
         updateTransactionType('');
         updateSearch('');
-        updateBankAccount('');
+        updateBankAccount([]);
         clearCustomDateRange();
         updateMinAmount('');
         updateMaxAmount('');
@@ -331,7 +326,7 @@ export default function Index() {
   const hasActiveFilters =
     !!search ||
     !!transactionType ||
-    !!bankAccount ||
+    bankAccount.length > 0 ||
     !!customDateRange ||
     !!minAmount ||
     !!maxAmount ||
@@ -420,6 +415,9 @@ export default function Index() {
               nextMonth={goToNext}
               prevMonth={goToPrevious}
               currentMonth={formattedTitle}
+              currentDate={currentDate}
+              dateRangeType={dateRangeType}
+              onSelectDate={refetch}
             />
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -479,6 +477,7 @@ export default function Index() {
             <FilterChip
               label="Clear All"
               variant="solid"
+              tone="danger"
               onRemove={() => {
                 removeFilter('default');
                 setSelectedDay(null);
@@ -508,10 +507,16 @@ export default function Index() {
                 onRemove={() => removeFilter('t_type')}
               />
             )}
-            {!!bankAccount && (
+            {bankAccount.length > 0 && (
               <FilterChip
                 label="Account"
-                value={accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
+                value={(() => {
+                  const names = bankAccount
+                    .map((id) => accounts?.find((item) => item.exp_ba_id == id)?.exp_ba_name)
+                    .filter(Boolean) as string[];
+                  if (names.length <= 2) return names.join(', ');
+                  return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
+                })()}
                 variant="solid"
                 onRemove={() => removeFilter('account')}
               />
@@ -651,7 +656,7 @@ export default function Index() {
         <View
           style={[
             styles.bulkActionBar,
-            { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            { backgroundColor: colors.bottomBarBackground, borderColor: colors.inputBorder },
           ]}>
           <Text style={{ color: colors.title, fontFamily: 'Inter-600' }}>
             {selectedIds.size} selected
@@ -704,6 +709,8 @@ export default function Index() {
           </>
         )}
       </ModalCard>
+
+      {confirmModal}
     </ThemedView>
   );
 }

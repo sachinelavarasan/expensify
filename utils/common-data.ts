@@ -513,3 +513,21 @@ export const debtDirectionType = [
     label: 'I owe them',
   },
 ];
+
+// Shared across the various "jump to a month/year" quick-pick UIs (dashboard
+// month switcher, date pickers) so a calendar full month grid isn't the only
+// way to reach a far-off date.
+export const MONTH_LABELS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];

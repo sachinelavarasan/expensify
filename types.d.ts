@@ -58,6 +58,9 @@ export interface Itransaction {
   exp_ts_tags?: string[];
   exp_ts_transfer_group_id?: string | null;
   exp_ts_transfer_direction?: 'in' | 'out' | null;
+  // The *other* leg's account name for a transfer (each transfer is stored as
+  // two rows, one per account) - undefined for non-transfer transactions.
+  exp_ts_transfer_counterpart_account_name?: string | null;
 }
 
 export interface ICategory {

@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -45,8 +44,10 @@ import { getApiErrorMessage } from '@/lib/apiClient';
 import { getAppCurrency } from '@/utils/functions';
 import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
+import { useConfirm } from '@/hooks/useConfirm';
 
 export default function RecurringTransaction() {
+  const { confirm, confirmModal } = useConfirm();
   const { colors } = useThemeContext();
   const router = useRouter();
   const { exp_rt_id } = useLocalSearchParams<{ exp_rt_id?: string }>();
@@ -173,18 +174,15 @@ export default function RecurringTransaction() {
 
   const handleDelete = async () => {
     if (!existing) return;
-    const confirm = await new Promise((resolve) =>
-      Alert.alert(
-        'Delete this recurring transaction?',
-        'Are you sure you want to delete this recurring transaction?',
-        [
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-          { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-        ],
-      ),
-    );
+    const confirmed = await confirm({
+      title: 'Delete this recurring transaction?',
+      message: 'Are you sure you want to delete this recurring transaction?',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
 
-    if (!confirm) return;
+    if (!confirmed) return;
 
     deleteRecurringTransaction(existing.exp_rt_id)
       .then(() => {
@@ -512,6 +510,8 @@ export default function RecurringTransaction() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {confirmModal}
       </View>
     </SafeAreaViewComponent>
   );

@@ -10,7 +10,7 @@ interface Option {
 
 interface Props {
   options: Option[];
-  value: string | number;
+  value: string | number | (string | number)[];
   onChange: (id: string | number) => void;
   label?: string;
   // 'tile' wraps each option in a bordered tile with a radio-dot + checkmark,
@@ -18,9 +18,20 @@ interface Props {
   // (e.g. Transaction Type). 'chip' is a plain wrapped pill row with no dot,
   // for longer or more casual single-select lists (e.g. Bank Account).
   variant?: 'tile' | 'chip';
+  // When true, `value` is treated as an array and onChange is called once per
+  // tap - the caller owns the add/remove toggle logic (see toggleCategory-style
+  // handlers), same contract as CategorySelector's `multiple` prop.
+  multiple?: boolean;
 }
 
-export default function ChipSelect({ options, value, onChange, label, variant = 'chip' }: Props) {
+export default function ChipSelect({
+  options,
+  value,
+  onChange,
+  label,
+  variant = 'chip',
+  multiple = false,
+}: Props) {
   const { colors } = useThemeContext();
   const isTile = variant === 'tile';
 
@@ -29,7 +40,9 @@ export default function ChipSelect({ options, value, onChange, label, variant = 
       {!!label && <Text style={[styles.label, { color: colors.title }]}>{label}</Text>}
       <View style={isTile ? styles.tileGrid : styles.chipRow}>
         {options.map((option) => {
-          const active = option.id == value;
+          const active = multiple
+            ? (value as (string | number)[]).includes(option.id)
+            : option.id == value;
           return (
             <TouchableOpacity
               key={option.id}

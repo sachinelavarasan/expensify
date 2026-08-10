@@ -22,7 +22,7 @@ interface Props {
   applyFilters: (
     search: string,
     transactionType: string,
-    bankAccount: number | string,
+    bankAccount: (number | string)[],
     extras: {
       tags: string[];
       customDateRange: CustomDateRange;
@@ -33,7 +33,7 @@ interface Props {
   ) => void;
   accounts: BankAccount[];
   categories: ICategory[];
-  selectedAccount: number | string;
+  selectedAccount: (number | string)[];
   selectedTags?: string[];
   selectedDateRange?: CustomDateRange;
   selectedMinAmount?: string;
@@ -63,7 +63,11 @@ const TransactionFilters = ({
   const draftFromProps = () => ({
     search: searchText,
     transactionType: selectedTransaction,
-    bankAccount: selectedAccount || primaryAccountId || '',
+    bankAccount: selectedAccount.length
+      ? selectedAccount
+      : primaryAccountId
+        ? [primaryAccountId]
+        : [],
     tags: selectedTags,
     customDateRange: selectedDateRange,
     minAmount: selectedMinAmount,
@@ -74,6 +78,20 @@ const TransactionFilters = ({
   const [datePreset, setDatePreset] = useState<DateRangePresetId | 'none'>(
     selectedDateRange ? 'custom' : 'none',
   );
+
+  // Count of currently-applied filter groups (not the in-progress draft) -
+  // shown as a badge next to the modal title so it matches what the chips
+  // on the screen behind it already reflect.
+  const activeFilterCount = [
+    !!searchText,
+    !!selectedTransaction,
+    selectedAccount.length > 0,
+    selectedTags.length > 0,
+    !!selectedDateRange,
+    !!selectedMinAmount,
+    !!selectedMaxAmount,
+    selectedCategoryIds.length > 0,
+  ].filter(Boolean).length;
 
   const openModal = () => {
     setDraft(draftFromProps());
@@ -109,11 +127,20 @@ const TransactionFilters = ({
     }));
   };
 
+  const toggleBankAccount = (id: string | number) => {
+    setDraft((prev) => ({
+      ...prev,
+      bankAccount: prev.bankAccount.includes(id)
+        ? prev.bankAccount.filter((a) => a !== id)
+        : [...prev.bankAccount, id],
+    }));
+  };
+
   const handlePress = () => {
     if (
       !draft.search.trim() &&
       !draft.transactionType &&
-      !draft.bankAccount &&
+      !draft.bankAccount.length &&
       !draft.tags.length &&
       !draft.customDateRange &&
       !draft.minAmount &&
@@ -150,7 +177,19 @@ const TransactionFilters = ({
         )}
       </View>
 
-      <ModalCard visible={show} onClose={closeModal} title="Apply Filters" presentation="sheet">
+      <ModalCard
+        visible={show}
+        onClose={closeModal}
+        title="Apply Filters"
+        badge={activeFilterCount}
+        presentation="sheet"
+        footer={
+          <TouchableOpacity onPress={handlePress}>
+            <View style={[styles.button, styles.buttonFull, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
+            </View>
+          </TouchableOpacity>
+        }>
         <SearchBar
           searchPhrase={draft.search}
           onChange={(e: any) => {
@@ -176,11 +215,12 @@ const TransactionFilters = ({
             variant="chip"
             label="Bank Account"
             value={draft.bankAccount}
+            multiple
             options={accounts.map((account) => ({
               id: account.exp_ba_id,
               label: account.exp_ba_name,
             }))}
-            onChange={(id) => setDraft((prev) => ({ ...prev, bankAccount: id }))}
+            onChange={toggleBankAccount}
           />
         </View>
         <Spacer height={20} />
@@ -301,14 +341,6 @@ const TransactionFilters = ({
             <Spacer height={30} />
           </>
         )}
-
-        <View>
-          <TouchableOpacity onPress={handlePress}>
-            <View style={[styles.button, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
       </ModalCard>
     </>
   );
@@ -344,6 +376,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 9,
     width: 'auto',
+  },
+  buttonFull: {
+    width: '100%',
+    paddingVertical: 12,
   },
   loader: {
     position: 'absolute',

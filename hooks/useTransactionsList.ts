@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { startOfDay, addDays, startOfWeek, addWeeks, startOfMonth, addMonths, format } from 'date-fns';
 import { apiClient } from '@/lib/apiClient';
@@ -16,7 +16,7 @@ const useTransactions = (
   const [dateRangeType, setDateRangeType] = useState<DateRangeType>(initialRange);
   const [search, setSearch] = useState('');
   const [transactionType, setTransactionType] = useState<string>('');
-  const [bankAccount, setBankAccount] = useState<number | string>('');
+  const [bankAccount, setBankAccount] = useState<(number | string)[]>([]);
   const [customDateRange, setCustomDateRange] = useState<CustomDateRange | null>(null);
   const [minAmount, setMinAmount] = useState<string>('');
   const [maxAmount, setMaxAmount] = useState<string>('');
@@ -76,7 +76,7 @@ const useTransactions = (
           endDate,
           search: searchText || undefined,
           transaction_type: txType || undefined,
-          account: bankAccount || undefined,
+          account: bankAccount.length ? bankAccount.join(',') : undefined,
           minAmount: minAmount || undefined,
           maxAmount: maxAmount || undefined,
           categories: categoryIds.length ? categoryIds.join(',') : undefined,
@@ -107,7 +107,7 @@ const useTransactions = (
   const updateSearch = (newSearch: string) => setSearch(newSearch);
   const updateTransactionType = (type: string) => setTransactionType(type);
   const updateDateRangeType = (range: DateRangeType) => setDateRangeType(range);
-  const updateBankAccount = (account: number | string) => setBankAccount(account);
+  const updateBankAccount = (account: (number | string)[]) => setBankAccount(account);
   const updateCustomDateRange = (range: CustomDateRange) => setCustomDateRange(range);
   const clearCustomDateRange = () => setCustomDateRange(null);
   const updateMinAmount = (value: string) => setMinAmount(value);
@@ -115,13 +115,23 @@ const useTransactions = (
   const updateCategoryIds = (ids: string[]) => setCategoryIds(ids);
   const updateTags = (newTags: string[]) => setTags(newTags);
 
-  const refetchData = (customDate?: Date) => {
-    if (customDate) {
-      setCurrentDate(customDate);
-    } else {
-      refetch();
-    }
-  };
+  // Memoized so consumers that put this in a useCallback/useEffect dependency
+  // array (e.g. stats.tsx's useFocusEffect) get a stable reference - without
+  // this, a fresh function identity on every render makes useFocusEffect
+  // re-run its effect on every re-render while focused (not just on focus),
+  // which calls refetch() again, causing another render, another new
+  // reference, another refetch... a self-sustaining loop that never lets the
+  // query settle, showing as a stuck loading overlay.
+  const refetchData = useCallback(
+    (customDate?: Date) => {
+      if (customDate) {
+        setCurrentDate(customDate);
+      } else {
+        refetch();
+      }
+    },
+    [refetch],
+  );
 
   const getFormattedTitle = () => {
     if (customDateRange) {

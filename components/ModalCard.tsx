@@ -21,6 +21,13 @@ interface Props {
   // top-corners-only radius, drag handle) instead of the default centered
   // zoom-in card - opt-in so every other ModalCard consumer is unaffected.
   presentation?: 'center' | 'sheet';
+  // Rendered below the scrollable content, pinned to the bottom of the card
+  // instead of scrolling away with it - use for primary actions (e.g. "Apply")
+  // on long forms so they stay reachable without scrolling to the end.
+  footer?: React.ReactNode;
+  // Small count pill next to the title (e.g. number of active filters) -
+  // omitted entirely when falsy/zero so callers can pass a raw count.
+  badge?: number;
 }
 
 export default function ModalCard({
@@ -31,6 +38,8 @@ export default function ModalCard({
   closeDisabled,
   contentStyle,
   presentation = 'center',
+  footer,
+  badge,
 }: Props) {
   const { theme, colors } = useThemeContext();
   const insets = useSafeAreaInsets();
@@ -71,9 +80,16 @@ export default function ModalCard({
           {isSheet && <View style={[styles.handle, { backgroundColor: colors.inputBorder }]} />}
           {!!title && (
             <View style={styles.header}>
-              <Text style={[styles.title, { color: colors.title }]} numberOfLines={1}>
-                {title}
-              </Text>
+              <View style={styles.titleRow}>
+                <Text style={[styles.title, { color: colors.title }]} numberOfLines={1}>
+                  {title}
+                </Text>
+                {!!badge && (
+                  <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+                    <Text style={[styles.badgeText, { color: colors.onPrimary }]}>{badge}</Text>
+                  </View>
+                )}
+              </View>
               {!!onClose && (
                 <TouchableOpacity
                   onPress={onClose}
@@ -94,6 +110,9 @@ export default function ModalCard({
             keyboardShouldPersistTaps="handled">
             {children}
           </ScrollView>
+          {!!footer && (
+            <View style={[styles.footer, { borderTopColor: colors.inputBorder }]}>{footer}</View>
+          )}
         </View>
       </View>
     </Modal>
@@ -148,11 +167,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  titleRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 10,
+  },
   title: {
     fontSize: 18,
     fontFamily: 'Inter-600',
-    flex: 1,
-    marginRight: 10,
+    flexShrink: 1,
+  },
+  badge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontSize: 12,
+    fontFamily: 'Inter-700',
+  },
+  footer: {
+    marginTop: 12,
+    paddingTop: 14,
+    borderTopWidth: 1,
   },
   closeButton: {
     width: 30,

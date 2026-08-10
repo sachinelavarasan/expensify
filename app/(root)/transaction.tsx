@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -43,6 +42,7 @@ import {
   useCreateTransfer,
   useDeleteTransaction,
   useFetchTransaction,
+  usePurgeTransaction,
   useSaveTransaction,
 } from '@/hooks/useTransaction';
 import { showToast } from '@/components/ToastMessage';
@@ -62,19 +62,44 @@ import { FontSize } from '@/utils/Typography';
 import { formatFullCurrency } from '@/utils/formatter';
 import { getAppCurrency } from '@/utils/functions';
 import { getApiErrorMessage } from '@/lib/apiClient';
+import { useConfirm } from '@/hooks/useConfirm';
 
 export default function Transaction() {
   const [isBulk, setIsBulk] = useState(false);
   const [calculatorVisible, setCalculatorVisible] = useState(false);
 
+  const { confirm, confirmModal } = useConfirm();
   const { colors } = useThemeContext();
   const { categories } = useGetCategoryCache();
   const { accounts } = useGetUserBankAccounts();
-  const { exp_ts_id, starred } = useLocalSearchParams() as {
+  const { exp_ts_id, starred, prefillTransfer: prefillTransferParam } = useLocalSearchParams() as {
     exp_ts_id?: string;
     starred?: boolean;
+    prefillTransfer?: string;
   };
   const { data: existingTransaction, isLoading: isFetching } = useFetchTransaction(exp_ts_id);
+  // Transfers are delete-only once created (see isExistingTransfer below), so
+  // "editing" one is offered as delete-the-old + open a fresh Transfer form
+  // pre-filled with its details - carried across navigation as a JSON param
+  // rather than component state, since it's the *next* screen instance that
+  // needs it. Parsed defensively: a malformed/stale param should fall back to
+  // a blank form, not crash it.
+  const prefillTransfer = useMemo(() => {
+    if (!prefillTransferParam) return null;
+    try {
+      return JSON.parse(prefillTransferParam) as {
+        exp_ts_title: string;
+        exp_ts_amount: string;
+        exp_ts_date: string;
+        exp_ts_time: string;
+        exp_ts_note?: string;
+        exp_ts_from_bank_account_id: string;
+        exp_ts_to_bank_account_id: string;
+      };
+    } catch {
+      return null;
+    }
+  }, [prefillTransferParam]);
   const { mutateAsync: saveTransaction, isPending: isLoading } = useSaveTransaction(starred);
   const { mutateAsync: createTransfer, isPending: isCreatingTransfer } = useCreateTransfer();
   const { mutateAsync: uploadAttachment, isPending: isUploadingAttachment } =
@@ -82,6 +107,7 @@ export default function Transaction() {
   const { mutateAsync: deleteAttachment } = useDeleteTransactionAttachment();
   const isSaving = isLoading || isUploadingAttachment || isCreatingTransfer;
   const { mutateAsync: deleteTransaction, isPending: isDeleting } = useDeleteTransaction();
+  const { mutateAsync: purgeTransaction } = usePurgeTransaction();
   const { templates, saveTemplate, deleteTemplate } = useTransactionTemplates();
   const [templateModalVisible, setTemplateModalVisible] = useState(false);
   const [templateName, setTemplateName] = useState('');
@@ -215,13 +241,34 @@ export default function Transaction() {
           keepIsValidating: true,
         },
       );
+    } else if (prefillTransfer) {
+      reset(
+        {
+          exp_ts_title: prefillTransfer.exp_ts_title || '',
+          exp_ts_date: prefillTransfer.exp_ts_date || format(new Date(), 'yyyy-MM-dd'),
+          exp_ts_note: prefillTransfer.exp_ts_note || '',
+          exp_ts_time: prefillTransfer.exp_ts_time || '',
+          exp_ts_amount: prefillTransfer.exp_ts_amount || '',
+          exp_tc_id: undefined,
+          exp_tt_id: 3,
+          exp_st_id: false,
+          exp_ts_bank_account_id: prefillTransfer.exp_ts_from_bank_account_id,
+          exp_ts_to_bank_account_id: prefillTransfer.exp_ts_to_bank_account_id,
+          exp_ts_tags: [],
+          exp_ts_attachment_url: null,
+        },
+        {
+          keepDirty: false,
+          keepIsValidating: true,
+        },
+      );
     } else if (!getValues('exp_ts_bank_account_id')) {
       const primary = accounts.find((a) => a.exp_ba_is_primary);
       if (primary) {
         setValue('exp_ts_bank_account_id', primary.exp_ba_id);
       }
     }
-  }, [existingTransaction, reset]);
+  }, [existingTransaction, prefillTransfer, reset]);
 
   const onSubmit = async (data: transactionSchemaType & { exp_ts_id?: string }) => {
     if (data.exp_tt_id === 3) {
@@ -351,18 +398,15 @@ export default function Transaction() {
 
   const handleDelete = async () => {
     try {
-      const confirm = await new Promise((resolve) =>
-        Alert.alert(
-          'Delete this transaction?',
-          'Are you sure you want to delete this transaction?',
-          [
-            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-          ],
-        ),
-      );
+      const confirmed = await confirm({
+        title: 'Delete this transaction?',
+        message: 'Are you sure you want to delete this transaction?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        destructive: true,
+      });
 
-      if (!confirm) return;
+      if (!confirmed) return;
 
       if (exp_ts_id)
         deleteTransaction(exp_ts_id)
@@ -383,6 +427,70 @@ export default function Transaction() {
           });
     } catch (error) {
       console.error('Error deleting transaction:', error);
+    }
+  };
+
+  // Transfers can't be edited in place (see isExistingTransfer) - this is the
+  // "delete & recreate" flow made painless: delete the old pair, then open a
+  // fresh Transfer form pre-filled with everything it had, so the user only
+  // has to fix whatever's wrong (usually the amount) instead of re-entering
+  // both accounts, date and note from scratch.
+  const handleEditTransfer = async () => {
+    if (!exp_ts_id || !existingTransaction) return;
+
+    if (
+      !existingTransaction.exp_ts_from_bank_account_id ||
+      !existingTransaction.exp_ts_to_bank_account_id
+    ) {
+      showToast({
+        text1: "Couldn't find both accounts for this transfer",
+        type: 'error',
+        position: 'bottom',
+      });
+      return;
+    }
+
+    try {
+      const confirmed = await confirm({
+        title: 'Edit this transfer?',
+        message:
+          'This transfer will be deleted and a new one opened with the same details, so you can change what you need.',
+        confirmText: 'Continue',
+        cancelText: 'Cancel',
+      });
+
+      if (!confirmed) return;
+
+      // Soft-delete first (this is what actually reverses the balance on both
+      // accounts - see deleteTransaction's balance math), then immediately
+      // purge: it's being replaced right away, so it has no business sitting
+      // around in Trash. Purge itself is balance-neutral (assumes the
+      // soft-delete above already ran) - if it fails, the transfer is still
+      // safely gone from the active list, just left in Trash instead of
+      // being hard-deleted, so it's not worth blocking the new form over.
+      await deleteTransaction(exp_ts_id);
+      purgeTransaction(exp_ts_id).catch(() => {});
+
+      router.replace({
+        pathname: '/(root)/transaction',
+        params: {
+          prefillTransfer: JSON.stringify({
+            exp_ts_title: existingTransaction.exp_ts_title,
+            exp_ts_amount: existingTransaction.exp_ts_amount,
+            exp_ts_date: existingTransaction.exp_ts_date,
+            exp_ts_time: existingTransaction.exp_ts_time,
+            exp_ts_note: existingTransaction.exp_ts_note,
+            exp_ts_from_bank_account_id: existingTransaction.exp_ts_from_bank_account_id,
+            exp_ts_to_bank_account_id: existingTransaction.exp_ts_to_bank_account_id,
+          }),
+        },
+      });
+    } catch (error) {
+      showToast({
+        text1: getApiErrorMessage(error, 'Server Error'),
+        type: 'error',
+        position: 'bottom',
+      });
     }
   };
 
@@ -420,6 +528,18 @@ export default function Transaction() {
       shouldDirty: true,
       shouldValidate: true,
     });
+  };
+
+  const handleDeleteTemplate = async (template: ITransactionTemplate) => {
+    const confirmed = await confirm({
+      title: 'Delete template?',
+      message: `Remove "${template.name}" from your quick-add templates?`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+    if (!confirmed) return;
+    deleteTemplate(template.id);
   };
 
   const handleOpenTemplateModal = () => {
@@ -576,8 +696,18 @@ export default function Transaction() {
                             styles.transferLockedDescription,
                             { color: colors.lighterTitle },
                           ]}>
-                          Delete this transfer and create a new one if you need to change it.
+                          Need to change something? Edit Transfer deletes this one and opens a new
+                          transfer pre-filled with the same details.
                         </Text>
+                        <Spacer height={24} />
+                        <TouchableOpacity
+                          style={[styles.button, { backgroundColor: colors.primary }]}
+                          disabled={isDeleting}
+                          onPress={handleEditTransfer}>
+                          <Text style={[styles.title, { color: colors.onPrimary }]}>
+                            Edit Transfer
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     </Animated.View>
                   );
@@ -594,7 +724,7 @@ export default function Transaction() {
                                 key={t.id}
                                 name={t.name}
                                 onPress={() => applyTemplate(t)}
-                                onDelete={() => deleteTemplate(t.id)}
+                                onDelete={() => handleDeleteTemplate(t)}
                               />
                             ))}
                           </View>
@@ -1044,6 +1174,8 @@ export default function Transaction() {
             <Text style={[styles.title, { color: colors.onPrimary }]}>Save</Text>
           </TouchableOpacity>
         </ModalCard>
+
+        {confirmModal}
       </View>
     </SafeAreaViewComponent>
   );
