@@ -88,8 +88,8 @@ export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      await apiClient.delete(`/expensify/categories/${id}`);
+    mutationFn: async ({ id, targetCategoryId }: { id: string; targetCategoryId?: string }) => {
+      await apiClient.delete(`/expensify/categories/${id}`, { data: { targetCategoryId } });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
@@ -97,9 +97,20 @@ export const useDeleteCategory = () => {
   });
 };
 
+// Reads the categories query's cached data without triggering its own fetch
+// (enabled: false) - but unlike a plain queryClient.getQueryData() snapshot,
+// useQuery here still subscribes to the cache, so it re-renders when the
+// query is invalidated elsewhere (e.g. adding a category on /categories and
+// navigating back) instead of holding onto a stale value from first render.
 export const useGetCategoryCache = () => {
-  const queryClient = useQueryClient();
-  const data = queryClient.getQueryData<ICategory[]>(['categories']);
+  const { data } = useQuery<ICategoryWithCount[], Error>({
+    queryKey: queryKeys.categories,
+    queryFn: async (): Promise<ICategoryWithCount[]> => {
+      const response = await apiClient.get<ICategoryWithCount[]>('/expensify/categories');
+      return response.data;
+    },
+    enabled: false,
+  });
   return {
     categories: data || [],
   };

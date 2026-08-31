@@ -22,14 +22,20 @@ const schema = z.object({
 
 type DefaultTGrouping = z.infer<typeof schema>;
 
+const TINT = '#A855F7';
+
 const DefaultGroupingModal = ({
   grouping,
   refetch,
-  updateSettings
+  updateSettings,
+  noCard,
+  topDivider,
 }: {
   grouping?: string;
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
   updateSettings: (name: string, value: boolean | string)=> void;
+  noCard?: boolean;
+  topDivider?: boolean;
 }) => {
   const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
@@ -100,10 +106,13 @@ const DefaultGroupingModal = ({
   return (
     <>
       <SettingsRow
-        icon={<FontAwesome5 name="layer-group" size={16} color={colors.onPrimary} />}
+        icon={<FontAwesome5 name="layer-group" size={16} color={TINT} />}
+        iconBg={`${TINT}1A`}
         title="Default Grouping"
         subtitle={grouping || 'Group transactions by month, week, day'}
         onPress={toggleModal}
+        noCard={noCard}
+        topDivider={topDivider}
       />
 
       <ModalCard

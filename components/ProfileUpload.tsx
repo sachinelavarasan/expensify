@@ -20,16 +20,23 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { useGetUserData, useRemoveProfileImage, useUploadProfileImage } from '@/hooks/useUserStore';
 import { IExpUser } from '@/types';
 
-const AVATAR_SIZE = 70;
+const AVATAR_SIZE = 56;
 const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 type Props = {
   isSmall?: boolean;
+  size?: number;
+  bordered?: boolean;
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 };
 
-export default function ProfileImageUploader({ isSmall = false, refetch }: Props) {
+export default function ProfileImageUploader({
+  isSmall = false,
+  size = AVATAR_SIZE,
+  bordered = true,
+  refetch,
+}: Props) {
   const { colors } = useThemeContext();
   const insets = useSafeAreaInsets();
   const { user, loading } = useGetUserData();
@@ -157,27 +164,38 @@ export default function ProfileImageUploader({ isSmall = false, refetch }: Props
     openOptions();
   };
 
+  const fullSize = {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    borderWidth: bordered ? 2 : 0,
+  };
+
   return (
     <>
       <TouchableOpacity onPress={handlePress} disabled={uploading || removing}>
         {user?.exp_us_profile_url ? (
           <Image
             source={{ uri: user.exp_us_profile_url }}
-            style={isSmall ? [styles.avatar] : [styles.avatarFull, { borderColor: colors.primary }]}
+            style={isSmall ? [styles.avatar] : [fullSize, bordered && { borderColor: colors.primary }]}
             resizeMode={isSmall ? 'contain' : 'cover'}
           />
         ) : (
           <View
             style={[
-              isSmall ? styles.avatar : [styles.avatarFull, { borderColor: colors.primary }],
+              isSmall ? styles.avatar : [fullSize, bordered && { borderColor: colors.primary }],
               styles.avatarPlaceholder,
               { backgroundColor: colors.primary },
             ]}>
-            <FontAwesome6 name="user" size={isSmall ? 16 : 28} color={colors.onPrimary} />
+            <FontAwesome6 name="user" size={isSmall ? 16 : 22} color={colors.onPrimary} />
           </View>
         )}
         {!isSmall && (
-          <View style={[styles.editBadge, { backgroundColor: colors.primary }]}>
+          <View
+            style={[
+              styles.editBadge,
+              { backgroundColor: colors.primary, borderWidth: 2.5, borderColor: colors.cardBg },
+            ]}>
             <FontAwesome6 name="pen" size={11} color={colors.onPrimary} />
           </View>
         )}
@@ -259,14 +277,6 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
-  avatarFull: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    marginRight: 12,
-    borderWidth: 2,
-  },
-
   avatarPlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -274,9 +284,9 @@ const styles = StyleSheet.create({
 
   editBadge: {
     position: 'absolute',
-    bottom: 2,
-    right: 10,
-    padding: 6,
+    bottom: -2,
+    right: -2,
+    padding: 5,
     borderRadius: 20,
   },
 

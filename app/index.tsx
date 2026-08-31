@@ -9,7 +9,7 @@ export default function Index() {
   const { colors } = useThemeContext();
   if (isBootstrapping) {
     return (
-      <ThemedView style={{ flex: 1, justifyContent:'center' }}>
+      <ThemedView style={{ flex: 1, justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={colors.primary} />
       </ThemedView>
     );

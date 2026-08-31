@@ -1,10 +1,11 @@
 import { Entypo } from '@expo/vector-icons';
-import React, { forwardRef, useCallback, useEffect, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { format, parseISO } from 'date-fns';
-import { DatePickerModal, en, registerTranslation } from 'react-native-paper-dates';
+import { Calendar, DateData } from 'react-native-calendars';
+import { MarkedDates } from 'react-native-calendars/src/types';
 import { useThemeContext } from '@/contexts/ThemedContext';
-registerTranslation('en', en);
+import ModalCard from '@/components/ModalCard';
 
 interface Props {
   value: string | undefined;
@@ -21,13 +22,13 @@ const DatePickerPaper = forwardRef<any, Props>(
   ({ value, onChange, onBlur, error, placeholder, isRequired, label, minimumDate }, ref) => {
     const { colors } = useThemeContext();
     const [open, setOpen] = useState(false);
-    const [minimum, setMinimumDate] = useState<Date>();
+    const [minimum, setMinimumDate] = useState<string>();
     const [pickerDate, setPickerDate] = useState<Date>(new Date());
 
     useEffect(() => {
       if (minimumDate) {
         const date = new Date(minimumDate);
-        setMinimumDate(date);
+        setMinimumDate(formatDateForStorage(date));
         setPickerDate(date);
         onChange(formatDateForStorage(date));
       }
@@ -37,12 +38,11 @@ const DatePickerPaper = forwardRef<any, Props>(
       setOpen(false);
     }, [setOpen]);
 
-    const onConfirmSingle = useCallback(
-      (params: any) => {
+    const onDayPress = useCallback(
+      (day: DateData) => {
         setOpen(false);
-        const formatted = formatDateForStorage(params.date);
-        setPickerDate(new Date(formatted));
-        onChange(formatted);
+        setPickerDate(new Date(day.dateString));
+        onChange(day.dateString);
       },
       [onChange],
     );
@@ -57,6 +57,13 @@ const DatePickerPaper = forwardRef<any, Props>(
 
     const formatDateForDisplay = (date: Date) => format(date, 'EEE, MMM d, yyyy');
     const formatDateForStorage = (date: Date) => format(date, 'yyyy-MM-dd');
+
+    const markedDates = useMemo((): MarkedDates => {
+      if (!value) return {};
+      return {
+        [value]: { selected: true, selectedColor: colors.primary, selectedTextColor: colors.onPrimary },
+      };
+    }, [value, colors]);
 
     return (
       <View>
@@ -94,18 +101,38 @@ const DatePickerPaper = forwardRef<any, Props>(
           </Text>
         </TouchableOpacity>
 
-        <DatePickerModal
-          presentationStyle="pageSheet"
-          locale="en"
-          mode="single"
-          label={value ? formatDateForDisplay(parseISO(value)) : placeholder || 'Pick a date'}
+        <ModalCard
           visible={open}
-          onDismiss={onDismissSingle}
-          date={pickerDate}
-          onConfirm={onConfirmSingle}
-          uppercase={true}
-          validRange={{ startDate: minimum }}
-        />
+          onClose={onDismissSingle}
+          presentation="sheet"
+          title={label || placeholder || 'Pick a date'}>
+          <Calendar
+            current={pickerDate ? formatDateForStorage(pickerDate) : undefined}
+            minDate={minimum}
+            markedDates={markedDates}
+            onDayPress={onDayPress}
+            firstDay={1}
+            style={{ paddingHorizontal: 10 }}
+            theme={{
+              backgroundColor: 'transparent',
+              calendarBackground: 'transparent',
+              textSectionTitleColor: colors.lighterTitle,
+              dayTextColor: colors.title,
+              textDisabledColor: colors.lighterTitle,
+              todayTextColor: colors.primary,
+              selectedDayBackgroundColor: colors.primary,
+              selectedDayTextColor: colors.onPrimary,
+              monthTextColor: colors.title,
+              arrowColor: colors.arrowColor,
+              textDayFontFamily: 'Inter-500',
+              textMonthFontFamily: 'Inter-700',
+              textDayHeaderFontFamily: 'Inter-600',
+              textDayFontSize: 13,
+              textMonthFontSize: 15,
+              textDayHeaderFontSize: 11,
+            }}
+          />
+        </ModalCard>
 
         {!!error && (
           <Text

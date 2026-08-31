@@ -20,6 +20,18 @@ interface ExtraInputProps {
   isTitle?: boolean;
   isRequired?: boolean;
   enableAutofill?: boolean;
+  rightIcon?: React.ReactNode;
+  // Drops the field's own bordered/background box in favor of sitting
+  // directly on whatever container it's placed in - for use inside an
+  // already-bordered card, where a box-in-a-box look would be redundant.
+  flat?: boolean;
+  // Tints the field's fill/border with colors.primary instead of the
+  // neutral inputColor/inputBorder pair - opt-in so every other screen's
+  // fields are unaffected.
+  tint?: boolean;
+  // Fixes the field to an exact height instead of letting paddingVertical
+  // drive it - opt-in so existing screens keep their current sizing.
+  height?: number;
 }
 
 const Input = forwardRef(function MyInput(
@@ -38,15 +50,23 @@ const Input = forwardRef(function MyInput(
     editable = true,
     isRequired = false,
     enableAutofill = false,
+    rightIcon,
+    flat = false,
+    tint = false,
+    height,
     onFocus,
     onBlur,
     autoComplete,
     ...otherProps
   } = props;
+  const fieldBg = tint ? `${colors.primary}09` : colors.inputColor;
+  const fieldBorder = tint ? `${colors.primary}66` : colors.inputBorder;
   const [show, setShow] = useState(false);
   const [focused, setFocused] = useState(false);
   return (
-    <View style={{position:'relative'}} onLayout={(e) => setInputHeight(e.nativeEvent.layout.height)}>
+    <View
+      style={{ position: 'relative' }}
+      onLayout={(e) => setInputHeight(e.nativeEvent.layout.height)}>
       {label ? (
         <View style={{ display: 'flex', flexDirection: 'row' }}>
           <Text style={[styles.label, { color: colors.title }]}>{label}</Text>
@@ -66,18 +86,25 @@ const Input = forwardRef(function MyInput(
           {
             backgroundColor: colors.background,
           },
-          borderLess ? [styles.borderNone, { backgroundColor: colors.inputColor }] : null,
+          borderLess ? [styles.borderNone, { backgroundColor: fieldBg }] : null,
           !editable ? { opacity: 0.7 } : null,
         ]}>
         <View
           style={[
             styles.innerView,
-            {
-              borderColor: error ? colors.expense : focused ? colors.borderSelected : colors.inputBorder,
-              backgroundColor: colors.inputColor,
-              borderRadius: 8,
-              borderWidth: 1,
-            },
+            flat
+              ? { borderWidth: 0, backgroundColor: 'transparent' }
+              : {
+                  borderColor: error
+                    ? colors.expense
+                    : focused
+                      ? colors.borderSelected
+                      : fieldBorder,
+                  backgroundColor: fieldBg,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                },
+            height ? { height } : null,
           ]}>
           <TextInput
             ref={ref}
@@ -89,6 +116,8 @@ const Input = forwardRef(function MyInput(
               },
               isTitle ? styles.titleText : null,
               isTextBox ? styles.textBox : null,
+              flat ? styles.inputFlat : null,
+              height ? { paddingVertical: 0 } : null,
             ]}
             secureTextEntry={isPassword && !show}
             autoCorrect={false}
@@ -113,7 +142,12 @@ const Input = forwardRef(function MyInput(
           {isPassword ? (
             <TouchableOpacity onPress={() => setShow((state) => !state)}>
               {show ? (
-                <Ionicons style={styles.inputIconPassword} name="eye" color={colors.lighterTitle} size={18} />
+                <Ionicons
+                  style={styles.inputIconPassword}
+                  name="eye"
+                  color={colors.lighterTitle}
+                  size={18}
+                />
               ) : (
                 <Ionicons
                   style={styles.inputIconPassword}
@@ -124,12 +158,11 @@ const Input = forwardRef(function MyInput(
               )}
             </TouchableOpacity>
           ) : null}
+          {rightIcon}
         </View>
       </View>
       {error ? (
-        <Text style={[styles.error, { top: inputHeight + 0, color: colors.expense }]}>
-          {error}
-        </Text>
+        <Text style={[styles.error, { top: inputHeight + 0, color: colors.expense }]}>{error}</Text>
       ) : null}
     </View>
   );
@@ -177,6 +210,9 @@ const styles = StyleSheet.create({
   borderNone: {
     borderWidth: 0,
     borderRadius: 6,
+  },
+  inputFlat: {
+    paddingHorizontal: 0,
   },
   titleText: {
     fontSize: 15,

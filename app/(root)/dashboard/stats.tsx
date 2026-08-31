@@ -12,7 +12,6 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import GroupingModal from '@/components/GroupingModal';
 import SpendTrendChart from '@/components/SpendTrendChart';
 import StatsSummaryCard from '@/components/StatsSummaryCard';
-import BreakdownChart from '@/components/BreakdownChart';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { FontSize } from '@/utils/Typography';
 
@@ -82,7 +81,7 @@ export default function Stat() {
                 currentMonth={formattedTitle}
               />
               <View style={{ flexShrink: 0 }}>
-                <GroupingModal grouping={dateRangeType} update={updateDateRangeType}/>
+                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} tint />
               </View>
             </View>
 
@@ -95,9 +94,6 @@ export default function Stat() {
 
               <Text style={[styles.sectionHeader, { color: colors.lighterTitle }]}>Trend</Text>
               <SpendTrendChart />
-
-              <Text style={[styles.sectionHeader, { color: colors.lighterTitle }]}>Breakdown</Text>
-              <BreakdownChart income={totalIncome} expense={totalExpense} />
             </Animated.View>
 
             {transactions.length > 0 ? (

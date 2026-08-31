@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AuthLink from '@/components/AuthLink';
 import Input from '@/components/Input';
@@ -33,6 +34,7 @@ type ForgotPasswordForm = z.infer<typeof schema>;
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { colors } = useThemeContext();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -75,12 +77,16 @@ export default function ForgotPasswordScreen() {
           {...(Platform.OS === 'ios' ? { behavior: 'padding' } : { behavior: 'height' })}
           style={{ flex: 1 }}>
           <ScrollView
+            ref={scrollViewRef}
             bounces={false}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps={'always'}>
             <View style={styles.formContainer}>
               <View style={styles.imageContainer}>
+                <View style={[styles.iconBadge, { backgroundColor: `${colors.primary}1A` }]}>
+                  <Ionicons name="lock-closed-outline" size={26} color={colors.primary} />
+                </View>
                 <Text
                   style={[
                     styles.label,
@@ -88,7 +94,7 @@ export default function ForgotPasswordScreen() {
                       color: colors.title,
                     },
                   ]}>
-                  Forgot password
+                  Forgot your <Text style={{ color: colors.primary }}>password</Text>?
                 </Text>
                 <Text style={[styles.subtext, { color: colors.description }]}>
                   Enter your email and we&apos;ll send you a reset code
@@ -110,8 +116,16 @@ export default function ForgotPasswordScreen() {
                       autoComplete="off"
                       onBlur={field.onBlur}
                       onChangeText={field.onChange}
+                      onFocus={() => {
+                        setTimeout(
+                          () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                          100,
+                        );
+                      }}
                       error={errors.email?.message}
                       borderLess
+                      tint
+                      height={42}
                     />
                   )}
                   name="email"
@@ -183,12 +197,21 @@ const styles = StyleSheet.create({
   btnContainer: {
     alignItems: 'center',
   },
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
   button: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 8,
+    height: 44,
     width: '100%',
   },
   loader: {

@@ -6,7 +6,10 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development"
+      }
     },
     "preview": {
       "channel": "staging",
@@ -14,20 +17,30 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://expensify-api-delta.vercel.app"
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_API_URL": "https://expensify-api-git-development-sachinelavarasans-projects.vercel.app"
       }
     },
     "preview2": {
       "android": {
         "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "APP_VARIANT": "development"
       }
     },
     "preview3": {
-      "developmentClient": true
+      "developmentClient": true,
+      "env": {
+        "APP_VARIANT": "development"
+      }
     },
     "preview4": {
       "channel": "staging",
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "APP_VARIANT": "development"
+      }
     },
     "production": {
       "channel": "production",
@@ -37,12 +50,47 @@
         "resourceClass": "large"
       },
       "env": {
+        "APP_VARIANT": "production",
         "EXPO_PUBLIC_API_URL": "https://expensify-api-delta.vercel.app"
+      }
+    },
+    "previewInternal": {
+      "channel": "staging",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_API_URL": "https://expensify-api-git-development-sachinelavarasans-projects.vercel.app"
+      }
+    },
+    "devInternal": {
+      "channel": "staging",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "APP_VARIANT": "development",
+        "EXPO_PUBLIC_API_URL": "https://expensify-api-git-development-sachinelavarasans-projects.vercel.app"
       }
     }
   },
   "submit": {
     "production": {
+      "android": {
+        "serviceAccountKeyPath": "./play-console-services.json",
+        "track": "internal"
+      }
+    },
+    "previewInternal": {
+      "android": {
+        "serviceAccountKeyPath": "./play-console-services.json",
+        "track": "internal"
+      }
+    },
+    "devInternal": {
       "android": {
         "serviceAccountKeyPath": "./play-console-services.json",
         "track": "internal"

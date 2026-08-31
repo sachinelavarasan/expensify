@@ -92,15 +92,19 @@ export default function SwipeableRow({
       <Animated.View style={[styles.actionsContainer, actionsStyle]}>
         {!!onStar && (
           <TouchableOpacity style={styles.actionButton} onPress={handleStar}>
-            <MaterialIcons
-              name={isStarred ? 'star' : 'star-outline'}
-              size={24}
-              color={colors.favorite}
-            />
+            <View style={[styles.actionBadge, { backgroundColor: `${colors.favorite}1A` }]}>
+              <MaterialIcons
+                name={isStarred ? 'star' : 'star-outline'}
+                size={19}
+                color={colors.favorite}
+              />
+            </View>
           </TouchableOpacity>
         )}
         <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
-          <MaterialIcons name="delete-outline" size={24} color={colors.expense} />
+          <View style={[styles.actionBadge, { backgroundColor: `${colors.expense}1A` }]}>
+            <MaterialIcons name="delete-outline" size={19} color={colors.expense} />
+          </View>
         </TouchableOpacity>
       </Animated.View>
 
@@ -129,6 +133,12 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 4,
+  },
+  actionBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

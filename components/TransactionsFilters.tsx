@@ -1,18 +1,16 @@
-import { ColorValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 import Spacer from './Spacer';
 import ModalCard from './ModalCard';
 import Input from './Input';
 import TagInput from './TagInput';
 import CategorySelector from './CategorySelector';
-import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { transactionExportType } from '@/utils/common-data';
 import SearchBar from './SearchBar';
-import CustomRadioButton from './CustomRadioButton';
-import DatePickerWithOutValue from './DatePickerWithOutValue';
+import ChipSelect from './ChipSelect';
+import DatePickerCalendar from './DatePickerCalendar';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { LinearGradient } from 'expo-linear-gradient';
-import { CustomSelectInput } from './CustomSelectInput';
 import { BankAccount, ICategory } from '@/types';
 import { DATE_RANGE_PRESETS, DateRangePresetId, getPresetRange } from '@/utils/functions';
 
@@ -24,7 +22,7 @@ interface Props {
   applyFilters: (
     search: string,
     transactionType: string,
-    bankAccount: number | string,
+    bankAccount: (number | string)[],
     extras: {
       tags: string[];
       customDateRange: CustomDateRange;
@@ -35,7 +33,7 @@ interface Props {
   ) => void;
   accounts: BankAccount[];
   categories: ICategory[];
-  selectedAccount: number | string;
+  selectedAccount: (number | string)[];
   selectedTags?: string[];
   selectedDateRange?: CustomDateRange;
   selectedMinAmount?: string;
@@ -65,7 +63,11 @@ const TransactionFilters = ({
   const draftFromProps = () => ({
     search: searchText,
     transactionType: selectedTransaction,
-    bankAccount: selectedAccount || primaryAccountId || '',
+    bankAccount: selectedAccount.length
+      ? selectedAccount
+      : primaryAccountId
+        ? [primaryAccountId]
+        : [],
     tags: selectedTags,
     customDateRange: selectedDateRange,
     minAmount: selectedMinAmount,
@@ -76,6 +78,20 @@ const TransactionFilters = ({
   const [datePreset, setDatePreset] = useState<DateRangePresetId | 'none'>(
     selectedDateRange ? 'custom' : 'none',
   );
+
+  // Count of currently-applied filter groups (not the in-progress draft) -
+  // shown as a badge next to the modal title so it matches what the chips
+  // on the screen behind it already reflect.
+  const activeFilterCount = [
+    !!searchText,
+    !!selectedTransaction,
+    selectedAccount.length > 0,
+    selectedTags.length > 0,
+    !!selectedDateRange,
+    !!selectedMinAmount,
+    !!selectedMaxAmount,
+    selectedCategoryIds.length > 0,
+  ].filter(Boolean).length;
 
   const openModal = () => {
     setDraft(draftFromProps());
@@ -111,11 +127,20 @@ const TransactionFilters = ({
     }));
   };
 
+  const toggleBankAccount = (id: string | number) => {
+    setDraft((prev) => ({
+      ...prev,
+      bankAccount: prev.bankAccount.includes(id)
+        ? prev.bankAccount.filter((a) => a !== id)
+        : [...prev.bankAccount, id],
+    }));
+  };
+
   const handlePress = () => {
     if (
       !draft.search.trim() &&
       !draft.transactionType &&
-      !draft.bankAccount &&
+      !draft.bankAccount.length &&
       !draft.tags.length &&
       !draft.customDateRange &&
       !draft.minAmount &&
@@ -136,23 +161,35 @@ const TransactionFilters = ({
 
   return (
     <>
-      <TouchableOpacity
-        onPress={openModal}
-        style={[
-          styles.trigger,
-          {
-            backgroundColor: hasActiveFilters ? colors.primary : colors.inputColor,
-            borderColor: hasActiveFilters ? colors.primary : colors.inputBorder,
-          },
-        ]}>
-        <FontAwesome6
-          name="filter"
-          size={14}
-          color={hasActiveFilters ? colors.onPrimary : colors.arrowColor}
-        />
-      </TouchableOpacity>
+      <View style={styles.triggerWrap}>
+        <TouchableOpacity
+          onPress={openModal}
+          style={[styles.trigger, { backgroundColor: colors.barBackground }]}>
+          <Ionicons name="filter" size={16} color={colors.primary} />
+        </TouchableOpacity>
+        {hasActiveFilters && (
+          <View
+            style={[
+              styles.activeDot,
+              { backgroundColor: colors.accent, borderColor: colors.background },
+            ]}
+          />
+        )}
+      </View>
 
-      <ModalCard visible={show} onClose={closeModal} title="Apply Filters">
+      <ModalCard
+        visible={show}
+        onClose={closeModal}
+        title="Apply Filters"
+        badge={activeFilterCount}
+        presentation="sheet"
+        footer={
+          <TouchableOpacity onPress={handlePress}>
+            <View style={[styles.button, styles.buttonFull, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
+            </View>
+          </TouchableOpacity>
+        }>
         <SearchBar
           searchPhrase={draft.search}
           onChange={(e: any) => {
@@ -161,27 +198,29 @@ const TransactionFilters = ({
         />
         <Spacer height={20} />
 
-        <View style={styles.card}>
-          <CustomRadioButton
+        <View style={{ paddingHorizontal: 5 }}>
+          <ChipSelect
+            variant="tile"
             label="Transaction Type"
             value={draft.transactionType}
             options={transactionExportType}
-            grid
-            onChange={(data) => {
-              setDraft((prev) => ({ ...prev, transactionType: data as string, categoryIds: [] }));
+            onChange={(id) => {
+              setDraft((prev) => ({ ...prev, transactionType: id as string, categoryIds: [] }));
             }}
           />
         </View>
         <Spacer height={15} />
         <View style={{ paddingHorizontal: 5 }}>
-          <CustomSelectInput
-            value={draft.bankAccount}
-            options={accounts.map((account) => ({
-              key: account.exp_ba_id,
-              value: account.exp_ba_name,
-            }))}
+          <ChipSelect
+            variant="chip"
             label="Bank Account"
-            onChange={(selectId) => setDraft((prev) => ({ ...prev, bankAccount: selectId }))}
+            value={draft.bankAccount}
+            multiple
+            options={accounts.map((account) => ({
+              id: account.exp_ba_id,
+              label: account.exp_ba_name,
+            }))}
+            onChange={toggleBankAccount}
           />
         </View>
         <Spacer height={20} />
@@ -231,7 +270,7 @@ const TransactionFilters = ({
           {datePreset === 'custom' && (
             <>
               <Spacer height={12} />
-              <DatePickerWithOutValue
+              <DatePickerCalendar
                 label="From:"
                 value={draft.customDateRange?.start}
                 onChange={(v) =>
@@ -243,7 +282,7 @@ const TransactionFilters = ({
                 placeholder="Start date"
               />
               <Spacer height={10} />
-              <DatePickerWithOutValue
+              <DatePickerCalendar
                 label="To:"
                 value={draft.customDateRange?.end}
                 onChange={(v) =>
@@ -264,9 +303,7 @@ const TransactionFilters = ({
           <View style={{ flex: 1 }}>
             <Input
               value={draft.minAmount}
-              onChangeText={(v) =>
-                setDraft((prev) => ({ ...prev, minAmount: sanitizeAmount(v) }))
-              }
+              onChangeText={(v) => setDraft((prev) => ({ ...prev, minAmount: sanitizeAmount(v) }))}
               placeholder="Min"
               label="Min Amount"
               keyboardType="numeric"
@@ -276,9 +313,7 @@ const TransactionFilters = ({
           <View style={{ flex: 1 }}>
             <Input
               value={draft.maxAmount}
-              onChangeText={(v) =>
-                setDraft((prev) => ({ ...prev, maxAmount: sanitizeAmount(v) }))
-              }
+              onChangeText={(v) => setDraft((prev) => ({ ...prev, maxAmount: sanitizeAmount(v) }))}
               placeholder="Max"
               label="Max Amount"
               keyboardType="numeric"
@@ -306,18 +341,6 @@ const TransactionFilters = ({
             <Spacer height={30} />
           </>
         )}
-
-        <View>
-          <TouchableOpacity onPress={handlePress}>
-            <LinearGradient
-              colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.button]}>
-              <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
       </ModalCard>
     </>
   );
@@ -326,13 +349,24 @@ const TransactionFilters = ({
 export default TransactionFilters;
 
 const styles = StyleSheet.create({
+  triggerWrap: {
+    position: 'relative',
+  },
   trigger: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  activeDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1.5,
   },
   button: {
     alignItems: 'center',
@@ -342,6 +376,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 9,
     width: 'auto',
+  },
+  buttonFull: {
+    width: '100%',
+    paddingVertical: 12,
   },
   loader: {
     position: 'absolute',
@@ -364,12 +402,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 6,
     fontFamily: 'Inter-400',
-  },
-  card: {
-    paddingVertical: 5,
-    paddingHorizontal: 5,
-    borderRadius: 10,
-    flexWrap: 'wrap',
   },
   chipRow: {
     flexDirection: 'row',

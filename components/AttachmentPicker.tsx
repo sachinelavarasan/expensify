@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
 import {
-  Alert,
   Image,
   Linking,
   Pressable,
@@ -14,11 +13,13 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 
 import ModalCard from './ModalCard';
+import RowField from './RowField';
 import { showToast } from './ToastMessage';
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { FontSize } from '@/utils/Typography';
 
 const MAX_FILE_SIZE_BYTES = 1 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
@@ -35,9 +36,10 @@ export type AttachmentValue =
 interface Props {
   value: AttachmentValue;
   onChange: (value: AttachmentValue) => void;
+  showDivider?: boolean;
 }
 
-export default function AttachmentPicker({ value, onChange }: Props) {
+export default function AttachmentPicker({ value, onChange, showDivider }: Props) {
   const { colors } = useThemeContext();
   const insets = useSafeAreaInsets();
 
@@ -196,30 +198,37 @@ export default function AttachmentPicker({ value, onChange }: Props) {
 
   return (
     <>
-      {value ? (
-        <View
-          style={[styles.attachmentRow, { borderColor: colors.inputBorder, backgroundColor: colors.inputColor }]}>
-          <Pressable style={styles.attachmentInfo} onPress={handleView}>
-            <View style={[styles.iconBadge, { backgroundColor: colors.primary + '1A' }]}>
-              <FontAwesome6 name={isPdf ? 'file-pdf' : 'image'} size={16} color={colors.primary} />
-            </View>
-            <Text style={[styles.attachmentText, { color: colors.title }]} numberOfLines={1}>
-              {isPdf ? 'Receipt.pdf' : 'Receipt image'}
-              {value.kind === 'local' ? ' (not saved yet)' : ''}
-            </Text>
-          </Pressable>
-          <TouchableOpacity onPress={handleRemove} hitSlop={10}>
-            <FontAwesome6 name="xmark" size={16} color={colors.description} />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <TouchableOpacity
-          style={[styles.attachButton, { borderColor: colors.inputBorder }]}
-          onPress={openOptions}>
-          <FontAwesome6 name="paperclip" size={14} color={colors.primary} />
-          <Text style={[styles.attachButtonText, { color: colors.primary }]}>Attach Receipt</Text>
-        </TouchableOpacity>
-      )}
+      <RowField
+        icon={
+          <FontAwesome6
+            name={value ? (isPdf ? 'file-pdf' : 'image') : 'paperclip'}
+            size={16}
+            color={colors.primary}
+          />
+        }
+        label="Attachment"
+        showDivider={showDivider}
+        onPress={value ? handleView : openOptions}
+        trailing={
+          value ? (
+            <TouchableOpacity onPress={handleRemove} hitSlop={10}>
+              <FontAwesome6 name="xmark" size={16} color={colors.description} />
+            </TouchableOpacity>
+          ) : (
+            <MaterialIcons name="chevron-right" size={20} color={colors.arrowColor} />
+          )
+        }>
+        <Text
+          style={[
+            styles.attachmentText,
+            { color: value ? colors.text : colors.inputPlaceholder },
+          ]}
+          numberOfLines={1}>
+          {value
+            ? `${isPdf ? 'Receipt.pdf' : 'Receipt image'}${value.kind === 'local' ? ' (not saved yet)' : ''}`
+            : 'Add a receipt'}
+        </Text>
+      </RowField>
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
@@ -263,46 +272,9 @@ export default function AttachmentPicker({ value, onChange }: Props) {
 }
 
 const styles = StyleSheet.create({
-  attachButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: 10,
-    paddingVertical: 12,
-  },
-  attachButtonText: {
-    fontSize: 14,
-    fontFamily: 'Inter-600',
-  },
-  attachmentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-  },
-  attachmentInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  iconBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   attachmentText: {
-    fontSize: 14,
-    fontFamily: 'Inter-500',
-    flex: 1,
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-600',
   },
 
   sheetContent: {

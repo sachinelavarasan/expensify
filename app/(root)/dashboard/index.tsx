@@ -1,7 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
-  Alert,
-  ColorValue,
   FlatList,
   RefreshControl,
   ScrollView,
@@ -25,7 +23,7 @@ import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
 import { formatToCurrency } from '@/utils/formatter';
-import { Feather, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { Feather, FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { format, parse } from 'date-fns';
 import { useRouter } from 'expo-router';
 import HomeSummaryCard from '@/components/HomeSummaryCard';
@@ -43,8 +41,8 @@ import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useBankAccounts } from '@/hooks/useBankAccountOperation';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import SwipeableRow from '@/components/Swippable';
+import Checkbox from '@/components/Checkbox';
 import { showToast } from '@/components/ToastMessage';
 import {
   useBulkDeleteTransactions,
@@ -52,15 +50,16 @@ import {
   useBulkUpdateTransactions,
   useDeleteTransaction,
 } from '@/hooks/useTransaction';
-import { useStarTransaction, useUnstarTransaction } from '@/hooks/useStarredTransactions';
 import GroupingModal from '@/components/GroupingModal';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { FontSize } from '@/utils/Typography';
+import { useConfirm } from '@/hooks/useConfirm';
 
 export default function Index() {
   const { colors } = useThemeContext();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { confirm, confirmModal } = useConfirm();
   const { accounts, loading: accountsLoading } = useBankAccounts();
   const { netWorth } = useNetWorth(accounts);
   const [defaultAccountResolved, setDefaultAccountResolved] = useState(false);
@@ -96,8 +95,6 @@ export default function Index() {
   const { mutateAsync: bulkDeleteTransactions } = useBulkDeleteTransactions();
   const { mutateAsync: bulkUpdateTransactions } = useBulkUpdateTransactions();
   const { mutateAsync: bulkStarTransactions } = useBulkStarTransactions();
-  const { mutateAsync: starTransaction } = useStarTransaction();
-  const { mutateAsync: unstarTransaction } = useUnstarTransaction();
   const { categories } = useCategoryList();
   useGetUserData();
   const { value: showBalance } = useGetSettingsFromStore('balance');
@@ -125,7 +122,7 @@ export default function Index() {
     hasAppliedDefaultAccount.current = true;
     const primary = accounts.find((acc) => acc.exp_ba_is_primary);
     if (primary) {
-      updateBankAccount(primary.exp_ba_id);
+      updateBankAccount([primary.exp_ba_id]);
     }
     setDefaultAccountResolved(true);
   }, [accounts, accountsLoading, updateBankAccount]);
@@ -158,18 +155,15 @@ export default function Index() {
 
   const handleDelete = async (exp_ts_id: string) => {
     try {
-      const confirm = await new Promise((resolve) =>
-        Alert.alert(
-          'Delete this transaction?',
-          'Are you sure you want to delete this transaction?',
-          [
-            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-          ],
-        ),
-      );
+      const confirmed = await confirm({
+        title: 'Delete this transaction?',
+        message: 'Are you sure you want to delete this transaction?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        destructive: true,
+      });
 
-      if (!confirm) return;
+      if (!confirmed) return;
 
       if (exp_ts_id)
         deleteTransaction(exp_ts_id)
@@ -190,21 +184,6 @@ export default function Index() {
     } catch (error) {
       console.error('Error deleting transaction:', error);
     }
-  };
-
-  const handleStar = (exp_ts_id: string, isStarred: boolean) => {
-    const mutate = isStarred ? unstarTransaction : starTransaction;
-    mutate(exp_ts_id)
-      .then(() => {
-        showToast({
-          text1: isStarred ? 'Transaction unstarred' : 'Transaction starred',
-          type: 'success',
-          position: 'bottom',
-        });
-      })
-      .catch((err) => {
-        showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
-      });
   };
 
   const toggleSelect = (id: string) => {
@@ -228,17 +207,14 @@ export default function Index() {
 
   const handleBulkDelete = async () => {
     const count = selectedIds.size;
-    const confirm = await new Promise((resolve) =>
-      Alert.alert(
-        `Delete ${count} transaction${count > 1 ? 's' : ''}?`,
-        'These will be moved to Trash.',
-        [
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-          { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-        ],
-      ),
-    );
-    if (!confirm) return;
+    const confirmed = await confirm({
+      title: `Delete ${count} transaction${count > 1 ? 's' : ''}?`,
+      message: 'These will be moved to Trash.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+    if (!confirmed) return;
 
     try {
       await bulkDeleteTransactions(Array.from(selectedIds));
@@ -286,7 +262,7 @@ export default function Index() {
   const applyFilters = (
     search: string,
     transactionType: string,
-    selectedId: number | string,
+    selectedIds: (number | string)[],
     extras: {
       tags: string[];
       customDateRange: { start: string; end: string } | null;
@@ -297,7 +273,7 @@ export default function Index() {
   ) => {
     updateSearch(search);
     updateTransactionType(transactionType);
-    updateBankAccount(selectedId);
+    updateBankAccount(selectedIds);
     updateTags(extras.tags);
     if (extras.customDateRange) {
       updateCustomDateRange(extras.customDateRange);
@@ -317,7 +293,7 @@ export default function Index() {
         updateTransactionType('');
         break;
       case 'account':
-        updateBankAccount('');
+        updateBankAccount([]);
         break;
       case 'dateRange':
         clearCustomDateRange();
@@ -335,7 +311,7 @@ export default function Index() {
       case 'default':
         updateTransactionType('');
         updateSearch('');
-        updateBankAccount('');
+        updateBankAccount([]);
         clearCustomDateRange();
         updateMinAmount('');
         updateMaxAmount('');
@@ -350,7 +326,7 @@ export default function Index() {
   const hasActiveFilters =
     !!search ||
     !!transactionType ||
-    !!bankAccount ||
+    bankAccount.length > 0 ||
     !!customDateRange ||
     !!minAmount ||
     !!maxAmount ||
@@ -412,25 +388,16 @@ export default function Index() {
   return (
     <ThemedView style={{ flex: 1 }}>
       {(loading || !defaultAccountResolved) && <OverlayLoader />}
-      <TouchableOpacity
-        style={{
-          width: 30,
-          height: 30,
-          position: 'absolute',
-          bottom: 20,
-          right: 0,
-          zIndex: 2,
-          marginRight: 10,
-        }}
-        onPress={handlePress}>
-        <LinearGradient
-          colors={colors.floatingBtnBg as [ColorValue, ColorValue]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.floatingButton, { shadowColor: colors.shadow }]}>
+      {!selectionMode && (
+        <TouchableOpacity
+          style={[
+            styles.floatingButton,
+            { backgroundColor: colors.primary, shadowColor: colors.shadow },
+          ]}
+          onPress={handlePress}>
           <FontAwesome6 name="plus" size={22} color={colors.onPrimary} />
-        </LinearGradient>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      )}
       <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
         <View
           style={{
@@ -448,27 +415,28 @@ export default function Index() {
               nextMonth={goToNext}
               prevMonth={goToPrevious}
               currentMonth={formattedTitle}
+              currentDate={currentDate}
+              dateRangeType={dateRangeType}
+              onSelectDate={refetch}
             />
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {selectionMode ? (
-              <TouchableOpacity onPress={exitSelectionMode} style={styles.iconTrigger}>
-                <MaterialIcons name="close" size={16} color={colors.arrowColor} />
+              <TouchableOpacity
+                onPress={exitSelectionMode}
+                style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
+                <Ionicons name="close-outline" size={18} color={colors.primary} />
               </TouchableOpacity>
             ) : (
               <>
                 {!customDateRange && (
                   <TouchableOpacity
-                    onPress={() => setViewMode((v) => (v === 'list' ? 'calendar' : 'list'))}
-                    style={styles.iconTrigger}>
-                    <MaterialIcons
-                      name={viewMode === 'list' ? 'calendar-today' : 'view-list'}
-                      size={16}
-                      color={colors.arrowColor}
-                    />
+                    onPress={() => setViewMode('calendar')}
+                    style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
+                    <Ionicons name="calendar-outline" size={16} color={colors.primary} />
                   </TouchableOpacity>
                 )}
-                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} />
+                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} tint />
                 <TransactionFilters
                   applyFilters={applyFilters}
                   searchText={search}
@@ -509,6 +477,7 @@ export default function Index() {
             <FilterChip
               label="Clear All"
               variant="solid"
+              tone="danger"
               onRemove={() => {
                 removeFilter('default');
                 setSelectedDay(null);
@@ -538,10 +507,16 @@ export default function Index() {
                 onRemove={() => removeFilter('t_type')}
               />
             )}
-            {!!bankAccount && (
+            {bankAccount.length > 0 && (
               <FilterChip
                 label="Account"
-                value={accounts?.find((item) => item.exp_ba_id == bankAccount)?.exp_ba_name}
+                value={(() => {
+                  const names = bankAccount
+                    .map((id) => accounts?.find((item) => item.exp_ba_id == id)?.exp_ba_name)
+                    .filter(Boolean) as string[];
+                  if (names.length <= 2) return names.join(', ');
+                  return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
+                })()}
                 variant="solid"
                 onRemove={() => removeFilter('account')}
               />
@@ -581,29 +556,33 @@ export default function Index() {
           </ScrollView>
         )}
       </View>
-      {viewMode === 'calendar' ? (
+      <ModalCard
+        visible={viewMode === 'calendar'}
+        onClose={() => setViewMode('list')}
+        title="Calendar"
+        presentation="sheet">
         <CalendarGrid
           groupedDataArray={groupedDataArray}
           currentDate={currentDate}
           onSelectDay={handleSelectDay}
           selectedDate={selectedDay ?? undefined}
         />
-      ) : (
-        <FlatList
-          bounces
-          showsVerticalScrollIndicator={false}
-          data={displayedGroups}
-          extraData={[selectionMode, selectedIds]}
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 250, flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          ListEmptyComponent={
-            <Emptystate
-              title="No transactions yet"
-              description="Start by adding your income or expenses to see them here."
-            />
-          }
-          renderItem={({ item, index }) => {
+      </ModalCard>
+      <FlatList
+        bounces
+        showsVerticalScrollIndicator={false}
+        data={displayedGroups}
+        extraData={[selectionMode, selectedIds]}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 250, flexGrow: 1 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListEmptyComponent={
+          <Emptystate
+            title="No transactions yet"
+            description="Start by adding your income or expenses to see them here."
+          />
+        }
+        renderItem={({ item, index }) => {
             return (
               <Animated.View
                 entering={FadeInDown.duration(300).delay(Math.min(index, 6) * 40)}
@@ -640,17 +619,15 @@ export default function Index() {
                     <SwipeableRow
                       key={transaction.exp_ts_id}
                       disabled={selectionMode}
-                      isStarred={!!transaction.exp_st_id}
-                      onDelete={() => handleDelete(transaction.exp_ts_id)}
-                      onStar={() => handleStar(transaction.exp_ts_id, !!transaction.exp_st_id)}>
+                      onDelete={() => handleDelete(transaction.exp_ts_id)}>
                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         {selectionMode && (
-                          <MaterialIcons
-                            name={isSelected ? 'check-box' : 'check-box-outline-blank'}
-                            size={20}
-                            color={isSelected ? colors.primary : colors.lighterTitle}
-                            style={{ marginRight: 8 }}
-                          />
+                          <View style={{ marginRight: 8 }}>
+                            <Checkbox
+                              checked={isSelected}
+                              onPress={() => toggleSelect(transaction.exp_ts_id)}
+                            />
+                          </View>
                         )}
                         <View style={{ flex: 1 }}>
                           <TransactionCard
@@ -674,30 +651,34 @@ export default function Index() {
           }}
           keyExtractor={(item) => item.date}
         />
-      )}
 
       {selectionMode && selectedIds.size > 0 && (
         <View
           style={[
             styles.bulkActionBar,
-            { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+            { backgroundColor: colors.bottomBarBackground, borderColor: colors.inputBorder },
           ]}>
           <Text style={{ color: colors.title, fontFamily: 'Inter-600' }}>
             {selectedIds.size} selected
           </Text>
-          <View style={{ flexDirection: 'row', gap: 20 }}>
-            <TouchableOpacity onPress={handleBulkStar}>
-              <MaterialIcons name="star-outline" size={22} color={colors.favorite} />
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity
+              style={[styles.bulkActionButton, { backgroundColor: `${colors.favorite}1A` }]}
+              onPress={handleBulkStar}>
+              <MaterialIcons name="star-outline" size={19} color={colors.favorite} />
             </TouchableOpacity>
             <TouchableOpacity
+              style={[styles.bulkActionButton, { backgroundColor: `${colors.primary}1A` }]}
               onPress={() => {
                 setBulkCategoryId('');
                 setCategoryModalVisible(true);
               }}>
-              <MaterialIcons name="label-outline" size={22} color={colors.text} />
+              <MaterialIcons name="label-outline" size={19} color={colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleBulkDelete}>
-              <MaterialIcons name="delete-outline" size={22} color={colors.expense} />
+            <TouchableOpacity
+              style={[styles.bulkActionButton, { backgroundColor: `${colors.expense}1A` }]}
+              onPress={handleBulkDelete}>
+              <MaterialIcons name="delete-outline" size={19} color={colors.expense} />
             </TouchableOpacity>
           </View>
         </View>
@@ -728,6 +709,8 @@ export default function Index() {
           </>
         )}
       </ModalCard>
+
+      {confirmModal}
     </ThemedView>
   );
 }
@@ -756,13 +739,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'absolute',
     bottom: 20,
-    right: 0,
+    right: 10,
     elevation: 2,
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 1,
     shadowRadius: 3.84,
     zIndex: 2,
-    marginRight: 10,
   },
   iconTrigger: {
     width: 32,
@@ -782,6 +764,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderTopWidth: 1,
+  },
+  bulkActionButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   applyButton: {
     alignItems: 'center',

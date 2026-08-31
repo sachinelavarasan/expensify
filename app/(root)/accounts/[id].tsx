@@ -1,6 +1,7 @@
 import BankCard from '@/components/AccountCard';
 import AddAccount from '@/components/AddAccount';
 import Emptystate from '@/components/Emptystate';
+import ModalCard from '@/components/ModalCard';
 import ProfileHeader from '@/components/ProfileHeader';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import Spacer from '@/components/Spacer';
@@ -16,6 +17,7 @@ import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { FontSize } from '@/utils/Typography';
+import { Spacing } from '@/utils/Spacing';
 import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
@@ -29,7 +31,6 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 
 const width = deviceWidth();
@@ -47,6 +48,7 @@ export default function AccountScreen() {
   const { mutateAsync: deleteAccount, isPending: isDeleting } = useDeleteBankAccount();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
 
   const router = useRouter();
 
@@ -70,47 +72,37 @@ export default function AccountScreen() {
     }, 2000);
   }, [refetch]);
 
-  const handleDelete = async () => {
-    try {
-      const confirm = await new Promise((resolve) =>
-        Alert.alert('Delete this account?', 'Are you sure you want to delete this account?', [
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-          { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-        ]),
-      );
-
-      if (!confirm) return;
-
-      if (account?.exp_ba_id)
-        deleteAccount(account.exp_ba_id)
-          .then(() => {
-            showToast({
-              text1: 'The account has been removed.',
-              type: 'success',
-              position: 'bottom',
-            });
-            router.back()
-          })
-          .catch((err) => {
-            showToast({
-              text1: getApiErrorMessage(err, 'Server Error'),
-              type: 'error',
-              position: 'bottom',
-            });
-          });
-    } catch (error) {
-      console.error('Error deleting account:', error);
-    }
+  const confirmDelete = () => {
+    if (!account?.exp_ba_id) return;
+    deleteAccount(account.exp_ba_id)
+      .then(() => {
+        showToast({
+          text1: 'The account has been removed.',
+          type: 'success',
+          position: 'bottom',
+        });
+        router.back();
+      })
+      .catch((err) => {
+        showToast({
+          text1: getApiErrorMessage(err, 'Server Error'),
+          type: 'error',
+          position: 'bottom',
+        });
+      })
+      .finally(() => {
+        setDeleteConfirmVisible(false);
+      });
   };
 
   return (
     <SafeAreaViewComponent edges={['top']}>
       <ThemedView style={styles.container}>
         <View style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
-          <ProfileHeader title="Account Details" subtitle="All Time" paddingHorizontal={false}>
+          <ProfileHeader title="Account Details" paddingHorizontal={false}>
             <View>
               {!!account?.exp_ba_id && (
-                <View style={{gap: 20, flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ gap: 20, flexDirection: 'row', alignItems: 'center' }}>
                   <AddAccount
                     account={{
                       ...account,
@@ -119,7 +111,7 @@ export default function AccountScreen() {
                   />
                   <TouchableOpacity
                     style={[styles.iconButton, { backgroundColor: `${colors.expense}1A` }]}
-                    onPress={handleDelete}
+                    onPress={() => setDeleteConfirmVisible(true)}
                     disabled={isDeleting}>
                     <MaterialIcons name="delete-forever" size={20} color={colors.expense} />
                   </TouchableOpacity>
@@ -146,6 +138,7 @@ export default function AccountScreen() {
                 income={totals.income}
                 expense={totals.expense}
                 transactionCount={totals.transactionCount}
+                variant="ratio"
                 otherStyle={{
                   width: cardWidth,
                 }}
@@ -179,24 +172,27 @@ export default function AccountScreen() {
                 ) : null
               }
               renderItem={({ item }) => (
-                <View style={{ paddingHorizontal: 5 }}>
+                <View
+                  style={[
+                    styles.row,
+                    { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                  ]}>
                   <TransactionCard key={item.exp_ts_id} {...item} showTsTime={value} />
                 </View>
               )}
               renderSectionHeader={({ section: { title, income, expense } }) => (
-                <View
-                  style={[styles.sectionHeader, { backgroundColor: colors.bottomBarBackground }]}>
-                  <Text style={[styles.dateHeader, { color: colors.title }]}>{title}</Text>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.dateHeader, { color: colors.lighterTitle }]}>{title}</Text>
 
                   <View style={{ flexDirection: 'row', gap: 6 }}>
                     {!!expense && (
-                      <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
+                      <Text style={[styles.totalAmount, { color: colors.expense }]}>
                         <Feather name="arrow-up-right" size={14} color={colors.expense} />
                         {formatToCurrency(expense)}
                       </Text>
                     )}
                     {!!income && (
-                      <Text style={[styles.totalAmount, { color: colors.lighterTitle }]}>
+                      <Text style={[styles.totalAmount, { color: colors.income }]}>
                         <Feather name="arrow-down-left" size={14} color={colors.income} />
                         {formatToCurrency(income)}
                       </Text>
@@ -204,10 +200,50 @@ export default function AccountScreen() {
                   </View>
                 </View>
               )}
-              stickySectionHeadersEnabled={true}
+              stickySectionHeadersEnabled={false}
             />
           </>
         )}
+
+        <ModalCard
+          visible={deleteConfirmVisible}
+          onClose={() => setDeleteConfirmVisible(false)}
+          title="Delete this account?"
+          closeDisabled={isDeleting}>
+          <Text style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+            This will permanently remove {account?.exp_ba_name || 'this account'} and cannot be
+            undone.
+          </Text>
+          <Spacer height={24} />
+          <View style={{ flexDirection: 'row', gap: Spacing.xl, justifyContent: 'center' }}>
+            <TouchableOpacity
+              style={[styles.modalButton, { borderColor: colors.inputBorder, borderWidth: 1 }]}
+              onPress={() => setDeleteConfirmVisible(false)}
+              disabled={isDeleting}>
+              <Text style={[styles.modalButtonText, { color: colors.description }]}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.modalButton,
+                { backgroundColor: colors.expense },
+                isDeleting ? styles.disable : {},
+              ]}
+              onPress={confirmDelete}
+              disabled={isDeleting}>
+              {isDeleting ? (
+                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+              ) : null}
+              <Text
+                style={[
+                  styles.modalButtonText,
+                  { color: colors.onPrimary },
+                  isDeleting ? styles.textDisable : {},
+                ]}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ModalCard>
       </ThemedView>
     </SafeAreaViewComponent>
   );
@@ -225,21 +261,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  row: {
+    marginHorizontal: 5,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderRadius: 14,
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    marginTop: 6,
     marginBottom: 4,
   },
   dateHeader: {
-    fontSize: FontSize.base,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   totalAmount: {
-    fontSize: FontSize.base,
-    fontFamily: 'Inter-500',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
   },
+  modalButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderRadius: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 9,
+  },
+  modalButtonText: {
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-600',
+  },
+  loader: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  disable: {
+    opacity: 0.7,
+  },
+  textDisable: { opacity: 0 },
 });

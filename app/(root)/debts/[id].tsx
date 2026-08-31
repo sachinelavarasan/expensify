@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -36,6 +35,7 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
+import { useConfirm } from '@/hooks/useConfirm';
 
 const repaymentSchema = z.object({
   exp_dr_amount: z
@@ -50,6 +50,7 @@ const repaymentSchema = z.object({
 type RepaymentFormValues = z.infer<typeof repaymentSchema>;
 
 export default function DebtDetail() {
+  const { confirm, confirmModal } = useConfirm();
   const { colors } = useThemeContext();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -71,13 +72,14 @@ export default function DebtDetail() {
   });
 
   const handleDelete = async () => {
-    const confirm = await new Promise((resolve) =>
-      Alert.alert('Delete this debt?', 'This will remove the debt and its repayment history.', [
-        { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-        { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-      ]),
-    );
-    if (!confirm || !debt) return;
+    const confirmed = await confirm({
+      title: 'Delete this debt?',
+      message: 'This will remove the debt and its repayment history.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+    if (!confirmed || !debt) return;
 
     deleteDebt(debt.exp_dt_id)
       .then(() => {
@@ -107,13 +109,14 @@ export default function DebtDetail() {
 
   const handleDeleteRepayment = async (repaymentId: string) => {
     if (!debt) return;
-    const confirm = await new Promise((resolve) =>
-      Alert.alert('Remove this repayment?', 'This will undo its effect on the remaining balance.', [
-        { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-        { text: 'Remove', style: 'destructive', onPress: () => resolve(true) },
-      ]),
-    );
-    if (!confirm) return;
+    const confirmed = await confirm({
+      title: 'Remove this repayment?',
+      message: 'This will undo its effect on the remaining balance.',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+    if (!confirmed) return;
 
     deleteRepayment({ debtId: debt.exp_dt_id, repaymentId }).catch((err) => {
       showToast({ text1: getApiErrorMessage(err, 'Server Error'), type: 'error', position: 'bottom' });
@@ -329,6 +332,8 @@ export default function DebtDetail() {
             )}
           </TouchableOpacity>
         </ModalCard>
+
+        {confirmModal}
       </ThemedView>
     </SafeAreaViewComponent>
   );

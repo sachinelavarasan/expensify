@@ -11,6 +11,19 @@ import { FontSize } from '@/utils/Typography';
 
 const chartWidth = deviceWidth() - 30 - 40;
 
+// Y-axis needs short, fixed-width labels regardless of magnitude - unlike
+// formatToCurrency (used for on-screen amounts elsewhere), which switches to
+// full comma-grouped numbers in the 1,000-99,999 range and can overflow the
+// axis's label column.
+function compactAxisLabel(value: number): string {
+  const abs = Math.abs(value);
+  const prefix = value < 0 ? '-' : '';
+  if (abs >= 10000000) return `${prefix}${(abs / 10000000).toFixed(1)}Cr`;
+  if (abs >= 100000) return `${prefix}${(abs / 100000).toFixed(1)}L`;
+  if (abs >= 1000) return `${prefix}${(abs / 1000).toFixed(1)}K`;
+  return `${prefix}${abs.toFixed(0)}`;
+}
+
 export default function SpendTrendChart({ months = 6 }: { months?: number }) {
   const { colors } = useThemeContext();
   const { trend, loading } = useSpendTrend(months);
@@ -42,7 +55,7 @@ export default function SpendTrendChart({ months = 6 }: { months?: number }) {
       data.push({
         value: point.expense,
         frontColor: colors.expense,
-        spacing: isLastMonth ? 4 : 16,
+        spacing: isLastMonth ? 4 : 12,
         barBorderTopLeftRadius: 4,
         barBorderTopRightRadius: 4,
         label: point.label,
@@ -62,10 +75,17 @@ export default function SpendTrendChart({ months = 6 }: { months?: number }) {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: colors.inputColor, borderColor: colors.inputBorder }]}
+      style={[styles.container, { backgroundColor: colors.cardBg, borderColor: colors.borderColor }]}
       accessibilityLabel={`Income and expense trend for the last ${months} months`}>
       <View style={styles.headerRow}>
-        <Text style={[styles.title, { color: colors.title }]}>Last {months} Months</Text>
+        <View style={{ flexShrink: 1 }}>
+          <Text style={[styles.title, { color: colors.title }]} numberOfLines={1}>
+            Income vs Expense
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.lighterTitle }]}>
+            Last {months} months
+          </Text>
+        </View>
         <View style={styles.legend}>
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: colors.income }]} />
@@ -92,19 +112,20 @@ export default function SpendTrendChart({ months = 6 }: { months?: number }) {
           data={barData}
           width={chartWidth}
           height={140}
-          barWidth={14}
-          initialSpacing={10}
-          endSpacing={10}
+          barWidth={10}
+          initialSpacing={8}
+          endSpacing={8}
+          yAxisLabelWidth={38}
           noOfSections={4}
           isAnimated
           animationDuration={400}
           yAxisThickness={0}
           xAxisThickness={0}
-          xAxisLabelTextStyle={{ color: colors.description, fontSize: FontSize.sm }}
-          yAxisTextStyle={{ color: colors.description, fontSize: FontSize.sm }}
+          xAxisLabelTextStyle={{ color: colors.description, fontSize: FontSize.xs }}
+          yAxisTextStyle={{ color: colors.description, fontSize: FontSize.xs }}
           rulesType="dashed"
           rulesColor={colors.borderColor}
-          formatYLabel={(label) => formatToCurrency(Number(label))}
+          formatYLabel={(label) => compactAxisLabel(Number(label))}
         />
       )}
     </View>
@@ -121,12 +142,18 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
     marginBottom: Spacing.md,
   },
   title: {
     fontSize: FontSize.base,
     fontFamily: 'Inter-600',
+  },
+  subtitle: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-500',
+    marginTop: 1,
   },
   legend: {
     flexDirection: 'row',

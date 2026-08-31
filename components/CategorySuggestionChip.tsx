@@ -20,6 +20,7 @@ export default function CategorySuggestionChip({
   onDismiss,
 }: Props) {
   const { colors } = useThemeContext();
+  const chipIconColor = iconBgColor || colors.categoryFallbackIcon;
 
   return (
     <View
@@ -42,14 +43,14 @@ export default function CategorySuggestionChip({
         {icon ? (
           <View
             style={{
-              backgroundColor: iconBgColor,
+              backgroundColor: `${chipIconColor}2E`,
               padding: 4,
               borderRadius: 50,
             }}>
             <MaterialIcons
               name={icon as React.ComponentProps<typeof MaterialIcons>['name']}
               size={12}
-              color={colors.onPrimary}
+              color={chipIconColor}
             />
           </View>
         ) : null}

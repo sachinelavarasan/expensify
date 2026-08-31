@@ -11,11 +11,9 @@ import { ThemedView } from '@/components/ThemedView';
 import MonthSwitcher from '@/components/MonthSwitch';
 import useBudgetsForMonth from '@/hooks/useBudget';
 import BudgetSummaryCard from '@/components/BudgetSummaryCard';
-import BudgetAlerts from '@/components/BudgetAlerts';
 import BudgetCategoryFilters, { BudgetCategoryFilter } from '@/components/BudgetCategoryFilters';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { deviceWidth } from '@/utils/functions';
 import { MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
 import ModalCard from '@/components/ModalCard';
@@ -25,7 +23,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Input from '@/components/Input';
 import { showToast } from '@/components/ToastMessage';
-import { useAddBudget, useDeleteBudget, useUpdateBudget } from '@/hooks/useBudgetOperation';
+import {
+  useAddBudget,
+  useCopyPreviousMonthBudgets,
+  useDeleteBudget,
+  useUpdateBudget,
+} from '@/hooks/useBudgetOperation';
 import { IBudget } from '@/types';
 import { BudgetedCategoriesList } from '@/components/CollapsibleCategoryCard';
 import OverlayLoader from '@/components/Overlay';
@@ -74,6 +77,8 @@ const Budget = () => {
   const { mutateAsync: addBudget, isPending: isLoading } = useAddBudget();
   const { mutateAsync: editBudget, isPending: isUpdating } = useUpdateBudget();
   const { mutateAsync: deleteBudget, isPending: isDeleting } = useDeleteBudget();
+  const { mutateAsync: copyPreviousMonthBudgets, isPending: isCopying } =
+    useCopyPreviousMonthBudgets();
 
   const {
     control,
@@ -183,6 +188,27 @@ const Budget = () => {
     }
   };
 
+  const handleCopyPreviousMonth = () => {
+    copyPreviousMonthBudgets({ exp_bg_date: currentDate.toISOString() })
+      .then(({ copied }) => {
+        showToast({
+          text1: copied > 0 ? `Copied ${copied} budget${copied === 1 ? '' : 's'}` : 'No budget found for last month',
+          type: copied > 0 ? 'success' : 'info',
+          position: 'bottom',
+        });
+        if (copied > 0) {
+          refetch();
+        }
+      })
+      .catch((err) => {
+        showToast({
+          text1: getApiErrorMessage(err, 'Server Error'),
+          type: 'error',
+          position: 'bottom',
+        });
+      });
+  };
+
   const handleDelete = () => {
     if (!currentBudget?.exp_bg_id) {
       return;
@@ -235,7 +261,6 @@ const Budget = () => {
                     totalBudget={totalBudget}
                     totalRemaining={totalRemaining}
                   />
-                  <BudgetAlerts budgetedCategories={budgetedCategories} />
                 </View>
               )}
 
@@ -268,8 +293,20 @@ const Budget = () => {
               ) : (
                 <Emptystate
                   title="No budget set"
-                  description="Set a budget for this month to start tracking your spending."
-                />
+                  description="Set a budget for this month to start tracking your spending.">
+                  <TouchableOpacity
+                    style={[styles.setLimitButton, { backgroundColor: `${colors.primary}1A` }]}
+                    onPress={handleCopyPreviousMonth}
+                    disabled={isCopying}>
+                    {isCopying ? (
+                      <ActivityIndicator animating color={colors.primary} />
+                    ) : (
+                      <Text style={[styles.setLimitText, { color: colors.primary }]}>
+                        Copy from last month
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </Emptystate>
               )}
 
               {filteredNonBudgeted.length > 0 && (
@@ -278,83 +315,54 @@ const Budget = () => {
                     Not Budgeted Categories
                   </Text>
 
-                  {filteredNonBudgeted.map((category) => (
+                  {filteredNonBudgeted.map((category) => {
+                    const iconColor = category.iconBg || colors.categoryFallbackIcon;
+                    return (
                     <FadeInView key={category.category}>
-                    <View style={styles.subMenuContainer}>
-                      <View style={styles.card}>
-                        <View style={styles.left}>
-                          <View
-                            style={{
-                              backgroundColor: category.iconBg
-                                ? category.iconBg
-                                : colors.categoryFallbackBg,
-                              padding: 5,
-                              borderRadius: 5,
-                            }}>
-                            <MaterialIcons
-                              name={
-                                category.icon as React.ComponentProps<typeof MaterialIcons>['name']
-                              }
-                              size={24}
-                              color={colors.categoryFallbackIcon}
-                            />
-                          </View>
-                          <View>
-                            <Text
-                              style={[
-                                styles.cardTitle,
-                                { color: colors.title, flex: 1, flexWrap: 'wrap' },
-                              ]}>
-                              {category.category}
-                            </Text>
-                            <View
-                              style={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: Spacing.sm,
-                              }}>
-                              <Text style={[styles.subText, { color: colors.description }]}>
-                                Spent :
-                              </Text>
-                              <Text
-                                style={[
-                                  styles.subText,
-                                  { color: colors.title, fontFamily: 'Inter-600' },
-                                ]}>
-                                {formatToCurrency(category.totalAmount)}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                        <View>
-                          <TouchableOpacity
-                            style={[
-                              styles.buttonRounded,
-                              {
-                                borderColor: colors.secondary,
-                              },
-                            ]}
-                            onPress={() => {
-                              toggleModal(category);
-                            }}>
-                            <Text
-                              style={[
-                                styles.cardTitle,
-                                {
-                                  color: colors.secondary,
-                                  fontSize: FontSize.base,
-                                  fontFamily: 'Inter-600',
-                                },
-                              ]}>
-                              SET LIMIT
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
+                    <View
+                      style={[
+                        styles.unbudgetedRow,
+                        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                      ]}>
+                      <View
+                        style={{
+                          backgroundColor: `${iconColor}2E`,
+                          padding: 8,
+                          borderRadius: 10,
+                        }}>
+                        <MaterialIcons
+                          name={
+                            category.icon as React.ComponentProps<typeof MaterialIcons>['name']
+                          }
+                          size={24}
+                          color={iconColor}
+                        />
                       </View>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[
+                            styles.cardTitle,
+                            { color: colors.title, flex: 1, flexWrap: 'wrap' },
+                          ]}>
+                          {category.category}
+                        </Text>
+                        <Text style={[styles.subText, { color: colors.description, marginTop: 2 }]}>
+                          Spent {formatToCurrency(category.totalAmount)}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={[styles.setLimitButton, { backgroundColor: `${colors.primary}1A` }]}
+                        onPress={() => {
+                          toggleModal(category);
+                        }}>
+                        <Text style={[styles.setLimitText, { color: colors.primary }]}>
+                          Set Limit
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                     </FadeInView>
-                  ))}
+                    );
+                  })}
                 </View>
               )}
             </>
@@ -434,21 +442,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
     // color applied inline via theme colors at each usage site
   },
-  left: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-    maxWidth: deviceWidth() * 0.5,
-  },
   cardTitle: {
     fontSize: FontSize.md,
     fontFamily: 'Inter-600',
     // color applied inline via theme colors at each usage site
-  },
-  subMenuContainer: {
-    // paddingVertical: 4,
   },
   subText: {
     fontSize: FontSize.sm,
@@ -456,19 +453,23 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-500',
     // color applied inline via theme colors at each usage site
   },
-  card: {
-    paddingVertical: Spacing.xl,
+  unbudgetedRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: 8,
-  },
-  buttonRounded: {
+    gap: 10,
+    padding: 12,
+    marginBottom: 8,
     borderWidth: 1,
-    borderRadius: 50,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.sm,
-    width: 'auto',
+    borderRadius: 14,
+  },
+  setLimitButton: {
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  setLimitText: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-700',
   },
   budgetButton: {
     alignItems: 'center',

@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Spacer from './Spacer';
 import ModalCard from './ModalCard';
-import { Entypo } from '@expo/vector-icons';
+import { Entypo, Ionicons } from '@expo/vector-icons';
 import { dataGroupingType } from '@/utils/common-data';
 import CustomRadioButton from './CustomRadioButton';
 import { useThemeContext } from '@/contexts/ThemedContext';
@@ -10,9 +10,15 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 const GroupingModal = ({
   grouping,
   update,
+  // Swaps the trigger's neutral barBackground/borderColor chip for a
+  // colors.primary tint, to sit visually alongside other primary-tinted
+  // icon triggers (e.g. dashboard/index.tsx's calendar toggle) - opt-in so
+  // the settings and stats screens keep their current neutral chip.
+  tint = false,
 }: {
   grouping: 'daily' | 'weekly' | 'monthly';
   update: (date: 'daily' | 'weekly' | 'monthly') => void;
+  tint?: boolean;
 }) => {
   const { colors } = useThemeContext();
   const [show, setShow] = useState(false);
@@ -35,12 +41,25 @@ const GroupingModal = ({
 
   return (
     <>
-      <TouchableOpacity style={[styles.card, { backgroundColor: colors.primary }]} onPress={toggleModal}>
-        <View style={styles.chip}>
-          <Text style={[styles.subText, { color: colors.onPrimary }]}>{grouping}</Text>
-          <Entypo name="chevron-small-down" size={20} color={colors.onPrimary} />
-        </View>
-      </TouchableOpacity>
+      {tint ? (
+        <TouchableOpacity
+          onPress={toggleModal}
+          style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
+          <Ionicons name="layers-outline" size={16} color={colors.primary} />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={[
+            styles.card,
+            { backgroundColor: colors.barBackground, borderColor: colors.borderColor },
+          ]}
+          onPress={toggleModal}>
+          <View style={styles.chip}>
+            <Text style={[styles.subText, { color: colors.title }]}>{grouping}</Text>
+            <Entypo name="chevron-small-down" size={20} color={colors.lighterTitle} />
+          </View>
+        </TouchableOpacity>
+      )}
 
       <ModalCard visible={show} onClose={toggleModal} title="Default Grouping">
         <CustomRadioButton
@@ -96,7 +115,15 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 50,
+    borderWidth: 1,
     flexShrink: 1,
+  },
+  iconTrigger: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chip: {
     display: 'flex',

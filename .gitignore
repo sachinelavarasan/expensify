@@ -48,3 +48,5 @@ play-console-services.json
 *.apk
 *service*.json
 *firebase-adminsdk*.json
+
+*.sql

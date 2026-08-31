@@ -1,52 +1,75 @@
 import {
-  Alert,
+  ActivityIndicator,
   FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CustomColorSwatches } from '@/components/ColorPicker';
-import IconPicker from '@/components/IconPicker';
 import SafeAreaViewComponent from '@/components/SafeAreaView';
 import { MaterialIcons } from '@expo/vector-icons';
-import Input from '@/components/Input';
+import RowInput from '@/components/RowInput';
+import IconPickerSheet from '@/components/IconPickerSheet';
+import ColorPickerSheet from '@/components/ColorPickerSheet';
+import SegmentedControl from '@/components/SegmentedControl';
+import CategorySelector from '@/components/CategorySelector';
+import ModalCard from '@/components/ModalCard';
 import Spacer from '@/components/Spacer';
 import ProfileHeader from '@/components/ProfileHeader';
 import { CoreTransactionType } from '@/utils/common-data';
 import { showToast } from '@/components/ToastMessage';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import {
   useAddCategory,
   useDeleteCategory,
   useEditCategory,
+  useGetCategoryCache,
 } from '@/hooks/useCategoryListOperation';
-import CustomRadioButton from '@/components/CustomRadioButton';
 import OverlayLoader from '@/components/Overlay';
 import { ICategoryWithCount } from '@/types';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { getApiErrorMessage } from '@/lib/apiClient';
+import { getCategoryIconName } from '@/utils/categoryIcon';
+import { Spacing } from '@/utils/Spacing';
+import { FontSize } from '@/utils/Typography';
 
 const Category = () => {
   const router = useRouter();
-  const { theme, colors } = useThemeContext();
+  const { colors } = useThemeContext();
 
   const { id, data } = useLocalSearchParams<{ id: string; data?: string }>();
   const { mutateAsync: addCategory, isPending: isAdding } = useAddCategory();
   const { mutateAsync: editCategory, isPending: isEditing } = useEditCategory();
   const { mutateAsync: deleteCategory, isPending: isDeleting } = useDeleteCategory();
-  const [transactionCount, setTransactionCount] = useState<number>(0);
-  const [categoryDetail, setCategoryDetail] = useState({
-    exp_tc_icon: 'category',
-    exp_tc_icon_bg_color: '#36454F',
-    exp_tc_label: '',
-    exp_tc_transaction_type: 1,
-  });
+  const { categories: cachedCategories } = useGetCategoryCache();
+
+  // `data` is a fixed route param for this screen's lifetime (set once by
+  // the Link that navigated here), so the initial state can just be computed
+  // directly from it via useState's lazy initializer - no effect, and no
+  // "did this prop change" dance needed for a value that never changes.
+  const existingCategory = data ? (JSON.parse(data) as unknown as ICategoryWithCount) : null;
+
+  const [transactionCount] = useState<number>(() =>
+    existingCategory ? Number(existingCategory.transaction_count) : 0,
+  );
+  const [categoryDetail, setCategoryDetail] = useState(() =>
+    existingCategory
+      ? {
+          exp_tc_icon: existingCategory.exp_tc_icon || '',
+          exp_tc_icon_bg_color: existingCategory.exp_tc_icon_bg_color || '',
+          exp_tc_label: existingCategory.exp_tc_label || '',
+          exp_tc_transaction_type: existingCategory.exp_tc_transaction_type,
+        }
+      : {
+          exp_tc_icon: 'category',
+          exp_tc_icon_bg_color: '#4682B4',
+          exp_tc_label: '',
+          exp_tc_transaction_type: 1,
+        },
+  );
+  const heroIconColor = categoryDetail.exp_tc_icon_bg_color || colors.categoryFallbackIcon;
 
   const onSelect = (key: string, data: string | number) => {
     setCategoryDetail((state) => ({
@@ -55,19 +78,8 @@ const Category = () => {
     }));
   };
 
-  useEffect(() => {
-    if (data) {
-      const category = JSON.parse(data) as unknown as ICategoryWithCount;
-      setCategoryDetail((state) => ({
-        ...state,
-        exp_tc_icon: category.exp_tc_icon || '',
-        exp_tc_icon_bg_color: category.exp_tc_icon_bg_color || '',
-        exp_tc_label: category.exp_tc_label || '',
-        exp_tc_transaction_type: category.exp_tc_transaction_type,
-      }));
-      setTransactionCount(Number(category.transaction_count));
-    }
-  }, [data]);
+  const isSaving = isAdding || isEditing;
+
   const handlePress = () => {
     if (categoryDetail.exp_tc_label.trim().length === 0) {
       showToast({
@@ -114,193 +126,221 @@ const Category = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!id) {
-      return;
+  // Categories the deleted category's transactions could be reassigned to:
+  // same transaction type, not the category being deleted itself. 'Others'
+  // (the pre-selected default - see openDeleteConfirm) is moved to the front
+  // so the default choice is visible without scrolling the picker.
+  const reassignOptions = useMemo(() => {
+    const options = cachedCategories.filter(
+      (item) =>
+        item.exp_tc_transaction_type === categoryDetail.exp_tc_transaction_type &&
+        item.exp_tc_id !== id,
+    );
+    const othersIndex = options.findIndex((item) => item.exp_tc_label === 'Others');
+    if (othersIndex > 0) {
+      const [others] = options.splice(othersIndex, 1);
+      options.unshift(others);
     }
-    try {
-      const confirm = await new Promise((resolve) =>
-        Alert.alert(
-          'Delete this category?',
-          `Has ${transactionCount} transactions\n \nAll transactions will be moved to the 'Others' category.`,
-          [
-            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-            { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-          ],
-          // { cancelable: true },
-        ),
-      );
+    return options;
+  }, [cachedCategories, categoryDetail.exp_tc_transaction_type, id]);
 
-      if (!confirm) return;
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [reassignCategoryId, setReassignCategoryId] = useState('');
 
-      deleteCategory(id)
-        .then(() => {
-          showToast({
-            text1: 'Category removed successfully',
-            type: 'success',
-            position: 'bottom',
-          });
-          router.back();
-        })
-        .catch((err) => {
-          showToast({
-            text1: getApiErrorMessage(err, 'Server Error'),
-            type: 'error',
-            position: 'bottom',
-          });
+  const openDeleteConfirm = () => {
+    const others = reassignOptions.find((item) => item.exp_tc_label === 'Others');
+    setReassignCategoryId(others?.exp_tc_id || '');
+    setDeleteConfirmVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (!id) return;
+    deleteCategory({
+      id,
+      targetCategoryId: transactionCount > 0 ? reassignCategoryId : undefined,
+    })
+      .then(() => {
+        showToast({
+          text1: 'Category removed successfully',
+          type: 'success',
+          position: 'bottom',
         });
-    } catch (error) {
-      console.error('Error deleting transaction:', error);
-    }
+        router.back();
+      })
+      .catch((err) => {
+        showToast({
+          text1: getApiErrorMessage(err, 'Server Error'),
+          type: 'error',
+          position: 'bottom',
+        });
+      })
+      .finally(() => {
+        setDeleteConfirmVisible(false);
+      });
   };
 
-  const scrollY = useSharedValue(0);
-  const buttonVisible = useSharedValue(1);
-
-  const scrollHandler = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset } = event.nativeEvent;
-    const currentY = contentOffset.y;
-
-    if (currentY + 200 > scrollY.value) {
-      buttonVisible.value = withTiming(0);
-    } else {
-      buttonVisible.value = withTiming(1);
-    }
-
-    scrollY.value = currentY;
-  };
-
-  const animatedButtonStyle = useAnimatedStyle(() => {
-    return {
-      opacity: buttonVisible.value,
-      transform: [
-        {
-          translateX: withTiming(buttonVisible.value ? 0 : 150, { duration: 200 }),
-        },
-      ],
-    };
-  });
   return (
     <SafeAreaViewComponent>
       <ThemedView style={styles.container}>
         {(isAdding || isEditing || isDeleting) && <OverlayLoader />}
-        <Animated.View
-          style={[
-            styles.floatingButton,
-            { backgroundColor: colors.primary, shadowColor: colors.shadow },
-            animatedButtonStyle,
-          ]}>
-          <TouchableOpacity
-            style={{
-              width: '100%',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onPress={handlePress}>
-            <MaterialIcons name="check" size={24} color={colors.onPrimary} />
-          </TouchableOpacity>
-        </Animated.View>
 
         <View style={{ paddingHorizontal: 10, paddingBottom: 10 }}>
           <ProfileHeader
             title={id === 'add' ? 'Add New Category' : 'Update Category'}
-            deleteAction={id === 'add' ? undefined : handleDelete}
+            deleteAction={id === 'add' ? undefined : openDeleteConfirm}
           />
         </View>
-
-        <View style={{ paddingHorizontal: 20 }}>
-          <View
-            style={[
-              styles.previewCard,
-              {
-                backgroundColor: colors.inputColor,
-                borderColor: colors.inputBorder,
-                shadowColor: colors.shadow,
-              },
-            ]}>
-            <View
-              style={[
-                styles.previewIconBox,
-                {
-                  backgroundColor: categoryDetail.exp_tc_icon_bg_color || colors.categoryFallbackBg,
-                },
-              ]}>
-              {!!categoryDetail.exp_tc_icon && (
-                <MaterialIcons
-                  name={
-                    categoryDetail.exp_tc_icon as React.ComponentProps<typeof MaterialIcons>['name']
-                  }
-                  size={16}
-                  color={colors.categoryFallbackIcon}
-                />
-              )}
-            </View>
-            <Text
-              style={[
-                styles.previewName,
-                { color: categoryDetail.exp_tc_label ? colors.title : colors.lighterTitle },
-              ]}
-              numberOfLines={1}>
-              {categoryDetail.exp_tc_label || 'Category Name'}
-            </Text>
-          </View>
-        </View>
-        <Spacer height={10} />
 
         <FlatList
           data={[1]}
           contentContainerStyle={{
             paddingHorizontal: 20,
-            paddingBottom: 40,
-          }}
-          scrollEventThrottle={16}
-          onScrollBeginDrag={scrollHandler}
-          onScrollEndDrag={() => {
-            buttonVisible.value = withTiming(1, { duration: 200 });
+            paddingBottom: 100,
           }}
           bounces={false}
           showsVerticalScrollIndicator={false}
-          renderItem={() => {
-            return (
-              <View>
-                <CustomRadioButton
-                  // label="Transaction Type"
-                  value={categoryDetail.exp_tc_transaction_type}
-                  options={CoreTransactionType}
-                  onChange={(data) => {
-                    onSelect('exp_tc_transaction_type', data);
-                  }}
-                />
-                <Spacer height={20} />
-                <Input
+          renderItem={() => (
+            <View>
+              <View style={styles.hero}>
+                <View style={[styles.heroAvatar, { backgroundColor: `${heroIconColor}2E` }]}>
+                  <MaterialIcons
+                    name={getCategoryIconName(categoryDetail.exp_tc_icon)}
+                    size={34}
+                    color={heroIconColor}
+                  />
+                </View>
+                <Text style={[styles.heroCaption, { color: colors.description }]}>
+                  Live preview
+                </Text>
+              </View>
+
+              <SegmentedControl
+                value={categoryDetail.exp_tc_transaction_type}
+                options={CoreTransactionType}
+                onChange={(data) => onSelect('exp_tc_transaction_type', data)}
+              />
+              <Spacer height={Spacing.lg} />
+
+              <Text style={[styles.cardLabel, { color: colors.lighterTitle }]}>Details</Text>
+              <View
+                style={[
+                  styles.card,
+                  { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                ]}>
+                <RowInput
+                  icon={<Text style={[styles.rowGlyph, { color: colors.primary }]}>Aa</Text>}
+                  label="Name"
+                  value={categoryDetail.exp_tc_label}
                   placeholder="Category Name"
-                  keyboardType="numbers-and-punctuation"
                   autoCapitalize="none"
                   autoComplete="off"
-                  value={categoryDetail.exp_tc_label}
-                  onChangeText={(text) => {
-                    onSelect('exp_tc_label', text);
-                  }}
-                  borderLess
+                  onChangeText={(text) => onSelect('exp_tc_label', text)}
                 />
-                <Spacer height={30} />
-                <CustomColorSwatches
-                  currentValue={categoryDetail.exp_tc_icon_bg_color}
-                  onSelect={(icon) => {
-                    onSelect('exp_tc_icon_bg_color', icon);
-                  }}
+                <IconPickerSheet
+                  value={categoryDetail.exp_tc_icon}
+                  previewColor={categoryDetail.exp_tc_icon_bg_color}
+                  onChange={(icon) => onSelect('exp_tc_icon', icon)}
                 />
-                <IconPicker
-                  currentValue={categoryDetail.exp_tc_icon}
-                  onSelect={(color) => {
-                    onSelect('exp_tc_icon', color);
-                  }}
+                <ColorPickerSheet
+                  value={categoryDetail.exp_tc_icon_bg_color}
+                  onChange={(color) => onSelect('exp_tc_icon_bg_color', color)}
+                  showDivider={false}
                 />
               </View>
-            );
-          }}
+            </View>
+          )}
         />
+
+        <View style={[styles.footer, { backgroundColor: colors.bottomBarBackground }]}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: colors.primary },
+              isSaving ? styles.disable : {},
+            ]}
+            disabled={isSaving}
+            onPress={handlePress}>
+            {isSaving ? (
+              <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+            ) : null}
+            <Text
+              style={[
+                styles.buttonTitle,
+                { color: colors.onPrimary },
+                isSaving ? styles.textDisable : {},
+              ]}>
+              {id === 'add' ? 'Save category' : 'Update category'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <ModalCard
+          visible={deleteConfirmVisible}
+          onClose={() => setDeleteConfirmVisible(false)}
+          title="Delete this category?"
+          closeDisabled={isDeleting}>
+          {transactionCount > 0 ? (
+            <>
+              <Text
+                style={{
+                  color: colors.description,
+                  fontFamily: 'Inter-500',
+                  fontSize: FontSize.sm,
+                }}>
+                This category has {transactionCount} transaction{transactionCount === 1 ? '' : 's'}.
+                Choose where they should move to:
+              </Text>
+              <Spacer height={14} />
+              {reassignOptions.length > 0 ? (
+                <CategorySelector
+                  categories={reassignOptions}
+                  selected={reassignCategoryId}
+                  onSelect={setReassignCategoryId}
+                />
+              ) : (
+                <Text
+                  style={{ color: colors.expense, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+                  No other {categoryDetail.exp_tc_transaction_type === 2 ? 'income' : 'expense'}{' '}
+                  category exists to move these transactions to.
+                </Text>
+              )}
+            </>
+          ) : (
+            <Text
+              style={{ color: colors.description, fontFamily: 'Inter-500', fontSize: FontSize.sm }}>
+              This category has no transactions.
+            </Text>
+          )}
+          <Spacer height={24} />
+          <View style={{ flexDirection: 'row', gap: Spacing.xl, justifyContent: 'center' }}>
+            <TouchableOpacity
+              style={[styles.modalButton, { borderColor: colors.inputBorder, borderWidth: 1 }]}
+              onPress={() => setDeleteConfirmVisible(false)}
+              disabled={isDeleting}>
+              <Text style={[styles.modalButtonText, { color: colors.description }]}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.modalButton,
+                { backgroundColor: colors.expense },
+                isDeleting || (transactionCount > 0 && !reassignCategoryId) ? styles.disable : {},
+              ]}
+              onPress={confirmDelete}
+              disabled={isDeleting || (transactionCount > 0 && !reassignCategoryId)}>
+              {isDeleting ? (
+                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
+              ) : null}
+              <Text
+                style={[
+                  styles.modalButtonText,
+                  { color: colors.onPrimary },
+                  isDeleting ? styles.textDisable : {},
+                ]}>
+                Delete
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ModalCard>
       </ThemedView>
     </SafeAreaViewComponent>
   );
@@ -312,45 +352,74 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  previewCard: {
-    flexDirection: 'row',
+  hero: {
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
+    paddingVertical: Spacing.lg,
+    gap: Spacing.sm,
   },
-  previewIconBox: {
-    height: 30,
-    width: 30,
-    borderRadius: 8,
+  heroAvatar: {
+    width: 76,
+    height: 76,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  previewName: {
-    fontSize: 14,
+  heroCaption: {
+    fontSize: FontSize.xs,
+    fontFamily: 'Inter-500',
+  },
+  cardLabel: {
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
-    flexShrink: 1,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.sm,
+    marginLeft: 4,
   },
-  floatingButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  card: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: Spacing.lg,
+  },
+  rowGlyph: {
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-700',
+  },
+  footer: {
+    elevation: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 10,
+  },
+  button: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderRadius: 14,
+    paddingVertical: 12,
+  },
+  loader: {
+    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 45,
-    right: 0,
-    elevation: 5,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    zIndex: 2,
-    marginRight: 20,
+  },
+  buttonTitle: {
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-600',
+  },
+  disable: {
+    opacity: 0.7,
+  },
+  textDisable: { opacity: 0 },
+  modalButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderRadius: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: 9,
+  },
+  modalButtonText: {
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-600',
   },
 });

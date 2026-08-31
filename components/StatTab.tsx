@@ -1,11 +1,12 @@
 import { Itransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { PieChart, pieDataItem } from 'react-native-gifted-charts';
 
 import { useThemeContext } from '@/contexts/ThemedContext';
-import Spacer from './Spacer';
+import SegmentedControl from './SegmentedControl';
 import { FontSize } from '@/utils/Typography';
 import { Spacing } from '@/utils/Spacing';
 
@@ -17,72 +18,59 @@ interface progressBar {
   percentage: number;
 }
 
-type SegmentProps = {
-  color: string;
-  percentage: number;
-  progress: any; // sharedValue passed down
-};
-
-function ProgressSegment({ color, percentage, progress }: SegmentProps) {
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      flex: percentage * progress.value,
-    };
-  });
-
-  return <Animated.View style={[styles.segment, { backgroundColor: color }, animatedStyle]} />;
-}
-
-function MultiColorProgressBar({ data }: { data: progressBar[] }) {
-  const progress = useSharedValue(0);
+function CategoryDonut({
+  data,
+  total,
+  emptyLabel,
+}: {
+  data: progressBar[];
+  total: number;
+  emptyLabel: string;
+}) {
   const { colors } = useThemeContext();
 
-  useEffect(() => {
-    progress.value = withTiming(1, { duration: 1500 });
-  }, [progress]);
-
-  if(!data || data.length === 0){
-    return <Text style={[styles.subText, { color: colors.description }]}>No income transaction added yet</Text>
+  if (!data || data.length === 0) {
+    return <Text style={[styles.subText, { color: colors.description }]}>{emptyLabel}</Text>;
   }
+
+  const pieData: pieDataItem[] = data.map((cat) => ({
+    value: cat.totalAmount,
+    color: cat.color || colors.categoryFallbackIcon,
+  }));
 
   return (
     <View
-      style={{
-        padding: 10,
-        // backgroundColor: colors.bottomBarBackground,
-        borderWidth: 1,
-        // borderColor: colors.borderColor,
-        borderRadius: 6,
-        marginBottom: 10,
-        backgroundColor: colors.inputColor, 
-        borderColor: colors.inputBorder
-      }}>
-      <Text
-        style={{
-          fontFamily: 'Inter-600',
-          fontSize: FontSize.base,
-          color: colors.title,
-        }}>
-        Spending by Category
-      </Text>
-      <Spacer height={10} />
-      <View style={[styles.barBackground, { backgroundColor: colors.barBackground }]}>
-        {data.map((cat, index) => (
-          <ProgressSegment
-            key={index}
-            color={cat.color}
-            percentage={cat.percentage}
-            progress={progress}
-          />
-        ))}
+      style={[
+        styles.donutSection,
+        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+      ]}>
+      <View style={styles.donutWrap}>
+        <PieChart
+          data={pieData}
+          radius={72}
+          donut
+          isAnimated
+          animationDuration={500}
+          innerCircleColor={colors.cardBg}
+          innerRadius={50}
+          centerLabelComponent={() => (
+            <View style={{ alignItems: 'center' }}>
+              <Text style={[styles.centerLabel, { color: colors.description }]}>Total</Text>
+              <Text style={[styles.centerValue, { color: colors.title }]} numberOfLines={1}>
+                {formatToCurrency(total)}
+              </Text>
+            </View>
+          )}
+        />
       </View>
 
-      <View style={styles.legend}>
+      <View style={styles.donutLegend}>
         {data.map((cat, i) => (
-          <View key={i} style={styles.legendItem}>
+          <View key={i} style={styles.donutLegendItem}>
             <View style={[styles.colorBox, { backgroundColor: cat.color }]} />
             <Text style={[styles.legendText, { color: colors.description }]}>
-              {cat.category} - {cat.percentage}%
+              <Text style={{ fontFamily: 'Inter-600', color: colors.title }}>{cat.category}</Text>{' '}
+              {cat.percentage}%
             </Text>
           </View>
         ))}
@@ -183,74 +171,46 @@ export default function IncomeExpenseTabs({ transactions }: { transactions: Itra
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.inputColor, borderColor: colors.inputBorder },
+        { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
       ]}>
-      <View style={[styles.tabContainer, { backgroundColor: colors.barBackground }]}>
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 'income' && { ...styles.activeTab, backgroundColor: colors.primary },
+      <View style={{ marginBottom: Spacing.lg }}>
+        <SegmentedControl
+          options={[
+            { id: 'income', label: 'Income', count: incomeTransactions.length },
+            { id: 'expense', label: 'Expense', count: expenseTransactions.length },
           ]}
-          onPress={() => setActiveTab('income')}>
-          <Text
-            style={[
-              styles.tabText,
-              { color: colors.description },
-              activeTab === 'income' && [styles.activeTabText, { color: colors.onPrimary }],
-            ]}>
-            Income
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            activeTab === 'expense' && { ...styles.activeTab, backgroundColor: colors.primary },
-          ]}
-          onPress={() => setActiveTab('expense')}>
-          <Text
-            style={[
-              styles.tabText,
-              { color: colors.description },
-              activeTab === 'expense' && [styles.activeTabText, { color: colors.onPrimary }],
-            ]}>
-            Expense
-          </Text>
-        </TouchableOpacity>
+          value={activeTab}
+          onChange={(id) => setActiveTab(id as 'income' | 'expense')}
+        />
       </View>
 
-      <MultiColorProgressBar data={data} />
+      <CategoryDonut
+        data={data}
+        total={activeTab === 'income' ? totalIncome : totalExpense}
+        emptyLabel={`No ${activeTab} transaction added yet`}
+      />
 
       <FlatList
         data={data}
         keyExtractor={(item) => item.category}
+        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+            ]}>
+            <View style={[styles.dot, { backgroundColor: item.color || colors.categoryFallbackIcon }]} />
             <View style={styles.left}>
-              <View>
-                <View>
-                  <Text style={[styles.name, { color: colors.title }]}>{item.category}</Text>
-                </View>
-                <View style={styles.subTextContainer}>
-                  <Text
-                    style={[
-                      styles.subText,
-                      { marginRight: 6, fontFamily: 'Inter-600', color: colors.description },
-                    ]}>
-                    {formatToCurrency(item.totalAmount)} <Text>{'\u2022'}</Text>
-                  </Text>
-                  <Text style={[styles.subText, { color: colors.description }]}>
-                    {item.transactionCount}{' '}
-                    {item.transactionCount === 1 ? 'transaction' : 'transactions'}
-                  </Text>
-                </View>
-              </View>
+              <Text style={[styles.name, { color: colors.title }]}>{item.category}</Text>
+              <Text style={[styles.subText, { color: colors.description }]}>
+                {formatToCurrency(item.totalAmount)} {'\u00b7'} {item.transactionCount}{' '}
+                {item.transactionCount === 1 ? 'txn' : 'txns'}
+              </Text>
             </View>
 
-            <View>
-              <Text style={[styles.amount, { color: colors.description }]}>
-                {item.percentage} %
-              </Text>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={[styles.amount, { color: colors.title }]}>{item.percentage}%</Text>
               <ProgressBar percentage={item.percentage} color={item.color} />
             </View>
           </View>
@@ -268,87 +228,69 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginVertical: Spacing.lg,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: Spacing.lg,
-    borderRadius: 8,
-    padding: 5,
-  },
-  tab: {
-    flex: 1,
-    padding: 5,
-    alignItems: 'center',
-  },
-  activeTab: {
-    borderRadius: 8,
-  },
-  tabText: {
-    fontFamily: 'Inter-500',
-  },
-  activeTabText: {
-    // color applied inline via colors.onPrimary at usage site (active tab pill uses colors.primary)
-  },
   card: {
-    padding: Spacing.sm,
-    marginBottom: 2,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: FontSize.md,
-    fontFamily: 'Inter-600',
-  },
-  amount: {
-    fontSize: FontSize.sm,
-    fontFamily: 'Inter-400',
-    textAlign: 'center',
-  },
-  left: {
-    display: 'flex',
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    flexShrink: 0,
+  },
+  amount: {
+    fontSize: FontSize.md,
+    fontFamily: 'Inter-700',
+  },
+  left: {
     flex: 1,
   },
   name: {
     fontSize: FontSize.base,
-    fontFamily: 'Inter-600',
+    fontFamily: 'Inter-700',
   },
   subText: {
     fontSize: FontSize.sm,
-    fontFamily: 'Inter-400',
+    fontFamily: 'Inter-500',
+    marginTop: 2,
   },
-  subTextContainer: {
-    display: 'flex',
+  donutSection: {
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderRadius: 6,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  donutWrap: {
+    marginBottom: Spacing.md,
+  },
+  centerLabel: {
+    fontSize: 10,
+    fontFamily: 'Inter-500',
+  },
+  centerValue: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    marginTop: 1,
+  },
+  donutLegend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  donutLegendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-  },
-  barBackground: {
-    flexDirection: 'row',
-    height: 20,
-    width: '100%',
-    borderRadius: 10,
-    overflow: 'hidden',
-    // backgroundColor applied inline via colors.barBackground at usage site
-  },
-  segment: {
-    height: '100%',
-    borderRadius: 0,
-  },
-  legend: {
-    marginTop: Spacing.md,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
   },
   colorBox: {
-    width: 14,
-    height: 14,
-    marginRight: Spacing.sm,
+    width: 10,
+    height: 10,
+    marginRight: 6,
     borderRadius: 3,
   },
   legendText: {

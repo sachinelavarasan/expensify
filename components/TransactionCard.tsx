@@ -23,6 +23,7 @@ const TransactionCard = ({
   exp_tc_icon_bg_color,
   exp_ba_name,
   exp_ts_transfer_direction,
+  exp_ts_transfer_counterpart_account_name,
   isStarred,
   showTsTime = true,
   noRedirect = false,
@@ -36,6 +37,19 @@ const TransactionCard = ({
   onLongPress?: () => void;
 }) => {
   const { colors } = useThemeContext();
+  const iconColor = exp_tc_icon_bg_color || colors.categoryFallbackIcon;
+
+  // A transfer has no meaningful category (it moves money between the
+  // user's own accounts) - show which accounts it moved between instead.
+  // Falls back to the category label if the counterpart account name isn't
+  // available (e.g. its leg was hard-deleted independently).
+  const isTransfer = exp_tt_id === 3;
+  const subLabel =
+    isTransfer && exp_ts_transfer_counterpart_account_name
+      ? exp_ts_transfer_direction === 'out'
+        ? `${exp_ba_name} → ${exp_ts_transfer_counterpart_account_name}`
+        : `${exp_ts_transfer_counterpart_account_name} → ${exp_ba_name}`
+      : exp_ts_category;
   // TouchableOpacity can fire onPress right after onLongPress completes on
   // release - without suppressing that trailing press, a long-press-to-select
   // would immediately get toggled back off by the press that follows it.
@@ -70,12 +84,9 @@ const TransactionCard = ({
         <View style={styles.left}>
           <View
             style={{
-              backgroundColor: exp_tc_icon_bg_color
-                ? exp_tc_icon_bg_color
-                : colors.categoryFallbackBg,
-              padding: 6,
-              borderRadius: 5,
-              marginTop: 2,
+              backgroundColor: `${iconColor}2E`,
+              padding: 8,
+              borderRadius: 10,
               alignSelf: 'flex-start',
             }}>
             <MaterialIcons
@@ -89,7 +100,7 @@ const TransactionCard = ({
                       : 'trending-down'
               }
               size={20}
-              color={colors.categoryFallbackIcon}
+              color={iconColor}
             />
           </View>
           <View style={{ flexShrink: 1 }}>
@@ -110,7 +121,7 @@ const TransactionCard = ({
                   },
                 ]}
                 numberOfLines={1}>
-                {exp_ts_category}
+                {subLabel}
               </Text>
               {!!showTsTime && (
                 <Text
@@ -127,25 +138,31 @@ const TransactionCard = ({
                   <Text>{'\u2022'}</Text> {timeCoverter(exp_ts_time)}
                 </Text>
               )}
-              <View
-                style={{
-                  borderColor: colors.borderColor,
-                  borderWidth: 1,
-                  borderRadius: 4,
-                  paddingHorizontal: 4,
-                  paddingVertical: 1,
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  gap: 4,
-                  flexShrink: 0,
-                  maxWidth: 90,
-                }}>
-                <Text
-                  style={[styles.subText, { fontSize: 9, color: colors.secondary }]}
-                  numberOfLines={1}>
-                  {exp_ba_name}
-                </Text>
-              </View>
+              {// The account badge normally names this leg's own account, but
+              // for a transfer with a resolved counterpart, subLabel above
+              // already shows "From → To" - repeating exp_ba_name here would
+              // just duplicate one side of that.
+              !(isTransfer && exp_ts_transfer_counterpart_account_name) && (
+                <View
+                  style={{
+                    borderColor: colors.borderColor,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    paddingHorizontal: 4,
+                    paddingVertical: 1,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    gap: 4,
+                    flexShrink: 0,
+                    maxWidth: 90,
+                  }}>
+                  <Text
+                    style={[styles.subText, { fontSize: 9, color: colors.secondary }]}
+                    numberOfLines={1}>
+                    {exp_ba_name}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -225,7 +242,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   amount: {
-    fontSize: 11,
-    fontFamily: 'Inter-600',
+    fontSize: 15,
+    fontFamily: 'Inter-700',
   },
 });

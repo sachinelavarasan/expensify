@@ -1,21 +1,24 @@
 import { useThemeContext } from '@/contexts/ThemedContext';
 import React from 'react';
-import { Image, StyleSheet, Text, View, ViewProps } from 'react-native';
+import { StyleSheet, Text, View, ViewProps } from 'react-native';
+import EmptystateIllustration from './EmptystateIllustration';
 
 interface ExtraButtonProps {
   title: string;
   description?: string;
+  children?: React.ReactNode;
 }
 
-const Emptystate = ({ title, description, ...props }: ExtraButtonProps & ViewProps) => {
+const Emptystate = ({ title, description, children, ...props }: ExtraButtonProps & ViewProps) => {
   const { colors } = useThemeContext();
   return (
     <View style={styles.container}>
-      <Image source={require('@/assets/images/empty-state.png')} />
+      <EmptystateIllustration />
       <View style={styles.contenContainer}>
         <Text style={[styles.title, { color: colors.title }]}>{title}</Text>
         <Text style={[styles.description, { color: colors.description }]}>{description}</Text>
       </View>
+      {children}
     </View>
   );
 };
