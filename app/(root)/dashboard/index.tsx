@@ -354,9 +354,20 @@ export default function Index() {
     debit: groupedData[date]
       .filter((item) => item.exp_tt_id === 1)
       .reduce((sum, item) => sum + Number(item.exp_ts_amount), 0),
+    // Transfers move money between the user's own accounts, so they don't
+    // count as income/expense, but they still change the balance of the
+    // account(s) currently in view.
+    transferNet: groupedData[date]
+      .filter((item) => item.exp_tt_id === 3)
+      .reduce(
+        (sum, item) =>
+          sum + (item.exp_ts_transfer_direction === 'out' ? -1 : 1) * Number(item.exp_ts_amount),
+        0,
+      ),
   }));
   const income = groupedDataArray.reduce((acc, item) => acc + item.credit, 0);
   const expense = groupedDataArray.reduce((acc, item) => acc + item.debit, 0);
+  const transferNet = groupedDataArray.reduce((acc, item) => acc + item.transferNet, 0);
 
   const selectedTransactionTypes = useMemo(() => {
     const types = new Set<number>();
@@ -382,8 +393,8 @@ export default function Index() {
   const balance = useMemo(() => {
     if (!accounts || accounts.length === 0) return 0;
     if (carryBalance) return netWorth;
-    return income - expense;
-  }, [accounts, carryBalance, income, expense, netWorth]);
+    return income - expense + transferNet;
+  }, [accounts, carryBalance, income, expense, transferNet, netWorth]);
 
   return (
     <ThemedView style={{ flex: 1 }}>
