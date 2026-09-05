@@ -1,7 +1,8 @@
 import {
   BankAccount,
   CreateBankAccountDto,
-  IAccountGroupedTransactions,
+  IAccountSummary,
+  IAccountTransactionsPage,
   ITransactionGroup,
   UpdateBankAccountDto,
 } from '@/types';
@@ -40,7 +41,7 @@ export const useUpdateBankAccount = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['accountDetailPaginated', variables.exp_ba_id],
+        queryKey: ['accountSummary', variables.exp_ba_id],
       });
       queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
     },
@@ -60,7 +61,7 @@ export const useSetPrimaryBankAccount = () => {
       // Setting a primary demotes whichever account held it before, so any
       // mounted account-detail view (not just the one just promoted) may be
       // showing a stale exp_ba_is_primary - invalidate the whole family.
-      queryClient.invalidateQueries({ queryKey: ['accountDetailPaginated'] });
+      queryClient.invalidateQueries({ queryKey: ['accountSummary'] });
     },
   });
 };
@@ -100,7 +101,31 @@ export const useBankAccounts = () => {
   };
 };
 
-export const useAccountGroupedTransactions = (accountId: string) => {
+export const useAccountSummary = (accountId: string) => {
+  const {
+    data,
+    isLoading: loading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<IAccountSummary, Error>({
+    queryKey: ['accountSummary', accountId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/expensify/accounts/${accountId}`);
+      return res.data;
+    },
+    enabled: !!accountId,
+  });
+
+  return {
+    account: data ?? null,
+    loading,
+    error: isError ? error?.message : null,
+    refetch,
+  };
+};
+
+export const useAccountTransactions = (accountId: string) => {
   const {
     data,
     isLoading: loading,
@@ -110,14 +135,10 @@ export const useAccountGroupedTransactions = (accountId: string) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery<IAccountGroupedTransactions, Error>({
-    // Deliberately a distinct key from the old ['accountDetail', id] single-page
-    // query this replaced - reusing that key would let a stale-shaped cache entry
-    // (a flat object with no `.pages`) from an older client session collide with
-    // useInfiniteQuery's expected {pages, pageParams} shape and crash on read.
-    queryKey: ['accountDetailPaginated', accountId],
+  } = useInfiniteQuery<IAccountTransactionsPage, Error>({
+    queryKey: ['accountTransactionsPaginated', accountId],
     queryFn: async ({ pageParam }) => {
-      const res = await apiClient.get(`/expensify/accounts/${accountId}`, {
+      const res = await apiClient.get(`/expensify/accounts/${accountId}/transactions`, {
         params: { page: pageParam, limit: ACCOUNT_TRANSACTIONS_PAGE_SIZE },
       });
       return res.data;
@@ -130,29 +151,28 @@ export const useAccountGroupedTransactions = (accountId: string) => {
   // Pages come back pre-grouped by month; since transactions are fetched newest-first,
   // a month can only ever straddle the boundary between the end of one page and the
   // start of the next, so merging just needs to check the last accumulated group.
-  const account = useMemo(() => {
+  const groups = useMemo(() => {
     const pages = data?.pages;
-    if (!pages || pages.length === 0) return null;
+    if (!pages || pages.length === 0) return [];
 
-    const groups: ITransactionGroup[] = [];
+    const merged: ITransactionGroup[] = [];
     for (const page of pages) {
       for (const group of page.data) {
-        const last = groups[groups.length - 1];
+        const last = merged[merged.length - 1];
         if (last && last.title === group.title) {
           last.income += group.income;
           last.expense += group.expense;
           last.data = last.data.concat(group.data);
         } else {
-          groups.push({ ...group, data: [...group.data] });
+          merged.push({ ...group, data: [...group.data] });
         }
       }
     }
-
-    return { ...pages[0], data: groups };
+    return merged;
   }, [data]);
 
   return {
-    account,
+    groups,
     loading,
     error: isError ? error?.message : null,
     refetch,

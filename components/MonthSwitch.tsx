@@ -16,6 +16,13 @@ const MonthSwitcher = ({
   currentDate,
   dateRangeType,
   onSelectDate,
+  label,
+  barBackground,
+  contentColor,
+  iconSize = 26,
+  monthFontSize = 14,
+  labelFontSize = 13,
+  rowSpacing = 5,
 }: {
   nextMonth: () => void;
   prevMonth: () => void;
@@ -26,8 +33,17 @@ const MonthSwitcher = ({
   currentDate?: Date;
   dateRangeType?: DateRangeType;
   onSelectDate?: (date: Date) => void;
+  label?: string;
+  barBackground?: string;
+  contentColor?: string;
+  iconSize?: number;
+  monthFontSize?: number;
+  labelFontSize?: number;
+  rowSpacing?: number;
 }) => {
   const { colors } = useThemeContext();
+  const arrowColor = contentColor ?? colors.arrowColor;
+  const textColor = contentColor ?? colors.monthSwitcher;
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerYear, setPickerYear] = useState(() => (currentDate ?? new Date()).getFullYear());
   // Drives the week picker's own header (title + prev/next arrows) - kept
@@ -114,26 +130,42 @@ const MonthSwitcher = ({
 
   return (
     <View style={styles.monthSwitch}>
-      <TouchableOpacity onPress={prevMonth} style={styles.arrowButton}>
-        <MaterialIcons name="keyboard-arrow-left" size={26} color={colors.arrowColor} />
-      </TouchableOpacity>
+      <View
+        style={[
+          styles.row,
+          { marginVertical: rowSpacing },
+          !!barBackground && [styles.bar, { backgroundColor: barBackground }],
+        ]}>
+        {!!label && (
+          <Text
+            style={[styles.periodLabel, { color: textColor, fontSize: labelFontSize }]}
+            numberOfLines={1}>
+            {label}
+          </Text>
+        )}
+        <View style={[styles.rangeGroup, !label && styles.rangeGroupFill]}>
+          <TouchableOpacity onPress={prevMonth} style={styles.arrowButton} hitSlop={8}>
+            <MaterialIcons name="keyboard-arrow-left" size={iconSize} color={arrowColor} />
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={openPicker}
-        disabled={!canPick}
-        style={styles.monthTextWrapper}
-        hitSlop={{ top: 6, bottom: 6 }}>
-        <Text
-          style={[styles.month, { color: colors.monthSwitcher }]}
-          numberOfLines={1}
-          ellipsizeMode="tail">
-          {currentMonth}
-        </Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            onPress={openPicker}
+            disabled={!canPick}
+            style={styles.monthTextWrapper}
+            hitSlop={{ top: 6, bottom: 6 }}>
+            <Text
+              style={[styles.month, { color: textColor, fontSize: monthFontSize }]}
+              numberOfLines={1}
+              ellipsizeMode="tail">
+              {currentMonth}
+            </Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity onPress={nextMonth} style={styles.arrowButton}>
-        <MaterialIcons name="keyboard-arrow-right" size={26} color={colors.arrowColor} />
-      </TouchableOpacity>
+          <TouchableOpacity onPress={nextMonth} style={styles.arrowButton} hitSlop={8}>
+            <MaterialIcons name="keyboard-arrow-right" size={iconSize} color={arrowColor} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {canPick && (
         <ModalCard
@@ -146,13 +178,15 @@ const MonthSwitcher = ({
               <View style={styles.yearRow}>
                 <TouchableOpacity
                   onPress={() => setPickerYear((y) => y - 1)}
-                  style={styles.arrowButton}>
+                  style={styles.arrowButton}
+                  hitSlop={8}>
                   <MaterialIcons name="keyboard-arrow-left" size={24} color={colors.arrowColor} />
                 </TouchableOpacity>
                 <Text style={[styles.yearText, { color: colors.title }]}>{pickerYear}</Text>
                 <TouchableOpacity
                   onPress={() => setPickerYear((y) => y + 1)}
-                  style={styles.arrowButton}>
+                  style={styles.arrowButton}
+                  hitSlop={8}>
                   <MaterialIcons
                     name="keyboard-arrow-right"
                     size={24}
@@ -195,7 +229,8 @@ const MonthSwitcher = ({
               <View style={styles.yearRow}>
                 <TouchableOpacity
                   onPress={() => setWeekPickerDate((d) => addDays(d, -7))}
-                  style={styles.arrowButton}>
+                  style={styles.arrowButton}
+                  hitSlop={8}>
                   <MaterialIcons name="keyboard-arrow-left" size={24} color={colors.arrowColor} />
                 </TouchableOpacity>
                 <Text style={[styles.yearText, { color: colors.title }]} numberOfLines={1}>
@@ -203,7 +238,8 @@ const MonthSwitcher = ({
                 </Text>
                 <TouchableOpacity
                   onPress={() => setWeekPickerDate((d) => addDays(d, 7))}
-                  style={styles.arrowButton}>
+                  style={styles.arrowButton}
+                  hitSlop={8}>
                   <MaterialIcons
                     name="keyboard-arrow-right"
                     size={24}
@@ -270,10 +306,35 @@ const styles = StyleSheet.create({
   },
   monthSwitch: {
     flexDirection: 'row',
+    flex: 1,
+    minWidth: 0,
+  },
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginVertical: 5,
     flex: 1,
     minWidth: 0,
+    gap: 8,
+  },
+  bar: {
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  periodLabel: {
+    fontSize: 13,
+    fontFamily: 'Inter-700',
+    flexShrink: 0,
+  },
+  rangeGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 0,
+  },
+  rangeGroupFill: {
+    flex: 1,
   },
   arrowButton: {
     paddingHorizontal: 8,

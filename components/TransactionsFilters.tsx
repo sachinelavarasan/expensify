@@ -85,7 +85,6 @@ const TransactionFilters = ({
   const activeFilterCount = [
     !!searchText,
     !!selectedTransaction,
-    selectedAccount.length > 0,
     selectedTags.length > 0,
     !!selectedDateRange,
     !!selectedMinAmount,
@@ -124,15 +123,6 @@ const TransactionFilters = ({
       categoryIds: prev.categoryIds.includes(id)
         ? prev.categoryIds.filter((c) => c !== id)
         : [...prev.categoryIds, id],
-    }));
-  };
-
-  const toggleBankAccount = (id: string | number) => {
-    setDraft((prev) => ({
-      ...prev,
-      bankAccount: prev.bankAccount.includes(id)
-        ? prev.bankAccount.filter((a) => a !== id)
-        : [...prev.bankAccount, id],
     }));
   };
 
@@ -207,20 +197,6 @@ const TransactionFilters = ({
             onChange={(id) => {
               setDraft((prev) => ({ ...prev, transactionType: id as string, categoryIds: [] }));
             }}
-          />
-        </View>
-        <Spacer height={15} />
-        <View style={{ paddingHorizontal: 5 }}>
-          <ChipSelect
-            variant="chip"
-            label="Bank Account"
-            value={draft.bankAccount}
-            multiple
-            options={accounts.map((account) => ({
-              id: account.exp_ba_id,
-              label: account.exp_ba_name,
-            }))}
-            onChange={toggleBankAccount}
           />
         </View>
         <Spacer height={20} />

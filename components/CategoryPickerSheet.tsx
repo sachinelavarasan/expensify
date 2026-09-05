@@ -24,15 +24,13 @@ interface Props {
 }
 
 const GRID_ROWS = 4;
-// Item width + column gap keeps the same total column pitch (96) as before,
-// so 4 columns still fit on screen at once - widening the gap without
-// narrowing the item would push the 4th column off the edge.
-const ITEM_WIDTH = 84;
-const ITEM_HEIGHT = 100;
-const ITEM_LABEL_WIDTH = 68;
-const AVATAR_SIZE = 48;
+const ITEM_WIDTH = 68;
+const ITEM_HEIGHT = 78;
+const ITEM_LABEL_WIDTH = 64;
+const AVATAR_SIZE = 42;
 const ROW_GAP = Spacing.sm;
-const COLUMN_GAP = Spacing.md;
+const COLUMN_GAP = 0;
+const COLUMN_PITCH = ITEM_WIDTH + COLUMN_GAP;
 // The grid's height is fixed regardless of category count (it only grows
 // horizontally), so the sheet's total height is fully predictable - a fixed
 // snap point avoids both dynamic-sizing's overflow risk on short screens and
@@ -124,7 +122,7 @@ export default function CategoryPickerSheet({
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: colors.cardBg }}
         handleComponent={null}>
-        <BottomSheetView style={[styles.sheetContent, { paddingBottom: 20 + insets.bottom }]}>
+        <BottomSheetView style={[styles.sheetContent, { paddingBottom: insets.bottom }]}>
           <View style={styles.sheetHeader}>
             <View style={styles.sheetHeaderSide} />
             <Text style={[styles.sheetTitle, { color: colors.title }]}>Choose a category</Text>
@@ -140,7 +138,12 @@ export default function CategoryPickerSheet({
             </View>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={COLUMN_PITCH * 4}
+            decelerationRate="fast"
+            disableIntervalMomentum>
             <View style={[styles.grid, { height: GRID_BLOCK_HEIGHT }]}>
               {gridEntries.map((item) => {
                 const active = item.exp_tc_id === value;
@@ -161,7 +164,7 @@ export default function CategoryPickerSheet({
                       ]}>
                       <MaterialIcons
                         name={getCategoryIconName(item.exp_tc_icon)}
-                        size={22}
+                        size={24}
                         color={itemColor}
                       />
                       {active && (
@@ -176,6 +179,7 @@ export default function CategoryPickerSheet({
                     </View>
                     <Text
                       numberOfLines={2}
+                      ellipsizeMode="tail"
                       style={[
                         styles.itemLabel,
                         { color: active ? colors.title : colors.description },
@@ -234,12 +238,11 @@ const styles = StyleSheet.create({
     width: ITEM_WIDTH,
     height: ITEM_HEIGHT,
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
   },
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },

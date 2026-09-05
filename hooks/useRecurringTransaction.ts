@@ -6,6 +6,7 @@ import {
   IRecurringTransaction,
   UpdateRecurringTransactionDto,
 } from '@/types';
+import { syncPlannedPaymentReminders } from '@/utils/plannedPaymentReminders';
 
 export const queryKeys = {
   recurringTransactions: ['recurringTransactions'] as const,
@@ -39,10 +40,11 @@ export const useAddRecurringTransaction = () => {
   return useMutation({
     mutationFn: async (data: CreateRecurringTransactionDto) => {
       const res = await apiClient.post('/expensify/recurring-transaction', data);
-      return res.data;
+      return res.data as IRecurringTransaction;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringTransactions });
+      syncPlannedPaymentReminders(created?.exp_rt_id);
     },
   });
 };
@@ -55,8 +57,9 @@ export const useUpdateRecurringTransaction = () => {
       const res = await apiClient.put(`/expensify/recurring-transaction/${data.exp_rt_id}`, data);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringTransactions });
+      syncPlannedPaymentReminders(variables.exp_rt_id);
     },
   });
 };
@@ -75,6 +78,7 @@ export const useImportRecurringTransactions = () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['bankAccounts'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringTransactions });
+      syncPlannedPaymentReminders();
     },
   });
 };
@@ -86,8 +90,9 @@ export const useDeleteRecurringTransaction = () => {
     mutationFn: async (id: string) => {
       await apiClient.delete(`/expensify/recurring-transaction/${id}`);
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurringTransactions });
+      syncPlannedPaymentReminders(id);
     },
   });
 };

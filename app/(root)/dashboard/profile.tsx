@@ -26,7 +26,6 @@ type MenuItem = {
   icon: React.ComponentProps<typeof MaterialIcons>['name'];
   title: string;
   subtitle: string;
-  color: string;
 };
 
 const MENU_GROUPS: { label: string; items: MenuItem[] }[] = [
@@ -38,28 +37,30 @@ const MENU_GROUPS: { label: string; items: MenuItem[] }[] = [
         icon: 'star',
         title: 'Starred Transactions',
         subtitle: 'Access your favorite transactions quickly',
-        color: '#F59E0B',
       },
       {
         href: '/(root)/recurring-transactions',
         icon: 'event-repeat',
         title: 'Recurring Transactions',
         subtitle: 'Get reminders for bills and income that repeat',
-        color: '#3B82F6',
+      },
+      {
+        href: '/(root)/payment-reminders',
+        icon: 'notifications-active',
+        title: 'Payment Reminders',
+        subtitle: 'Get reminded to pay bills like EMIs, without auto-logging them',
       },
       {
         href: '/(root)/export-import-transactions',
         icon: 'import-export',
         title: 'Import / Export Transactions',
         subtitle: 'Download and share your transaction history',
-        color: '#14B8A6',
       },
       {
         href: '/(root)/trash',
         icon: 'auto-delete',
         title: 'Trash',
         subtitle: 'Restore or permanently delete removed transactions',
-        color: '#EF4444',
       },
     ],
   },
@@ -71,14 +72,12 @@ const MENU_GROUPS: { label: string; items: MenuItem[] }[] = [
         icon: 'category',
         title: 'Categories',
         subtitle: 'Keep your spending neatly sorted',
-        color: '#A855F7',
       },
       {
         href: '/(root)/debts',
         icon: 'handshake',
         title: 'Debts & Loans',
         subtitle: 'Track money you’ve lent or borrowed',
-        color: '#F97316',
       },
     ],
   },
@@ -90,7 +89,6 @@ const MENU_GROUPS: { label: string; items: MenuItem[] }[] = [
         icon: 'settings',
         title: 'Settings',
         subtitle: 'Customize your app preferences and controls',
-        color: '#6366F1',
       },
     ],
   },
@@ -193,8 +191,8 @@ const Profile = () => {
                 <Link key={String(item.href)} href={item.href} asChild>
                   <TouchableOpacity activeOpacity={0.7}>
                     <SettingsRow
-                      icon={<MaterialIcons name={item.icon} size={20} color={item.color} />}
-                      iconBg={`${item.color}1A`}
+                      icon={<MaterialIcons name={item.icon} size={20} color={colors.primary} />}
+                      iconBg={`${colors.primary}1A`}
                       title={item.title}
                       subtitle={item.subtitle}
                       noCard

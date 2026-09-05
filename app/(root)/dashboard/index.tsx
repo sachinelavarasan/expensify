@@ -18,7 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import Emptystate from '@/components/Emptystate';
 import TransactionCard from '@/components/TransactionCard';
-import MonthSwitcher from '@/components/MonthSwitch';
+import HomeHeader from '@/components/HomeHeader';
 import OverlayLoader from '@/components/Overlay';
 import { ThemedView } from '@/components/ThemedView';
 import useMonthlyTransactions from '@/hooks/useTransactionsList';
@@ -31,11 +31,11 @@ import HomeNudges from '@/components/HomeNudges';
 import CalendarGrid from '@/components/CalendarGrid';
 import CategorySelector from '@/components/CategorySelector';
 import ModalCard from '@/components/ModalCard';
+import TransactionFilters from '@/components/TransactionsFilters';
 import Spacer from '@/components/Spacer';
 import { useNetWorth } from '@/hooks/useNetWorth';
 import { Itransaction } from '@/types';
 import { useCategoryList } from '@/hooks/useCategoryListOperation';
-import TransactionFilters from '@/components/TransactionsFilters';
 import FilterChip from '@/components/FilterChip';
 import { useGetUserData } from '@/hooks/useUserStore';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
@@ -50,7 +50,6 @@ import {
   useBulkUpdateTransactions,
   useDeleteTransaction,
 } from '@/hooks/useTransaction';
-import GroupingModal from '@/components/GroupingModal';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { FontSize } from '@/utils/Typography';
 import { useConfirm } from '@/hooks/useConfirm';
@@ -354,9 +353,6 @@ export default function Index() {
     debit: groupedData[date]
       .filter((item) => item.exp_tt_id === 1)
       .reduce((sum, item) => sum + Number(item.exp_ts_amount), 0),
-    // Transfers move money between the user's own accounts, so they don't
-    // count as income/expense, but they still change the balance of the
-    // account(s) currently in view.
     transferNet: groupedData[date]
       .filter((item) => item.exp_tt_id === 3)
       .reduce(
@@ -410,63 +406,31 @@ export default function Index() {
         </TouchableOpacity>
       )}
       <View style={{ backgroundColor: 'transparent', paddingBottom: 10 }}>
-        <View
-          style={{
-            paddingVertical: 10,
-            paddingHorizontal: 15,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            overflow: 'hidden',
-          }}>
+        <HomeHeader
+          accounts={accounts}
+          selectedAccountIds={bankAccount}
+          onSelectAccount={updateBankAccount}
+          grouping={dateRangeType}
+          updateGrouping={updateDateRangeType}
+        />
+        {selectionMode && (
           <View
-            style={{ flex: 1, minWidth: 0, opacity: customDateRange ? 0.4 : 1 }}
-            pointerEvents={customDateRange ? 'none' : 'auto'}>
-            <MonthSwitcher
-              nextMonth={goToNext}
-              prevMonth={goToPrevious}
-              currentMonth={formattedTitle}
-              currentDate={currentDate}
-              dateRangeType={dateRangeType}
-              onSelectDate={refetch}
-            />
+            style={{
+              paddingHorizontal: 15,
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              gap: 8,
+              overflow: 'hidden',
+            }}>
+            <TouchableOpacity
+              onPress={exitSelectionMode}
+              style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
+              <Ionicons name="close-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            {selectionMode ? (
-              <TouchableOpacity
-                onPress={exitSelectionMode}
-                style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
-                <Ionicons name="close-outline" size={18} color={colors.primary} />
-              </TouchableOpacity>
-            ) : (
-              <>
-                {!customDateRange && (
-                  <TouchableOpacity
-                    onPress={() => setViewMode('calendar')}
-                    style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
-                    <Ionicons name="calendar-outline" size={16} color={colors.primary} />
-                  </TouchableOpacity>
-                )}
-                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} tint />
-                <TransactionFilters
-                  applyFilters={applyFilters}
-                  searchText={search}
-                  selectedTransaction={transactionType}
-                  selectedAccount={bankAccount}
-                  accounts={accounts}
-                  categories={categories}
-                  selectedTags={tags}
-                  selectedDateRange={customDateRange}
-                  selectedMinAmount={minAmount}
-                  selectedMaxAmount={maxAmount}
-                  selectedCategoryIds={categoryIds}
-                  hasActiveFilters={hasActiveFilters}
-                />
-              </>
-            )}
-          </View>
-        </View>
-        <Animated.View style={[{ paddingHorizontal: 15 }, headerAnimatedStyle]}>
+        )}
+        <Animated.View style={[{ paddingHorizontal: 15, marginTop: 8 }, headerAnimatedStyle]}>
           <HomeSummaryCard
             income={income}
             expense={expense}
@@ -476,6 +440,13 @@ export default function Index() {
             transactions={transactions}
             netWorth={netWorth}
             showNetWorth={showNetWorth}
+            nextMonth={goToNext}
+            prevMonth={goToPrevious}
+            currentMonth={formattedTitle}
+            currentDate={currentDate}
+            dateRangeType={dateRangeType}
+            onSelectDate={refetch}
+            switcherDisabled={!!customDateRange}
           />
           <HomeNudges />
         </Animated.View>
@@ -579,6 +550,41 @@ export default function Index() {
           selectedDate={selectedDay ?? undefined}
         />
       </ModalCard>
+      {!selectionMode && (
+        <View
+          style={{
+            paddingHorizontal: 15,
+            paddingBottom: 8,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+          <Text style={[styles.sectionLabel, { color: colors.description }]}>Transactions</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {!customDateRange && (
+              <TouchableOpacity
+                onPress={() => setViewMode('calendar')}
+                style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
+                <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+              </TouchableOpacity>
+            )}
+            <TransactionFilters
+              applyFilters={applyFilters}
+              searchText={search}
+              selectedTransaction={transactionType}
+              selectedAccount={bankAccount}
+              accounts={accounts}
+              categories={categories}
+              selectedTags={tags}
+              selectedDateRange={customDateRange}
+              selectedMinAmount={minAmount}
+              selectedMaxAmount={maxAmount}
+              selectedCategoryIds={categoryIds}
+              hasActiveFilters={hasActiveFilters}
+            />
+          </View>
+        </View>
+      )}
       <FlatList
         bounces
         showsVerticalScrollIndicator={false}
@@ -763,6 +769,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sectionLabel: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   bulkActionBar: {
     position: 'absolute',

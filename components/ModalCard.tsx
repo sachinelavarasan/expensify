@@ -66,9 +66,10 @@ export default function ModalCard({
       useNativeDriverForBackdrop
       avoidKeyboard
       onBackButtonPress={closeDisabled ? undefined : onClose}
+      onBackdropPress={closeDisabled ? undefined : onClose}
       style={isSheet ? styles.modalSheet : undefined}
       coverScreen>
-      <View style={[styles.wrapper, isSheet && styles.wrapperSheet]}>
+      <View style={[styles.wrapper, isSheet && styles.wrapperSheet]} pointerEvents="box-none">
         <View
           style={[
             styles.card,

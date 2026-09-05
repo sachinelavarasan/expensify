@@ -1,7 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Spacer from './Spacer';
-import ModalCard from './ModalCard';
 import { Entypo, Ionicons } from '@expo/vector-icons';
 import { dataGroupingType } from '@/utils/common-data';
 import CustomRadioButton from './CustomRadioButton';
@@ -15,13 +16,16 @@ const GroupingModal = ({
   // icon triggers (e.g. dashboard/index.tsx's calendar toggle) - opt-in so
   // the settings and stats screens keep their current neutral chip.
   tint = false,
+  triggerWidth,
 }: {
   grouping: 'daily' | 'weekly' | 'monthly';
   update: (date: 'daily' | 'weekly' | 'monthly') => void;
   tint?: boolean;
+  triggerWidth?: number;
 }) => {
   const { colors } = useThemeContext();
-  const [show, setShow] = useState(false);
+  const insets = useSafeAreaInsets();
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [selection, setSelection] = useState<'daily' | 'weekly' | 'monthly'>('monthly');
 
   useEffect(() => {
@@ -30,20 +34,37 @@ const GroupingModal = ({
     }
   }, [grouping]);
 
-  const toggleModal = () => {
-    setShow(!show);
-  };
+  const openSheet = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+
+  const closeSheet = useCallback(() => {
+    bottomSheetModalRef.current?.dismiss();
+  }, []);
 
   const settingChange = () => {
     update(selection);
-    toggleModal();
+    closeSheet();
   };
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        pressBehavior="close"
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        style={{ backgroundColor: colors.scrim }}
+      />
+    ),
+    [colors],
+  );
 
   return (
     <>
       {tint ? (
         <TouchableOpacity
-          onPress={toggleModal}
+          onPress={openSheet}
           style={[styles.iconTrigger, { backgroundColor: `${colors.primary}1A` }]}>
           <Ionicons name="layers-outline" size={16} color={colors.primary} />
         </TouchableOpacity>
@@ -52,32 +73,45 @@ const GroupingModal = ({
           style={[
             styles.card,
             { backgroundColor: colors.barBackground, borderColor: colors.borderColor },
+            triggerWidth != null && { width: triggerWidth },
           ]}
-          onPress={toggleModal}>
+          onPress={openSheet}>
           <View style={styles.chip}>
-            <Text style={[styles.subText, { color: colors.title }]}>{grouping}</Text>
-            <Entypo name="chevron-small-down" size={20} color={colors.lighterTitle} />
+            <Ionicons name="layers-outline" size={13} color={colors.lighterTitle} />
+            <Text style={[styles.subText, { color: colors.title }]}>
+              {grouping.slice(0, 2).toUpperCase()}
+            </Text>
+            <Entypo name="chevron-small-down" size={16} color={colors.lighterTitle} />
           </View>
         </TouchableOpacity>
       )}
 
-      <ModalCard visible={show} onClose={toggleModal} title="Default Grouping">
-        <CustomRadioButton
-          isColumn
-          options={dataGroupingType}
-          value={selection}
-          onChange={(vale) => setSelection(vale as 'daily' | 'weekly' | 'monthly')}
-        />
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        enableDynamicSizing
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ backgroundColor: colors.cardBg }}
+        handleIndicatorStyle={{ backgroundColor: colors.borderColor }}>
+        <BottomSheetView style={[styles.sheetContent, { paddingBottom: 22 + insets.bottom }]}>
+          <Text style={[styles.sheetTitle, { color: colors.title }]}>Default Grouping</Text>
 
-        <Spacer height={20} />
-        <View>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: colors.primary }]}
-            onPress={settingChange}>
-            <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
-          </TouchableOpacity>
-        </View>
-      </ModalCard>
+          <CustomRadioButton
+            isColumn
+            options={dataGroupingType}
+            value={selection}
+            onChange={(vale) => setSelection(vale as 'daily' | 'weekly' | 'monthly')}
+          />
+
+          <Spacer height={20} />
+          <View>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.primary }]}
+              onPress={settingChange}>
+              <Text style={[styles.btntitle, { color: colors.onPrimary }]}>Apply</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
     </>
   );
 };
@@ -112,7 +146,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   card: {
-    paddingVertical: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 60,
+    paddingVertical: 6,
     paddingHorizontal: 8,
     borderRadius: 50,
     borderWidth: 1,
@@ -130,11 +167,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
     gap: 2,
   },
   subText: {
     fontSize: 14,
     fontFamily: 'Inter-600',
     textTransform: 'capitalize',
+  },
+  sheetContent: {
+    paddingHorizontal: 24,
+    paddingTop: 4,
+  },
+  sheetTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-600',
+    marginBottom: 16,
   },
 });

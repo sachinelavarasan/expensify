@@ -18,8 +18,16 @@ import { FontSize } from '@/utils/Typography';
 export default function Stat() {
   const { colors } = useThemeContext();
   const queryClient = useQueryClient();
-  const { transactions, formattedTitle, loading, goToNext, goToPrevious, refetch, dateRangeType, updateDateRangeType } =
-    useMonthlyTransactions();
+  const {
+    transactions,
+    formattedTitle,
+    loading,
+    goToNext,
+    goToPrevious,
+    refetch,
+    dateRangeType,
+    updateDateRangeType,
+  } = useMonthlyTransactions();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -74,14 +82,26 @@ export default function Stat() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListHeaderComponent={
           <>
-            <View style={{ paddingVertical: 10, flexDirection:'row', justifyContent:'space-between', alignItems:'center' }}>
-              <MonthSwitcher
-                nextMonth={goToNext}
-                prevMonth={goToPrevious}
-                currentMonth={formattedTitle}
-              />
+            <View
+              style={{
+                paddingVertical: 10,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+              <View style={{ width: '60%' }}>
+                <MonthSwitcher
+                  nextMonth={goToNext}
+                  prevMonth={goToPrevious}
+                  currentMonth={formattedTitle}
+                />
+              </View>
               <View style={{ flexShrink: 0 }}>
-                <GroupingModal grouping={dateRangeType} update={updateDateRangeType} tint />
+                <GroupingModal
+                  grouping={dateRangeType}
+                  update={updateDateRangeType}
+                  triggerWidth={70}
+                />
               </View>
             </View>
 
@@ -98,7 +118,9 @@ export default function Stat() {
 
             {transactions.length > 0 ? (
               <View>
-                <Text style={[styles.sectionHeader, { color: colors.lighterTitle }]}>By Category</Text>
+                <Text style={[styles.sectionHeader, { color: colors.lighterTitle }]}>
+                  By Category
+                </Text>
                 <IncomeExpenseTabs transactions={transactions} />
               </View>
             ) : (

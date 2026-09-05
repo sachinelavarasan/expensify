@@ -14,7 +14,7 @@ interface Props {
   multiple?: boolean;
 }
 
-const AVATAR_SIZE = 48;
+const AVATAR_SIZE = 44;
 
 export default function CategorySelector({
   categories,
@@ -49,7 +49,7 @@ export default function CategorySelector({
               ]}>
               <MaterialIcons
                 name={getCategoryIconName(item.exp_tc_icon)}
-                size={22}
+                size={24}
                 color={itemColor}
               />
               {active && (
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },

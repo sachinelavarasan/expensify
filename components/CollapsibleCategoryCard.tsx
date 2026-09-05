@@ -42,7 +42,7 @@ export function BudgetedCategoriesList({
     <View>
       {budgetedCategories.map((category: any) => (
         <CollapsibleCategoryCard
-          key={category.category}
+          key={category.categoryId}
           category={category}
           colors={colors}
           formatToCurrency={formatToCurrency}

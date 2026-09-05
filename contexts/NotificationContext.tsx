@@ -55,9 +55,12 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
       const data = response.notification.request.content.data as {
         type?: string;
+        recurringId?: string;
       };
       if (data?.type === 'recurring-transactions-monthly') {
         router.push('/import-recurring-transactions');
+      } else if (data?.type === 'planned-payment-reminder' && data.recurringId) {
+        router.push(`/planned-reminder?exp_rt_id=${data.recurringId}`);
       }
     });
 

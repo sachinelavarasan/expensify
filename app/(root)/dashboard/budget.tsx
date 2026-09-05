@@ -318,7 +318,7 @@ const Budget = () => {
                   {filteredNonBudgeted.map((category) => {
                     const iconColor = category.iconBg || colors.categoryFallbackIcon;
                     return (
-                    <FadeInView key={category.category}>
+                    <FadeInView key={category.categoryId}>
                     <View
                       style={[
                         styles.unbudgetedRow,

@@ -28,7 +28,10 @@ export default function ImportRecurringTransactions() {
     useImportRecurringTransactions();
 
   const activeTransactions = useMemo(
-    () => recurringTransactions.filter((item) => item.exp_rt_is_active),
+    () =>
+      recurringTransactions.filter(
+        (item) => item.exp_rt_is_active && item.exp_rt_kind === 'recurring',
+      ),
     [recurringTransactions],
   );
   const incomeItems = useMemo(

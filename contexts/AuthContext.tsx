@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import { AppState } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { getStoredTokens, setStoredTokens, clearStoredTokens } from '@/lib/secureStorage';
@@ -6,6 +7,7 @@ import { clearTokens, getAccessToken, onUnauthorized, setTokens as setStoreToken
 import { useNotification } from '@/contexts/NotificationContext';
 import { useEnableNotificationToken, useDisableNotificationToken } from '@/hooks/useSettings';
 import { showToast } from '@/components/ToastMessage';
+import { syncPlannedPaymentReminders } from '@/utils/plannedPaymentReminders';
 
 interface AuthTokens {
   accessToken: string;
@@ -67,6 +69,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       enableNotificationToken({ token: expoPushToken });
     }
   }, [isSignedIn, expoPushToken, enableNotificationToken]);
+
+  // Local reminders don't need a remote push token, so this resyncs independently
+  // of the effect above - on login, on session-restore, and again whenever the app
+  // returns to the foreground (catches reminders that fired/expired while backgrounded).
+  useEffect(() => {
+    if (isSignedIn) {
+      syncPlannedPaymentReminders();
+    }
+  }, [isSignedIn]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active' && isSignedIn) {
+        syncPlannedPaymentReminders();
+      }
+    });
+    return () => subscription.remove();
+  }, [isSignedIn]);
 
   const signOutRef = useRef(signOut);
   useEffect(() => {

@@ -2,13 +2,13 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { format, parseISO } from 'date-fns';
+import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 
 import { IRecurringTransaction } from '@/types';
 import { formatToCurrency } from '@/utils/formatter';
 import { recurringFrequencyType } from '@/utils/common-data';
 import { useThemeContext } from '@/contexts/ThemedContext';
-import { RECURRING_DUE_SOON_DAYS, getDaysUntilDue } from '@/utils/recurringAlerts';
+import { RECURRING_DUE_SOON_DAYS, getNextOccurrenceDate } from '@/utils/recurringAlerts';
 import CustomSwitch from './Switch';
 
 interface Props extends IRecurringTransaction {
@@ -21,8 +21,12 @@ const RecurringTransactionCard = ({
   exp_rt_amount,
   exp_rt_transaction_type_id,
   exp_rt_frequency,
+  exp_rt_start_date,
+  exp_rt_end_date,
   exp_rt_next_due_date,
   exp_rt_is_active,
+  exp_rt_kind,
+  exp_rt_reminder_time,
   exp_tc_icon,
   exp_tc_icon_bg_color,
   exp_tc_label,
@@ -35,13 +39,23 @@ const RecurringTransactionCard = ({
   const frequencyLabel =
     recurringFrequencyType.find((item) => item.id === exp_rt_frequency)?.label || exp_rt_frequency;
 
-  const daysUntil = getDaysUntilDue(exp_rt_next_due_date);
+  // Payment reminders compute their own next occurrence locally (see
+  // utils/plannedPaymentReminders.ts) rather than trusting next_due_date,
+  // which only advances via a server cron - keep the display consistent
+  // with whatever will actually notify.
+  const effectiveDueDate =
+    exp_rt_kind === 'reminder'
+      ? (getNextOccurrenceDate(exp_rt_start_date, exp_rt_frequency, exp_rt_end_date) ??
+        parseISO(exp_rt_next_due_date))
+      : parseISO(exp_rt_next_due_date);
+
+  const daysUntil = differenceInCalendarDays(effectiveDueDate, new Date());
   const isDueSoon = exp_rt_is_active && daysUntil <= RECURRING_DUE_SOON_DAYS;
 
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      onPress={() => router.push(`/recurring-transaction?exp_rt_id=${exp_rt_id}`)}
+      onPress={() => router.push(`/planned-reminder?exp_rt_id=${exp_rt_id}`)}
       style={[
         styles.innerContainer,
         { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
@@ -67,6 +81,7 @@ const RecurringTransactionCard = ({
           </Text>
           <Text style={[styles.subText, { color: colors.lighterTitle, marginTop: 2 }]} numberOfLines={1}>
             {exp_tc_label} · {frequencyLabel}
+            {exp_rt_kind === 'reminder' && exp_rt_reminder_time ? ` · ${exp_rt_reminder_time}` : ''}
           </Text>
           {!exp_rt_is_active ? (
             <View style={[styles.chip, { backgroundColor: colors.inputColor }]}>
@@ -80,7 +95,7 @@ const RecurringTransactionCard = ({
             </View>
           ) : (
             <Text style={[styles.subText, { color: colors.lighterTitle, marginTop: 5 }]}>
-              {format(parseISO(exp_rt_next_due_date), 'MMM d, yyyy')}
+              {format(effectiveDueDate, 'MMM d, yyyy')}
             </Text>
           )}
         </View>

@@ -23,32 +23,36 @@ export default function StatsSummaryCard({ income, expense, transactionCount }: 
 
   return (
     <View style={[styles.card, { backgroundColor: colors.primary }]}>
-      <Text style={[styles.label, { color: colors.onPrimary }]}>Net Total</Text>
-      <Text style={[styles.net, { color: colors.onPrimary }]} numberOfLines={1}>
-        {formatToCurrency(animatedNet, undefined, net)}
-      </Text>
-
-      <View style={styles.row}>
-        <View style={[styles.stat, styles.statPill]}>
-          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
-          </View>
-          <View>
-            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
-            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(animatedIncome, undefined, income)}
-            </Text>
-          </View>
+      <View style={styles.splitRow}>
+        <View style={styles.netCol}>
+          <Text style={[styles.label, { color: colors.onPrimary }]}>Net Total</Text>
+          <Text style={[styles.net, { color: colors.onPrimary }]} numberOfLines={1}>
+            {formatToCurrency(animatedNet, undefined, net)}
+          </Text>
         </View>
-        <View style={[styles.stat, styles.statPill]}>
-          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
+
+        <View style={styles.statsCol}>
+          <View style={styles.statRow}>
+            <View style={[styles.iconSquare, { backgroundColor: colors.onPrimaryStrong }]}>
+              <Feather name="arrow-down-left" size={13} color={colors.income} />
+            </View>
+            <View style={styles.statText}>
+              <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
+              <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+                {formatToCurrency(animatedIncome, undefined, income)}
+              </Text>
+            </View>
           </View>
-          <View>
-            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
-            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(animatedExpense, undefined, expense)}
-            </Text>
+          <View style={styles.statRow}>
+            <View style={[styles.iconSquare, { backgroundColor: colors.onPrimaryStrong }]}>
+              <Feather name="arrow-up-right" size={13} color={colors.expense} />
+            </View>
+            <View style={styles.statText}>
+              <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
+              <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+                {formatToCurrency(animatedExpense, undefined, expense)}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -69,6 +73,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
   },
+  splitRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  netCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  statsCol: {
+    width: '40%',
+    gap: 6,
+  },
   label: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
@@ -77,45 +94,34 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   net: {
-    fontSize: FontSize.display,
+    fontSize: FontSize.xl,
     fontFamily: 'Inter-700',
     marginTop: 2,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 10,
-  },
-  stat: {
+  statRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  statText: {
     flex: 1,
+    minWidth: 0,
   },
-  statPill: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderRadius: 11,
-    padding: 10,
-  },
-  dot: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
+  iconSquare: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statLabel: {
-    fontSize: 10,
-    fontFamily: 'Inter-600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    opacity: 0.75,
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    opacity: 0.85,
   },
   statValue: {
     fontSize: FontSize.base,
     fontFamily: 'Inter-700',
-    marginTop: 1,
   },
   footer: {
     flexDirection: 'row',
