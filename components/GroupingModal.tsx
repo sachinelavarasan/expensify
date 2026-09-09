@@ -77,9 +77,9 @@ const GroupingModal = ({
           ]}
           onPress={openSheet}>
           <View style={styles.chip}>
-            <Ionicons name="layers-outline" size={13} color={colors.lighterTitle} />
+            <Ionicons name="layers-outline" size={16} color={colors.lighterTitle} />
             <Text style={[styles.subText, { color: colors.title }]}>
-              {grouping.slice(0, 2).toUpperCase()}
+              {grouping.length > 4 ? `${grouping.slice(0, 4)}…` : grouping}
             </Text>
             <Entypo name="chevron-small-down" size={16} color={colors.lighterTitle} />
           </View>
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
   card: {
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 60,
-    paddingVertical: 6,
+    minWidth: 90,
+    paddingVertical: 7,
     paddingHorizontal: 8,
     borderRadius: 50,
     borderWidth: 1,
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   subText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Inter-600',
     textTransform: 'capitalize',
   },

@@ -51,7 +51,12 @@ export default function HomeHeader({
     selectedAccountIds.length === 1
       ? accounts.find((acc) => acc.exp_ba_id === selectedAccountIds[0])
       : undefined;
-  const pillLetters = selectedAccount?.exp_ba_name?.trim().slice(0, 2).toUpperCase() || 'AL';
+  const accountName = selectedAccount?.exp_ba_name?.trim();
+  const pillLetters = accountName
+    ? accountName.length > 4
+      ? `${accountName.slice(0, 4)}…`
+      : accountName
+    : 'AL';
 
   const accountOptions = useMemo(
     () => [
@@ -73,7 +78,8 @@ export default function HomeHeader({
           {user?.exp_us_profile_url ? (
             <Image source={{ uri: user.exp_us_profile_url }} style={styles.avatar} />
           ) : (
-            <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.primary }]}>
+            <View
+              style={[styles.avatar, styles.avatarFallback, { backgroundColor: colors.primary }]}>
               <FontAwesome6 name="user" size={14} color={colors.onPrimary} />
             </View>
           )}
@@ -97,12 +103,16 @@ export default function HomeHeader({
           onLayout={(e) => setAccountPillWidth(e.nativeEvent.layout.width)}
           style={[styles.accountPill, { borderColor: colors.borderColor }]}
           hitSlop={4}>
-          <MaterialIcons name="account-balance-wallet" size={13} color={colors.arrowColor} />
+          <MaterialIcons name="account-balance-wallet" size={16} color={colors.arrowColor} />
           <Text style={[styles.accountPillText, { color: colors.title }]}>{pillLetters}</Text>
           <MaterialIcons name="keyboard-arrow-down" size={16} color={colors.arrowColor} />
         </TouchableOpacity>
 
-        <GroupingModal grouping={grouping} update={updateGrouping} triggerWidth={accountPillWidth} />
+        <GroupingModal
+          grouping={grouping}
+          update={updateGrouping}
+          triggerWidth={accountPillWidth}
+        />
       </View>
 
       <ModalCard
@@ -178,12 +188,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 10,
-    paddingVertical: 6,
+    paddingVertical: 7,
     paddingHorizontal: 8,
     gap: 2,
   },
   accountPillText: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Inter-700',
   },
 });

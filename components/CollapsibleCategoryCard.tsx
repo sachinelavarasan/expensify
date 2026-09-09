@@ -1,12 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import {
-  FontAwesome,
-  Ionicons,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from '@expo/vector-icons';
+import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import CategoryBudgetTable from './CategoryBudgetTable';
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -21,8 +16,8 @@ import TransactionCard from './TransactionCard';
 import CategoryTrendSparkline from './CategoryTrendSparkline';
 import Emptystate from './Emptystate';
 import { FontSize } from '@/utils/Typography';
-import ProgressBar from './ProgressBar';
-import { BUDGET_ALERT_THRESHOLD, BUDGET_EXCEEDED_THRESHOLD } from '@/utils/budgetAlerts';
+import BudgetRing from './BudgetRing';
+import { getBudgetTier } from '@/utils/budgetAlerts';
 
 
 export function BudgetedCategoriesList({
@@ -73,13 +68,14 @@ function CollapsibleCategoryCard({
   const insets = useSafeAreaInsets();
 
   // Same thresholds BudgetAlerts used to compute its now-removed separate
-  // warning list - the signal lives on the row itself instead of being said
-  // twice (once up top, once again down here).
-  const usedPct = (category.totalAmount / Number(category.budgetAmount)) * 100;
-  const isExceeded = usedPct >= BUDGET_EXCEEDED_THRESHOLD;
-  const isNearLimit = !isExceeded && usedPct >= BUDGET_ALERT_THRESHOLD;
-  const tierColor = isExceeded ? colors.expense : isNearLimit ? colors.accent : colors.primary;
-  const tierLabel = isExceeded ? 'Exceeded' : `${Math.min(usedPct, 100).toFixed(0)}% used`;
+  // warning list - the signal lives on the row's ring (arc length + colour +
+  // the % badge) instead of being said twice (once up top, once again here).
+  const usedPct =
+    Number(category.budgetAmount) > 0
+      ? (category.totalAmount / Number(category.budgetAmount)) * 100
+      : 0;
+  const tier = getBudgetTier(usedPct, colors);
+  const isExceeded = tier.level === 'over';
   const iconColor = category.iconBg || colors.categoryFallbackIcon;
 
   const animatedStyle = useAnimatedStyle(
@@ -164,67 +160,67 @@ function CollapsibleCategoryCard({
         styles.subMenuContainer,
         { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
       ]}>
-      <View style={[styles.accentBar, { backgroundColor: tierColor }]} />
       <View style={{ flex: 1 }}>
         <TouchableOpacity activeOpacity={0.7} onPress={toggleExpand}>
           <View style={styles.card}>
-            <View
-              style={{
-                backgroundColor: `${iconColor}2E`,
-                padding: 8,
-                borderRadius: 10,
-              }}>
-              <MaterialIcons
-                name={category.icon as React.ComponentProps<typeof MaterialIcons>['name']}
-                size={24}
-                color={iconColor}
-              />
-            </View>
+            <BudgetRing
+              size={46}
+              strokeWidth={4}
+              percentage={usedPct}
+              color={tier.color}
+              trackColor={colors.borderColor}>
+              <View style={[styles.ringIcon, { backgroundColor: `${iconColor}2E` }]}>
+                <MaterialIcons
+                  name={category.icon as React.ComponentProps<typeof MaterialIcons>['name']}
+                  size={15}
+                  color={iconColor}
+                />
+              </View>
+              <View
+                style={[
+                  styles.ringPct,
+                  { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
+                ]}>
+                {isExceeded ? (
+                  <MaterialIcons name="priority-high" size={10} color={tier.color} />
+                ) : (
+                  <Text style={[styles.ringPctText, { color: tier.color }]}>
+                    {Math.round(usedPct)}%
+                  </Text>
+                )}
+              </View>
+            </BudgetRing>
+
             <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+              <View style={styles.titleRow}>
                 <Text
-                  style={[
-                    styles.cardTitle,
-                    { color: colors.title, flexWrap: 'wrap', maxWidth: 160 },
-                  ]}>
+                  style={[styles.cardTitle, { color: colors.title, maxWidth: 150 }]}
+                  numberOfLines={1}>
                   {category.category}
                 </Text>
-                <TouchableOpacity onPress={() => openModal(category)}>
-                  <MaterialCommunityIcons
-                    name="circle-edit-outline"
-                    size={24}
-                    color={colors.primary}
-                  />
+                <TouchableOpacity
+                  onPress={() => openModal(category)}
+                  hitSlop={8}
+                  style={[styles.editBadge, { backgroundColor: `${colors.primary}1A` }]}>
+                  <Feather name="edit-2" size={13} color={colors.primary} />
                 </TouchableOpacity>
               </View>
-
-              <View style={styles.row}>
-                <Text style={[styles.subText, { color: colors.description }]}>Remaining:</Text>
-                <Text
-                  style={[
-                    styles.subText,
-                    {
-                      color: isExceeded ? colors.expense : colors.title,
-                      fontFamily: 'Inter-600',
-                    },
-                  ]}>
-                  {formatToCurrency(category.remainingBudget)}
-                </Text>
-              </View>
-
-              <ProgressBar
-                percentage={usedPct}
-                height={6}
-                fillColor={tierColor}
-                trackColor={colors.borderColor}
-                style={{ marginTop: 7 }}
-              />
+              <Text style={[styles.subText, { color: colors.description, marginTop: 3 }]}>
+                {formatToCurrency(category.totalAmount)} of{' '}
+                {formatToCurrency(Number(category.budgetAmount))}
+              </Text>
             </View>
+
             <View style={styles.rightCol}>
-              <View style={[styles.statusPill, { backgroundColor: `${tierColor}1A` }]}>
-                <View style={[styles.statusDot, { backgroundColor: tierColor }]} />
-                <Text style={[styles.statusPillText, { color: tierColor }]}>{tierLabel}</Text>
-              </View>
+              <Text
+                style={[
+                  styles.remaining,
+                  { color: isExceeded ? colors.expense : colors.title },
+                ]}
+                numberOfLines={1}>
+                {formatToCurrency(Math.abs(category.remainingBudget))}{' '}
+                {category.remainingBudget < 0 ? 'over' : 'left'}
+              </Text>
               <MaterialIcons
                 name={expanded ? 'expand-less' : 'expand-more'}
                 size={22}
@@ -358,14 +354,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
   },
-  accentBar: {
-    height: 4,
-    alignSelf: 'stretch',
-  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
@@ -375,29 +367,45 @@ const styles = StyleSheet.create({
   },
   rightCol: {
     alignItems: 'flex-end',
-    gap: 6,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 4,
-    borderRadius: 20,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
   },
-  statusDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+  ringIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  statusPillText: {
-    fontSize: 9.5,
-    fontFamily: 'Inter-700',
+  ringPct: {
+    position: 'absolute',
+    bottom: -5,
+    right: -7,
+    minWidth: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
   },
-  row: {
+  ringPctText: {
+    fontSize: 8,
+    fontFamily: 'Inter-800',
+  },
+  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  editBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  remaining: {
+    fontSize: 13,
+    fontFamily: 'Inter-700',
   },
   cardTitle: {
     fontSize: 15,

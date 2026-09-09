@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ThemedView } from '@/components/ThemedView';
 import MonthSwitcher from '@/components/MonthSwitch';
 import useBudgetsForMonth from '@/hooks/useBudget';
@@ -16,12 +16,10 @@ import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-na
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { formatToCurrency } from '@/utils/formatter';
-import ModalCard from '@/components/ModalCard';
-import Spacer from '@/components/Spacer';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import Input from '@/components/Input';
+import BudgetFormSheet, {
+  BudgetFormValues,
+  BudgetFormSheetRef,
+} from '@/components/BudgetFormSheet';
 import { showToast } from '@/components/ToastMessage';
 import {
   useAddBudget,
@@ -33,21 +31,10 @@ import { IBudget } from '@/types';
 import { BudgetedCategoriesList } from '@/components/CollapsibleCategoryCard';
 import OverlayLoader from '@/components/Overlay';
 import Emptystate from '@/components/Emptystate';
+import BudgetEmptyIllustration from '@/components/BudgetEmptyIllustration';
 import { useFocusEffect } from 'expo-router';
 import { getApiErrorMessage } from '@/lib/apiClient';
-import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
-
-const schema = z.object({
-  exp_bg_amount: z
-    .string()
-    .nonempty({ message: 'Amount is required' })
-    .refine((val) => /^(\d+)(\.\d{1,3})?$/.test(val), {
-      message: 'Please enter a valid amount',
-    }),
-});
-
-type BudgetSchema = z.infer<typeof schema>;
 
 function FadeInView({ children }: { children: React.ReactNode }) {
   const opacity = useSharedValue(0);
@@ -67,8 +54,7 @@ function FadeInView({ children }: { children: React.ReactNode }) {
 }
 
 const Budget = () => {
-  const [show, setShow] = useState(false);
-  const [currentBudget, setCurrentBudget] = useState<IBudget | null>(null);
+  const budgetSheetRef = useRef<BudgetFormSheetRef>(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<BudgetCategoryFilter>('all');
   const { colors } = useThemeContext();
@@ -80,39 +66,10 @@ const Budget = () => {
   const { mutateAsync: copyPreviousMonthBudgets, isPending: isCopying } =
     useCopyPreviousMonthBudgets();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isDirty },
-    reset,
-  } = useForm({
-    defaultValues: {
-      exp_bg_amount: '',
-    },
-    resolver: zodResolver(schema),
-  });
-
-  const toggleModal = (data: IBudget | null = null) => {
-    if (data === null) {
-      setShow(!show);
-      reset();
-      setTimeout(() => {
-        setCurrentBudget(null);
-      }, 100);
-    } else {
-      setShow(!show);
-      setCurrentBudget(data);
-      reset(
-        {
-          exp_bg_amount: data && Number(data.budgetAmount) > 0 ? String(data.budgetAmount) : '',
-        },
-        {
-          keepDirty: false,
-          keepIsValidating: true,
-        },
-      );
-    }
+  const openBudgetSheet = (data: IBudget) => {
+    budgetSheetRef.current?.present(data);
   };
+
   const nonBudgetedCategories = budgets.filter((item) => !item.exp_bg_id);
   const budgetedCategories = budgets.filter((item) => item.exp_bg_id);
   const totalSpent = budgetedCategories.reduce((acc, item) => acc + item.totalAmount, 0);
@@ -133,14 +90,11 @@ const Budget = () => {
     return matchesSearch(item);
   });
 
-  const handlePress = (data: BudgetSchema) => {
-    if (!currentBudget) {
-      return;
-    }
-    if (currentBudget.exp_bg_id) {
+  const handlePress = (data: BudgetFormValues, target: IBudget) => {
+    if (target.exp_bg_id) {
       const body = {
         ...data,
-        exp_bg_id: currentBudget.exp_bg_id,
+        exp_bg_id: target.exp_bg_id,
       };
       editBudget({ ...body })
         .then(() => {
@@ -158,13 +112,13 @@ const Budget = () => {
           });
         })
         .finally(() => {
-          toggleModal();
+          budgetSheetRef.current?.dismiss();
           refetch();
         });
     } else {
       const body = {
         ...data,
-        exp_bg_category_id: currentBudget.categoryId,
+        exp_bg_category_id: target.categoryId,
       };
       addBudget({ ...body, exp_bg_date: currentDate.toISOString() })
         .then(() => {
@@ -182,7 +136,7 @@ const Budget = () => {
           });
         })
         .finally(() => {
-          toggleModal();
+          budgetSheetRef.current?.dismiss();
           refetch();
         });
     }
@@ -209,11 +163,11 @@ const Budget = () => {
       });
   };
 
-  const handleDelete = () => {
-    if (!currentBudget?.exp_bg_id) {
+  const handleDelete = (target: IBudget) => {
+    if (!target.exp_bg_id) {
       return;
     }
-    deleteBudget(currentBudget.exp_bg_id)
+    deleteBudget(target.exp_bg_id)
       .then(() => {
         showToast({
           text1: 'Budget deleted successfully',
@@ -229,7 +183,7 @@ const Budget = () => {
         });
       })
       .finally(() => {
-        toggleModal();
+        budgetSheetRef.current?.dismiss();
         refetch();
       });
   };
@@ -281,7 +235,7 @@ const Budget = () => {
                       budgetedCategories={filteredBudgeted}
                       colors={colors}
                       formatToCurrency={formatToCurrency}
-                      openModal={toggleModal}
+                      openModal={openBudgetSheet}
                       currentMonth={currentMonth}
                     />
                   ) : (
@@ -292,8 +246,13 @@ const Budget = () => {
                 </View>
               ) : (
                 <Emptystate
-                  title="No budget set"
-                  description="Set a budget for this month to start tracking your spending.">
+                  illustration={<BudgetEmptyIllustration />}
+                  title="No budgets for this month"
+                  description={
+                    filteredNonBudgeted.length > 0
+                      ? "Copy last month's limits, or set one for a category below."
+                      : 'Set a monthly limit on a category to track its spending here.'
+                  }>
                   <TouchableOpacity
                     style={[styles.setLimitButton, { backgroundColor: `${colors.primary}1A` }]}
                     onPress={handleCopyPreviousMonth}
@@ -325,16 +284,18 @@ const Budget = () => {
                         { backgroundColor: colors.cardBg, borderColor: colors.borderColor },
                       ]}>
                       <View
-                        style={{
-                          backgroundColor: `${iconColor}2E`,
-                          padding: 8,
-                          borderRadius: 10,
-                        }}>
+                        style={[
+                          styles.unbudgetedIcon,
+                          {
+                            backgroundColor: `${iconColor}2E`,
+                            borderColor: colors.borderColor,
+                          },
+                        ]}>
                         <MaterialIcons
                           name={
                             category.icon as React.ComponentProps<typeof MaterialIcons>['name']
                           }
-                          size={24}
+                          size={20}
                           color={iconColor}
                         />
                       </View>
@@ -352,9 +313,7 @@ const Budget = () => {
                       </View>
                       <TouchableOpacity
                         style={[styles.setLimitButton, { backgroundColor: `${colors.primary}1A` }]}
-                        onPress={() => {
-                          toggleModal(category);
-                        }}>
+                        onPress={() => openBudgetSheet(category)}>
                         <Text style={[styles.setLimitText, { color: colors.primary }]}>
                           Set Limit
                         </Text>
@@ -368,70 +327,13 @@ const Budget = () => {
             </>
           }
         />
-        <ModalCard
-          visible={show}
-          onClose={() => toggleModal()}
-          title={currentBudget?.exp_bg_id ? 'Edit Budget' : 'Set Budget'}
-          closeDisabled={isLoading || isUpdating || isDeleting}>
-          <Controller
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                label="Budget"
-                keyboardType="numeric"
-                placeholder="amount"
-                onBlur={field.onBlur}
-                onChangeText={field.onChange}
-                error={errors.exp_bg_amount?.message}
-                borderLess
-                isRequired
-              />
-            )}
-            name="exp_bg_amount"
-          />
-          <Spacer height={30} />
-          <View style={{ flexDirection: 'row', gap: Spacing.xl, justifyContent: 'center' }}>
-            {currentBudget?.exp_bg_id ? (
-              <TouchableOpacity
-                style={[styles.budgetButton, { backgroundColor: colors.expense }]}
-                onPress={handleDelete}
-                disabled={isLoading || isUpdating || isDeleting}>
-                {isLoading || isDeleting ? (
-                  <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
-                ) : null}
-                <Text
-                  style={[
-                    styles.btntitle,
-                    { color: colors.onPrimary },
-                    isLoading || isDeleting ? styles.disable : {},
-                  ]}>
-                  Delete
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-            <TouchableOpacity
-              style={[
-                styles.budgetButton,
-                { backgroundColor: colors.primary },
-                !isDirty || isLoading || isUpdating ? styles.disable : {},
-              ]}
-              onPress={handleSubmit(handlePress)}
-              disabled={!isDirty || isLoading || isUpdating || isDeleting}>
-              {isLoading || isUpdating ? (
-                <ActivityIndicator animating color={colors.onPrimary} style={styles.loader} />
-              ) : null}
-              <Text
-                style={[
-                  styles.btntitle,
-                  { color: colors.onPrimary },
-                  isLoading || isUpdating ? styles.disable : {},
-                ]}>
-                {currentBudget?.exp_bg_id ? 'Update' : 'Create'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ModalCard>
+        <BudgetFormSheet
+          ref={budgetSheetRef}
+          onSubmit={handlePress}
+          onDelete={handleDelete}
+          submitting={isLoading || isUpdating}
+          deleting={isDeleting}
+        />
     </ThemedView>
   );
 };
@@ -456,11 +358,19 @@ const styles = StyleSheet.create({
   unbudgetedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
     borderRadius: 14,
+  },
+  unbudgetedIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   setLimitButton: {
     borderRadius: 20,
@@ -470,27 +380,6 @@ const styles = StyleSheet.create({
   setLimitText: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-700',
-  },
-  budgetButton: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    borderRadius: 10,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: 9,
-  },
-  disable: {
-    opacity: 0.6,
-  },
-  loader: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  btntitle: {
-    // color applied inline via colors.onPrimary at each usage site (text on a solid-colored button)
-    fontSize: FontSize.md,
-    fontFamily: 'Inter-600',
   },
 });
 

@@ -7,13 +7,21 @@ interface ExtraButtonProps {
   title: string;
   description?: string;
   children?: React.ReactNode;
+  /** Swap the default open-box graphic for a screen-specific one. */
+  illustration?: React.ReactNode;
 }
 
-const Emptystate = ({ title, description, children, ...props }: ExtraButtonProps & ViewProps) => {
+const Emptystate = ({
+  title,
+  description,
+  children,
+  illustration,
+  ...props
+}: ExtraButtonProps & ViewProps) => {
   const { colors } = useThemeContext();
   return (
     <View style={styles.container}>
-      <EmptystateIllustration />
+      {illustration ?? <EmptystateIllustration />}
       <View style={styles.contenContainer}>
         <Text style={[styles.title, { color: colors.title }]}>{title}</Text>
         <Text style={[styles.description, { color: colors.description }]}>{description}</Text>

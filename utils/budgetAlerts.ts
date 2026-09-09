@@ -27,3 +27,19 @@ export function getBudgetAlerts(budgets: IBudget[]): BudgetAlertItem[] {
 export function getCategoryBudgetStatus(budgets: IBudget[], categoryId: string) {
   return getBudgetAlerts(budgets).find((item) => item.categoryId === categoryId) ?? null;
 }
+
+export type BudgetTierLevel = 'ok' | 'near' | 'over';
+
+/**
+ * Maps a used-percentage to a single tier used across the Budget screen -
+ * the ring arc colour, the proportion bar and the remaining-amount text all
+ * read from this so "near limit" and "over" look identical everywhere.
+ */
+export function getBudgetTier(
+  percentage: number,
+  colors: { primary: string; accent: string; expense: string },
+): { level: BudgetTierLevel; color: string } {
+  if (percentage >= BUDGET_EXCEEDED_THRESHOLD) return { level: 'over', color: colors.expense };
+  if (percentage >= BUDGET_ALERT_THRESHOLD) return { level: 'near', color: colors.accent };
+  return { level: 'ok', color: colors.primary };
+}
