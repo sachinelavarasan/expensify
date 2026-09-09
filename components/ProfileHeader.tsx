@@ -30,7 +30,7 @@ export default function ProfileHeader({
         justifyContent: 'space-between',
       }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
-        <Pressable onPress={router.back} style={{ marginRight: 10 }}>
+        <Pressable onPress={router.back} style={{ marginRight: 10 }} hitSlop={8}>
           <MaterialIcons name="arrow-back" size={24} color={colors.arrowColor} />
         </Pressable>
         <View style={{ flexShrink: 1 }}>

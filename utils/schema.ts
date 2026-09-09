@@ -117,6 +117,15 @@ export const recurringTransactionSchema = z.object({
 
 export type recurringTransactionSchemaType = z.infer<typeof recurringTransactionSchema>;
 
+export const plannedReminderSchema = recurringTransactionSchema.extend({
+  exp_rt_reminder_enabled: z.boolean(),
+  exp_rt_reminder_days_before: z.number().min(0).max(3),
+  exp_rt_reminder_time: z.string(),
+  exp_rt_kind: z.enum(['recurring', 'reminder']),
+});
+
+export type plannedReminderSchemaType = z.infer<typeof plannedReminderSchema>;
+
 export interface Itransaction {
   ts_title: string;
   ts_date: string;

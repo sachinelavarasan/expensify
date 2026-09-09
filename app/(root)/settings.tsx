@@ -199,25 +199,33 @@ export default function Setting() {
                     }
                     noCard
                     right={
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <CustomSwitch
-                          value={enabled}
-                          onChange={(value) => {
-                            if (value) {
-                              scheduleNotification();
-                            } else disableNotification();
-                          }}
-                        />
+                      <CustomSwitch
+                        value={enabled}
+                        onChange={(value) => {
+                          if (value) {
+                            scheduleNotification();
+                          } else disableNotification();
+                        }}
+                      />
+                    }
+                  />
+                  {enabled && (
+                    <SettingsRow
+                      icon={<MaterialIcons name="access-time" size={18} color="#F59E0B" />}
+                      iconBg="#F59E0B1A"
+                      title="Reminder Time"
+                      noCard
+                      topDivider
+                      right={
                         <TimePickerPaperWithButton
                           value={time}
                           onChange={(value) => {
                             scheduleNotification(value);
                           }}
-                          disabled={!enabled}
                         />
-                      </View>
-                    }
-                  />
+                      }
+                    />
+                  )}
                 </View>
               </View>
 

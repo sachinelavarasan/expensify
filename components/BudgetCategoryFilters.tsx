@@ -1,7 +1,7 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Feather, Ionicons } from '@expo/vector-icons';
 
-import SearchBar from './SearchBar';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { FontSize } from '@/utils/Typography';
 
@@ -25,10 +25,45 @@ export default function BudgetCategoryFilters({
   onFilterChange: (value: BudgetCategoryFilter) => void;
 }) {
   const { colors } = useThemeContext();
+  const [focused, setFocused] = useState(false);
 
   return (
     <View style={styles.container}>
-      <SearchBar searchPhrase={search} onChange={onSearchChange} />
+      <View
+        style={[
+          styles.search,
+          {
+            backgroundColor: colors.inputColor,
+            borderColor: focused ? colors.borderSelected : colors.inputBorder,
+          },
+        ]}>
+        <Feather
+          name="search"
+          size={16}
+          color={focused ? colors.primary : colors.lighterTitle}
+        />
+        <TextInput
+          style={[styles.searchInput, { color: colors.title }]}
+          value={search}
+          onChangeText={onSearchChange}
+          placeholder="Search categories"
+          placeholderTextColor={colors.inputPlaceholder}
+          selectionColor={colors.primary + '40'}
+          cursorColor={colors.secondary}
+          autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
+          returnKeyType="search"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+        />
+        {search.length > 0 ? (
+          <TouchableOpacity onPress={() => onSearchChange('')} hitSlop={10}>
+            <Ionicons name="close-circle" size={17} color={colors.lighterTitle} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+
       <View style={styles.chipRow}>
         {FILTERS.map((item) => {
           const active = filter === item.key;
@@ -44,7 +79,8 @@ export default function BudgetCategoryFilters({
                   borderColor: active ? colors.primary : colors.inputBorder,
                 },
               ]}>
-              <Text style={[styles.chipText, { color: active ? colors.onPrimary : colors.description }]}>
+              <Text
+                style={[styles.chipText, { color: active ? colors.onPrimary : colors.description }]}>
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -59,6 +95,21 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 10,
     gap: 10,
+  },
+  search: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 50,
+    paddingHorizontal: 14,
+    height: 44,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: FontSize.base,
+    fontFamily: 'Inter-400',
+    paddingVertical: 0,
   },
   chipRow: {
     flexDirection: 'row',

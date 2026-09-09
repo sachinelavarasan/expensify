@@ -10,7 +10,8 @@ import { showToast } from '@/components/ToastMessage';
 import TransactionCard from '@/components/TransactionCard';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import {
-  useAccountGroupedTransactions,
+  useAccountSummary,
+  useAccountTransactions,
   useDeleteBankAccount,
 } from '@/hooks/useBankAccountOperation';
 import { useGetSettingsFromStore } from '@/hooks/useGetSettingsValue';
@@ -22,7 +23,7 @@ import { formatToCurrency } from '@/utils/formatter';
 import { deviceWidth } from '@/utils/functions';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Text,
   StyleSheet,
@@ -40,8 +41,19 @@ const cardWidth = width - 30;
 export default function AccountScreen() {
   const { colors } = useThemeContext();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { account, loading, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useAccountGroupedTransactions(id);
+  const {
+    account,
+    loading: summaryLoading,
+    refetch: refetchSummary,
+  } = useAccountSummary(id);
+  const {
+    groups,
+    loading: transactionsLoading,
+    refetch: refetchTransactions,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useAccountTransactions(id);
   const { value } = useGetSettingsFromStore('tt-time');
   const { value: showBalance } = useGetSettingsFromStore('balance');
   const { user: currentUser } = useGetUserData();
@@ -52,25 +64,14 @@ export default function AccountScreen() {
 
   const router = useRouter();
 
-  const totals = useMemo(() => {
-    const groups = account?.data ?? [];
-    return groups.reduce(
-      (acc, group) => ({
-        income: acc.income + Number(group.income || 0),
-        expense: acc.expense + Number(group.expense || 0),
-        transactionCount: acc.transactionCount + group.data.length,
-      }),
-      { income: 0, expense: 0, transactionCount: 0 },
-    );
-  }, [account?.data]);
-
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
-      refetch();
+      refetchSummary();
+      refetchTransactions();
       setRefreshing(false);
     }, 2000);
-  }, [refetch]);
+  }, [refetchSummary, refetchTransactions]);
 
   const confirmDelete = () => {
     if (!account?.exp_ba_id) return;
@@ -120,7 +121,7 @@ export default function AccountScreen() {
             </View>
           </ProfileHeader>
         </View>
-        {loading || !account || isDeleting ? (
+        {summaryLoading || transactionsLoading || !account || isDeleting ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
@@ -135,9 +136,9 @@ export default function AccountScreen() {
                 balance={account.exp_ba_balance}
                 showBalance={showBalance}
                 isPrimary={account.exp_ba_is_primary}
-                income={totals.income}
-                expense={totals.expense}
-                transactionCount={totals.transactionCount}
+                income={account.totalIncome}
+                expense={account.totalExpense}
+                transactionCount={account.totalTransactionCount}
                 variant="ratio"
                 otherStyle={{
                   width: cardWidth,
@@ -151,7 +152,7 @@ export default function AccountScreen() {
                   description="In this account there is no transaction be made."
                 />
               }
-              sections={account.data}
+              sections={groups}
               bounces={false}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
               showsVerticalScrollIndicator={false}

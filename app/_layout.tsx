@@ -144,7 +144,8 @@ function AppStack() {
       <Stack.Screen name="(root)/starred" />
       <Stack.Screen name="(root)/trash" />
       <Stack.Screen name="(root)/recurring-transactions" />
-      <Stack.Screen name="(root)/recurring-transaction" />
+      <Stack.Screen name="(root)/payment-reminders" />
+      <Stack.Screen name="(root)/planned-reminder" />
       <Stack.Screen name="(root)/export-import-transactions" />
       <Stack.Screen name="(root)/accounts/[id]" />
       <Stack.Screen name="(root)/categories/[id]" />

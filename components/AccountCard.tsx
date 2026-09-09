@@ -100,46 +100,55 @@ const BankCard = ({
               )}
             </View>
           </View>
-          {!isBaseBalanceVisible && (
-            <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
-              <Feather
-                name={isBalanceVisible ? 'eye' : 'eye-off'}
-                size={15}
-                color={colors.lighterTitle}
-              />
-            </TouchableOpacity>
-          )}
+          <View style={styles.right}>
+            <View style={styles.labelRow}>
+              <Text style={[styles.label, { color: colors.lighterTitle }]}>Balance</Text>
+              {!isBaseBalanceVisible && (
+                <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
+                  <Feather
+                    name={isBalanceVisible ? 'eye' : 'eye-off'}
+                    size={12}
+                    color={colors.lighterTitle}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+            <Text style={[styles.balance, { color: colors.title }]} numberOfLines={1}>
+              {balanceText}
+            </Text>
+          </View>
         </View>
-
-        <Text style={[styles.bigBalanceLabel, { color: colors.lighterTitle }]}>Balance</Text>
-        <Text style={[styles.bigBalance, { color: colors.title }]} numberOfLines={1}>
-          {balanceText}
-        </Text>
 
         {showActivity && (
           <>
             <View style={[styles.ratioTrack, { backgroundColor: colors.barBackground }]}>
               <View style={{ flex: Math.max(incomePct, 0.001), backgroundColor: colors.income }} />
-              <View style={{ flex: Math.max(expensePct, 0.001), backgroundColor: colors.expense }} />
+              <View
+                style={{ flex: Math.max(expensePct, 0.001), backgroundColor: colors.expense }}
+              />
             </View>
             <View style={styles.ratioLabels}>
-              <View style={styles.ratioItem}>
-                <View style={[styles.ratioDot, { backgroundColor: colors.income }]} />
-                <Text style={[styles.ratioText, { color: colors.description }]}>
-                  Income{' '}
-                  <Text style={[styles.ratioValue, { color: colors.title }]}>
+              <View style={styles.ratioStat}>
+                <View style={[styles.ratioIconSquare, { backgroundColor: `${colors.income}1A` }]}>
+                  <Feather name="arrow-down-left" size={13} color={colors.income} />
+                </View>
+                <View style={styles.ratioStatText}>
+                  <Text style={[styles.ratioText, { color: colors.description }]}>Income</Text>
+                  <Text style={[styles.ratioValue, { color: colors.title }]} numberOfLines={1}>
                     {formatToCurrency(animatedIncome, undefined, income)}
                   </Text>
-                </Text>
+                </View>
               </View>
-              <View style={styles.ratioItem}>
-                <View style={[styles.ratioDot, { backgroundColor: colors.expense }]} />
-                <Text style={[styles.ratioText, { color: colors.description }]}>
-                  Expense{' '}
-                  <Text style={[styles.ratioValue, { color: colors.title }]}>
+              <View style={styles.ratioStat}>
+                <View style={[styles.ratioIconSquare, { backgroundColor: `${colors.expense}1A` }]}>
+                  <Feather name="arrow-up-right" size={13} color={colors.expense} />
+                </View>
+                <View style={styles.ratioStatText}>
+                  <Text style={[styles.ratioText, { color: colors.description }]}>Expense</Text>
+                  <Text style={[styles.ratioValue, { color: colors.title }]} numberOfLines={1}>
                     {formatToCurrency(animatedExpense, undefined, expense)}
                   </Text>
-                </Text>
+                </View>
               </View>
             </View>
           </>
@@ -346,19 +355,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-700',
     marginTop: 2,
   },
-  bigBalanceLabel: {
-    fontSize: FontSize.xs,
-    fontFamily: 'Inter-600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    opacity: 0.78,
-    marginBottom: 4,
-  },
-  bigBalance: {
-    fontSize: FontSize.display,
-    fontFamily: 'Inter-700',
-    marginBottom: 16,
-  },
   activityRow: {
     flexDirection: 'row',
     gap: 24,
@@ -375,24 +371,34 @@ const styles = StyleSheet.create({
   },
   ratioLabels: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 16,
     marginBottom: 16,
   },
-  ratioItem: {
+  ratioStat: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
+    flex: 1,
+    minWidth: 0,
   },
-  ratioDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  ratioIconSquare: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ratioStatText: {
+    flex: 1,
+    minWidth: 0,
   },
   ratioText: {
-    fontSize: FontSize.xs,
-    fontFamily: 'Inter-600',
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    opacity: 0.85,
   },
   ratioValue: {
+    fontSize: FontSize.base,
     fontFamily: 'Inter-700',
   },
   stat: {
@@ -421,7 +427,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
   },

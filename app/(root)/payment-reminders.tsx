@@ -19,7 +19,6 @@ import Emptystate from '@/components/Emptystate';
 import OverlayLoader from '@/components/Overlay';
 import SwipeableRow from '@/components/Swippable';
 import RecurringTransactionCard from '@/components/RecurringTransactionCard';
-import RecurringSummaryCard from '@/components/RecurringSummaryCard';
 import {
   useDeleteRecurringTransaction,
   useRecurringTransactions,
@@ -29,10 +28,11 @@ import { useThemeContext } from '@/contexts/ThemedContext';
 import { showToast } from '@/components/ToastMessage';
 import { getApiErrorMessage } from '@/lib/apiClient';
 import { IRecurringTransaction } from '@/types';
-import { RECURRING_DUE_SOON_DAYS, getDaysUntilDue, toMonthlyAmount } from '@/utils/recurringAlerts';
+import { RECURRING_DUE_SOON_DAYS, getNextOccurrenceDate } from '@/utils/recurringAlerts';
+import { differenceInCalendarDays } from 'date-fns';
 import { FontSize } from '@/utils/Typography';
 
-export default function RecurringTransactions() {
+export default function PaymentReminders() {
   const { colors } = useThemeContext();
   const router = useRouter();
   const { recurringTransactions, loading, refetch } = useRecurringTransactions();
@@ -49,7 +49,7 @@ export default function RecurringTransactions() {
   const handleDelete = (id: string) => {
     deleteRecurringTransaction(id).catch((err) => {
       showToast({
-        text1: getApiErrorMessage(err, 'Failed to delete recurring transaction'),
+        text1: getApiErrorMessage(err, 'Failed to delete payment reminder'),
         type: 'error',
         position: 'bottom',
       });
@@ -59,26 +59,34 @@ export default function RecurringTransactions() {
   const handleToggleActive = (id: string, value: boolean) => {
     updateRecurringTransaction({ exp_rt_id: id, exp_rt_is_active: value }).catch((err) => {
       showToast({
-        text1: getApiErrorMessage(err, 'Failed to update recurring transaction'),
+        text1: getApiErrorMessage(err, 'Failed to update payment reminder'),
         type: 'error',
         position: 'bottom',
       });
     });
   };
 
-  const recurring = useMemo(
-    () => recurringTransactions.filter((item) => item.exp_rt_kind === 'recurring'),
+  const reminders = useMemo(
+    () => recurringTransactions.filter((item) => item.exp_rt_kind === 'reminder'),
     [recurringTransactions],
   );
 
-  const { dueSoon, upcoming, paused, monthlyOutflow, monthlyIncome, next } = useMemo(() => {
-    const active = recurring.filter((item) => item.exp_rt_is_active);
-    const pausedItems = recurring.filter((item) => !item.exp_rt_is_active);
+  const { dueSoon, upcoming, paused } = useMemo(() => {
+    const active = reminders.filter((item) => item.exp_rt_is_active);
+    const pausedItems = reminders.filter((item) => !item.exp_rt_is_active);
 
-    const withDays = active.map((item) => ({
-      item,
-      daysUntil: getDaysUntilDue(item.exp_rt_next_due_date),
-    }));
+    const withDays = active
+      .map((item) => {
+        const nextOccurrence = getNextOccurrenceDate(
+          item.exp_rt_start_date,
+          item.exp_rt_frequency,
+          item.exp_rt_end_date,
+        );
+        return nextOccurrence
+          ? { item, daysUntil: differenceInCalendarDays(nextOccurrence, new Date()) }
+          : null;
+      })
+      .filter((entry): entry is { item: IRecurringTransaction; daysUntil: number } => entry !== null);
     const dueSoonItems = withDays
       .filter(({ daysUntil }) => daysUntil <= RECURRING_DUE_SOON_DAYS)
       .sort((a, b) => a.daysUntil - b.daysUntil);
@@ -86,24 +94,12 @@ export default function RecurringTransactions() {
       .filter(({ daysUntil }) => daysUntil > RECURRING_DUE_SOON_DAYS)
       .sort((a, b) => a.daysUntil - b.daysUntil);
 
-    const outflow = active
-      .filter((item) => item.exp_rt_transaction_type_id !== 2)
-      .reduce((sum, item) => sum + toMonthlyAmount(Number(item.exp_rt_amount), item.exp_rt_frequency), 0);
-    const income = active
-      .filter((item) => item.exp_rt_transaction_type_id === 2)
-      .reduce((sum, item) => sum + toMonthlyAmount(Number(item.exp_rt_amount), item.exp_rt_frequency), 0);
-
-    const soonest = [...dueSoonItems, ...upcomingItems][0];
-
     return {
       dueSoon: dueSoonItems.map(({ item }) => item),
       upcoming: upcomingItems.map(({ item }) => item),
       paused: pausedItems,
-      monthlyOutflow: outflow,
-      monthlyIncome: income,
-      next: soonest,
     };
-  }, [recurring]);
+  }, [reminders]);
 
   const renderGroup = (title: string, items: IRecurringTransaction[]) => {
     if (items.length === 0) return null;
@@ -131,16 +127,11 @@ export default function RecurringTransactions() {
       <SafeAreaViewComponent>
         <ThemedView style={{ flex: 1, paddingHorizontal: 5 }}>
           {loading && <OverlayLoader />}
-          <ProfileHeader title="Recurring Transactions">
+          <ProfileHeader title="Payment Reminders">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: `${colors.primary}1A` }]}
-                onPress={() => router.push('/import-recurring-transactions')}>
-                <MaterialIcons name="swap-vert" size={18} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: `${colors.primary}1A` }]}
-                onPress={() => router.push('/planned-reminder?kind=recurring')}>
+                onPress={() => router.push('/planned-reminder?kind=reminder')}>
                 <MaterialIcons name="add" size={20} color={colors.primary} />
               </TouchableOpacity>
             </View>
@@ -155,21 +146,21 @@ export default function RecurringTransactions() {
             contentContainerStyle={{ paddingBottom: 50, paddingTop: 5, paddingHorizontal: 15 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             ListHeaderComponent={
-              recurring.length === 0 ? (
+              reminders.length === 0 ? (
                 <Emptystate
-                  title="No recurring transactions yet"
-                  description="Add bills or income that repeat on a schedule to get reminded automatically."
+                  title="No payment reminders yet"
+                  description="Add a reminder for bills you pay yourself, like EMIs, so you never miss a due date."
                 />
               ) : (
                 <>
-                  {(dueSoon.length > 0 || upcoming.length > 0) && (
-                    <RecurringSummaryCard
-                      monthlyOutflow={monthlyOutflow}
-                      monthlyIncome={monthlyIncome}
-                      nextTitle={next?.item.exp_rt_title}
-                      nextDaysUntil={next?.daysUntil}
-                    />
-                  )}
+                  <View style={styles.countHeader}>
+                    <Text style={[styles.countHeaderText, { color: colors.title }]}>
+                      {reminders.length} payment reminder{reminders.length === 1 ? '' : 's'}
+                    </Text>
+                    <Text style={[styles.countHeaderSubtext, { color: colors.description }]}>
+                      You'll be notified locally when each one is due.
+                    </Text>
+                  </View>
                   {renderGroup('Due Soon', dueSoon)}
                   {renderGroup('Upcoming', upcoming)}
                   {renderGroup('Paused', paused)}
@@ -211,5 +202,17 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  countHeader: {
+    paddingVertical: 4,
+  },
+  countHeaderText: {
+    fontSize: FontSize.lg,
+    fontFamily: 'Inter-700',
+  },
+  countHeaderSubtext: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    marginTop: 2,
   },
 });

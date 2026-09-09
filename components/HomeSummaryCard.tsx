@@ -1,12 +1,29 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import {
+  addMonths,
+  addWeeks,
+  format,
+  isSameDay,
+  isSameMonth,
+  isSameWeek,
+  isTomorrow,
+  isYesterday,
+  subMonths,
+  subWeeks,
+} from 'date-fns';
 
 import { Itransaction } from '@/types';
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import useCountUp from '@/hooks/useCountUp';
+import MonthSwitcher from '@/components/MonthSwitch';
+
+type DateRangeType = 'daily' | 'weekly' | 'monthly';
+
+const DARK_STRIP_BG = '#2b3ea1';
 
 interface Props {
   income: number;
@@ -17,6 +34,13 @@ interface Props {
   transactions: Itransaction[];
   netWorth: number;
   showNetWorth: boolean;
+  nextMonth: () => void;
+  prevMonth: () => void;
+  currentMonth: string;
+  currentDate?: Date;
+  dateRangeType?: DateRangeType;
+  onSelectDate?: (date: Date) => void;
+  switcherDisabled?: boolean;
 }
 
 export default function HomeSummaryCard({
@@ -28,11 +52,39 @@ export default function HomeSummaryCard({
   transactions,
   netWorth,
   showNetWorth,
+  nextMonth,
+  prevMonth,
+  currentMonth,
+  currentDate,
+  dateRangeType,
+  onSelectDate,
+  switcherDisabled,
 }: Props) {
-  const { colors } = useThemeContext();
+  const { colors, theme } = useThemeContext();
 
-  // "base" reflects the persisted setting; a peek toggle can temporarily
-  // override it for this render only - it resets next time the card mounts.
+  const periodLabel = useMemo(() => {
+    const now = new Date();
+    if (!currentDate) {
+      return dateRangeType === 'daily' ? 'Day' : dateRangeType === 'weekly' ? 'Week' : 'Month';
+    }
+    if (dateRangeType === 'daily') {
+      if (isSameDay(currentDate, now)) return 'Today';
+      if (isYesterday(currentDate)) return 'Yesterday';
+      if (isTomorrow(currentDate)) return 'Tomorrow';
+      return format(currentDate, 'MMM d');
+    }
+    if (dateRangeType === 'weekly') {
+      if (isSameWeek(currentDate, now, { weekStartsOn: 1 })) return 'This Week';
+      if (isSameWeek(currentDate, subWeeks(now, 1), { weekStartsOn: 1 })) return 'Last Week';
+      if (isSameWeek(currentDate, addWeeks(now, 1), { weekStartsOn: 1 })) return 'Next Week';
+      return 'Week';
+    }
+    if (isSameMonth(currentDate, now)) return 'This Month';
+    if (isSameMonth(currentDate, subMonths(now, 1))) return 'Last Month';
+    if (isSameMonth(currentDate, addMonths(now, 1))) return 'Next Month';
+    return 'Month';
+  }, [currentDate, dateRangeType]);
+
   const [balancePeeked, setBalancePeeked] = useState(false);
   const [netWorthPeeked, setNetWorthPeeked] = useState(false);
 
@@ -64,79 +116,104 @@ export default function HomeSummaryCard({
 
   return (
     <View style={[styles.card, { backgroundColor: colors.primary }]}>
-      <View style={styles.labelRow}>
-        <Text style={[styles.label, { color: colors.onPrimary }]}>Balance</Text>
-        {!isBaseBalanceVisible && (
-          <TouchableOpacity
-            onPress={() => setBalancePeeked((prev) => !prev)}
-            hitSlop={8}>
-            <Feather
-              name={isBalanceVisible ? 'eye' : 'eye-off'}
-              size={13}
-              color={colors.onPrimary}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-      <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
-        {isBalanceVisible ? formatToCurrency(animatedBalance, undefined, balance) : '••••••'}
-      </Text>
-
-      <View style={styles.row}>
-        <View style={[styles.stat, styles.statPill]}>
-          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather name="arrow-down-left" size={11} color={colors.onPrimary} />
-          </View>
-          <View style={styles.statText}>
-            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
-            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(animatedIncome, undefined, income)}
-            </Text>
-          </View>
-        </View>
-        <View style={[styles.stat, styles.statPill]}>
-          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
-          </View>
-          <View style={styles.statText}>
-            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
-            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {formatToCurrency(animatedExpense, undefined, expense)}
-            </Text>
-          </View>
-        </View>
+      <View
+        style={[
+          styles.switcherStrip,
+          { backgroundColor: theme === 'dark' ? DARK_STRIP_BG : colors.secondary },
+        ]}
+        pointerEvents={switcherDisabled ? 'none' : 'auto'}>
+        <MonthSwitcher
+          nextMonth={nextMonth}
+          prevMonth={prevMonth}
+          currentMonth={currentMonth}
+          currentDate={currentDate}
+          dateRangeType={dateRangeType}
+          onSelectDate={onSelectDate}
+          label={periodLabel}
+          contentColor={colors.onPrimary}
+          iconSize={20}
+          monthFontSize={12}
+          labelFontSize={12}
+          rowSpacing={0}
+        />
       </View>
 
-      {showNetWorth && (
-        <View style={[styles.footer, styles.footerRow, { borderTopColor: colors.onPrimaryBorder }]}>
-          <View style={styles.netWorthRow}>
-            <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
-              Net worth:{' '}
-              <Text style={styles.footerValue}>
-                {isNetWorthVisible ? formatToCurrency(netWorth) : '••••••'}
+      <View style={styles.body}>
+        <View style={styles.splitRow}>
+          <View style={styles.balanceCol}>
+            <View style={styles.labelRow}>
+              <Text style={[styles.label, { color: colors.onPrimary }]}>Balance</Text>
+              {!isBaseBalanceVisible && (
+                <TouchableOpacity onPress={() => setBalancePeeked((prev) => !prev)} hitSlop={8}>
+                  <Feather
+                    name={isBalanceVisible ? 'eye' : 'eye-off'}
+                    size={12}
+                    color={colors.onPrimary}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+            <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
+              {isBalanceVisible ? formatToCurrency(animatedBalance, undefined, balance) : '••••••'}
+            </Text>
+          </View>
+
+          <View style={styles.statsCol}>
+            <View style={styles.statRow}>
+              <View style={[styles.iconSquare, { backgroundColor: colors.onPrimaryStrong }]}>
+                <Feather name="arrow-down-left" size={13} color={colors.income} />
+              </View>
+              <View style={styles.statText}>
+                <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Income</Text>
+                <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+                  {formatToCurrency(animatedIncome, undefined, income)}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.statRow}>
+              <View style={[styles.iconSquare, { backgroundColor: colors.onPrimaryStrong }]}>
+                <Feather name="arrow-up-right" size={13} color={colors.expense} />
+              </View>
+              <View style={styles.statText}>
+                <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Expense</Text>
+                <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+                  {formatToCurrency(animatedExpense, undefined, expense)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {showNetWorth && (
+          <View
+            style={[styles.footer, styles.footerRow, { borderTopColor: colors.onPrimaryBorder }]}>
+            <View style={styles.netWorthRow}>
+              <Text style={[styles.footerText, { color: colors.onPrimary }]} numberOfLines={1}>
+                Net worth:{' '}
+                <Text style={styles.footerValue}>
+                  {isNetWorthVisible ? formatToCurrency(netWorth) : '••••••'}
+                </Text>
               </Text>
-            </Text>
-            {!isBaseNetWorthVisible && (
-              <TouchableOpacity
-                onPress={() => setNetWorthPeeked((prev) => !prev)}
-                hitSlop={8}>
-                <Feather
-                  name={isNetWorthVisible ? 'eye' : 'eye-off'}
-                  size={12}
-                  color={colors.onPrimary}
-                />
-              </TouchableOpacity>
+              {!isBaseNetWorthVisible && (
+                <TouchableOpacity onPress={() => setNetWorthPeeked((prev) => !prev)} hitSlop={8}>
+                  <Feather
+                    name={isNetWorthVisible ? 'eye' : 'eye-off'}
+                    size={12}
+                    color={colors.onPrimary}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+            {!!topCategory && (
+              <Text
+                style={[styles.footerText, { color: colors.onPrimary, flexShrink: 1 }]}
+                numberOfLines={1}>
+                Top: <Text style={styles.footerValue}>{topCategory.label}</Text>
+              </Text>
             )}
           </View>
-          {!!topCategory && (
-            <Text
-              style={[styles.footerText, { color: colors.onPrimary, flexShrink: 1 }]}
-              numberOfLines={1}>
-              Top: <Text style={styles.footerValue}>{topCategory.label}</Text>
-            </Text>
-          )}
-        </View>
-      )}
+        )}
+      </View>
     </View>
   );
 }
@@ -144,8 +221,16 @@ export default function HomeSummaryCard({
 const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
-    padding: 16,
     overflow: 'hidden',
+  },
+  switcherStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  body: {
+    padding: 16,
   },
   label: {
     fontSize: FontSize.sm,
@@ -165,50 +250,47 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   balance: {
-    fontSize: FontSize.display,
+    fontSize: FontSize.xl,
     fontFamily: 'Inter-700',
     marginTop: 2,
   },
-  row: {
+  splitRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-    gap: 8,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
-  stat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  balanceCol: {
     flex: 1,
     minWidth: 0,
   },
-  statPill: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderRadius: 11,
-    padding: 8,
+  statsCol: {
+    width: '40%',
+    gap: 6,
+  },
+  statRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   statText: {
-    flexShrink: 1,
+    flex: 1,
     minWidth: 0,
   },
-  dot: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
+  iconSquare: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statLabel: {
-    fontSize: 10,
-    fontFamily: 'Inter-600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    opacity: 0.75,
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    opacity: 0.85,
   },
   statValue: {
     fontSize: FontSize.base,
     fontFamily: 'Inter-700',
-    marginTop: 1,
   },
   footer: {
     flexDirection: 'row',

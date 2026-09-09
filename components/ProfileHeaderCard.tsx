@@ -15,7 +15,15 @@ const RING_WIDTH = 2.5;
 const RING_GAP = 3;
 const HALO_SIZE = AVATAR_SIZE + (RING_WIDTH + RING_GAP) * 2;
 const RING_SIZE = AVATAR_SIZE + RING_WIDTH * 2;
-const COVER_HEIGHT = 56;
+// Empty gradient band above the avatar before the profile row starts.
+const STRIP_TOP = 20;
+
+// floatingBtnBg is a fixed deep-indigo gradient in both themes, so text on the
+// strip is always light - we can't use colors.onPrimary here (it flips per
+// theme and would go dark-on-indigo in dark mode).
+const STRIP_TEXT = '#FFFFFF';
+const STRIP_TEXT_DIM = 'rgba(255, 255, 255, 0.85)';
+const STRIP_CHIP_BG = 'rgba(255, 255, 255, 0.16)';
 
 type Props = {
   title: string;
@@ -25,54 +33,62 @@ type Props = {
   refetch: () => Promise<QueryObserverResult<IExpUser, Error>>;
 };
 
-export default function ProfileHeaderCard({ title, subtitle, verified, createdAt, refetch }: Props) {
+export default function ProfileHeaderCard({
+  title,
+  subtitle,
+  verified,
+  createdAt,
+  refetch,
+}: Props) {
   const { colors } = useThemeContext();
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.cardBg, borderColor: colors.borderColor }]}>
-      <LinearGradient colors={colors.floatingBtnBg as [string, string]} style={styles.cover} />
+    <View
+      style={[styles.card, { backgroundColor: colors.cardBg, borderColor: colors.borderColor }]}>
+      <LinearGradient colors={colors.floatingBtnBg as [string, string]} style={styles.strip}>
+        <View style={styles.profileRow}>
+          <View style={styles.avatarCol}>
+            <View style={[styles.avatarHalo, { backgroundColor: colors.cardBg }]}>
+              <LinearGradient
+                colors={colors.floatingBtnBg as [string, string]}
+                style={styles.avatarRing}>
+                <ProfileImageUploader refetch={refetch} size={AVATAR_SIZE} bordered={false} />
+              </LinearGradient>
+            </View>
+          </View>
 
-      <View style={styles.body}>
-        <View style={styles.avatarRow}>
-          <View style={[styles.avatarHalo, { backgroundColor: colors.cardBg }]}>
-            <LinearGradient colors={colors.floatingBtnBg as [string, string]} style={styles.avatarRing}>
-              <ProfileImageUploader refetch={refetch} size={AVATAR_SIZE} bordered={false} />
-            </LinearGradient>
+          <View style={styles.nameCol}>
+            {verified && (
+              <View style={[styles.verifiedChip, { backgroundColor: STRIP_CHIP_BG }]}>
+                <MaterialIcons name="verified" size={12} color={STRIP_TEXT} />
+                <Text style={[styles.verifiedText, { color: STRIP_TEXT }]}>Verified account</Text>
+              </View>
+            )}
+            <Text style={[styles.name, { color: STRIP_TEXT }]} numberOfLines={1}>
+              {title}
+            </Text>
+            {!!subtitle && (
+              <View style={styles.metaRow}>
+                <MaterialIcons name="mail-outline" size={13} color={STRIP_TEXT_DIM} />
+                <Text style={[styles.email, { color: STRIP_TEXT_DIM }]} numberOfLines={1}>
+                  {subtitle}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
+      </LinearGradient>
 
-        <View style={styles.nameBlock}>
-          {verified && (
-            <View style={[styles.verifiedChip, { backgroundColor: `${colors.primary}1A` }]}>
-              <MaterialIcons name="verified" size={12} color={colors.primary} />
-              <Text style={[styles.verifiedText, { color: colors.primary }]}>Verified account</Text>
-            </View>
-          )}
-          <Text style={[styles.name, { color: colors.title }]} numberOfLines={1}>
-            {title}
-          </Text>
-          {!!subtitle && (
-            <View style={styles.metaRow}>
-              <MaterialIcons name="mail-outline" size={13} color={colors.description} />
-              <Text style={[styles.email, { color: colors.description }]} numberOfLines={1}>
-                {subtitle}
-              </Text>
-            </View>
-          )}
+      {!!createdAt && (
+        <View style={[styles.body, { borderTopColor: colors.borderColor }]}>
+          <View style={styles.sinceRow}>
+            <MaterialIcons name="calendar-today" size={12} color={colors.lighterTitle} />
+            <Text style={[styles.sinceText, { color: colors.lighterTitle }]}>
+              Member since {format(new Date(createdAt), 'MMM yyyy')}
+            </Text>
+          </View>
         </View>
-
-        {!!createdAt && (
-          <>
-            <View style={[styles.divider, { backgroundColor: colors.borderColor }]} />
-            <View style={styles.sinceRow}>
-              <MaterialIcons name="calendar-today" size={12} color={colors.lighterTitle} />
-              <Text style={[styles.sinceText, { color: colors.lighterTitle }]}>
-                Member since {format(new Date(createdAt), 'MMM yyyy')}
-              </Text>
-            </View>
-          </>
-        )}
-      </View>
+      )}
     </View>
   );
 }
@@ -83,15 +99,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
-  cover: {
-    height: COVER_HEIGHT,
+  strip: {
+    paddingTop: STRIP_TOP,
+    paddingHorizontal: 14,
+    paddingBottom: 16,
   },
   body: {
     paddingHorizontal: 14,
-    paddingBottom: 14,
+    paddingVertical: 12,
+    borderTopWidth: 1,
   },
-  avatarRow: {
-    marginTop: -(HALO_SIZE / 2),
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  avatarCol: {
+    // Fixed to the halo width so a narrow screen can't clip the avatar (the
+    // card clips overflow). Negative margin lets just the avatar poke up into
+    // the empty gradient band above the row.
+    width: HALO_SIZE,
+    alignItems: 'flex-start',
+    // marginTop: -(HALO_SIZE / 2 + 8),
+  },
+  nameCol: {
+    flex: 1,
+    marginLeft: 14,
+    paddingTop: 4,
   },
   avatarHalo: {
     width: HALO_SIZE,
@@ -106,9 +139,6 @@ const styles = StyleSheet.create({
     borderRadius: RING_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  nameBlock: {
-    marginTop: 10,
   },
   verifiedChip: {
     flexDirection: 'row',
@@ -133,17 +163,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    marginTop: 3,
+    marginTop: 2,
   },
   email: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
+    letterSpacing: 0.1,
     flexShrink: 1,
-  },
-  divider: {
-    height: 1,
-    marginTop: 12,
-    marginBottom: 10,
   },
   sinceRow: {
     flexDirection: 'row',

@@ -34,51 +34,57 @@ export default function ProfileAccountsSummaryCard({
 
   return (
     <View style={[styles.card, { backgroundColor: colors.primary }]}>
-      <View style={styles.labelRow}>
-        <Text style={[styles.label, { color: colors.onPrimary }]}>Total Balance</Text>
-        {!isBaseBalanceVisible && (
-          <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
-            <Feather
-              name={isBalanceVisible ? 'eye' : 'eye-off'}
-              size={13}
-              color={colors.onPrimary}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-      <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
-        {isBalanceVisible ? formatToCurrency(animatedBalance, undefined, totalBalance) : '••••••'}
-      </Text>
+      <View style={styles.splitRow}>
+        <View style={styles.balanceCol}>
+          <View style={styles.labelRow}>
+            <Text style={[styles.label, { color: colors.onPrimary }]}>Total Balance</Text>
+            {!isBaseBalanceVisible && (
+              <TouchableOpacity onPress={() => setPeeked((prev) => !prev)} hitSlop={8}>
+                <Feather
+                  name={isBalanceVisible ? 'eye' : 'eye-off'}
+                  size={12}
+                  color={colors.onPrimary}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
+            {isBalanceVisible
+              ? formatToCurrency(animatedBalance, undefined, totalBalance)
+              : '••••••'}
+          </Text>
+        </View>
 
-      <View style={styles.row}>
-        <Animated.View
-          entering={FadeInDown.duration(550).delay(180).easing(Easing.out(Easing.quad))}
-          style={[styles.stat, styles.statPill]}>
-          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather name="credit-card" size={11} color={colors.onPrimary} />
-          </View>
-          <View>
-            <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Accounts</Text>
-            <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-              {Math.round(animatedAccountsCount)}
-            </Text>
-          </View>
-        </Animated.View>
-        {!!primaryAccountName && (
+        <View style={styles.statsCol}>
           <Animated.View
-            entering={FadeInDown.duration(550).delay(260).easing(Easing.out(Easing.quad))}
-            style={[styles.stat, styles.statPill]}>
-            <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-              <Feather name="star" size={11} color={colors.onPrimary} />
+            entering={FadeInDown.duration(550).delay(180).easing(Easing.out(Easing.quad))}
+            style={styles.statRow}>
+            <View style={[styles.iconSquare, { backgroundColor: colors.onPrimaryStrong }]}>
+              <Feather name="credit-card" size={13} color={colors.primary} />
             </View>
-            <View>
-              <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Primary</Text>
+            <View style={styles.statText}>
+              <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Accounts</Text>
               <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
-                {primaryAccountName}
+                {Math.round(animatedAccountsCount)}
               </Text>
             </View>
           </Animated.View>
-        )}
+          {!!primaryAccountName && (
+            <Animated.View
+              entering={FadeInDown.duration(550).delay(260).easing(Easing.out(Easing.quad))}
+              style={styles.statRow}>
+              <View style={[styles.iconSquare, { backgroundColor: colors.onPrimaryStrong }]}>
+                <Feather name="star" size={13} color={colors.primary} />
+              </View>
+              <View style={styles.statText}>
+                <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Primary</Text>
+                <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
+                  {primaryAccountName}
+                </Text>
+              </View>
+            </Animated.View>
+          )}
+        </View>
       </View>
 
       {accountsCount === 0 && (
@@ -97,6 +103,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
   },
+  splitRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  balanceCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  statsCol: {
+    width: '40%',
+    gap: 6,
+  },
   label: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
@@ -110,45 +129,34 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   balance: {
-    fontSize: FontSize.display,
+    fontSize: FontSize.xl,
     fontFamily: 'Inter-700',
-    marginTop: 4,
+    marginTop: 2,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 8,
-  },
-  stat: {
+  statRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  statText: {
     flex: 1,
+    minWidth: 0,
   },
-  statPill: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderRadius: 11,
-    padding: 10,
-  },
-  dot: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
+  iconSquare: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statLabel: {
-    fontSize: 10,
-    fontFamily: 'Inter-600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    opacity: 0.75,
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    opacity: 0.85,
   },
   statValue: {
     fontSize: FontSize.base,
     fontFamily: 'Inter-700',
-    marginTop: 1,
   },
   footer: {
     flexDirection: 'row',

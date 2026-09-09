@@ -1,12 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 
 import { useThemeContext } from '@/contexts/ThemedContext';
 import { formatToCurrency } from '@/utils/formatter';
 import { FontSize } from '@/utils/Typography';
 import useCountUp from '@/hooks/useCountUp';
-import ProgressBar from './ProgressBar';
+import BudgetRing from './BudgetRing';
 
 interface Props {
   totalBudget: number;
@@ -17,40 +16,57 @@ interface Props {
 export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemaining }: Props) {
   const { colors } = useThemeContext();
   const exceeded = totalRemaining < 0;
-  const percentage = totalBudget > 0 ? Math.min((totalSpent / totalBudget) * 100, 100) : 0;
+  const rawPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  const percentage = Math.min(rawPct, 100);
 
   const animatedTotalBudget = useCountUp(totalBudget);
   const animatedTotalSpent = useCountUp(totalSpent);
   const animatedTotalRemaining = useCountUp(totalRemaining);
 
+  const ringColor = exceeded ? colors.danger : colors.onPrimaryStrong;
+
   return (
     <View style={[styles.card, { backgroundColor: colors.primary }]}>
-      <Text style={[styles.label, { color: colors.onPrimary }]}>Total Budget</Text>
-      <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
-        {formatToCurrency(animatedTotalBudget, undefined, totalBudget)}
-      </Text>
-
-      <View style={styles.row}>
-        <View style={[styles.stat, styles.statPill]}>
-          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather name="arrow-up-right" size={11} color={colors.onPrimary} />
+      <View style={styles.topRow}>
+        <BudgetRing
+          size={92}
+          strokeWidth={9}
+          percentage={rawPct}
+          color={ringColor}
+          trackColor={colors.onPrimaryBorder}>
+          <View style={styles.ringCenter}>
+            <Text
+              style={[styles.ringPct, { color: colors.onPrimary }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit>
+              {rawPct > 999 ? '999+' : `${Math.round(rawPct)}%`}
+            </Text>
+            <Text style={[styles.ringCaption, { color: colors.onPrimary }]}>used</Text>
           </View>
-          <View>
+        </BudgetRing>
+
+        <View style={styles.figures}>
+          <Text style={[styles.label, { color: colors.onPrimary }]}>Total Budget</Text>
+          <Text style={[styles.balance, { color: colors.onPrimary }]} numberOfLines={1}>
+            {formatToCurrency(animatedTotalBudget, undefined, totalBudget)}
+          </Text>
+
+          <View style={[styles.divider, { backgroundColor: colors.onPrimaryBorder }]} />
+
+          <View style={styles.statRow}>
+            <View style={[styles.dot, { backgroundColor: colors.onPrimaryStrong }]} />
             <Text style={[styles.statLabel, { color: colors.onPrimary }]}>Spent</Text>
             <Text style={[styles.statValue, { color: colors.onPrimary }]} numberOfLines={1}>
               {formatToCurrency(animatedTotalSpent, undefined, totalSpent)}
             </Text>
           </View>
-        </View>
-        <View style={[styles.stat, styles.statPill]}>
-          <View style={[styles.dot, { backgroundColor: colors.onPrimarySubtle }]}>
-            <Feather
-              name={exceeded ? 'alert-triangle' : 'arrow-down-left'}
-              size={11}
-              color={colors.onPrimary}
+          <View style={styles.statRow}>
+            <View
+              style={[
+                styles.dot,
+                { backgroundColor: exceeded ? colors.danger : colors.onPrimaryStrong },
+              ]}
             />
-          </View>
-          <View>
             <Text style={[styles.statLabel, { color: colors.onPrimary }]}>
               {exceeded ? 'Over by' : 'Remaining'}
             </Text>
@@ -65,15 +81,10 @@ export default function BudgetSummaryCard({ totalBudget, totalSpent, totalRemain
         </View>
       </View>
 
-      <ProgressBar
-        percentage={percentage}
-        height={8}
-        fillColor={exceeded ? colors.danger : colors.onPrimaryStrong}
-        trackColor={colors.onPrimaryBorder}
-        style={styles.progressTrack}
-      />
-      <Text style={[styles.progressLabel, { color: colors.onPrimary }]}>
-        {exceeded ? 'Budget exceeded this month' : `${percentage.toFixed(0)}% used this month`}
+      <Text style={[styles.footNote, { color: colors.onPrimary }]}>
+        {exceeded
+          ? 'Budget exceeded this month'
+          : `${percentage.toFixed(0)}% of this month's budget used`}
       </Text>
     </View>
   );
@@ -84,6 +95,31 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
   },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 18,
+  },
+  ringCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ringPct: {
+    fontSize: FontSize.lg,
+    fontFamily: 'Inter-700',
+  },
+  ringCaption: {
+    fontSize: 9,
+    fontFamily: 'Inter-500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    opacity: 0.8,
+    marginTop: 1,
+  },
+  figures: {
+    flex: 1,
+    minWidth: 0,
+  },
   label: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-600',
@@ -92,52 +128,39 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   balance: {
-    fontSize: FontSize.display,
+    fontSize: FontSize.xl,
     fontFamily: 'Inter-700',
     marginTop: 2,
   },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 10,
+  divider: {
+    height: 1,
+    marginVertical: 10,
   },
-  stat: {
+  statRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    flex: 1,
-  },
-  statPill: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderRadius: 11,
-    padding: 10,
+    gap: 8,
+    marginTop: 4,
   },
   dot: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   statLabel: {
-    fontSize: 10,
-    fontFamily: 'Inter-600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-    opacity: 0.75,
+    flex: 1,
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
+    opacity: 0.85,
   },
   statValue: {
     fontSize: FontSize.base,
     fontFamily: 'Inter-700',
-    marginTop: 1,
   },
-  progressTrack: {
-    marginTop: 10,
-  },
-  progressLabel: {
+  footNote: {
     fontSize: FontSize.sm,
     fontFamily: 'Inter-500',
-    marginTop: 6,
+    marginTop: 14,
     opacity: 0.9,
   },
 });

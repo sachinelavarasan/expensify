@@ -1,8 +1,10 @@
-import { formatToCurrency } from '@/utils/formatter';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 import { useThemeContext } from '@/contexts/ThemedContext';
+import { formatToCurrency } from '@/utils/formatter';
+import { getBudgetTier } from '@/utils/budgetAlerts';
+import { FontSize } from '@/utils/Typography';
 
 export default function CategoryBudgetTable({
   totalSpent,
@@ -14,65 +16,68 @@ export default function CategoryBudgetTable({
   totalRemaining: number;
 }) {
   const { colors } = useThemeContext();
+  const pct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  const tier = getBudgetTier(pct, colors);
+  const over = totalRemaining < 0;
+
   return (
-    <View style={styles.table}>
-      <View style={styles.headerRow}>
-        <View style={styles.column}>
-          <Text style={[styles.cell, { color: colors.title }]}>Limit</Text>
-        </View>
-        <View style={styles.column}>
-          <Text style={[styles.cell, { color: colors.title }]}>Spent</Text>
-        </View>
-        <View style={styles.column}>
-          <Text style={[styles.cell, { color: colors.title }]}>Remaining</Text>
-        </View>
+    <View style={styles.wrap}>
+      <View style={styles.captionRow}>
+        <Text style={[styles.caption, { color: colors.description }]}>
+          Limit {formatToCurrency(totalBudget)}
+        </Text>
+        <Text style={[styles.captionStrong, { color: tier.color }]}>
+          Spent {formatToCurrency(totalSpent)}
+        </Text>
       </View>
 
-      <View style={styles.row}>
-        <View style={styles.column}>
-          <Text style={[styles.cell, styles.headerText, { color: colors.monthSwitcher }]}>
-            {formatToCurrency(totalBudget)}
-          </Text>
-        </View>
-        <View style={styles.column}>
-          <Text
-            style={[styles.cell, styles.headerText, { color: colors.monthSwitcher }]}
-            numberOfLines={3}>
-            {formatToCurrency(totalSpent)}
-          </Text>
-        </View>
-        <View style={styles.column}>
-          <Text style={[styles.cell, styles.headerText, { color: colors.monthSwitcher }]}>
-            {formatToCurrency(totalRemaining)}
-          </Text>
-        </View>
+      <View style={[styles.track, { backgroundColor: colors.inputColor }]}>
+        <View
+          style={[
+            styles.fill,
+            { width: `${Math.min(pct, 100)}%`, backgroundColor: tier.color },
+          ]}
+        />
+      </View>
+
+      <View style={styles.captionRow}>
+        <Text style={[styles.caption, { color: colors.description }]}>
+          {pct.toFixed(0)}% used
+        </Text>
+        <Text
+          style={[styles.captionStrong, { color: over ? colors.expense : colors.title }]}>
+          {formatToCurrency(Math.abs(totalRemaining))} {over ? 'over' : 'left'}
+        </Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  table: {
+  wrap: {
     marginVertical: 8,
+    gap: 6,
   },
-  column: {
-    flex: 1,
-  },
-  row: {
+  captionRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  headerRow: {
-    flexDirection: 'row',
-    paddingVertical: 4,
+  caption: {
+    fontSize: FontSize.sm,
+    fontFamily: 'Inter-500',
   },
-  cell: {
-    paddingVertical: 1,
-    fontSize: 12,
-    textAlign: 'center',
-    fontFamily: 'Inter-400',
-  },
-  headerText: {
+  captionStrong: {
+    fontSize: FontSize.sm,
     fontFamily: 'Inter-700',
-    fontSize: 18,
+  },
+  track: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  fill: {
+    height: '100%',
+    borderRadius: 4,
   },
 });

@@ -115,7 +115,13 @@ export interface ITransactionGroup {
   data: Itransaction[];
 }
 
-export interface IAccountGroupedTransactions extends IBankAccount {
+export interface IAccountSummary extends IBankAccount {
+  totalTransactionCount: number;
+  totalIncome: number;
+  totalExpense: number;
+}
+
+export interface IAccountTransactionsPage {
   data: ITransactionGroup[];
   hasMore: boolean;
 }
@@ -211,6 +217,10 @@ export interface IRecurringTransaction {
   exp_rt_end_date: string | null;
   exp_rt_next_due_date: string;
   exp_rt_is_active: boolean;
+  exp_rt_reminder_enabled: boolean;
+  exp_rt_reminder_days_before: number;
+  exp_rt_reminder_time: string | null;
+  exp_rt_kind: 'recurring' | 'reminder';
   exp_tc_label: string;
   exp_tc_icon: string;
   exp_tc_icon_bg_color: string;
@@ -229,6 +239,10 @@ export type CreateRecurringTransactionDto = Pick<
   | 'exp_rt_frequency'
   | 'exp_rt_start_date'
   | 'exp_rt_end_date'
+  | 'exp_rt_reminder_enabled'
+  | 'exp_rt_reminder_days_before'
+  | 'exp_rt_reminder_time'
+  | 'exp_rt_kind'
 >;
 
 export type UpdateRecurringTransactionDto = Partial<CreateRecurringTransactionDto> & {

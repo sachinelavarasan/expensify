@@ -61,11 +61,11 @@ export default function CalendarPickerSheet({
       presentation="sheet"
       title={title || 'Pick a date'}>
       <View style={styles.yearRow}>
-        <TouchableOpacity onPress={() => goToYear(-1)} style={styles.arrowButton}>
+        <TouchableOpacity onPress={() => goToYear(-1)} style={styles.arrowButton} hitSlop={8}>
           <MaterialIcons name="keyboard-arrow-left" size={22} color={colors.arrowColor} />
         </TouchableOpacity>
         <Text style={[styles.yearText, { color: colors.title }]}>{pickerDate.getFullYear()}</Text>
-        <TouchableOpacity onPress={() => goToYear(1)} style={styles.arrowButton}>
+        <TouchableOpacity onPress={() => goToYear(1)} style={styles.arrowButton} hitSlop={8}>
           <MaterialIcons name="keyboard-arrow-right" size={22} color={colors.arrowColor} />
         </TouchableOpacity>
       </View>

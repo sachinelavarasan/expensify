@@ -19,18 +19,18 @@ export const THEME_STORAGE_KEY = 'APP_THEME';
 const STORAGE_KEY = THEME_STORAGE_KEY;
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>('dark');
-  const [themeColors, setThemeColors] = useState<ThemeColors>(DarkColors);
+  const [theme, setTheme] = useState<Theme>('light');
+  const [themeColors, setThemeColors] = useState<ThemeColors>(LightColors);
 
   useEffect(() => {
     const loadTheme = async () => {
       const storedTheme = await AsyncStorage.getItem(STORAGE_KEY);
-      if (storedTheme === 'light') {
-        setTheme('light');
-        setThemeColors(LightColors);
-      } else {
+      if (storedTheme === 'dark') {
         setTheme('dark');
         setThemeColors(DarkColors);
+      } else {
+        setTheme('light');
+        setThemeColors(LightColors);
       }
     };
     loadTheme();

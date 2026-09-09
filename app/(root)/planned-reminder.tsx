@@ -25,11 +25,12 @@ import RowSelectInput from '@/components/RowSelectInput';
 import RowDatePicker from '@/components/RowDatePicker';
 import AmountCalculator from '@/components/AmountCalculator';
 import CustomSwitch from '@/components/Switch';
+import TimePickerPaperWithButton from '@/components/TimePickerPaperWithButton';
 import ProfileHeader from '@/components/ProfileHeader';
 import OverlayLoader from '@/components/Overlay';
 import { showToast } from '@/components/ToastMessage';
 
-import { recurringTransactionSchema, recurringTransactionSchemaType } from '@/utils/schema';
+import { plannedReminderSchema, plannedReminderSchemaType } from '@/utils/schema';
 import { CoreTransactionType, recurringFrequencyType } from '@/utils/common-data';
 import { useGetCategoryCache } from '@/hooks/useCategoryListOperation';
 import { useGetUserBankAccounts } from '@/hooks/useBankAccountOperation';
@@ -46,11 +47,16 @@ import { Spacing } from '@/utils/Spacing';
 import { FontSize } from '@/utils/Typography';
 import { useConfirm } from '@/hooks/useConfirm';
 
-export default function RecurringTransaction() {
+const DEFAULT_REMINDER_TIME = '08:00 AM';
+
+export default function PlannedReminder() {
   const { confirm, confirmModal } = useConfirm();
   const { colors } = useThemeContext();
   const router = useRouter();
-  const { exp_rt_id } = useLocalSearchParams<{ exp_rt_id?: string }>();
+  const { exp_rt_id, kind } = useLocalSearchParams<{
+    exp_rt_id?: string;
+    kind?: 'recurring' | 'reminder';
+  }>();
 
   const { categories } = useGetCategoryCache();
   const { accounts } = useGetUserBankAccounts();
@@ -90,8 +96,12 @@ export default function RecurringTransaction() {
       exp_rt_frequency: 'monthly',
       exp_rt_start_date: '',
       exp_rt_end_date: '',
+      exp_rt_reminder_enabled: kind === 'reminder',
+      exp_rt_reminder_days_before: 0,
+      exp_rt_reminder_time: DEFAULT_REMINDER_TIME,
+      exp_rt_kind: kind === 'reminder' ? 'reminder' : 'recurring',
     },
-    resolver: zodResolver(recurringTransactionSchema),
+    resolver: zodResolver(plannedReminderSchema),
   });
 
   const exp_rt_transaction_type_id = watch('exp_rt_transaction_type_id');
@@ -110,6 +120,13 @@ export default function RecurringTransaction() {
           exp_rt_frequency: existing.exp_rt_frequency,
           exp_rt_start_date: existing.exp_rt_start_date,
           exp_rt_end_date: existing.exp_rt_end_date || '',
+          // Reminder settings are only user-configurable for payment
+          // reminders now (no toggle, no days-before) - force them
+          // consistently by kind regardless of legacy stored values.
+          exp_rt_reminder_enabled: existing.exp_rt_kind === 'reminder',
+          exp_rt_reminder_days_before: 0,
+          exp_rt_reminder_time: existing.exp_rt_reminder_time || DEFAULT_REMINDER_TIME,
+          exp_rt_kind: existing.exp_rt_kind,
         },
         {
           keepDirty: false,
@@ -138,11 +155,28 @@ export default function RecurringTransaction() {
     [exp_rt_transaction_type_id],
   );
 
+  const resolvedKind = existing?.exp_rt_kind ?? (kind === 'reminder' ? 'reminder' : 'recurring');
+  const kindLabel = resolvedKind === 'reminder' ? 'payment reminder' : 'recurring transaction';
+  // Recurring transactions keep the original monthly-only restriction; the
+  // full frequency range is only available for payment reminders.
+  const frequencyOptions =
+    resolvedKind === 'recurring'
+      ? recurringFrequencyType.filter((freq) => freq.id === 'monthly')
+      : recurringFrequencyType;
+  const screenTitle =
+    resolvedKind === 'reminder'
+      ? existing
+        ? 'Edit Payment Reminder'
+        : 'Add Payment Reminder'
+      : existing
+        ? 'Edit Recurring Transaction'
+        : 'Add Recurring Transaction';
+
   const redirectToCategory = () => {
     router.push('/categories');
   };
 
-  const onSubmit = (data: recurringTransactionSchemaType) => {
+  const onSubmit = (data: plannedReminderSchemaType) => {
     const formattedData = {
       ...data,
       exp_rt_end_date: hasEndDate ? data.exp_rt_end_date || null : null,
@@ -156,8 +190,8 @@ export default function RecurringTransaction() {
       .then(() => {
         showToast({
           text1: existing
-            ? 'Recurring transaction updated successfully'
-            : 'Recurring transaction added successfully',
+            ? `${kindLabel[0].toUpperCase()}${kindLabel.slice(1)} updated successfully`
+            : `${kindLabel[0].toUpperCase()}${kindLabel.slice(1)} added successfully`,
           type: 'success',
           position: 'bottom',
         });
@@ -175,8 +209,8 @@ export default function RecurringTransaction() {
   const handleDelete = async () => {
     if (!existing) return;
     const confirmed = await confirm({
-      title: 'Delete this recurring transaction?',
-      message: 'Are you sure you want to delete this recurring transaction?',
+      title: `Delete this ${kindLabel}?`,
+      message: `Are you sure you want to delete this ${kindLabel}?`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       destructive: true,
@@ -187,7 +221,7 @@ export default function RecurringTransaction() {
     deleteRecurringTransaction(existing.exp_rt_id)
       .then(() => {
         showToast({
-          text1: 'The recurring transaction has been removed.',
+          text1: `The ${kindLabel} has been removed.`,
           type: 'success',
           position: 'bottom',
         });
@@ -217,9 +251,7 @@ export default function RecurringTransaction() {
               ListHeaderComponent={() => (
                 <View>
                   <Spacer height={5} />
-                  <ProfileHeader
-                    title={existing ? 'Edit Recurring Transaction' : 'Add Recurring Transaction'}
-                  />
+                  <ProfileHeader title={screenTitle} />
                 </View>
               )}
               renderItem={() => (
@@ -361,9 +393,10 @@ export default function RecurringTransaction() {
                         <CustomRadioButton
                           label="Repeats"
                           value={field.value}
-                          options={recurringFrequencyType.filter((freq) => freq.id === 'monthly')}
+                          options={frequencyOptions}
                           onChange={field.onChange}
                           isRequired
+                          grid={resolvedKind !== 'recurring'}
                         />
                       )}
                       name="exp_rt_frequency"
@@ -372,6 +405,32 @@ export default function RecurringTransaction() {
                       <Text style={[styles.errorMessage, { color: colors.expense }]}>
                         {errors.exp_rt_frequency?.message}
                       </Text>
+                    ) : null}
+
+                    {resolvedKind === 'reminder' ? (
+                      <>
+                        <Spacer height={Spacing.md} />
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}>
+                          <Text style={[styles.label, { color: colors.title }]}>
+                            Reminder Time
+                          </Text>
+                          <Controller
+                            control={control}
+                            render={({ field }) => (
+                              <TimePickerPaperWithButton
+                                value={field.value || DEFAULT_REMINDER_TIME}
+                                onChange={field.onChange}
+                              />
+                            )}
+                            name="exp_rt_reminder_time"
+                          />
+                        </View>
+                      </>
                     ) : null}
 
                     <Spacer height={Spacing.xl} />
@@ -410,6 +469,7 @@ export default function RecurringTransaction() {
                         />
                       </>
                     ) : null}
+
                   </View>
 
                   <Spacer height={Spacing.lg} />
@@ -474,7 +534,7 @@ export default function RecurringTransaction() {
                   <Spacer height={70} />
                 </View>
               )}
-              keyExtractor={() => 'form-recurring-transaction'}
+              keyExtractor={() => 'form-planned-reminder'}
             />
           </KeyboardAvoidingView>
         </ThemedView>
