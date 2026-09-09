@@ -23,7 +23,7 @@ export default {
     "slug": "expensify",
     "version": "2.0.6",
     "orientation": "portrait",
-    "icon": "./assets/images/icon-themed.png",
+    "icon": "./assets/images/icon-transparent.png",
     "scheme": isDev ? "expensify-dev" : "expensify",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
@@ -31,8 +31,10 @@ export default {
       "supportsTablet": true
     },
     "android": {
+      "icon": "./assets/images/android-icon.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon-themed.png"
+        "foregroundImage": "./assets/images/android-icon.png",
+        "backgroundColor": "#1B3365"
       },
       "package": isDev ? "com.sachinelavarasan.expensify.dev" : "com.sachinelavarasan.expensify",
       "googleServicesFile": googleServicesFile,
@@ -48,12 +50,12 @@ export default {
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/app-splash-screen-themed.png",
+          "image": "./assets/images/logo-transparent.png",
           "imageWidth": 200,
           "backgroundColor": "#F5F6FA",
           "dark": {
-            "image": "./assets/images/app-splash-screen-dark-themed.png",
-            "backgroundColor": "#0B0E1C"
+            "image": "./assets/images/logo-transparent-dark.png",
+            "backgroundColor": "#102A54"
           }
         }
       ],
